@@ -1,0 +1,54 @@
+.env
+
+.idea
+.idea_modules
+
+**/.bloop
+.bsp
+.devcontainer
+
+.metals
+.vscode
+*.iml
+*.iws
+
+# Compiled class files
+*.class
+
+# Eclipse-specific
+bin/
+.metadata/
+.settings/
+
+# Build outputs
+target/
+build/
+out/
+
+# Logs and temp files
+*.log
+hs_err*
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+logs
+project/project
+project/target
+target
+tmp
+.history
+dist
+/out
+.classpath
+.project
+/RUNNING_PID
+.settings
+.target
+.cache
+bin
+activator-sbt-*-shim.sbt
+/conf/evolutions/default/1.sql
+
+public/react

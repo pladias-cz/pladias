@@ -4,7 +4,6 @@
   - myslet na api endpoint y jako samostatnou sekci černého
   - nonvascula schema do slovaku
 - P: refresh cloud jako příprava pro migraci cevs + floraveg
-  - nonvascular schema do cevs
 
 ## next:
 - P: přesun repozitáře na GitHub (mj. bez zdrojáků css/js, jen minifikované), build test branch + tagy

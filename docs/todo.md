@@ -1,10 +1,11 @@
 ## now:
 
-- V: přesunout Java závislosti do sbt aby nebyly natvrdo v projektu, inkorporovat cz.ibot podbalíčky tak, aby pladiasWeb na nich nebyl závislý (tj. současný pladiasWeb mohl být rootem repozitáře..)
+- V:
+  - api token per uživatel (column name např api_token)
+  - zavést hash místo cipher pro heslo usera - asi by bylo nejsnazší současná hesla jen skriptem decipher > hash > update, takže v migraci by se přidal nový sloupec "hashed_password", smazat "temp_password". Původně jsem navrhoval jít postupně (viz temp_password column), ale teď s ekloním k tomu to udělat přímočaře, hlavně proto aby to bylo časově ohraničené a nemuselo se držet v hlavě
   - myslet na api endpoint y jako samostatnou sekci černého
-  - nonvascula schema do slovaku
 - P: refresh cloud jako příprava pro migraci cevs + floraveg
 
 ## next:
-- P: přesun repozitáře na GitHub (mj. bez zdrojáků css/js, jen minifikované), build test branch + tagy
-- V: config - moduzlarita hasTraitModeul, has MapModule has BiblioModule
+- P: až po odstranění cipher = přesun repozitáře na GitHub (mj. bez zdrojáků css/js, jen minifikované), build test branch + tagy
+- V:

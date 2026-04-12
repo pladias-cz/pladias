@@ -8,4 +8,8 @@
 
 ## next:
 - P: až po odstranění cipher = přesun repozitáře na GitHub (mj. bez zdrojáků css/js, jen minifikované), build test branch + tagy
-- V:
+- V: CSV pro mapu - jeslti se nepletu tak chtěli aby se tam CSV "hromadila" - ale teď se mi zdá že je to 1:1, že se drží jen poslední..:
+- ```sql SELECT taxon_id, COUNT(*) AS cnt
+FROM atlas.csv_map_details
+GROUP BY taxon_id
+HAVING COUNT(*) > 1;```

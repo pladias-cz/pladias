@@ -1,0 +1,2 @@
+-- Init script for dbmigration. Creates the public.dbmigration table and inserts the initial version 1.0.
+-- Db structure is not changed.

@@ -1,0 +1,27 @@
+# Routes
+# Higher priority routes first
+
+# React
+->    /api/react      react.Routes
+GET   /react                            controllers.reactBase.MainController.reactApp(request: Request, path = "")
+GET   /react/*path                       controllers.reactBase.MainController.reactApp(request: Request, path: String)
+
+# API
+GET     /api/renderMap/taxon/:taxonId/commonThreshold/:commonThreshold/mapType/:mapType  controllers.api.Map.buildAndDownloadCsvRenderMapDetails(request: Request, taxonId: Long, commonThreshold: Integer, mapType: Integer)
+GET     /api/pngMap/:taxonId        controllers.api.Map.downloadPngMap(taxonId: Long)
+GET     /api/csvMapDetails/:taxonId controllers.api.Map.downloadCsvMapDetails(taxonId: Long)
+
+# Home page
+GET     /                           controllers.Application.index(request: Request)
+
+# Map static resources from the /public folder to the /assets URL path
+GET     /assets/*file               controllers.Assets.at(path="/public", file)
+GET    /login                      controllers.Application.login(request: Request)
+GET     /logout                     controllers.Application.logout(request: Request)
+POST    /login                      controllers.Application.authenticate(request: Request)
+
+GET     /tempfiles/download/:fileId   controllers.TemporaryFilesProvider.download(request: Request, fileId: Integer)
+
+
+
+

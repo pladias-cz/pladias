@@ -1,0 +1,359 @@
+DateSpecifier.InvalidDate = Neplatné datum.
+
+Authorized.notAuthorized = Nemáte oprávnění k této akci.
+
+ExcelTableLoadService.invalidLatitude = Neplatná zeměpisná šířka.
+ExcelTableLoadService.invalidAltitude = Neplatná nadmořská výška.
+ExcelTableLoadService.invalidLongitude = Neplatná zeměpisná délka.
+ExcelTableLoadService.invalidTaxon = Neplatný taxon.
+ExcelTableLoadService.invalidDate = Neplatné datum.
+ExcelTableLoadService.invalidDistrict = Neplatný okres.
+ExcelTableLoadService.invalidQuadrantId = Neplatný identifikátor kvadrantu.
+ExcelTableLoadService.unknownAuthor = Uvedený nálezce není v databázi, zkontrolujte zadaný text.
+ExcelTableLoadService.duplicateAuthor = Duplicitní autor "{0}".
+ExcelTableLoadService.invalidLicense = Neplatná licence.
+
+ExcelTableLoadService.invalidGpsPrecision = Neplatná hodnota přesnosti GPS souřadnic.
+ExcelTableLoadService.unknownHerbarium = Herbář "{0}" není registrován v databázi. Zkontrolujte zadaný text a případně kontaktujte Z. Kaplana: kaplan@ibot.cas.cz.
+ExcelTableLoadService.nearestTownInIncorrectDistrict = Zadaná obec neleží v okrese "{0}".
+
+ExcelTableValidationService.altitudeOutOfRange = Nadmořská výška je mimo očekávaný rozsah.
+ExcelTableValidationService.gpsCoordsOutOfBounds = Souřadnice jsou pravděpodobně mimo republiku.
+ExcelTableValidationService.districtComputedFromGpsCoords = Okres "{0}" byl dopočítán ze souřadnic.
+ExcelTableValidationService.invalidDistrict = Neplatný okres.
+ExcelTableValidationService.invalidNearestCompoundTown = Neplatný název složeného nejbližšího města.
+ExcelTableValidationService.unableToValidateNearestTown = Není možné zvalidovat obec bez okresu či souřadnic.
+ExcelTableValidationService.districtDoesNotMatchGpsCoords = Okres dopočítaný ze souřadnic : "{0}".
+ExcelTableValidationService.nearestTownComputedFromGpsCoords = Sídlo "{0}" bylo dopočítáno ze souřadnic.
+ExcelTableValidationService.correctPhytochorionBasedOnLocationIs = GPS lokaci odpovídá fytochorion "{0}".
+ExcelTableValidationService.phytochorionLocationInAcceptableBuffer = Fytochorion neodpovídá GPS lokaci (chyba je v povoleném pásmu {0}m). GPS odpovídá "{1}".
+ExcelTableValidationService.mapSquareDoesNotMatchWithGpsCoords = Zadané souřadnice odpovídají kvadrantu "{0}".
+ExcelTableValidationService.mapSquareDoesNotMatchGpsCoordsBuffer = Kvadrant neodpovídá GPS lokaci (chyba je v akceptovatelném limitu 200m).
+ExcelTableValidationService.duplicateEntryAlreadyExists = Záznam již v databázi existuje pod ID "{0}".
+ExcelTableValidationService.possibleDuplicateEntryAlreadyExists = Podobný záznam již v databázi existuje pod ID "{0}".
+ExcelTableValidationService.incorrectNearestTown = Souřadnice odpovídají obci "{0}", KÚ "{1}", ZSJ "{2}", okres "{3}".
+ExcelTableValidationService.mapSquareMustBePresentInAbsenceOfGpsCoords = Při absenci souřadnic je vyžadován mapový čtverec / kvadrant.
+ExcelTableValidationService.phytochorionMustBePresentInAbsenceOfGpsCoords = Při absenci souřadnic je vyžadován fytochorion. 
+ExcelTableValidationService.quadrantComputedFromGpsCoords = Kvadrant "{0}" byl dopočítán ze souřadnic.
+ExcelTableValidationService.phytochorionComputedFromGpsCoords = Fytochorion "{0}" byl dopočítán ze souřadnic.
+ExcelTableValidationService.noMatchingPhytochorionFoundForGpsCoords = Souřadnice neodpovídají žádnému fytochorionu.
+ExcelTableValidationService.noMatchingQuadrantFoundForGpsCoords = Souřadnice neodpovídají žádnému kvadrantu.
+ExcelTableValidationService.herbariumRequiresFinder = Pro herbář musí být uveden nálezce.
+ExcelTableValidationService.nearestTownNameRequiredWhenMissingCoords = V případě chybějících souřadnic je vyžadována nejbližší obec.
+ExcelTableValidationService.taxonNotImportable = Tento taxon není možné importovat.
+ExcelTableValidationService.gpsCoordsMissing = Chybí GPS souřadnice.
+
+Application.invalidUserNameOrPassword = Špatné uživatelské jméno nebo heslo. 
+Application.userIsDeleted = Uživatelský účet není aktivní.
+Application.inactivityLogout = Z důvodu delší nečinnosti jste byli automaticky odhlášeni.
+Application.userHasLoggedOut = Uživatel byl odhlášen.
+
+Atlas.taxonNotFound = Neznámý taxon "{0}".
+Atlas.invalidTaxon  = Neznámý taxon.
+Atlas.taxonCannotBeValidated = Taxon "{0}" není validovatelný.
+Atlas.noRightsForRecordValidation = Uživatel nemá práva pro validaci záznamu.
+Atlas.unableToUpdateRecord = Nebylo možné aktualizovat záznam.
+Atlas.recordNotMarkedAsReliable = Záznam není označen jako důvěryhodný.
+Atlas.invalidTargetValidationStatus = Neplatný validační stav.
+Atlas.declinedOrUnprocessedRecordCannotBeIncludedInMap = Odmítnutý či neověřený záznam nemůže jít do mapy.
+Atals.undefined = Nedefinováno.
+
+AuthorsController.surname = Příjmení
+AuthorsController.name = Jméno
+AuthorsController.authorsDetailsFailed = Nepodařilo se vyexportovat autory
+
+UploadExcel.DuplicateEntry = Duplicitní záznam
+UploadExcel.FileNotUploaded = Soubor nebyl nahrán na server.
+UploadExcel.FormNotComplete = Formulář nebyl správně vyplněn.
+UploadExcel.NoProjectProvidedVerifyYouHaveBeenGrantedProjectAccess  = Pravděpodobně nemáte přidělen přístup k žádnému z Pladias projektů. Kontaktujte administrátory systému.
+UploadExcel.userNotAllowedToImportIntoSelectedProject = Nemáte práva importovat do vybraného projektu.
+
+UploadPdfMapPreview.invalidPublicationStatusForMapPreviewUpload = Není možné nahrát preview. Je třeba změnit Stav mapy na "Příprava náhledu".
+UploadPdfMapPreview.userNotEligible = Nemáte práva pro tuto operaci.
+UploadPdfMapPreview.missingTaxonId = Nezadali jste správně taxon.
+
+PdfMapReportRenderer.protectedCoords = [přesné lokality nejvíce ohrožených a zároveň atraktivních druhů nejsou zveřejňovány]
+
+RecordCommentController.invalidInputParameters = Chybné vstupní parametry.
+RecordCommentController.notFound = Záznam nenalezen.
+RecordCommentController.noPermissions = Nemáte oprávnění pro tuto operaci.
+RecordCommentController.noCommentFound = Komentář nebyl nalezen.
+RecordCommentController.commentAlreadyResolved = Komentář je již vyřešen.
+
+RecordQuadrantDistribution.recordsMustBeNonEmpty = Seznam záznamů musí být neprázdný.
+
+MapReports.taxonAssigned = Taxon byl úspěšně přiřazen.
+MapReports.taxonNotAssigned = Taxon nebyl přiřazen.
+MapReports.taxonAssociationNotRemoved = Taxon nebyl uživateli odebrán.
+MapReports.taxonRemoved = Taxon byl odebrán.
+
+ModelDataSource.unsupportedCoordsFormat = Nepodporovaný formát souřadnic.
+ModelDataSource.taxonDetailsFailed = Vygenerování seznamu taxonů se nezdařilo.
+
+HerbariumController.herbariumDetailsFailed = Vygenerování seznamu herbářů se nezdařilo.
+
+SynonymsService.ChangedTaxon = Synonymum nahrazeno za platné jméno.
+SynonymsService.DuplicateTaxon = Z důvodu duplicit nelze automaticky převést.
+SynonymsService.NotFound = Jméno nenalezeno v číselníku ani v synonymech.
+
+UserSettingsController.ValueNotFound  = Hodnota nebyla nalezena.
+UserSettingsController.EntryNotFound  = Záznam nebyl nalezen.
+UserSettingsController.ValueUpdated   = Hodnota aktualizována.
+UserSettingsController.ValueSaved     = Hodnota uložena.
+UserSettingsController.EntryDeleted   = Záznam byl úspěšně smazán.
+UserSettingsController.EntriesDeleted = Uživatelská nastavení byla smazána.
+UserSettingsController.DeletionFailed = Smazání uživatelských nastavení se nezdařilo.
+
+TaxonMapSettingsController.invalidTaxon = Neplatný taxon.
+TaxonMapSettingsController.newerVersionExists = V databázi existuje novější verze záznamu než s kterou pracujete.
+TaxonMapSettingsController.invalidKey = Neplatný klíč sloupce.
+TaxonMapSettingsController.invalidMapType = Neplatný typ mapy.
+TaxonMapSettingsController.invalidProductionStatus = Neplatné ID produkčního stavu.
+TaxonMapSettingsController.invalidInputParameters = Neplatné parametry.
+TaxonMapSettingsController.invalidValue = Neplatná hodnota "{0}".
+TaxonMapSettingsController.userNotEligible = Nemáte práva pro tuto operaci.
+
+TraitExportController.userNotElligibleToExportTrait = Nemáte práva pro export traitu "{0}".
+
+MapStatusUpdateService.invalidStatus = Neplatny stav.
+MapStatusUpdateService.insufficientRights = Nemáte dostatečná práva.
+MapStatusUpdateService.noSuchTransition = Nedovolený přechod ze stavu "{0}" do stavu "{1}". Kontaktujte Z. Kaplana.
+MapStatusUpdateService.taxonStatusChangeAdminMailContents = Taxon "{0}" je nyni ve stavu "{1}".\nZmenu provedl uzivatel {2}.
+MapStatusUpdateService.taxonStatusChangeSubject =     PLADIAS - změna stavu taxonu "{0}"
+MapStatusUpdateService.statusNotStartedCanOnlyBeSetByEmptyingSupervisorList = Stav "nezapočato" vznikne jen odebráním všech revizorů.
+
+PublicationUpdateService.taxonStatusChangeMapDesignerContents = Taxon "{0}" je nyni ve stavu "{1}".\nZmenu provedl uzivatel {2}.\n\n{3}
+PublicationUpdateService.taxonStatusChangeRevisorsMailContents = Taxon "{0}" je nyni ve stavu "{1}".
+PublicationUpdateService.mapUploaded = Mapa k taxonu {0} nahrána na server
+PublicationUpdateService.mapUploadedMailContents = {0}\n{1}\n\nVážení autoři,\n\nv této zprávě Vám zasíláme odkazy na právě vygenerovanou mapu a elektronickou přílohu k mapě. Mapy i přílohy jsou (1) vytvořeny v tom schématu (typu) mapy, který jste si zvolili v mapovací aplikaci, (2) vygenerovány z databáze podle záznamů, které jste zkontrolovali, roztřídili a proznačili, a (3) upravené podle případných dodatečných instrukcí a upozornění v Poznámce autora mapy. \n\nMapu prosím pečlivě zkontrolujte, porovnejte ji s náhledem v mapovací aplikaci, a ujistěte se, že ve všech kvadrantech máte ten znak, který tam chcete mít. Nezapomeňte zkontrolovat především veškeré nestandardní případy (např. vložení symbolu otazník) a jestli byly správně zapracovány Vaše požadavky z pole "Poznámka pro tisk mapy" (např. pokud rozlišujete recentní vs. zaniklý výskyt a v nějakém kvadrantu druh prokazatelně vyhynul až po roce 2000, čili je potřeba udělat manuální úpravu symbolu).\n\nToto je poslední možná kontrola Vašich map před odesláním článku do redakce časopisu Preslia. Pokud objevíte nějaký problém, informujte prosím obratem Z. Kaplana (kaplan@ibot.cas.cz). Pokud nepřijde žádná odezva ve lhůtě stanovené pro příslušnou sadu map (obvykle 2–3 dny), bude mapa považována za definitivní. 
+
+RevisionUpdateService.taxonStatusChangeRevisorsMailContents = Taxon "{0}" je nyni ve stavu "{1}".\n\nKomentování a doplňování mapy floristy bylo ukončeno. Projděte a zpracujte všechny dosud nepřečtené a nevyřízené komentáře, přidělte příznaky nově doplněným záznamům, dokončete mapu a po kontrole jejího náhledu ji kliknutím na tlačítko "Zapracoval jsem všechny podněty kontrolorů" předejte editorům k přípravě pro tisk.\n\n
+
+RecordEditController.userNotAllowed = Uživatel nemá oprávnění.
+RecordEditController.invalidRecordId = Neplatné ID záznamu.
+RecordEditController.invalidPhytoId = Neplatné ID fytochorionu.
+RecordEditController.invalidTaxonId = Neplatné ID taxonu.
+RecordEditController.invalidCoordsPrecision = Neplatná hodnota přesnosti souřadnic.
+RecordEditController.invalidAltitudeApproximation = Neplatná hodnota.
+RecordEditController.invalidParameters = Neplatné argumenty.
+RecordEditController.invalidIntegerValue = Neplatná číselná hodnota "{0}".
+RecordEditController.valueOutOfRange = Hodnota je mimo očekávaný rozsah ({0} - {1}).
+RecordEditController.gpsCoordsOutOfRange = GPS souřadnice jsou mimo ČR.
+RecordEditController.gpsCoordsSpecifiedInPladias = Upřesněno v Pladias.
+RecordEditController.gpsCoordsEnteredInPladias = Zadáno v Pladias.
+RecordEditController.unableToUpdateCoords = Nepodařilo se změnit souřadnice.
+RecordEditController.originalIdNotEditable = Originální ID není možné editovat mimo vybrané projekty.
+RecordEditController.newVersionRecordExists = V databází existuje novější verze záznamu. Prosím refreshněte si aktuální obrazovku a akci zopakujte.  
+RecordEditController.unableToUpdateField = Nepodařilo se updatovat pole "{0}".
+RecordEditController.finderAlreadyRegistered = Nálezce "{0}" již v seznamu nálezců je.
+RecordEditController.herbariumAlreadyRegistered = Herbář "{0}" již u záznamu přiřazen je.
+RecordEditController.taxonIsLockedDueToMapPreviewGeneration = Taxon je v průběhu "přípravy náhledu mapy" uzamčen.
+RecordEditController.recordIsLocked = Záznam je momentálně uzamčen.
+
+RecordEditController.cannotSetCoordsPrecisionForRecordWithNoCoords = Není možné zadat přesnost souřadnic pro záznam, který souřadnice nemá.
+
+RecordEditController.districtComputedAutomatically = Okres doplněn automaticky: možnost chyby.
+RecordEditController.incorrectLocalization = Chybná lokalizace – kvadrant neodpovídá souřadnicím.
+RecordEditController.phytochorionGrosslyOutOfSyncWithCoords = Fytochorion hrubě neodpovídá souřadnicím.
+RecordEditController.quadrantOutOfSyncWithDistrict = Kvadrant neodpovídá nejbližšímu sídlu.
+RecordEditController.phytochorionOutOfSyncWithDistrict = Fytochorion neodpovídá nejbližšímu sídlu.
+
+ModifiedRecordsExcelBuilder.RecordId = ID záznamu
+ModifiedRecordsExcelBuilder.Taxon = Taxon
+ModifiedRecordsExcelBuilder.OriginalName = Původní jméno
+ModifiedRecordsExcelBuilder.Locality = Lokalita 
+ModifiedRecordsExcelBuilder.NearestTown = Nejbližší město
+ModifiedRecordsExcelBuilder.District = Okres
+ModifiedRecordsExcelBuilder.Altitude = Nadmořská výška
+ModifiedRecordsExcelBuilder.Coords = Souřadnice
+ModifiedRecordsExcelBuilder.CoordsSource = Zdroj souřadnic
+ModifiedRecordsExcelBuilder.CoordsPrecision = Přesnost souřadnic
+ModifiedRecordsExcelBuilder.Datum = Datum
+ModifiedRecordsExcelBuilder.Finder = Nálezce
+ModifiedRecordsExcelBuilder.Source = Zdroj
+ModifiedRecordsExcelBuilder.Phytochorion = Fytochorion
+ModifiedRecordsExcelBuilder.QuadrantOrSquare = Kvadrant/Čtverec
+ModifiedRecordsExcelBuilder.Comment = Komentář
+                
+
+ImportsManager.batchDeletionEmail =  Dobrý den,\n\nadministrátor portálu {0} označil vaši dávku\n{1} ze dne {2} pro smazání. Pro dokončení operace prosím klikněte na následující odkaz:\n{3}\n\nPokud nejste právě přihlášeni, budete ještě vyzváni k vložení vašeho hesla.
+ImportsManager.batchDeleted = Dávka byla smazána.
+ImportsManager.notAuthorizedToDeleteBatch = Nejste oprávněn ke smazání dávky.
+ImportsManager.incorrectPassword = Nesprávné heslo pro smazání dávky.
+ImportsManager.batchNotExists = Dávka neexistuje.
+
+Taxon.isSuppressed = Taxon je označený jako potlačený, více info podá Jiří Danihelka.
+
+TraitsController.UserNotElligible = Nemáte oprávnění pro tuto operaci.
+TraitsController.deletionFailed = Mazání datové řady se nezdařilo.
+TraitsController.traitDeleted = Datová řada byla smazána.
+TraitsController.ValidationFailed = Validace skončila chybou. Stáhněte si <a href="{0}">soubor</a> s vyznačením problematických řádků. Zkontolujte si také prosím pořadí sloupců dle vzoru.
+TraitsController.ImportFailed = Import se nezdařil. Stáhněte si <a href="{0}">soubor</a> s vyznačením problematických řádků. Zkontolujte si také prosím pořadí sloupců dle vzoru.
+TraitsController.ImportSucceeded = Soubor dat s {0} záznamy byl importován. 
+TraitsController.ValidationSucceeded = Soubor dat je validní, můžete jej importovat.
+TraitsController.AttachmentTooBig = Přiloha je příliš velká
+TraitsController.FormContainsErrors = Formulář obsahuje chyby
+TraitsController.TraitDoesNotExits = Zadany trait neexistuje
+TraitsController.UnableToSetDefaultTrait = Nepodarilo se nastavit default trait
+TraitsController.NoSuitableTraitFound = Neexistuje zadny vyhovujici trait
+TraitsController.InvalidFeature = Neznámá Feature
+
+			
+TraitDetailsExportAccumulator.originalValues = Originální hodnoty
+TraitDetailsExportAccumulator.inheritedValues = Zděděné hodnoty
+TraitDetailsExportAccumulator.aggregatedValues = Agregované hodnoty
+TraitDetailsExportAccumulator.compositeValues = Sloučené hodnoty
+
+TraitDetailsExportAccumulator.originalValues.en = Original values
+TraitDetailsExportAccumulator.inheritedValues.en = Inherited values
+TraitDetailsExportAccumulator.aggregatedValues.en = Aggregated values
+TraitDetailsExportAccumulator.compositeValues.en = Composite values
+
+TaxonDistributionExportAccumulator.squares = Mapové pole
+TaxonDistributionExportAccumulator.quadrants = Mapové kvadranty
+
+TaxonDistributionExportAccumulator.squares.en = Squares
+TaxonDistributionExportAccumulator.quadrants.en = Quadrants
+
+ExcelHelper.InvalidExcelFileName = Vstupní soubor musí být excelová tabulka.
+
+TemporaryFilesProvider.fileDoesNotExist = Soubor neexistuje
+
+RevisionUpdateService.noSuchTransition = Ze stavu "{0}" není možné přejít do stavu "{1}".
+RevisionUpdateService.insufficientRights = Nemáte dostatečná práva pro provedení akce.
+
+AbstractDatatype.InvalidTaxon = Neplatný taxon
+AbstractDatatype.TaxonColumn = Taxon
+AbstractDatatype.Comment = Komentář
+AbstractDatatype.Comment.en = Comment
+
+
+BoolSerializer.value = Hodnota [boolean]
+BoolSerializer.value.en = Value [boolean]
+
+IntSerializer.value = Hodnota [integer]
+IntSerializer.value.en = Value [integer]
+
+IntSerializer.frequency = Frekvence
+IntSerializer.frequency.en = Frequency
+
+TaxonDistributionSerializer.squaresCount = Čtverce [integer]
+TaxonDistributionSerializer.squaresCount.en = Squares [integer]
+
+TaxonDistributionSerializer.quadrantsCount = Kvadranty [integer]
+TaxonDistributionSerializer.quadrantsCount.en = Quadrants [integer]
+
+MonthSerializer.min = Minimum [od]
+MonthSerializer.min.en = Minimum [from]
+
+MonthSerializer.max = Maximum [do]
+MonthSerializer.max.en = Maximum [to]
+
+MonthSerializer.dominant = Dominantní
+MonthSerializer.dominant.en = Dominant
+
+
+IntIndicatorSerializer.value = Hodnota [integer]
+IntIndicatorSerializer.value.en = Value [integer]
+
+
+RealSerializer.value = Hodnota [real]
+RealSerializer.value.en = Value [real]
+
+
+PercentageSerializer.value = Hodnota [procento]
+PercentageSerializer.value.en = Value [%]
+PercentageDeserializer.duplicateKey = Duplicitní hodnota
+
+
+EnumSerializer.value = Hodnota [položka číselníku]
+EnumSerializer.value.en = Value [enum]
+EnumSerializer.dominance = Dominance [boolean]
+EnumSerializer.dominance.en = Dominance [boolean]
+EnumSerializer.frequency = Frekvence [%]
+EnumSerializer.frequency.en = Frequency [%]
+
+SyntaxonSerializer.value = Syntaxon
+SyntaxonSerializer.value.en = Syntaxon
+SyntaxonSerializer.dominance = Dominance [boolean]
+SyntaxonSerializer.dominance.en = Dominance [boolean]
+SyntaxonSerializer.frequency = Frekvence [%]
+SyntaxonSerializer.frequency.en = Frequency [%]
+
+SyntaxonDeserializer.duplicateKey = Duplicitní kombinace <taxon, syntaxon>.
+
+EnumDeserializer.duplicateKey = Duplicitní kombinace <taxon, hodnota>.
+EnumDeserializer.multipleDominance = Duplicitní dominance pro taxon.
+EnumDeserializer.DuplicateTaxon = Duplicitní taxon.
+
+IntegerDeserializer.ValueOutOfRange = Hodnota je mimo platný rozsah <{0}, {1}>.
+IntegerDeserializer.duplicateKey = Duplicitní kombinace <taxon, hodnota>.
+
+MonthDeserializer.MinMaxMismatch = Chybný (min, max) interval.
+MonthDeserializer.InvalidMinValue = Chybná min hodnota.
+MonthDeserializer.InvalidMaxValue = Chybná max hodnota.
+
+IntegerAvgDeserializer.InvalidValue = Neplatná hodnota.
+IntegerAvgDeserializer.RequiredMinLeMean = Není splněno min <= mean.
+IntegerAvgDeserializer.RequiredMaxGeMean = Není splněno max >= mean.
+IntegerAvgDeserializer.RequiredMinLeMax = Není splněno min <= max.
+IntegerAvgDeserializer.RequiredUltraminLtMin = Není splněno ultramin < min.
+IntegerAvgDeserializer.RequiredUltramaxGtMax = Není splněno max < ultramax.
+IntegerAvgDeserializer.duplicateKey = Duplicitní taxon.
+IntegerAvgDeserializer.RequiredAtLeastOneValue = Je vyžadována alespoň jedna hodnota na řádku.
+
+IntAvgSerializer.MinValueText = min
+IntAvgSerializer.ExtremeMinValueText = ultramin
+IntAvgSerializer.MaxValueText = max
+IntAvgSerializer.ExtremeMaxValueText = ultramax
+IntAvgSerializer.MeanValueText = mean
+IntAvgSerializer.StandardMeanErrorValueText = sem
+
+IntAvgSerializer.MinValueText.en = min
+IntAvgSerializer.ExtremeMinValueText.en = ultramin
+IntAvgSerializer.MaxValueText.en = max
+IntAvgSerializer.ExtremeMaxValueText.en = ultramax
+IntAvgSerializer.MeanValueText.en = mean
+IntAvgSerializer.StandardMeanErrorValueText.en = sem
+
+
+
+RealDeserializer.duplicateKey = Duplicitní kombinace <taxon, hodnota>.
+RealDeserializer.ValueOutOfRange = Hodnota je mimo platný rozsah <{0}, {1}>.
+
+AbstractDatatypeDeserializer.InvalidValue = Neplatná hodnota.
+AbstractDatatypeDeserializer.DuplicateKey = Duplicitní kombinace <taxon, hodnota>.
+AbstractDatatypeDeserializer.DuplicateComment = Duplicitní komentář
+
+PercentageConverter.OutOfRange0_1 = Hodnota je mimo rozsah <0,1>.
+PercentageConverter.OutOfRange0_100 = Hodnota je mimo celočíselný rozsah <0,100>.
+PercentageConverter.InvalidValue = Neplatná hodnota. 
+
+CrossTaxonDeserializer.InvalidTaxonRelation = Neplatná relace <taxon, taxon>.
+CrossTaxonDeserializer.DuplicateEntry = Duplicitni zaznam <taxon, taxon>.
+
+CrossTaxonSerializer.Taxon2 = Taxon 2
+CrossTaxonSerializer.Taxon2.en = Taxon 2
+
+CrossTaxonSerializer.Value  = Hodnota
+CrossTaxonSerializer.Value.en  = Value
+
+
+BiblioManager.NotElligible = Nemáte práva na tuto akci.
+BiblioManager.FileNotUploaded = Soubor s daty nebyl nahrán.
+BiblioManager.ImportRunningInBackground = Import probíhá na pozadí. Jakmile skončí budete informování e-mailem.
+
+TaxonEditController.NotElligible = Nemáte práva na tuto akci.
+TaxonEditController.InvalidParameters = Špatné vstupní parametry
+TaxonEditController.TaxonEditorLocked = Taxony v tuto chvíli edituje uživatel "{0}". Zkuste to prosím později.
+
+Search.UserNotAssignedToAnyProject = Nemáte přiřazen žádný projekt.
+
+UserController.passwordChanged = Heslo bylo změněno.
+UserController.passwordNotMatches = Heslo neodpovídá.
+UserController.newPasswordsDoNotMatch = Nová hesla se neshodují.
+UserController.userWithEmailAlreadyExists = Uživatel {0} již existuje.
+UserController.newUserAddedWelcomeMessage = Dobrý den,\n\nprávě jste byli zaregistrováni do systému PLADIAS.\nNalogovat se můžete zde: https://pladias.ibot.cas.cz/login\nLogin: {0}\nHeslo: {1}\n\nHeslo si můžete v aplikaci změnit (na adrese https://pladias.ibot.cas.cz/changePassword).\n\nPřed prvním vstupem do databáze si prosím přečtěte prohlášení o nakládání s daty, na které se dostanete ze vstupní stránky databáze.\n\nS pozdravem,\ntým PLADIAS.
+UserController.newUserAddedWelcomeMessageNonvascular = Dobrý den,\n\nprávě jste byli zaregistrováni do systému Dalibor.\nNalogovat se můžete zde: https://dalibor.ibot.cas.cz/login\nLogin: {0}\nHeslo: {1}\n\nHeslo si můžete v aplikaci změnit (na adrese https://dalibor.ibot.cas.cz/changePassword).\n\nPřed prvním vstupem do databáze si prosím přečtěte prohlášení o nakládání s daty, na které se dostanete ze vstupní stránky databáze.\n\nS pozdravem,\ntým Dalibor.
+UserController.userAdded = Nový uživatel byl přidán do systému a byl mu odeslán úvodní e-mail.
+UserController.passwordNotLongEnough = Minimální délka hesla je {0} znaků.     	

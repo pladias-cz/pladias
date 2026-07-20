@@ -1,0 +1,148 @@
+# routes in a subfile has to be from separated package, see https://groups.google.com/g/play-framework/c/1AFhy1zgBRk
+
+GET /taxonStatistics/:taxonId           controllers.react.atlas.TaxonStatisticsController.getInfo(request: Request, taxonId: Long)
+GET /atlas/squareInfo/:square/:taxonId   controllers.react.atlas.MapDetailController.getSquareInfo(request: Request, square: Integer, taxonId: Long)
+GET /atlas/records/:square/:taxonId/:project controllers.react.atlas.MapDetailController.getNearbyRecords(request: Request, square: String, taxonId: Long, project: String)
+GET /atlas/record/:recordId/full         controllers.react.atlas.MapDetailController.getRecordFull(request: Request, recordId: Long)
+GET /atlas/record/history/:recordId      controllers.react.atlas.RecordHistoryController.getRecordHistory(request: Request, recordId: Long)
+GET /atlas/record/comments/:recordId     controllers.react.atlas.RecordCommentController.getRecordComments(request: Request, recordId: Long)
+POST /atlas/record/comment               controllers.react.atlas.RecordCommentController.createComment(request: Request)
+PUT /atlas/record/comment/:commentId     controllers.react.atlas.RecordCommentController.updateComment(request: Request, commentId: Long)
+DELETE /atlas/record/comment/:commentId  controllers.react.atlas.RecordCommentController.deleteComment(request: Request, commentId: Long)
+POST /atlas/record/comment/:commentId/resolve  controllers.react.atlas.RecordCommentController.resolveComment(request: Request, commentId: Long)
+
+POST    /import/validate              controllers.react.atlas.ImportController.validateExcel(request: Request)
+POST    /import/upload                controllers.react.atlas.ImportController.uploadExcel(request: Request)
+POST    /import/csv                   controllers.react.atlas.ImportCSVController.uploadCsv(request: Request)
+GET     /projects/data                controllers.react.UserController.getProjectsData(request: Request)
+GET     /projects/user                controllers.react.UserController.getProjectsForUser(request: Request)
+
+GET     /importResult/validated      controllers.react.ImportResultsController.validatedReportByUser(request: Request)
+GET     /importResult/imported       controllers.react.ImportResultsController.importedReportByUser(request: Request)
+DELETE  /importResult/validated/:id  controllers.react.ImportResultsController.deleteValidated(request: Request, id: Long)
+
+GET     /atlas/pngMap/taxon/:taxonId      controllers.react.atlas.PdfMapController.downloadPng(taxonId: Long)
+POST    /atlas/pngMap/taxon/:taxonId      controllers.react.atlas.PdfMapController.uploadPng(request: Request, taxonId: Long)
+POST    /atlas/search/page/:page/pageSize/:pageSize/getCount/:getCount  controllers.react.atlas.SearchController.search(request: Request, page: Integer, pageSize: Integer, getCount: Boolean)
+GET     /atlas/search/records-with-comments/:commentsOwnerUserId  controllers.react.atlas.SearchController.getRecordsWithComments(request: Request, commentsOwnerUserId: Long)
+GET     /atlas/search/records-with-comments  controllers.react.atlas.SearchController.getRecordsWithCommentsCurrentUser(request: Request)
+
+POST    /atlasadmin/assignUserTaxon      controllers.react.atlas.MapReportsController.assignUserTaxon(request: Request)
+DELETE  /atlasadmin/removeUserTaxon/user/:userId/taxon/:taxonId  controllers.react.atlas.MapReportsController.removeUserTaxon(request: Request, userId: Long, taxonId: Long)
+GET     /atlas/map-reports/download-csv/:id  controllers.react.atlas.MapReportsController.downloadCsvMapDetails(id: Integer)
+GET     /atlas/map-reports/download-csv-map/:id  controllers.react.atlas.MapReportsController.downloadCsvRenderMapDetails(id: Integer)
+
+GET     /atlas/common/phytochorions          controllers.react.atlas.CommonController.getPhytochorions()
+GET     /selectOptions/phytochorions              controllers.react.atlas.PhytochorionController.getAll()
+GET     /atlas/common/herbariums            controllers.react.atlas.CommonController.getHerbariums()
+GET     /atlas/common/institutions          controllers.react.atlas.CommonController.getInstitutions()
+GET     /atlas/common/committers            controllers.react.atlas.CommonController.getCommitters()
+GET     /atlas/common/licenses              controllers.react.atlas.CommonController.getLicenses()
+GET     /atlas/common/history-flags         controllers.react.atlas.CommonController.getHistoryFlags()
+
+GET      /atlas/taxonMapSettings/:taxonId     controllers.react.atlas.TaxonMapSettingsController.getTaxonMapSettings(request: Request, taxonId: Long)
+POST    /atlasadmin/taxonMapSettings     controllers.react.atlas.TaxonMapSettingsController.updateMapSettings(request: Request)
+
+GET /atlasadmin/userrights/:id           controllers.react.atlas.MapAdminUserRightsController.getRights(request: Request, id: Long)
+GET /atlasadmin/userrights               controllers.react.atlas.MapAdminUserRightsController.getRightsBatch(request: Request)
+
+# Taxa Map Settings - Taxa list for admin overview
+GET /atlasadmin/taxa                     controllers.react.atlas.TaxonMapSettingsController.getTaxa(request: Request)
+GET /atlasadmin/taxa/user                controllers.react.atlas.TaxonMapSettingsController.getTaxaForUser(request: Request)
+
+# Record Status API
+GET /atlasadmin/record-originality-statuses   controllers.react.atlas.RecordStatusController.getOriginalityStatuses()
+GET /atlasadmin/record-validation-statuses    controllers.react.atlas.RecordStatusController.getValidationStatuses()
+
+# Map Status API
+GET /atlasadmin/revision-statuses             controllers.react.atlas.MapStatusController.getRevisionStatuses()
+GET /atlasadmin/publication-statuses          controllers.react.atlas.MapStatusController.getPublicationStatuses()
+
+GET /occurrence/projects                      controllers.react.atlas.ProjectsController.getAll(request: Request)
+
+GET   /atlasadmin/imports                controllers.react.atlas.MapAdminImportController.getImports(request: Request)
+GET   /occurrence/imports/:id                 controllers.react.atlas.UploadExcel.downloadDecorated(id: Long)
+GET   /atlasadmin/downloadBatchModified/:batchId    controllers.react.atlas.MapAdminImportController.downloadBatchModified(request: Request, batchId: Long)
+GET   /atlasadmin/prepareBatchDelete/:batchId       controllers.react.atlas.MapAdminImportController.prepareDeletion(request: Request, batchId: Long)
+GET   /atlasadmin/deleteBatch/:batchId/password/:password  controllers.react.atlas.MapAdminImportController.completeDeletion(request: Request, batchId: Long, password: String)
+
+
+GET   /config                            controllers.react.ConfigController.config(request: Request)
+GET   /infoGlobal                        controllers.react.ConfigController.infoGlobal(request: Request)
+
+POST /user/changePassword                controllers.react.UserController.changePassword(request: Request)
+POST /user/changeEmail                   controllers.react.UserController.changeEmail(request: Request)
+
+# User Settings API
+GET  /user/settings/:key                 controllers.react.UserController.getUserSetting(request: Request, key: String)
+PUT  /user/settings/:key                 controllers.react.UserController.saveUserSetting(request: Request, key: String)
+DELETE /user/settings/:keyPrefix         controllers.react.UserController.resetUserSettings(request: Request, keyPrefix: String)
+
+# User Management API
+GET   /users                            controllers.react.UserController.getUsers(request: Request)
+GET   /users-minimal                    controllers.react.UserController.getUsersMinimal()
+GET   /users/summary                    controllers.react.UserController.getUsersSummary(request: Request)
+GET   /users/:id                        controllers.react.UserController.getUser(request: Request, id: Long)
+POST  /users                            controllers.react.UserController.createUser(request: Request)
+PUT   /users/:id                        controllers.react.UserController.updateUser(request: Request, id: Long)
+POST  /users/:id/resetPassword          controllers.react.UserController.resetUserPassword(request: Request, id: Long)
+
+# User Access Rights API
+GET   /users/data                       controllers.react.UserController.getUsersData(request: Request)
+GET   /projects/data                    controllers.react.UserController.getProjectsData(request: Request)
+POST  /users/rights/edit                controllers.react.UserController.editUserRightsField(request: Request)
+
+# Taxa
+GET    /taxa/queryAll                   controllers.react.TaxonController.getAll(prefix: String)
+GET    /taxa/importable                 controllers.react.TaxonController.getImportable(prefix: String)
+GET    /taxa/importable/record/:recordId    controllers.react.TaxonController.getAllForRecordEdit(request: Request, recordId: Long )
+GET    /taxon/:id                       controllers.react.TaxonController.getTaxon(id: Long)
+GET    /taxon/:id/parents               controllers.react.TaxonController.getParents(id: Long)
+GET    /taxon/:id/synonyms              controllers.react.TaxonController.getSynonyms(id: Long)
+GET    /taxaPublications                controllers.react.TaxonController.getPublications()
+
+POST   /synonyms/:id                    controllers.react.SynonymController.add(request: Request, id: Long)
+PUT    /synonyms/:id                    controllers.react.SynonymController.modify(request: Request, id: Long)
+DELETE /synonyms/:id                    controllers.react.SynonymController.delete(request: Request, id: Long)
+
+
+GET    /taxon/:id/firstChildren         controllers.react.TaxonController.getDirectChildren(id: Long)
+GET    /taxonrank/queryAll              controllers.react.TaxonRankController.getAll()
+GET    /taxonrank/queryExportable       controllers.react.TaxonRankController.getExportable()
+
+# Play Messages API
+GET    /playmessage/:key                controllers.react.PlayMessageController.getByKey(key: String, request: Request)
+GET    /playmessage/all                 controllers.react.PlayMessageController.getAll(request: Request)
+GET    /playmessage/all/all-languages   controllers.react.PlayMessageController.getAllForAllLanguages()
+
+PATCH  /taxon/:id                       controllers.react.TaxonManagerController.patch(request: Request, id: Long)
+GET    /taxon/:id/stats                 controllers.react.TaxonController.getStatistics(id: Long)
+GET    /taxon/:id/traitCount            controllers.react.TaxonController.getTraitCount(id: Long)
+POST   /taxon/:id/move                  controllers.react.TaxonManagerController.moveUnderNewParent(request: Request, id: Long)
+GET    /taxon/:id/possibleParents       controllers.react.TaxonController.getPossibleParents(id: Long, prefix: String)
+POST   /taxon                           controllers.react.TaxonManagerController.addFromReact(request: Request)
+DELETE /taxon/:id                       controllers.react.TaxonManagerController.deleteTaxon(request: Request, id: Long)
+POST   /taxon/moveBeforeSibling         controllers.react.TaxonManagerController.moveBeforeSibling(request: Request)
+
+GET   /downloads                        controllers.react.DownloadsController.getAll(request: Request)
+
+GET   /measurement/datatypes                 controllers.react.MeasurementController.getDatatypes()
+GET   /measurement/aggregation-types         controllers.react.MeasurementController.getAggregationTypes()
+GET   /measurement/feature-groups            controllers.react.MeasurementController.getFeatureGroups()
+GET   /measurement/features-by-group/:id     controllers.react.MeasurementController.getFeaturesOfGroup(id: Integer)
+GET   /measurement/features/:id              controllers.react.MeasurementController.getFeature(id: Integer)
+GET   /measurement/enumerate-values/:id      controllers.react.MeasurementController.getEnumerateValues(id: Integer)
+GET   /measurement/visibility-status         controllers.react.MeasurementController.getVisibilityStatus()
+GET   /measurement/traits-of-feature/:id     controllers.react.MeasurementController.getTraitsOfFeature(request: Request, id: Integer)
+GET   /measurement/backups                   controllers.react.MeasurementController.getTraitExportSnapshots()
+GET   /measurement/trait-entry-type          controllers.react.MeasurementController.getTraitDetailsEntryType()
+
+GET   /bibliography/journals                 controllers.react.BibliographyController.getJournals()
+GET   /bibliography/searchReact              controllers.react.BibliographyController.searchReact(request: Request)
+
+GET   /query/reverseGeocoding/lon/:lon/lat/:lat controllers.react.ModelDataSourceController.getReverseGeocoding(lon: Double, lat: Double, bufferMeters: Integer ?= 100)
+
+POST  /atlas/record/moveCoordinates             controllers.react.atlas.RecordUpdateController.moveRecordCoords(request: Request)
+PATCH /atlas/record/:recordId                   controllers.react.atlas.RecordUpdateController.editField(request: Request, recordId: Long)
+GET /atlas/record/:recordId/unassignedHerbaria  controllers.react.atlas.HerbariumController.getNotAssigned(request: Request, recordId: Long)
+GET /atlas/record/:recordId/unassignedAuthors  controllers.react.atlas.CollectorController.getNotAssigned(request: Request, recordId: Long)

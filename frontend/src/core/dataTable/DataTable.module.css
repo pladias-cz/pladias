@@ -1,0 +1,13 @@
+/**
+ * Styles for DataTable component
+ */
+
+.table-nowrap {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.table-stable {
+    table-layout: fixed;
+}

@@ -1,0 +1,21 @@
+// Global atlas.records semafor variables and mixins
+$status-colors: (
+    accepted: #006600,
+    uncertain: #EF7C09,
+    declined: #cc0000,
+    unprocessed: #bebebe
+);
+
+@each $name, $color in $status-colors {
+    .text-#{$name} {
+        color: $color;
+    }
+
+    .bg-#{$name} {
+        background-color: $color;
+    }
+
+    .border-#{$name} {
+        border-color: $color;
+    }
+}

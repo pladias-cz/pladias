@@ -1,0 +1,48 @@
+#searchForm {
+    margin-top: 1rem;
+}
+
+#searchForm table {
+    width: 100%;
+}
+
+#searchForm td,
+#searchForm th {
+    padding: 0.35rem 0.5rem;
+    vertical-align: top;
+}
+
+#searchForm td:first-child {
+    width: 38%;
+    white-space: nowrap;
+}
+
+#searchForm td:nth-child(2) {
+    width: 62%;
+}
+
+#searchForm input[type="text"],
+#searchForm select {
+    max-width: 100%;
+}
+
+#searchForm .radio-inline {
+    margin-right: 1rem;
+}
+
+#sliderResultsCount input[type="range"] {
+    width: 100%;
+}
+
+#recordIdForm input {
+    margin-right: 0.5rem;
+}
+
+@media (max-width: 1199px) {
+    #searchForm td:first-child,
+    #searchForm td:nth-child(2) {
+        display: block;
+        width: 100%;
+        white-space: normal;
+    }
+}

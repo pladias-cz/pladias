@@ -1,0 +1,618 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<migration xmlns="http://ebean-orm.github.io/xml/ns/dbmigration">
+    <changeSet type="apply">
+        <createSchema name="atlas"/>
+        <createSchema name="atlas_nonvascular"/>
+        <createSchema name="biblio"/>
+        <createSchema name="geodata"/>
+        <createSchema name="measurements"/>
+        <createSchema name="public"/>
+        <createTable name="atlas.authors" identityType="sequence" identityIncrement="1" sequenceName="atlas.authors_id_seq" pkName="pk_authors">
+            <column name="id" type="integer" primaryKey="true" identity="true"/>
+            <column name="name" type="varchar"/>
+            <column name="surname" type="varchar"/>
+        </createTable>
+        <createTable name="atlas.batch" identityType="sequence" identityIncrement="1" sequenceName="atlas.batch_id_seq" pkName="pk_batch">
+            <column name="id" type="bigint" primaryKey="true" identity="true"/>
+            <column name="author_id" type="bigint" references="public.users.id" foreignKeyName="fk_batch_author_id" foreignKeyIndex="ix_batch_author_id"/>
+            <column name="committer_id" type="bigint" references="public.users.id" foreignKeyName="fk_batch_committer_id" foreignKeyIndex="ix_batch_committer_id"/>
+            <column name="imported" type="boolean" defaultValue="false" notnull="true"/>
+            <column name="deletion_code" type="varchar"/>
+            <column name="creation_timestamp" type="timestamp(255)" notnull="true"/>
+        </createTable>
+        <createTable name="biblio.bibliography" identityType="sequence" identityIncrement="1" sequenceName="biblio.bibliography_id_seq" pkName="pk_bibliography">
+            <column name="id" type="integer" primaryKey="true" identity="true"/>
+            <column name="authors" type="varchar"/>
+            <column name="year" type="integer"/>
+            <column name="title" type="varchar"/>
+            <column name="etc" type="varchar"/>
+            <column name="remarks" type="varchar"/>
+            <column name="original_id" type="bigint"/>
+            <column name="excerpted" type="boolean" defaultValue="false" notnull="true"/>
+            <column name="journal" type="varchar"/>
+            <column name="journal_id" type="varchar(255)"/>
+        </createTable>
+        <createTable name="measurements.data_boolean" pkName="pk_data_boolean">
+            <column name="trait_id" type="bigint(255)" notnull="true" primaryKey="true"/>
+            <column name="taxon_id" type="bigint(255)" notnull="true" primaryKey="true"/>
+            <column name="entry_type" type="integer(255)" notnull="true" primaryKey="true"/>
+            <column name="value" type="boolean" defaultValue="false" notnull="true"/>
+        </createTable>
+        <createTable name="measurements.data_taxon_taxon_real" pkName="pk_data_taxon_taxon_real">
+            <column name="trait_id" type="bigint(255)" notnull="true" primaryKey="true"/>
+            <column name="taxon_id" type="bigint(255)" notnull="true" primaryKey="true"/>
+            <column name="entry_type" type="integer(255)" notnull="true" primaryKey="true"/>
+            <column name="taxon_id2" type="bigint(255)" notnull="true" primaryKey="true"/>
+            <column name="value" type="double" notnull="true"/>
+        </createTable>
+        <createTable name="atlas.csv_map_details" identityType="sequence" identityIncrement="1" sequenceName="atlas.csv_map_details_id_seq" pkName="pk_csv_map_details">
+            <column name="id" type="integer" primaryKey="true" identity="true"/>
+            <column name="csvdata" type="blob(255)"/>
+            <column name="csvdata_map_render" type="blob(255)"/>
+            <column name="filename" type="varchar(255)"/>
+            <column name="taxon_id" type="bigint(255)" notnull="true"/>
+            <column name="creation_timestamp" type="timestamp(255)" notnull="true"/>
+        </createTable>
+        <createTable name="measurements.data_unmeasurable" pkName="pk_data_unmeasurable">
+            <column name="trait_id" type="bigint(255)" notnull="true" primaryKey="true"/>
+            <column name="taxon_id" type="bigint(255)" notnull="true" primaryKey="true"/>
+            <column name="entry_type" type="integer(255)" notnull="true" primaryKey="true"/>
+        </createTable>
+        <createTable name="measurements.datatypes" pkName="pk_datatypes">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="key" type="varchar(255)" notnull="true"/>
+            <column name="name_cz" type="varchar(255)" notnull="true"/>
+            <column name="tablename" type="varchar(255)" notnull="true"/>
+            <column name="description_cs" type="varchar(255)"/>
+            <column name="description_en" type="varchar(255)"/>
+            <column name="multiplicity" type="boolean"/>
+            <column name="dominant_value" type="boolean" defaultValue="false" notnull="true"/>
+            <column name="frequency" type="boolean"/>
+            <column name="unmeasurable" type="boolean" defaultValue="false" notnull="true"/>
+            <column name="value_comment" type="boolean" defaultValue="false" notnull="true"/>
+        </createTable>
+        <createTable name="measurements.data_occurrence_frequency" identityType="sequence" identityIncrement="1" sequenceName="measurements.data_occurrence_frequency_id_seq" pkName="pk_data_occurrence_frequency">
+            <column name="id" type="integer" primaryKey="true" identity="true"/>
+            <column name="trait_id" type="bigint(255)" notnull="true"/>
+            <column name="taxon_id" type="bigint(255)" notnull="true"/>
+            <column name="entry_type" type="integer(255)" notnull="true"/>
+            <column name="quadrant_count" type="integer(255)" notnull="true"/>
+            <column name="square_count" type="integer(255)" notnull="true"/>
+        </createTable>
+        <createTable name="measurements.m_occurrence_frequency" pkName="pk_m_occurrence_frequency">
+            <column name="taxon_id" type="bigint(255)" notnull="true"/>
+            <column name="quadrant" type="integer(255)"/>
+            <column name="square" type="integer(255)"/>
+        </createTable>
+        <createTable name="geodata.districts" pkName="pk_districts">
+            <column name="id" type="bigint" primaryKey="true"/>
+            <column name="lft" type="bigint(255)" notnull="true"/>
+            <column name="rgt" type="bigint(255)" notnull="true"/>
+            <column name="depth" type="bigint" references="geodata.districts_depth.id" foreignKeyName="fk_districts_depth" foreignKeyIndex="ix_districts_depth"/>
+            <column name="abbrev" type="varchar"/>
+            <column name="identificator" type="varchar(255)"/>
+            <column name="name" type="varchar"/>
+        </createTable>
+        <createTable name="geodata.districts_depth" pkName="pk_districts_depth">
+            <column name="id" type="bigint" primaryKey="true"/>
+            <column name="name" type="varchar"/>
+        </createTable>
+        <createTable name="public.downloads" identityType="external" pkName="pk_downloads">
+            <column name="id" type="varchar" primaryKey="true"/>
+            <column name="name_cz" type="varchar(255)"/>
+            <column name="name_eng" type="varchar(255)"/>
+            <column name="description_cz" type="varchar(255)"/>
+            <column name="description_eng" type="varchar(255)"/>
+            <column name="version" type="varchar"/>
+            <column name="manager" type="varchar"/>
+            <column name="filetype" type="varchar(255)"/>
+            <column name="filepath" type="varchar(255)"/>
+            <column name="succession" type="integer" notnull="true"/>
+        </createTable>
+        <createTable name="measurements.enumerates" pkName="pk_enumerates">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="name_cz" type="varchar(255)" notnull="true"/>
+            <column name="name_en" type="varchar(255)" notnull="true"/>
+            <column name="description_cs" type="varchar(255)"/>
+            <column name="description_en" type="varchar(255)"/>
+            <column name="administrator" type="bigint" references="public.users.id" foreignKeyName="fk_enumerates_administrator" foreignKeyIndex="ix_enumerates_administrator"/>
+        </createTable>
+        <createTable name="measurements.data_enum" pkName="pk_data_enum">
+            <column name="trait_id" type="bigint(255)" notnull="true" primaryKey="true"/>
+            <column name="taxon_id" type="bigint(255)" notnull="true" primaryKey="true"/>
+            <column name="entry_type" type="integer(255)" notnull="true" primaryKey="true"/>
+            <column name="value" type="integer(255)" notnull="true" primaryKey="true"/>
+            <column name="is_enabled" type="boolean" defaultValue="false" notnull="true" primaryKey="true"/>
+            <column name="dominant" type="boolean" defaultValue="false" notnull="true"/>
+            <column name="frequency" type="integer(255)"/>
+        </createTable>
+        <createTable name="measurements.enumerates_values" pkName="pk_enumerates_values">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="enumerate_id" type="integer(255)" notnull="true"/>
+            <column name="name_cz" type="varchar(255)"/>
+            <column name="name_en" type="varchar(255)"/>
+            <column name="description_cs" type="varchar(255)"/>
+            <column name="description_en" type="varchar(255)"/>
+            <column name="succession" type="integer(255)"/>
+            <column name="foreign_id" type="varchar(255)"/>
+        </createTable>
+        <createTable name="atlas.excel" identityType="sequence" identityIncrement="1" sequenceName="atlas.batch_id_seq" pkName="pk_excel">
+            <column name="id" type="bigint" primaryKey="true" identity="true"/>
+            <column name="processed_file" type="blob(255)"/>
+            <column name="batch_id" type="bigint" uniqueOneToOne="uq_excel_batch_id" references="atlas.batch.id" foreignKeyName="fk_excel_batch_id"/>
+            <column name="warnings" type="integer" notnull="true"/>
+            <column name="errors" type="integer" notnull="true"/>
+            <column name="infos" type="integer" notnull="true"/>
+            <column name="records" type="integer" notnull="true"/>
+            <column name="filename" type="varchar"/>
+            <column name="datetime" type="timestamp" notnull="true"/>
+        </createTable>
+        <createTable name="measurements.features" pkName="pk_features">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="name_cz" type="varchar(255)" notnull="true"/>
+            <column name="name_en" type="varchar(255)" notnull="true"/>
+            <column name="section_id" type="integer" references="measurements.sections.id" foreignKeyName="fk_features_section_id" foreignKeyIndex="ix_features_section_id"/>
+            <column name="description_cs" type="varchar(255)"/>
+            <column name="description_en" type="varchar(255)"/>
+            <column name="bibliography_cs" type="varchar(255)"/>
+            <column name="bibliography_en" type="varchar(255)"/>
+            <column name="explanation_cs" type="varchar(255)"/>
+            <column name="explanation_en" type="varchar(255)"/>
+            <column name="administrator" type="bigint" references="public.users.id" foreignKeyName="fk_features_administrator" foreignKeyIndex="ix_features_administrator"/>
+            <column name="datatype_id" type="integer" references="measurements.datatypes.id" foreignKeyName="fk_features_datatype_id" foreignKeyIndex="ix_features_datatype_id"/>
+            <column name="unit_id" type="integer" references="measurements.units.id" foreignKeyName="fk_features_unit_id" foreignKeyIndex="ix_features_unit_id"/>
+            <column name="maximum" type="double"/>
+            <column name="minimum" type="double"/>
+            <column name="external_id" type="varchar(255)"/>
+            <column name="syntaxon_restricted_rank_id" type="integer(255)"/>
+            <column name="succession" type="integer" notnull="true"/>
+            <column name="enumerate" type="integer" references="measurements.enumerates.id" foreignKeyName="fk_features_enumerate" foreignKeyIndex="ix_features_enumerate"/>
+            <column name="inheritance_id" type="integer" references="measurements.inheritances.id" foreignKeyName="fk_features_inheritance_id" foreignKeyIndex="ix_features_inheritance_id"/>
+        </createTable>
+        <createTable name="atlas.herbariums" identityType="sequence" identityIncrement="1" sequenceName="atlas.herbariums_id_seq" pkName="pk_herbariums">
+            <column name="id" type="integer" primaryKey="true" identity="true"/>
+            <column name="owner" type="bigint" references="public.users.id" foreignKeyName="fk_herbariums_owner" foreignKeyIndex="ix_herbariums_owner"/>
+            <column name="abbrev" type="varchar"/>
+            <column name="name" type="varchar"/>
+            <column name="abbrev_explanation" type="varchar(255)"/>
+            <column name="name_sort" type="varchar(255)"/>
+            <column name="validated" type="boolean" defaultValue="false" notnull="true"/>
+            <column name="import_id" type="varchar(255)"/>
+        </createTable>
+        <createTable name="measurements.inheritances" pkName="pk_inheritances">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="key" type="varchar(255)" notnull="true"/>
+            <column name="name" type="varchar(255)" notnull="true"/>
+            <column name="description" type="varchar(255)"/>
+        </createTable>
+        <createTable name="public.institutions" identityType="external" pkName="pk_institutions">
+            <column name="id" type="varchar" primaryKey="true"/>
+            <column name="name" type="varchar"/>
+            <column name="name_eng" type="varchar(255)"/>
+        </createTable>
+        <createTable name="public.institutions_users" pkName="pk_institutions_users">
+            <column name="institutions_id" type="varchar" notnull="true" primaryKey="true"/>
+            <column name="users_id" type="bigint" notnull="true" primaryKey="true"/>
+            <foreignKey name="fk_institutions_users_institutions" columnNames="institutions_id" refColumnNames="id" refTableName="public.institutions" indexName="ix_institutions_users_institutions"/>
+            <foreignKey name="fk_institutions_users_users" columnNames="users_id" refColumnNames="id" refTableName="public.users" indexName="ix_institutions_users_users"/>
+        </createTable>
+        <createTable name="measurements.data_integer" identityType="sequence" identityIncrement="1" sequenceName="measurements.data_integer_id_seq" pkName="pk_data_integer">
+            <column name="id" type="integer" primaryKey="true" identity="true"/>
+            <column name="trait_id" type="bigint(255)" notnull="true"/>
+            <column name="taxon_id" type="bigint(255)" notnull="true"/>
+            <column name="entry_type" type="integer(255)" notnull="true"/>
+            <column name="frequency" type="integer(255)"/>
+            <column name="value" type="integer(255)" notnull="true"/>
+        </createTable>
+        <createTable name="measurements.data_interval_avg" pkName="pk_data_interval_avg">
+            <column name="trait_id" type="bigint(255)" notnull="true" primaryKey="true"/>
+            <column name="taxon_id" type="bigint(255)" notnull="true" primaryKey="true"/>
+            <column name="entry_type" type="integer(255)" notnull="true" primaryKey="true"/>
+            <column name="minimum" type="double(255)"/>
+            <column name="maximum" type="double(255)"/>
+            <column name="subminimum" type="double(255)"/>
+            <column name="supramaximum" type="double(255)"/>
+            <column name="mean" type="double(255)"/>
+            <column name="sem" type="double(255)"/>
+        </createTable>
+        <createTable name="public.licenses" pkName="pk_licenses">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="key" type="varchar"/>
+            <column name="description" type="varchar"/>
+        </createTable>
+        <createTable name="public.maintenance" pkName="pk_maintenance">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="message" type="varchar(255)"/>
+            <column name="type" type="varchar(255)"/>
+        </createTable>
+        <createTable name="geodata.squares_full" pkName="pk_squares_full">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="code" type="varchar(255)"/>
+        </createTable>
+        <createTable name="measurements.data_month" pkName="pk_data_month">
+            <column name="trait_id" type="bigint(255)" notnull="true" primaryKey="true"/>
+            <column name="taxon_id" type="bigint(255)" notnull="true" primaryKey="true"/>
+            <column name="entry_type" type="integer(255)" notnull="true" primaryKey="true"/>
+            <column name="minimum" type="integer(255)" notnull="true" primaryKey="true"/>
+            <column name="maximum" type="integer(255)" notnull="true" primaryKey="true"/>
+            <column name="dominant" type="boolean" defaultValue="false" notnull="true"/>
+        </createTable>
+        <createTable name="atlas_nonvascular.records_extension" pkName="pk_records_extension">
+            <column name="record_id" type="bigint(255)" primaryKey="true"/>
+            <column name="substrate" type="varchar"/>
+            <column name="chemical" type="varchar"/>
+            <column name="locality_extra" type="varchar(255)"/>
+            <column name="substrate_1_id" type="integer" references="atlas_nonvascular.substrate_1.id" foreignKeyName="fk_records_extension_substrate_1_id" foreignKeyIndex="ix_records_extension_substrate_1_id"/>
+            <column name="substrate_2_id" type="integer" references="atlas_nonvascular.substrate_2.id" foreignKeyName="fk_records_extension_substrate_2_id" foreignKeyIndex="ix_records_extension_substrate_2_id"/>
+        </createTable>
+        <createTable name="atlas.pdf_map" pkName="pk_pdf_map">
+            <column name="taxon_id" type="bigint(255)" notnull="true" primaryKey="true"/>
+            <column name="filetype" type="integer(255)" notnull="true" primaryKey="true"/>
+            <column name="data" type="blob(255)"/>
+            <column name="filename" type="varchar"/>
+            <column name="is_overridden" type="boolean" defaultValue="false" notnull="true"/>
+            <column name="creation_timestamp" type="timestamp(255)" notnull="true"/>
+        </createTable>
+        <createTable name="measurements.data_percentage" pkName="pk_data_percentage">
+            <column name="trait_id" type="bigint(255)" notnull="true" primaryKey="true"/>
+            <column name="taxon_id" type="bigint(255)" notnull="true" primaryKey="true"/>
+            <column name="entry_type" type="integer(255)" notnull="true" primaryKey="true"/>
+            <column name="value" type="double" notnull="true"/>
+        </createTable>
+        <createTable name="geodata.phytochorions" pkName="pk_phytochorions">
+            <column name="rowid" type="integer" primaryKey="true"/>
+            <column name="phyto_id" type="varchar(255)"/>
+            <column name="name" type="varchar"/>
+            <column name="district" type="varchar"/>
+        </createTable>
+        <createTable name="geodata.phytochorions_outside_cz" pkName="pk_phytochorions_outside_cz">
+            <column name="rowid" type="integer" primaryKey="true"/>
+            <column name="phyto_id" type="varchar(255)"/>
+        </createTable>
+        <createTable name="public.play_messages" identityType="sequence" identityIncrement="1" sequenceName="public.play_messages_id_seq" pkName="pk_play_messages">
+            <column name="id" type="bigint" primaryKey="true" identity="true"/>
+            <column name="key" type="varchar(255)" notnull="true"/>
+            <column name="language" type="language_code" notnull="true" checkConstraint="check ( language in ('en','cs','sk','pl'))" checkConstraintName="ck_play_messages_language"/>
+            <column name="value" type="varchar(255)" notnull="true"/>
+        </createTable>
+        <createTable name="atlas.projects" pkName="pk_projects">
+            <column name="id" type="bigint" primaryKey="true"/>
+            <column name="name" type="varchar"/>
+            <column name="abbrev" type="varchar"/>
+            <column name="credibility" type="integer" notnull="true"/>
+            <column name="name_eng" type="varchar(255)"/>
+            <column name="institution_id" type="varchar" references="public.institutions.id" foreignKeyName="fk_projects_institution_id" foreignKeyIndex="ix_projects_institution_id"/>
+        </createTable>
+        <createTable name="public.publications" pkName="pk_publications">
+            <column name="id" type="bigint" primaryKey="true"/>
+            <column name="abbrev" type="varchar"/>
+            <column name="title" type="varchar"/>
+            <column name="authors" type="varchar"/>
+            <column name="publisher" type="varchar"/>
+            <column name="year" type="integer"/>
+            <column name="autocomplete" type="boolean"/>
+        </createTable>
+        <createTable name="atlas.taxon_mapsettings_publication" pkName="pk_taxon_mapsettings_publication">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="description" type="varchar"/>
+        </createTable>
+        <createTable name="geodata.quadrants_full" pkName="pk_quadrants_full">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="letter" type="varchar(255)"/>
+            <column name="code" type="varchar(255)"/>
+            <column name="square_id" type="integer" references="geodata.squares_full.id" foreignKeyName="fk_quadrants_full_square_id" foreignKeyIndex="ix_quadrants_full_square_id"/>
+        </createTable>
+        <createTable name="measurements.data_real" pkName="pk_data_real">
+            <column name="trait_id" type="bigint(255)" notnull="true" primaryKey="true"/>
+            <column name="taxon_id" type="bigint(255)" notnull="true" primaryKey="true"/>
+            <column name="entry_type" type="integer(255)" notnull="true" primaryKey="true"/>
+            <column name="value" type="double(255)" notnull="true"/>
+        </createTable>
+        <createTable name="measurements.data_real_multi" identityType="sequence" identityIncrement="1" sequenceName="measurements.data_real_multi_id_seq" pkName="pk_data_real_multi">
+            <column name="id" type="integer" primaryKey="true" identity="true"/>
+            <column name="trait_id" type="bigint(255)" notnull="true"/>
+            <column name="taxon_id" type="bigint(255)" notnull="true"/>
+            <column name="entry_type" type="integer(255)" notnull="true"/>
+            <column name="value" type="double(255)" notnull="true"/>
+        </createTable>
+        <createTable name="atlas.records" identityType="sequence" identityIncrement="1" sequenceName="atlas.records_id_seq" pkName="pk_records">
+            <column name="id" type="bigint" primaryKey="true" identity="true"/>
+            <column name="batch_id" type="bigint" references="atlas.batch.id" foreignKeyName="fk_records_batch_id" foreignKeyIndex="ix_records_batch_id"/>
+            <column name="taxon_id" type="bigint(255)" references="public.taxons.id" foreignKeyName="fk_records_taxon_id" foreignKeyIndex="ix_records_taxon_id"/>
+            <column name="original_name" type="varchar"/>
+            <column name="locality" type="varchar"/>
+            <column name="nearest_town_id" type="bigint" references="geodata.districts.id" foreignKeyName="fk_records_nearest_town_id" foreignKeyIndex="ix_records_nearest_town_id"/>
+            <column name="nearest_town_text" type="varchar(255)"/>
+            <column name="district_id" type="bigint" references="geodata.districts.id" foreignKeyName="fk_records_district_id" foreignKeyIndex="ix_records_district_id"/>
+            <column name="longitude" type="double"/>
+            <column name="latitude" type="double"/>
+            <column name="altitude_min" type="integer(255)"/>
+            <column name="altitude_max" type="integer(255)"/>
+            <column name="altitude_approx" type="boolean" defaultValue="false" notnull="true"/>
+            <column name="gps_coords_source" type="varchar(255)"/>
+            <column name="gps_coords_precision" type="integer(255)"/>
+            <column name="source" type="varchar"/>
+            <column name="phytochorion_id" type="integer" references="geodata.phytochorions.rowid" foreignKeyName="fk_records_phytochorion_id" foreignKeyIndex="ix_records_phytochorion_id"/>
+            <column name="phytochorion_computed" type="boolean" defaultValue="false" notnull="true"/>
+            <column name="locked" type="boolean" defaultValue="false" notnull="true"/>
+            <column name="quadrant_computed" type="boolean" defaultValue="false" notnull="true"/>
+            <column name="validation_status" type="integer(255)" notnull="true"/>
+            <column name="biblio_id" type="integer" references="biblio.bibliography.id" foreignKeyName="fk_records_biblio_id" foreignKeyIndex="ix_records_biblio_id"/>
+            <column name="comment" type="varchar"/>
+            <column name="project_id" type="bigint" uniqueOneToOne="uq_records_project_id" references="atlas.projects.id" foreignKeyName="fk_records_project_id"/>
+            <column name="originality_id" type="integer" references="atlas.record_originality_status.id" foreignKeyName="fk_records_originality_id" foreignKeyIndex="ix_records_originality_id"/>
+            <column name="herbarium_quality" type="boolean" defaultValue="false" notnull="true"/>
+            <column name="original_id" type="varchar(255)"/>
+            <column name="remark_excerption" type="varchar(255)"/>
+            <column name="remark_other" type="varchar(255)"/>
+            <column name="remark_doubt" type="varchar(255)"/>
+            <column name="environment" type="varchar(255)"/>
+            <column name="detrev" type="varchar"/>
+            <column name="include_in_map" type="boolean" defaultValue="false" notnull="true"/>
+            <column name="datum" type="timestamp(255)"/>
+            <column name="datum_precision" type="varchar(255)"/>
+            <column name="license_id" type="integer" references="public.licenses.id" foreignKeyName="fk_records_license_id" foreignKeyIndex="ix_records_license_id"/>
+            <column name="edit_timestamp" type="timestamp(255)" notnull="true"/>
+        </createTable>
+        <createTable name="atlas.records_herbariums" pkName="pk_records_herbariums">
+            <column name="records_id" type="bigint" notnull="true" primaryKey="true"/>
+            <column name="herbariums_id" type="integer" notnull="true" primaryKey="true"/>
+            <foreignKey name="fk_records_herbariums_records" columnNames="records_id" refColumnNames="id" refTableName="atlas.records" indexName="ix_records_herbariums_records"/>
+            <foreignKey name="fk_records_herbariums_herbariums" columnNames="herbariums_id" refColumnNames="id" refTableName="atlas.herbariums" indexName="ix_records_herbariums_herbariums"/>
+        </createTable>
+        <createTable name="atlas.records_squares" pkName="pk_records_squares">
+            <column name="records_id" type="bigint" notnull="true" primaryKey="true"/>
+            <column name="squares_id" type="integer" notnull="true" primaryKey="true"/>
+            <foreignKey name="fk_records_squares_records" columnNames="records_id" refColumnNames="id" refTableName="atlas.records" indexName="ix_records_squares_records"/>
+            <foreignKey name="fk_records_squares_squares_full" columnNames="squares_id" refColumnNames="id" refTableName="geodata.squares_full" indexName="ix_records_squares_squares_full"/>
+        </createTable>
+        <createTable name="atlas.records_quadrants" pkName="pk_records_quadrants">
+            <column name="records_id" type="bigint" notnull="true" primaryKey="true"/>
+            <column name="quadrants_id" type="integer" notnull="true" primaryKey="true"/>
+            <foreignKey name="fk_records_quadrants_records" columnNames="records_id" refColumnNames="id" refTableName="atlas.records" indexName="ix_records_quadrants_records"/>
+            <foreignKey name="fk_records_quadrants_quadrants_full" columnNames="quadrants_id" refColumnNames="id" refTableName="geodata.quadrants_full" indexName="ix_records_quadrants_quadrants_full"/>
+        </createTable>
+        <createTable name="atlas.records_authors" pkName="pk_records_authors">
+            <column name="records_id" type="bigint(255)" primaryKey="true" references="atlas.records.id" foreignKeyName="fk_records_authors_records_id" foreignKeyIndex="ix_records_authors_records_id"/>
+            <column name="authors_id" type="integer(255)" primaryKey="true" references="atlas.authors.id" foreignKeyName="fk_records_authors_authors_id" foreignKeyIndex="ix_records_authors_authors_id"/>
+            <column name="succession" type="integer(255)"/>
+        </createTable>
+        <createTable name="atlas.comments" identityType="sequence" identityIncrement="1" sequenceName="atlas.comments_id_seq" pkName="pk_comments">
+            <column name="id" type="bigint" primaryKey="true" identity="true"/>
+            <column name="author_id" type="bigint" references="public.users.id" foreignKeyName="fk_comments_author_id" foreignKeyIndex="ix_comments_author_id"/>
+            <column name="record_id" type="bigint" references="atlas.records.id" foreignKeyName="fk_comments_record_id" foreignKeyIndex="ix_comments_record_id"/>
+            <column name="imported" type="boolean" defaultValue="false" notnull="true"/>
+            <column name="deleted" type="boolean" defaultValue="false" notnull="true"/>
+            <column name="message" type="varchar"/>
+            <column name="resolved" type="boolean" defaultValue="false" notnull="true"/>
+            <column name="solver_id" type="bigint" references="public.users.id" foreignKeyName="fk_comments_solver_id" foreignKeyIndex="ix_comments_solver_id"/>
+            <column name="resolved_timestamp" type="timestamp(255)"/>
+            <column name="creation_timestamp" type="timestamp(255)" notnull="true"/>
+            <column name="edit_timestamp" type="timestamp(255)" notnull="true"/>
+        </createTable>
+        <createTable name="atlas.records_history" identityType="sequence" identityIncrement="1" sequenceName="atlas.records_history_id_seq" pkName="pk_records_history">
+            <column name="id" type="bigint" primaryKey="true" identity="true"/>
+            <column name="record_id" type="bigint(255)" notnull="true"/>
+            <column name="user_id" type="bigint" references="public.users.id" foreignKeyName="fk_records_history_user_id" foreignKeyIndex="ix_records_history_user_id"/>
+            <column name="change_type" type="varchar(255)" notnull="true" checkConstraint="check ( change_type in ('location','description','flag','comment','taxon'))" checkConstraintName="ck_records_history_change_type"/>
+            <column name="field_desc" type="varchar(255)" notnull="true"/>
+            <column name="old_value" type="varchar(255)" notnull="true"/>
+            <column name="new_value" type="varchar(255)" notnull="true"/>
+            <column name="comment_id" type="bigint(255)"/>
+            <column name="creation_timestamp" type="timestamp(255)" notnull="true"/>
+        </createTable>
+        <createTable name="atlas.record_originality_status" pkName="pk_record_originality_status">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="name_cz" type="varchar(255)"/>
+            <column name="icon" type="varchar"/>
+            <column name="priority" type="integer" notnull="true"/>
+        </createTable>
+        <createTable name="atlas.record_validation_status" pkName="pk_record_validation_status">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="description" type="varchar"/>
+            <column name="color" type="varchar"/>
+            <column name="priority" type="integer" notnull="true"/>
+        </createTable>
+        <createTable name="atlas.taxon_mapsettings_revision" pkName="pk_taxon_mapsettings_revision">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="description" type="varchar"/>
+        </createTable>
+        <createTable name="measurements.sections" pkName="pk_sections">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="name_cz" type="varchar(255)" notnull="true"/>
+            <column name="name_en" type="varchar(255)" notnull="true"/>
+            <column name="lft" type="integer(255)" notnull="true"/>
+            <column name="rgt" type="integer(255)" notnull="true"/>
+            <column name="description_cs" type="varchar(255)"/>
+            <column name="description_en" type="varchar(255)"/>
+            <column name="depth" type="integer" notnull="true"/>
+        </createTable>
+        <createTable name="atlas_nonvascular.substrate_1" pkName="pk_substrate_1">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="key_cz" type="varchar(255)"/>
+        </createTable>
+        <createTable name="atlas_nonvascular.substrate_2" pkName="pk_substrate_2">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="substrate_1_id" type="integer(255)"/>
+            <column name="key_cz" type="varchar(255)"/>
+        </createTable>
+        <createTable name="public.syntaxons" pkName="pk_syntaxons">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="code" type="varchar(255)"/>
+            <column name="lft" type="integer(255)" notnull="true"/>
+            <column name="rgt" type="integer(255)" notnull="true"/>
+            <column name="depth" type="integer" notnull="true"/>
+            <column name="rank" type="integer" notnull="true"/>
+            <column name="name_cz" type="varchar(255)"/>
+            <column name="name_lat" type="varchar(255)"/>
+            <column name="author" type="varchar"/>
+        </createTable>
+        <createTable name="measurements.data_enum_syntaxons" pkName="pk_data_enum_syntaxons">
+            <column name="trait_id" type="bigint(255)" notnull="true" primaryKey="true"/>
+            <column name="taxon_id" type="bigint(255)" notnull="true" primaryKey="true"/>
+            <column name="entry_type" type="integer(255)" notnull="true" primaryKey="true"/>
+            <column name="syntaxon_id" type="integer(255)" notnull="true" primaryKey="true"/>
+            <column name="dominant" type="boolean"/>
+            <column name="frequency" type="integer(255)"/>
+            <column name="value" type="boolean" defaultValue="false" notnull="true"/>
+        </createTable>
+        <createTable name="public.taxons" pkName="pk_taxons">
+            <column name="id" type="bigint(255)" primaryKey="true"/>
+            <column name="id_dani" type="bigint(255)"/>
+            <column name="lft" type="integer(255)" notnull="true"/>
+            <column name="rgt" type="integer(255)" notnull="true"/>
+            <column name="depth" type="integer" notnull="true"/>
+            <column name="parents" type="varchar(255)"/>
+            <column name="name_html" type="varchar(255)"/>
+            <column name="rank" type="integer" references="public.taxon_ranks.id" foreignKeyName="fk_taxons_rank" foreignKeyIndex="ix_taxons_rank"/>
+            <column name="name_cz" type="varchar(255)"/>
+            <column name="name_lat" type="varchar(255)"/>
+            <column name="author" type="varchar"/>
+            <column name="suppressed" type="boolean" defaultValue="false" notnull="true"/>
+            <column name="comment" type="varchar"/>
+        </createTable>
+        <createTable name="atlas.taxons_users" pkName="pk_taxons_users">
+            <column name="taxons_id" type="bigint(255)" notnull="true" primaryKey="true"/>
+            <column name="users_id" type="bigint" notnull="true" primaryKey="true"/>
+            <foreignKey name="fk_taxons_users_taxons" columnNames="taxons_id" refColumnNames="id" refTableName="public.taxons" indexName="ix_taxons_users_taxons"/>
+            <foreignKey name="fk_taxons_users_users" columnNames="users_id" refColumnNames="id" refTableName="public.users" indexName="ix_taxons_users_users"/>
+        </createTable>
+        <createTable name="public.taxons_history" identityType="sequence" identityIncrement="1" sequenceName="public.taxons_history_id_seq" pkName="pk_taxons_history">
+            <column name="id" type="bigint" primaryKey="true" identity="true"/>
+            <column name="taxon_id" type="bigint(255)" references="public.taxons.id" foreignKeyName="fk_taxons_history_taxon_id" foreignKeyIndex="ix_taxons_history_taxon_id"/>
+            <column name="old_parent" type="bigint(255)"/>
+            <column name="new_parent" type="bigint(255)"/>
+            <column name="operation_type" type="varchar(255)" notnull="true"/>
+            <column name="create_timestamp" type="timestamp(255)" notnull="true"/>
+        </createTable>
+        <createTable name="atlas.taxon_mapsettings" pkName="pk_taxon_mapsettings">
+            <column name="taxon_id" type="bigint(255)" primaryKey="true"/>
+            <column name="map_type" type="integer(255)" notnull="true"/>
+            <column name="revision_status" type="integer" uniqueOneToOne="uq_taxon_mapsettings_revision_status" references="atlas.taxon_mapsettings_revision.id" foreignKeyName="fk_taxon_mapsettings_revision_status"/>
+            <column name="publication_status" type="integer" uniqueOneToOne="uq_taxon_mapsettings_publication_status" references="atlas.taxon_mapsettings_publication.id" foreignKeyName="fk_taxon_mapsettings_publication_status"/>
+            <column name="revisors_comment" type="varchar(255)"/>
+            <column name="revisors_print_map_comment" type="varchar(255)"/>
+            <column name="mapadmin_comment" type="varchar(255)"/>
+            <column name="is_mapped" type="boolean" defaultValue="false" notnull="true"/>
+            <column name="common_threshold" type="integer(255)" notnull="true"/>
+            <column name="is_protected" type="boolean" defaultValue="false" notnull="true"/>
+            <column name="edit_count" type="integer(255)" notnull="true"/>
+            <column name="locked" type="boolean" defaultValue="false" notnull="true"/>
+            <column name="superior_taxon" type="bigint(255)" references="atlas.taxon_mapsettings.taxon_id" foreignKeyName="fk_taxon_mapsettings_superior_taxon" foreignKeyIndex="ix_taxon_mapsettings_superior_taxon"/>
+            <column name="preslia" type="varchar(255)"/>
+            <column name="edit_timestamp" type="timestamp(255)" notnull="true"/>
+        </createTable>
+        <createTable name="public.taxon_ranks" pkName="pk_taxon_ranks">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="name_eng" type="varchar(255)"/>
+            <column name="name_cz" type="varchar(255)"/>
+        </createTable>
+        <createTable name="public.taxons_synonyms" pkName="pk_taxons_synonyms">
+            <column name="id" type="bigint(255)" primaryKey="true"/>
+            <column name="taxon_id" type="bigint(255)" references="public.taxons.id" foreignKeyName="fk_taxons_synonyms_taxon_id" foreignKeyIndex="ix_taxons_synonyms_taxon_id"/>
+            <column name="name_lat" type="varchar(255)"/>
+            <column name="name_html" type="varchar(255)"/>
+            <column name="suffix" type="varchar"/>
+            <column name="autocomplete" type="boolean" defaultValue="false" notnull="true"/>
+            <column name="publication_id" type="bigint" references="public.publications.id" foreignKeyName="fk_taxons_synonyms_publication_id" foreignKeyIndex="ix_taxons_synonyms_publication_id"/>
+        </createTable>
+        <createTable name="public.temporary_files" identityType="sequence" identityIncrement="1" sequenceName="public.temporary_files_id_seq" pkName="pk_temporary_files">
+            <column name="id" type="integer" primaryKey="true" identity="true"/>
+            <column name="data" type="blob(255)"/>
+            <column name="filename" type="varchar(255)"/>
+            <column name="extension" type="varchar(255)"/>
+            <column name="datetime" type="timestamp" notnull="true"/>
+        </createTable>
+        <createTable name="measurements.traits" identityType="sequence" identityIncrement="1" sequenceName="measurements.traits_id_seq" pkName="pk_traits">
+            <column name="id" type="integer" primaryKey="true" identity="true"/>
+            <column name="source" type="varchar(255)" notnull="true"/>
+            <column name="owner" type="bigint" references="public.users.id" foreignKeyName="fk_traits_owner" foreignKeyIndex="ix_traits_owner"/>
+            <column name="feature_id" type="integer" references="measurements.features.id" foreignKeyName="fk_traits_feature_id" foreignKeyIndex="ix_traits_feature_id"/>
+            <column name="description_cs" type="varchar(255)"/>
+            <column name="description_en" type="varchar(255)"/>
+            <column name="attachment" type="blob(255)"/>
+            <column name="attachment_type" type="varchar(255)"/>
+            <column name="deleted" type="boolean" defaultValue="false" notnull="true"/>
+            <column name="default_values" type="boolean" defaultValue="false" notnull="true"/>
+            <column name="visibility_status_id" type="integer" references="measurements.trait_visibility_status.id" foreignKeyName="fk_traits_visibility_status_id" foreignKeyIndex="ix_traits_visibility_status_id"/>
+            <column name="total_taxon_count" type="integer(255)" notnull="true"/>
+            <column name="creation_timestamp" type="timestamp(255)" notnull="true"/>
+        </createTable>
+        <createTable name="measurements.trait_export_snapshots" identityType="sequence" identityIncrement="1" sequenceName="measurements.trait_export_snapshots_id_seq" pkName="pk_trait_export_snapshots">
+            <column name="id" type="integer" primaryKey="true" identity="true"/>
+            <column name="data" type="blob"/>
+            <column name="filename" type="varchar"/>
+            <column name="description" type="varchar"/>
+            <column name="datetime" type="timestamp" notnull="true"/>
+        </createTable>
+        <createTable name="measurements.units" pkName="pk_units">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="name_cz" type="varchar(255)" notnull="true"/>
+            <column name="name_en" type="varchar(255)" notnull="true"/>
+            <column name="abbrev" type="varchar"/>
+            <column name="description_cs" type="varchar(255)"/>
+            <column name="description_en" type="varchar(255)"/>
+        </createTable>
+        <createTable name="public.users" identityType="sequence" identityIncrement="1" sequenceName="public.users_id_seq" pkName="pk_users">
+            <column name="id" type="bigint" primaryKey="true" identity="true"/>
+            <column name="email" type="varchar"/>
+            <column name="password" type="varchar(255)"/>
+            <column name="name" type="varchar"/>
+            <column name="surname" type="varchar"/>
+            <column name="description" type="varchar"/>
+            <column name="mapadmin" type="boolean" defaultValue="false" notnull="true"/>
+            <column name="traitadmin" type="boolean" defaultValue="false" notnull="true"/>
+            <column name="biblioadmin" type="boolean" defaultValue="false" notnull="true"/>
+            <column name="sysadmin" type="boolean" defaultValue="false" notnull="true"/>
+            <column name="taxonadmin" type="boolean" defaultValue="false" notnull="true"/>
+            <column name="analyst" type="boolean" defaultValue="false" notnull="true"/>
+            <column name="deleted" type="boolean" defaultValue="false" notnull="true"/>
+            <column name="last_taxon_id" type="bigint(255)" references="public.taxons.id" foreignKeyName="fk_users_last_taxon_id" foreignKeyIndex="ix_users_last_taxon_id"/>
+        </createTable>
+        <createTable name="atlas.projects_users" pkName="pk_projects_users">
+            <column name="user_id" type="bigint" notnull="true" primaryKey="true"/>
+            <column name="project_id" type="bigint" notnull="true" primaryKey="true"/>
+            <foreignKey name="fk_projects_users_users" columnNames="user_id" refColumnNames="id" refTableName="public.users" indexName="ix_projects_users_users"/>
+            <foreignKey name="fk_projects_users_projects" columnNames="project_id" refColumnNames="id" refTableName="atlas.projects" indexName="ix_projects_users_projects"/>
+        </createTable>
+        <createTable name="atlas.users_comments" pkName="pk_users_comments">
+            <column name="users_id" type="bigint" notnull="true" primaryKey="true"/>
+            <column name="comments_id" type="bigint" notnull="true" primaryKey="true"/>
+            <foreignKey name="fk_users_comments_users" columnNames="users_id" refColumnNames="id" refTableName="public.users" indexName="ix_users_comments_users"/>
+            <foreignKey name="fk_users_comments_comments" columnNames="comments_id" refColumnNames="id" refTableName="atlas.comments" indexName="ix_users_comments_comments"/>
+        </createTable>
+        <createTable name="public.user_activity_log" identityType="sequence" identityIncrement="1" sequenceName="public.users_activity_log_id_seq" pkName="pk_user_activity_log">
+            <column name="id" type="integer" primaryKey="true" identity="true"/>
+            <column name="user_id" type="bigint" references="public.users.id" foreignKeyName="fk_user_activity_log_user_id" foreignKeyIndex="ix_user_activity_log_user_id"/>
+            <column name="activity_id" type="integer" notnull="true"/>
+            <column name="old_value" type="varchar(255)"/>
+            <column name="new_value" type="varchar(255)"/>
+            <column name="description" type="varchar"/>
+            <column name="create_timestamp" type="timestamp(255)" notnull="true"/>
+        </createTable>
+        <createTable name="user_settings" pkName="pk_user_settings">
+            <column name="user_id" type="bigint(255)" primaryKey="true"/>
+            <column name="key" type="varchar(255)" primaryKey="true"/>
+            <column name="value" type="varchar"/>
+        </createTable>
+        <createTable name="measurements.data_comment" pkName="pk_data_comment">
+            <column name="trait_id" type="bigint(255)" notnull="true" primaryKey="true"/>
+            <column name="taxon_id" type="bigint(255)" notnull="true" primaryKey="true"/>
+            <column name="entry_type" type="integer(255)" notnull="true" primaryKey="true"/>
+            <column name="comment" type="varchar(255)"/>
+        </createTable>
+        <createTable name="measurements.trait_visibility_status" pkName="pk_trait_visibility_status">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="name_cz" type="varchar(255)"/>
+        </createTable>
+        <createTable name="measurements.data_year" identityType="sequence" identityIncrement="1" sequenceName="measurements.data_year_id_seq" pkName="pk_data_year">
+            <column name="id" type="integer" primaryKey="true" identity="true"/>
+            <column name="trait_id" type="bigint(255)" notnull="true"/>
+            <column name="taxon_id" type="bigint(255)" notnull="true"/>
+            <column name="entry_type" type="integer(255)" notnull="true"/>
+            <column name="value" type="integer(255)" notnull="true"/>
+            <column name="before" type="boolean" defaultValue="false" notnull="true"/>
+            <column name="after" type="boolean" defaultValue="false" notnull="true"/>
+        </createTable>
+    </changeSet>
+</migration>

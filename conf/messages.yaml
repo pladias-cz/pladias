@@ -1,0 +1,526 @@
+DateSpecifier:
+    InvalidDate: Neplatné datum.
+
+Authorized:
+    notAuthorized: Nemáte oprávnění k této akci.
+
+ExcelTableLoadService:
+    invalidLatitude: Neplatná zeměpisná šířka.
+    invalidAltitude: Neplatná nadmořská výška.
+    invalidLongitude: Neplatná zeměpisná délka.
+    invalidTaxon: Neplatný taxon.
+    invalidDate: Neplatné datum.
+    invalidDistrict: Neplatný okres.
+    invalidSqureId: Neplatné číslo mapového čtverce.
+    invalidQuadrantId: Neplatný identifikátor kvadrantu.
+    unknownAuthor: Uvedený nálezce není v databázi, zkontrolujte zadaný text.
+    duplicateAuthor: Duplicitní autor "{0}".
+    invalidLicense: Neplatná licence.
+    gpsCoordsOutOfBounds: Souřadnice jsou pravděpodobně mimo republiku.
+    invalidGpsPrecision: Neplatná hodnota přesnosti GPS souřadnic.
+    unknownHerbarium: Herbář "{0}" není registrován v databázi. Zkontrolujte zadaný text a případně kontaktujte Z. Kaplana kaplan@ibot.cas.cz.
+    nearestTownInIncorrectDistrict: Zadaná obec neleží v okrese "{0}".
+
+ExcelTableValidationService:
+    missingCoords: Záznam musí obsahovat GPS souřadnice.
+    altitudeOutOfRange: Nadmořská výška je mimo očekávaný rozsah.
+    gpsCoordsOutOfBounds: Souřadnice jsou pravděpodobně mimo republiku.
+    districtComputedFromGpsCoords: Okres "{0}" byl dopočítán ze souřadnic.
+    invalidDistrict: Neplatný okres.
+    invalidNearestCompoundTown: Neplatný název složeného nejbližšího města.
+    unableToValidateNearestTown: Není možné zvalidovat obec bez okresu či souřadnic.
+    districtDoesNotMatchGpsCoords: Okres dopočítaný ze souřadnic - "{0}".
+    nearestTownComputedFromGpsCoords: Sídlo "{0}" bylo dopočítáno ze souřadnic.
+    correctPhytochorionBasedOnLocationIs: GPS lokaci odpovídá fytochorion "{0}".
+    phytochorionLocationInAcceptableBuffer: Fytochorion neodpovídá GPS lokaci (chyba je v povoleném pásmu {0}m). GPS odpovídá "{1}".
+    mapSquareDoesNotMatchWithGpsCoords: Zadané souřadnice odpovídají kvadrantu "{0}".
+    mapSquareDoesNotMatchGpsCoordsBuffer: Číslo mapového čtverce / kvadrant neodpovídá GPS lokaci (chyba je v akceptovatelném limitu 200m).
+    duplicateEntryAlreadyExists: Záznam již v databázi existuje pod ID "{0}".
+    possibleDuplicateEntryAlreadyExists: Podobný záznam již v databázi existuje pod ID "{0}".
+    incorrectNearestTown: Souřadnice odpovídají obci "{0}", KÚ "{1}", ZSJ "{2}", okres "{3}".
+    incorrectNearestTownWithoutBasicMunicipalUnit: Souřadnice odpovídají obci "{0}", KÚ "{1}", okres "{2}".
+    mapSquareMustBePresentInAbsenceOfGpsCoords: Při absenci souřadnic je vyžadován mapový čtverec / kvadrant.
+    phytochorionMustBePresentInAbsenceOfGpsCoords: Při absenci souřadnic je vyžadován fytochorion. 
+    quadrantComputedFromGpsCoords: Kvadrant "{0}" byl dopočítán ze souřadnic.
+    phytochorionComputedFromGpsCoords: Fytochorion "{0}" byl dopočítán ze souřadnic.
+    noMatchingPhytochorionFoundForGpsCoords: Souřadnice neodpovídají žádnému fytochorionu.
+    noMatchingQuadrantFoundForGpsCoords: Souřadnice neodpovídají žádnému kvadrantu.
+    herbariumRequiresFinder: Pro herbář musí být uveden nálezce.
+    provideHerbariumFinderIfAvailable: Pokud je znám sběratel herbářového dokladu, vyplňte pole nálezce.
+    nearestTownNameRequiredWhenMissingCoords: V případě chybějících souřadnic je vyžadována nejbližší obec.
+    taxonNotImportable: Tento taxon není možné importovat.
+    gpsCoordsMissing: Chybí GPS souřadnice.
+
+Application:
+    invalidUserNameOrPassword: Špatné uživatelské jméno nebo heslo. 
+    userIsDeleted: Uživatelský účet není aktivní.
+    inactivityLogout: Z důvodu delší nečinnosti jste byli automaticky odhlášeni.
+    userHasLoggedOut: Uživatel byl odhlášen.
+    
+Atlas:
+    taxonNotFound: Neznámý taxon "{0}".
+    invalidTaxon: Neznámý taxon.
+    taxonCannotBeValidated: Taxon "{0}" není validovatelný.
+    noRightsForRecordValidation: Uživatel nemá práva pro validaci záznamu.
+    unableToUpdateRecord: Nebylo možné aktualizovat záznam.
+    recordNotMarkedAsReliable: Záznam není označen jako důvěryhodný.
+    invalidTargetValidationStatus: Neplatný validační stav.
+    declinedOrUnprocessedRecordCannotBeIncludedInMap: Odmítnutý či neověřený záznam nemůže jít do mapy.
+    undefined: Nedefinováno.
+    comment:
+        unresolved:
+            notExist: Nemáte žádný nový komentář.
+            exist: V systému máte <a href="{0}" class="alert-link">nové komentáře</a>.
+
+AuthorsController:
+    surname: Příjmení
+    name: Jméno
+    authorsDetailsFailed: Nepodařilo se vyexportovat autory
+
+UploadExcel:
+    DuplicateEntry: Duplicitní záznam
+    FileNotUploaded: Soubor nebyl nahrán na server.
+    FormNotComplete: Formulář nebyl správně vyplněn.
+    NoProjectProvidedVerifyYouHaveBeenGrantedProjectAccess: Pravděpodobně nemáte přidělen přístup k žádnému z Pladias projektů. Kontaktujte administrátory systému.
+    userNotAllowedToImportIntoSelectedProject: Nemáte práva importovat do vybraného projektu.
+    validatedCsvFileEmailContentsSuccess: Soubor {0} byl zvalidován pod batch ID {1}. Můžete si ho stáhnout v Mapy -> Seznam kontrol.
+    validatedCsvFileEmailContentsFailure: Při validaci/importu CSV souboru došlo k chybě.
+    validatesCsvFileEmailSubject: Výsledek validace importního souboru {0}
+    importCsvFileEmailSubject: Výsledek importu souboru {0}
+    importCsvFileEmailContentsSuccess: Soubor {0} byl úspěšně importován pod batch ID {1}.
+    importCsvFileEmailContentsFailure: Soubor {0} se nepodařilo importovat. Detail chyby "{1}".
+        
+
+UploadPdfMapPreview:
+    invalidPublicationStatusForMapPreviewUpload: Není možné nahrát preview. Je třeba změnit Stav mapy na "Příprava náhledu".
+    userNotEligible: Nemáte práva pro tuto operaci.
+    missingTaxonId: Nezadali jste správně taxon.
+    taxonNotMappable: Taxon není mapovatelný.
+
+PdfMapReportRenderer:
+    protectedCoords: [přesné lokality nejvíce ohrožených a zároveň atraktivních druhů nejsou zveřejňovány]
+
+RecordCommentController:
+    invalidInputParameters: Chybné vstupní parametry.
+    notFound: Záznam nenalezen.
+    noPermissions: Nemáte oprávnění pro tuto operaci.
+    noCommentFound: Komentář nebyl nalezen.
+    commentAlreadyResolved: Komentář je již vyřešen.
+
+RecordQuadrantDistribution:
+    recordsMustBeNonEmpty: Seznam záznamů musí být neprázdný.
+
+MapReports:
+    taxonAssigned: Taxon byl úspěšně přiřazen.
+    taxonNotAssigned: Taxon nebyl přiřazen.
+    taxonAssociationNotRemoved: Taxon nebyl uživateli odebrán.
+    taxonRemoved: Taxon byl odebrán.
+
+ModelDataSource:
+     unsupportedCoordsFormat: Nepodporovaný formát souřadnic.
+     taxonDetailsFailed: Vygenerování seznamu taxonů se nezdařilo.
+
+HerbariumController:
+    herbariumDetailsFailed: Vygenerování seznamu herbářů se nezdařilo.
+    recordNotFound: Záznam nenalezen.
+
+SynonymsService:
+    ChangedTaxon: Synonymum nahrazeno za platné jméno.
+    DuplicateTaxon: Z důvodu duplicit nelze automaticky převést.
+    NotFound: Jméno nenalezeno v číselníku ani v synonymech.
+
+UserSettingsController:
+    ValueNotFound:  Hodnota nebyla nalezena.
+    EntryNotFound:  Záznam nebyl nalezen.
+    ValueUpdated:   Hodnota aktualizována.
+    ValueSaved:     Hodnota uložena.
+    EntryDeleted:   Záznam byl úspěšně smazán.
+    EntriesDeleted: Uživatelská nastavení byla smazána.
+    DeletionFailed: Smazání uživatelských nastavení se nezdařilo.
+
+TaxonMapSettingsController:
+    invalidTaxon: Neplatný taxon.
+    newerVersionExists: V databázi existuje novější verze záznamu než s kterou pracujete.
+    invalidKey: Neplatný klíč sloupce.
+    invalidMapType: Neplatný typ mapy.
+    invalidProductionStatus: Neplatné ID produkčního stavu.
+    invalidInputParameters: Neplatné parametry.
+    invalidValue: Neplatná hodnota "{0}".
+    userNotEligible: Nemáte práva pro tuto operaci.
+
+TraitExportController:
+    userNotElligibleToExportTrait: Nemáte práva pro export traitu "{0}".
+    traitBackupInProgress: Export traitů probíhá v pozadí...
+
+MapStatusUpdateService:
+    invalidStatus: Neplatny stav.
+    insufficientRights: Nemáte dostatečná práva.
+    noSuchTransition: Nedovolený přechod ze stavu "{0}" do stavu "{1}". Kontaktujte Z. Kaplana.
+    taxonStatusChangeAdminMailContents: Taxon "{0}" je nyni ve stavu "{1}". Zmenu provedl uzivatel {2}.
+    taxonStatusChangeSubject:     PLADIAS&#58; změna stavu taxonu "{0}"
+    statusNotStartedCanOnlyBeSetByEmptyingSupervisorList: Stav "nezapočato" vznikne jen odebráním všech revizorů.
+
+PublicationUpdateService:
+    taxonStatusChangeMapDesignerContents: |
+                                          Taxon "{0}" je nyni ve stavu "{1}". Zmenu provedl uzivatel {2}.
+                                          {3}
+    taxonStatusChangeRevisorsMailContents: Taxon "{0}" je nyni ve stavu "{1}".
+    mapUploaded: Mapa k taxonu {0} nahrána na server
+    mapUploadedMailContents: |
+                             {0}
+                             Vážení autoři,
+                             v této zprávě Vám zasíláme odkaz na právě vygenerovanou mapu. Ta je (1) vytvořená v tom schématu (typu) mapy, který jste si zvolili v mapovací aplikaci, (2) podle záznamů v databázi, které jste zkontrolovali, roztřídili, proznačili a schválili, a (3) upravená podle případných dodatečných instrukcí a upozornění v Poznámce autora mapy. 
+                             Mapu prosím pečlivě zkontrolujte, porovnejte ji s náhledem v mapovací aplikaci, a ujistěte se, že ve všech kvadrantech máte ten znak, který tam chcete mít. Nezapomeňte zkontrolovat především veškeré nestandardní případy a jestli byly správně zapracovány Vaše požadavky z pole "Poznámka pro tisk mapy" (např. pokud rozlišujete recentní vs. zaniklý výskyt a v nějakém kvadrantu druh prokazatelně vyhynul až po roce 2000, čili je potřeba udělat manuální úpravu symbolu).
+                             Toto je poslední možná kontrola Vašich map před odesláním článku do redakce časopisu Preslia. Pokud objevíte nějaký problém, informujte prosím obratem Z. Kaplana (kaplan@ibot.cas.cz). Pokud nepřijde žádná odezva ve lhůtě stanovené pro příslušnou sadu map (obvykle 2–3 dny), bude mapa považována za definitivní.
+
+RecordEditController:
+    userNotAllowed: Uživatel nemá oprávnění.
+    invalidRecordId: Neplatné ID záznamu.
+    invalidPhytoId: Neplatné ID fytochorionu.
+    invalidTaxonId: Neplatné ID taxonu.
+    invalidCoordsPrecision: Neplatná hodnota přesnosti souřadnic.
+    invalidAltitudeApproximation: Neplatná hodnota.
+    invalidParameters: Neplatné argumenty.
+    invalidIntegerValue: Neplatná číselná hodnota "{0}".
+    valueOutOfRange: Hodnota je mimo očekávaný rozsah ({0} - {1}).
+    gpsCoordsOutOfRange: GPS souřadnice jsou mimo ČR.
+    gpsCoordsSpecifiedInPladias: Upřesněno v Pladias.
+    gpsCoordsEnteredInPladias: Zadáno v Pladias.
+    unableToUpdateCoords: Nepodařilo se změnit souřadnice.
+    originalIdNotEditable: Originální ID není možné editovat mimo vybrané projekty.
+    newVersionRecordExists: V databází existuje novější verze záznamu. Prosím refreshněte si aktuální obrazovku a akci zopakujte.  
+    unableToUpdateField: Nepodařilo se updatovat pole "{0}".
+    finderAlreadyRegistered: Nálezce "{0}" již v seznamu nálezců je.
+    herbariumAlreadyRegistered: Herbář "{0}" již u záznamu přiřazen je.
+    taxonIsLockedDueToMapPreviewGeneration: Taxon je v průběhu "přípravy náhledu mapy" uzamčen.
+    recordIsLocked: Záznam je momentálně uzamčen.
+    cannotSetCoordsPrecisionForRecordWithNoCoords: Není možné zadat přesnost souřadnic pro záznam, který souřadnice nemá.
+    districtComputedAutomatically: Okres doplněn automaticky&#58; možnost chyby.
+    incorrectLocalization: Chybná lokalizace – kvadrant neodpovídá souřadnicím.
+    phytochorionGrosslyOutOfSyncWithCoords: Fytochorion hrubě neodpovídá souřadnicím.
+    quadrantOutOfSyncWithDistrict: Kvadrant neodpovídá nejbližšímu sídlu.
+    phytochorionOutOfSyncWithDistrict: Fytochorion neodpovídá nejbližšímu sídlu.
+
+ModifiedRecordsExcelBuilder:
+    RecordId: ID záznamu
+    Taxon: Taxon
+    CreationTimestamp: Čas vytvoření
+    OriginalName: Původní jméno
+    Locality: Lokalita 
+    NearestTown: Nejbližší město
+    District: Okres
+    Altitude: Nadmořská výška
+    Coords: Souřadnice
+    CoordsSource: Zdroj souřadnic
+    CoordsPrecision: Přesnost souřadnic
+    Datum: Datum
+    Finder: Nálezce
+    Source: Zdroj
+    Phytochorion: Fytochorion
+    QuadrantOrSquare: Kvadrant/Čtverec
+    Comment: Komentář
+                
+
+ImportsManager:
+    batchDeletionEmail: | 
+                        Dobrý den,
+                        administrátor portálu {0} označil vaši dávku
+                        {1} ze dne {2} pro smazání. Pro dokončení operace prosím klikněte na následující odkaz: {3}
+                        Pokud nejste právě přihlášeni, budete ještě vyzváni k vložení vašeho hesla.
+    batchDeleted: Dávka byla smazána.
+    notAuthorizedToDeleteBatch: Nejste oprávněn ke smazání dávky.
+    incorrectPassword: Nesprávné heslo pro smazání dávky.
+    batchNotExists: Dávka neexistuje.
+
+Taxon:
+    isSuppressed: Taxon je označený jako potlačený, více info podá Jiří Danihelka.
+
+TraitsController:
+    UserNotElligible: Nemáte oprávnění pro tuto operaci.
+    deletionFailed: Mazání datové řady se nezdařilo.
+    traitDeleted: Datová řada byla smazána.
+    ValidationFailed: Validace skončila chybou. Stáhněte si <a href="{0}">soubor</a> s vyznačením problematických řádků. Zkontolujte si také prosím pořadí sloupců dle vzoru.
+    ImportFailed: Import se nezdařil. Stáhněte si <a href="{0}">soubor</a> s vyznačením problematických řádků. Zkontolujte si také prosím pořadí sloupců dle vzoru.
+    ImportSucceeded: Soubor dat s {0} záznamy byl importován. 
+    ValidationSucceeded: Soubor dat je validní, můžete jej importovat.
+    AttachmentTooBig: Přiloha je příliš velká
+    FormContainsErrors: Formulář obsahuje chyby
+    TraitDoesNotExits: Zadany trait neexistuje
+    UnableToSetDefaultTrait: Nepodarilo se nastavit default trait
+    NoSuitableTraitFound: Neexistuje zadny vyhovujici trait
+    InvalidFeature: Neznámá Feature
+    RecomputationStarted: Proces přepočítání traitů spuštěn. Operace poběží delší dobu. Po jejím doběhnutí obdržíte e-mail s notifikací.
+
+TraitDetailsExportAccumulator:
+    originalValues: Originální hodnoty
+    inheritedValues: Zděděné hodnoty
+    aggregatedValues: Agregované hodnoty
+    compositeValues: Sloučené hodnoty
+    originalValues.en: Original values
+    inheritedValues.en: Inherited values
+    aggregatedValues.en: Aggregated values
+    compositeValues.en: Composite values
+
+TaxonDistributionExportAccumulator:
+    squares: Mapové pole
+    quadrants: Mapové kvadranty
+    squares.en: Squares
+    quadrants.en: Quadrants
+
+ExcelHelper:
+    InvalidExcelFileName: Vstupní soubor musí být excelová tabulka.
+
+TemporaryFilesProvider:
+    fileDoesNotExist: Soubor neexistuje
+
+RevisionUpdateService:
+    noSuchTransition: Ze stavu "{0}" není možné přejít do stavu "{1}".
+    insufficientRights: Nemáte dostatečná práva pro provedení akce.
+    taxonStatusChangeRevisorsMailContents: |
+                                           Taxon "{0}" je nyni ve stavu "{1}".
+                                           Komentování a doplňování mapy floristy bylo ukončeno. Projděte a zpracujte všechny dosud nepřečtené a nevyřízené komentáře, přidělte příznaky nově doplněným záznamům, dokončete mapu a po kontrole jejího náhledu ji kliknutím na tlačítko "Zapracoval jsem všechny podněty kontrolorů" předejte editorům k přípravě pro tisk.    
+
+AbstractDatatype:
+    InvalidTaxon: Neplatný taxon
+    TaxonColumn: Taxon
+    Comment: Komentář
+    Comment.en: Comment
+
+BoolSerializer:
+    value: Hodnota [boolean]
+    value.en: Value [boolean]
+
+IntSerializer:
+    value: Hodnota [integer]
+    value.en: Value [integer]
+    frequency: Frekvence
+    frequency.en: Frequency
+
+TaxonDistributionSerializer:
+    squaresCount: Čtverce [integer]
+    squaresCount.en: Squares [integer]
+    quadrantsCount: Kvadranty [integer]
+    quadrantsCount.en: Quadrants [integer]
+
+MonthSerializer:
+    min: Minimum [od]
+    min.en: Minimum [from]
+    max: Maximum [do]
+    max.en: Maximum [to]
+    dominant: Dominantní
+    dominant.en: Dominant
+
+IntIndicatorSerializer:
+    value: Hodnota [integer]
+    value.en: Value [integer]
+
+RealSerializer:
+    value: Hodnota [real]
+    value.en: Value [real]
+
+
+PercentageSerializer:
+    value: Hodnota [procento]
+    value.en: Value [%]
+    duplicateKey: Duplicitní hodnota
+
+EnumSerializer:
+    value: Hodnota [položka číselníku]
+    value.en: Value [enum]
+    dominance: Dominance [boolean]
+    dominance.en: Dominance [boolean]
+    frequency: Frekvence [%]
+    frequency.en: Frequency [%]
+
+SyntaxonSerializer:
+    value: Syntaxon
+    value.en: Syntaxon
+    dominance: Dominance [boolean]
+    dominance.en: Dominance [boolean]
+    frequency: Frekvence [%]
+    frequency.en: Frequency [%]
+
+SyntaxonDeserializer:
+    duplicateKey: Duplicitní kombinace <taxon, syntaxon>.
+    
+SynonymManager:
+    created: Synonymum vytvořeno.
+    updated: Synonymum aktualizováno.
+    idNotDefined: Neplatné ID synonyma.
+    deleted: Synonymum smazáno.
+
+EnumDeserializer:
+    duplicateKey: Duplicitní kombinace <taxon, hodnota>.
+    multipleDominance: Duplicitní dominance pro taxon.
+    DuplicateTaxon: Duplicitní taxon.
+
+IntegerDeserializer:
+    ValueOutOfRange: Hodnota je mimo platný rozsah <{0}, {1}>.
+    duplicateKey: Duplicitní kombinace <taxon, hodnota>.
+
+MonthDeserializer:
+    MinMaxMismatch: Chybný (min, max) interval.
+    InvalidMinValue: Chybná min hodnota.
+    InvalidMaxValue: Chybná max hodnota.
+
+NonVascularRecordWrapperBuilder:
+    HerbariumTooLong: Herbář je delší než maximální povolená hodnota {0}.
+    Substrate1Invalid: Hodnota [Substrate1] je neplatná.
+    Substrate2Invalid: Hodnota [Substrate2] je neplatná.
+    Substrate1NeededForSubstrate2: Pole vyžaduje validní hodnotu v poli [Substrate1].
+
+IntegerAvgDeserializer:
+    InvalidValue: Neplatná hodnota.
+    RequiredMinLeMean: Není splněno min <= mean.
+    RequiredMaxGeMean: Není splněno max >= mean.
+    RequiredMinLeMax: Není splněno min <= max.
+    RequiredUltraminLtMin: Není splněno ultramin < min.
+    RequiredUltramaxGtMax: Není splněno max < ultramax.
+    duplicateKey: Duplicitní taxon.
+    RequiredAtLeastOneValue: Je vyžadována alespoň jedna hodnota na řádku.
+
+IntAvgSerializer:
+    MinValueText: min
+    ExtremeMinValueText: ultramin
+    MaxValueText: max
+    ExtremeMaxValueText: ultramax
+    MeanValueText: mean
+    StandardMeanErrorValueText: sem
+    MinValueText.en: min
+    ExtremeMinValueText.en: ultramin
+    MaxValueText.en: max
+    ExtremeMaxValueText.en: ultramax
+    MeanValueText.en: mean
+    StandardMeanErrorValueText.en: sem
+
+RealDeserializer:
+    duplicateKey: Duplicitní kombinace <taxon, hodnota>.
+    ValueOutOfRange: Hodnota je mimo platný rozsah <{0}, {1}>.
+
+AbstractDatatypeDeserializer:
+    InvalidValue: Neplatná hodnota.
+    DuplicateKey: Duplicitní kombinace <taxon, hodnota>.
+    DuplicateComment: Duplicitní komentář
+
+PercentageConverter:
+    OutOfRange0_1: Hodnota je mimo rozsah <0,1>.
+    OutOfRange0_100: Hodnota je mimo celočíselný rozsah <0,100>.
+    InvalidValue: Neplatná hodnota. 
+
+CrossTaxonDeserializer:
+    InvalidTaxonRelation: Neplatná relace <taxon, taxon>.
+    DuplicateEntry: Duplicitni zaznam <taxon, taxon>.
+
+CrossTaxonSerializer:
+    Taxon2: Taxon 2
+    Taxon2.en: Taxon 2
+    Value : Hodnota
+    Value.en : Value
+
+BiblioManager:
+    NotElligible: Nemáte práva na tuto akci.
+    FileNotUploaded: Soubor s daty nebyl nahrán.
+    ImportRunningInBackground: Import probíhá na pozadí. Jakmile skončí budete informování e-mailem.
+
+TaxonEditController:
+    NotElligible: Nemáte práva na tuto akci.
+    InvalidParameters: Špatné vstupní parametry
+    TaxonEditorLocked: Taxony v tuto chvíli edituje uživatel "{0}". Zkuste to prosím později.
+
+TraitRebuildTask:
+    RebuildCompletedEmailSubject: Traity prepocitany
+    RebuildCompletedEmailContents: |
+                                   Dobrý den,
+                                   Hodnoty pro {0} traitů byly přepočítány. Výpočet trval {1}.
+                                   Seznam chyb: 
+                                   {2}
+
+Search:
+    UserNotAssignedToAnyProject: Nemáte přiřazen žádný projekt.
+    ExportToExcelStandardUser:  Pro tento export platí následující omezení:<ul> <li>budou exportovány jen druhy, které spravujete nebo jste do systému nahrál</li><li>exportují se jen záznamy s licencí CC</li><li> maximální počet exportovaných záznamů je omezen na 20000</li></ul>
+    ExportToExcelAdmin: Pro tento export platí následující omezení:<ul><li>maximální počet exportovaných záznamů je omezen na 100000</li></ul>
+
+UserController:
+    passwordChanged: Heslo bylo změněno.
+    passwordNotMatches: Heslo neodpovídá.
+    newPasswordsDoNotMatch: Nová hesla se neshodují.
+    userWithEmailAlreadyExists: Uživatel {0} již existuje.
+    userAdded: Nový uživatel byl přidán do systému a byl mu odeslán úvodní e-mail.
+    passwordNotLongEnough: Minimální délka hesla je {0} znaků.
+    newEmailDoNotMatch: Nový e-mail není ve správném formátu.
+    emailChanged: E-mail byl změněn.
+    passwordRequired: Je vyžadováno původní heslo.
+    newPasswordRequired: Je vyžadováno nové heslo.
+    confirmNewPasswordRequired: Je vyžadováno potvrzení nového hesla.
+
+DateConverter:
+    InvalidInput: Neplatné datum.
+    InvalidInputLength: Špatný formát datumu.
+
+CoordinatesParser:
+    InvalidInput: Neplatná hodnota GPS souřadnic.
+
+AuthorListParser:
+    InputCannotBeEmpty: Autor musí být uveden.
+    InvalidAuthorName: Neplatné jméno autora "{0}".
+
+menu:
+    map:
+        dropdown: Mapy
+        newComments: Nepřečtené komentáře
+        search: Vyhledávání záznamů
+        selectTaxon: Příprava mapy
+        validatedByUser: Seznam kontrol
+        importedByUser: Seznam importů
+        userInfo: Seznam přidělených taxonů
+        terminology: Kontrola synonym
+        uploadExcel: Import dat
+        uploadCsvBatch: Import CSV dávky
+    mapAdmin:
+        dropdown: AdminMapy
+        allImports: Seznam všech importů
+        assignUserTaxon: Přidělování revizorů
+        editUserRights: Správa uživatelů map
+        supervisorsLOW:  Přehled taxonů
+        supervisorsNORMAL: Přehled taxonů (střední verze)
+        supervisorsDETAILED: Přehled taxonů (nejrychlejší verze)
+        taxaSubtree: Přehled taxonů - podstrom
+        assignFileTaxon: Nahrát soubor k taxonu
+        downloadZip: Stáhnout ZIP archive
+        bulkEdit: Hromadné úpravy
+    mapAdminPreslia:
+        dropdown: Preslia
+    biblio:
+        dropdown: Bibliografie
+        search: Vyhledávání zdroje v Pladias
+    measurements:
+        dropdown: Vlastnosti druhů
+        general: Obecné informace
+        importInfo: Datové typy
+        exportInfo: Typy agregace
+        report: Data
+        complexExport: Komplexní export
+        backup: Záloha komplexního exportu
+    downloads:
+        dropdown: Ke stažení
+    formPlaceholder:
+        taxon: Přejít na mapu taxonu
+        record: Přejít na záznam ID
+    user:
+        logout: Odhlásit se
+        passwd: Změna hesla
+        email: Změna e-mailu
+        settings: Nastavení aplikace
+        taxonManager: Správa čísleníku taxonů
+        userManager: Správa uživatelů
+        addUser: Přidat uživatele
+        documentation: Dokumentace
+
+views:
+    users:
+        changeemail:
+            buttonText: Změnit e-mail.
+            description: Zadejte heslo a nový e-mail.
+            newEmail: Nový e-mail
+            password: Heslo
+            title: Změna e-mailu

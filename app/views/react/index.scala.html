@@ -1,0 +1,22 @@
+@(jsFile: String, cssFiles: List[String], request: play.mvc.Http.Request)
+<!DOCTYPE html>
+<html lang="cs-CZ" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="UTF-8">
+    <meta content="IE=edge" http-equiv="X-UA-Compatible">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
+</head>
+<body>
+<script>
+    window.__FLASH__ = {
+        success: "@request.flash.get("success")",
+        error: "@request.flash.get("error")"
+    };
+</script>
+<div id="react-app"></div>
+@for(css <- cssFiles) {
+<link href="@css" rel="stylesheet">
+}
+<script src="@jsFile" type="module"></script>
+</body>
+</html>

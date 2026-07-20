@@ -1,0 +1,45 @@
+.bulk-edit-panel {
+    border: 1px solid #d1d5db;
+    border-radius: 0.35rem;
+    background: #f8fafc;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+    font-family: "IBM Plex Sans Condensed", "Trebuchet MS", sans-serif;
+}
+
+.bulk-edit-title {
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+
+.bulk-edit-warning {
+    border-radius: 0;
+    border: 1px solid #f59e0b;
+    background: #fffbeb;
+}
+
+.bulk-edit-card {
+    border: 1px solid #e5e7eb;
+    border-radius: 0.3rem;
+    overflow: hidden;
+    background: #ffffff;
+}
+
+.bulk-edit-card-header {
+    padding: 0.6rem 0.8rem;
+    background: #0f172a;
+    color: #f8fafc;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.bulk-edit-card-body {
+    padding: 0.8rem;
+}
+
+@media (max-width: 992px) {
+    .bulk-edit-panel {
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+    }
+}

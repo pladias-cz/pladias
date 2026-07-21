@@ -45,7 +45,7 @@ public class Application extends ControllerBase {
     }
 
     @Security.Authenticated(Authorized.class)
-    public Result index(Http.Request request) {
+    public Result index(Http.Request request, String path) {
         Session session = request.session();
         User currentUser = SessionUtils.getCurrentUser(session);
         if (currentUser == null) {
@@ -83,7 +83,7 @@ public class Application extends ControllerBase {
 
         Optional<String> targetUrl = request.session().getOptional(SessionUtils.TargetUrlKey);
         if (!targetUrl.isPresent()) {
-            return index(request);
+            return index(request, "");
         }
         //clear per-request session value
         return redirect(targetUrl.get()).removingFromSession(request, SessionUtils.TargetUrlKey);
@@ -191,7 +191,7 @@ public class Application extends ControllerBase {
             result = redirect(targetUrl.get())
                 .removingFromSession(request, SessionUtils.TargetUrlKey);
         } else {
-            result = redirect(controllers.routes.Application.index());
+            result = redirect(controllers.routes.Application.index(""));
         }
 
         return result.addingToSession(request, map);

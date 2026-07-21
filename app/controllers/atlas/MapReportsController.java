@@ -1,4 +1,4 @@
-package controllers.react.atlas;
+package controllers.atlas;
 
 import cache.TaxonCache;
 import controllers.ControllerBase;

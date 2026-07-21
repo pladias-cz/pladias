@@ -1,6 +1,6 @@
 package service.search;
 
-import controllers.react.atlas.SearchController;
+import controllers.atlas.SearchController;
 import models.User;
 
 public interface IPageSearchService {

@@ -1,4 +1,4 @@
-package controllers.react;
+package controllers.atlas;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;

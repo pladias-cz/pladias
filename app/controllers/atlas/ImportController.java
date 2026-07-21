@@ -1,4 +1,4 @@
-package controllers.react.atlas;
+package controllers.atlas;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Strings;

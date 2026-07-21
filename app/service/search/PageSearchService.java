@@ -1,7 +1,7 @@
 package service.search;
 
 import com.google.inject.Inject;
-import controllers.react.atlas.SearchController;
+import controllers.atlas.SearchController;
 import dto.atlas.RecordPladiasDto;
 import excel.LicenseDictionary;
 import io.ebean.DB;

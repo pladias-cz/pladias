@@ -1,4 +1,4 @@
-package controllers.react.atlas;
+package controllers.atlas;
 
 import app.dto.atlas.RecordOriginalityStatusDto;
 import app.dto.atlas.RecordValidationStatusDto;

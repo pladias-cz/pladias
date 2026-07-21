@@ -1,4 +1,4 @@
-package controllers.react.atlas;
+package controllers.atlas;
 
 import app.dto.atlas.PublicationStatusDto;
 import app.dto.atlas.RevisionStatusDto;

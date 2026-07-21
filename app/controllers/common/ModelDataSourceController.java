@@ -1,4 +1,4 @@
-package controllers.react;
+package controllers.common;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;

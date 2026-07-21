@@ -12,8 +12,6 @@ This document defines coding standards and patterns for both legacy MVC and mode
 
 - **`app/models`**: Ebean ORM entities - represent database tables
 - **`app/controllers`**: Request handlers containing business logic
-  - `app/controllers/react/`: JSON API controllers for React frontend
-  - `app/controllers/reactBase/`: Base classes for React controllers
   - `app/controllers/api/`: Token-authenticated public APIs
   - Other controllers: Legacy server-side rendering controllers
 - **`app/dto`**: Data Transfer Objects for API responses
@@ -37,10 +35,10 @@ public Result index(...) {
 ```java
 @Authorized  // Session-based authentication
 public class TaxonController extends ControllerBase {
-    
+
     @Inject
     private ITaxonService taxonService;
-    
+
     public Result getTaxon(long id) {
         TaxonDto taxon = TaxonSearchService.getTaxonDto(id);
         if (taxon == null) {
@@ -110,7 +108,7 @@ Pages are thin orchestrators — no business logic, only composition of hooks an
 export default function AtlasSearch() {
     // Use hooks for data fetching and state
     const { results, loading, error } = useAtlasSearch(searchParams);
-    
+
     // Compose components
     return (
         <div className="atlas-search">
@@ -147,11 +145,11 @@ function useAtlasSearch(params) {
 ```typescript
 useEffect(() => {
     let cancelled = false;
-    
+
     fetchData().then(data => {
         if (!cancelled) setData(data);
     });
-    
+
     return () => { cancelled = true; };
 }, [deps]);
 ```
@@ -166,11 +164,11 @@ Example:
 ```scss
 .taxonomy-tree {
     padding: 1rem;
-    
+
     &__item {
         margin-bottom: 0.5rem;
     }
-    
+
     &__item--selected {
         font-weight: bold;
     }

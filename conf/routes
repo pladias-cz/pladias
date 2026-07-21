@@ -9,7 +9,7 @@ GET     /api/csvMapDetails/:taxonId controllers.api.Map.downloadCsvMapDetails(ta
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.at(path="/public", file)
-GET    /login                      controllers.Application.login(request: Request)
+GET     /login                      controllers.Application.login(request: Request)
 GET     /logout                     controllers.Application.logout(request: Request)
 POST    /login                      controllers.Application.authenticate(request: Request)
 

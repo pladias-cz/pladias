@@ -1,8 +1,8 @@
 package service.taxon;
 
 import cache.TaxonCache;
-import controllers.react.TaxonManagerController.AddTaxon;
-import controllers.react.TaxonManagerController.MoveTaxonBeforeNewSibling;
+import controllers.taxon.TaxonManagerController.AddTaxon;
+import controllers.taxon.TaxonManagerController.MoveTaxonBeforeNewSibling;
 import io.ebean.CallableSql;
 import io.ebean.DB;
 import io.ebean.Transaction;

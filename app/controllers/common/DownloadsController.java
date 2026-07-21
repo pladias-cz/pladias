@@ -1,4 +1,4 @@
-package controllers.react;
+package controllers.common;
 
 import controllers.ControllerBase;
 import controllers.security.Authorized;

@@ -1,4 +1,4 @@
-package controllers.react;
+package controllers.bibliography;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers.ControllerBase;

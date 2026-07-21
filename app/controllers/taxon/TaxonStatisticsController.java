@@ -1,4 +1,4 @@
-package controllers.atlas;
+package controllers.taxon;
 
 import controllers.ControllerBase;
 import controllers.security.Authorized;

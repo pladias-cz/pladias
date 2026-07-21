@@ -113,13 +113,13 @@ export default function App() {
         <ProjectNameProvider>
             <InstanceConfigProvider config={instanceConfig}>
                 <UserProvider user={userData}>
-                    <BrowserRouter basename="/react">
+                    <BrowserRouter basename="/">
                     <Suspense fallback={<div>Loading page…</div>}>
                         <Routes>
                             <Route path="/" element={<Layout/>}>
                                 <Route index element={<Home/>}/>
                                 <Route path="unauthorized" element={<UnauthorizedPage/>}/>
-                                
+
                                 {/* Atlas routes - requires atlas module */}
                                 <Route path="atlas">
                                     <Route path="newComments" element={
@@ -178,7 +178,7 @@ export default function App() {
                                         </ProtectedRoute>
                                     }/>
                                 </Route>
-                                
+
                                 {/* AtlasAdmin routes - requires atlas module + map admin permission */}
                                 <Route path="atlasAdmin">
                                     <Route path="listOfImports" element={
@@ -197,7 +197,7 @@ export default function App() {
                                         </ProtectedRoute>
                                     }/>
                                 </Route>
-                                
+
                                 {/* Biblio routes - requires biblio module */}
                                 <Route path="biblio">
                                     <Route path="search" element={
@@ -206,7 +206,7 @@ export default function App() {
                                         </ProtectedRoute>
                                     }/>
                                 </Route>
-                                
+
                                 {/* Measurements routes - requires measurements module */}
                                 <Route path="measurements">
                                     <Route path="general" element={
@@ -245,12 +245,12 @@ export default function App() {
                                         </ProtectedRoute>
                                     }/>
                                 </Route>
-                                
+
                                 {/* Downloads routes - public */}
                                 <Route path="downloads">
                                     <Route index element={<DownloadsIndex/>}/>
                                 </Route>
-                                
+
                                 {/* User routes - public (logged in users) */}
                                 <Route path="user">
                                     <Route path="logout" element={<Logout/>}/>

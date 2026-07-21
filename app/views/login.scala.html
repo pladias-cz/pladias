@@ -17,13 +17,13 @@
     <body>
         <div class="container-fluid">
             <div class="row">
-                <div class="col-sm-12 col-md-10 offset-md-1 text-center">
+                <div class="col-sm-12 col-md-10 offset-md-1 text-center mt-3">
                     @if(!request.flash.get("failureReason").isEmpty()) {
                         <div class="alert alert-danger">@request.flash.get("failureReason")</div>
                     }
-                    <div class="alert alert-info" style="text-align: center">
-                        <p>Pro údržbu a aktualizace aplikace je vyhrazeno každé pondělí od 20 do 21 hodin – v té době prosíme zejména neprovádějte importy.<br>
-                            The database is maintained and updated every Monday from 8 to 9 pm – please do not import any data during this time.</p></div>
+                    <div class="alert alert-info" role="alert">
+                        Pro údržbu a aktualizace aplikace je vyhrazeno každé pondělí od 20 do 21 hodin – v té době prosíme zejména neprovádějte importy.<br>
+                            The database is maintained and updated every Monday from 8 to 9 pm – please do not import any data during this time.</div>
 
                     @if(null != message) {
                         <div class="alert alert-@message.getType()" role="alert">@message.getText()</div>
@@ -34,22 +34,22 @@
             <div class="row mt-3">
                 <div class="col-sm-12 col-md-8 offset-md-2 col-lg-6 offset-lg-3  text-center">
                     <form method="post" action="@routes.Application.authenticate()">
-                        <div class="form-group row">
+                        <div class="row mb-3">
                             <label for="inputEmail" class="col-sm-12 col-md-5 offset-md-1 col-form-label">E-mail</label>
                             <div class="col-sm-12 col-md-5">
                                 <input type="email" class="form-control" name="email" id="inputEmail" placeholder="Email" required autofocus >
                             </div>
                         </div>
-                        <div class="form-group row">
+                        <div class="row mb-3">
                             <label for="inputPassword" class="col-sm-12 col-md-5 offset-md-1 col-form-label">
                                 Heslo / Password</label>
                             <div class="col-sm-12 col-md-5">
                                 <input type="password" class="form-control" name="password" id="inputPassword" placeholder="Heslo" required>
                             </div>
                         </div>
-                        <div class="form-group row mt-3">
+                        <div class="row mt-3">
                             <div class="col-sm-10 offset-sm-1 col-md-7 offset-md-3">
-                                <button type="submit" class="btn btn-lg btn-primary btn-block">Přihlásit se / Login</button>
+                                <button type="submit" class="btn btn-lg btn-primary w-100">Přihlásit se / Login</button>
                             </div>
                         </div>
                     </form>

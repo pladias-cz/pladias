@@ -172,8 +172,6 @@ const MainMenu = React.forwardRef<HTMLDivElement, MainMenuProps>(function MainMe
                         <NavDropdown.Divider/>
                         <NavDropdown.Item
                             href="https://pladias-cz.github.io/documentation/">{t("menu.user.docs")}</NavDropdown.Item>
-                        <NavDropdown.Divider/>
-                        <NavDropdown.Item href="/">{t("menu.user.old")}</NavDropdown.Item>
                     </ActiveDropdown>
                 </Nav>
 

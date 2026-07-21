@@ -41,7 +41,7 @@ public class TraitTaxonTreeBuilder {
     }
 
     private Map<Integer, Taxon> buildTaxonsByLeftKey() {
-        Map<Integer, Taxon> map = new HashMap<Integer, Taxon>();
+        Map<Integer, Taxon> map = new HashMap<>();
 
         List<Taxon> taxons = Taxon.find().query().orderBy("lft asc").findList();
         for (Taxon t : taxons) {
@@ -53,7 +53,7 @@ public class TraitTaxonTreeBuilder {
     public BaseTraitTaxonNode buildTree() throws InvalidParameterException {
         Map<Integer, Taxon> taxonsByLeftKey = buildTaxonsByLeftKey();
         Taxon rootTaxon = taxonsByLeftKey.get(1); //get taxon root
-        Stack<BaseTraitTaxonNode> stack = new Stack<BaseTraitTaxonNode>();
+        Stack<BaseTraitTaxonNode> stack = new Stack<>();
         BaseTraitTaxonNode rootNode = createTraitTaxonDetail(rootTaxon);
         stack.add(rootNode);
 

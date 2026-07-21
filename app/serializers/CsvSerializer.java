@@ -10,7 +10,6 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
 public class CsvSerializer implements AutoCloseable, IPrinter {
-    private final Charset CHARSET = StandardCharsets.UTF_8;
     private final OutputStream os;
     private final OutputStreamWriter out;
     private final CSVPrinter printer;
@@ -18,6 +17,7 @@ public class CsvSerializer implements AutoCloseable, IPrinter {
     public CsvSerializer(OutputStream targetStream) throws IOException {
         os = targetStream;
         printBom(os);
+        Charset CHARSET = StandardCharsets.UTF_8;
         out = new OutputStreamWriter(os, CHARSET);
 
         CSVFormat format = CSVFormat.EXCEL.withDelimiter(';').withIgnoreEmptyLines(true);

@@ -76,7 +76,7 @@ public class ExcelTableImportService implements IExcelTableImportService {
                 saveRecordAuthors(record);
             }
 
-            List<RecordHistory> histories = new ArrayList<RecordHistory>();
+            List<RecordHistory> histories = new ArrayList<>();
             for (ParsedRecordDetails wrapper : wrappers) {
                 Record r = wrapper.getRecord();
                 if (r.getValidationStatusId() == RecordValidationStatus.Accepted) {
@@ -109,7 +109,7 @@ public class ExcelTableImportService implements IExcelTableImportService {
     }
 
     private void saveRecordAuthors(Record record) {
-        if (record.getRecordAuthors().size() > 0) {
+        if (!record.getRecordAuthors().isEmpty()) {
 
             for (RecordAuthor ra : record.getRecordAuthors()) {
                 if (ra.getAuthor().getId() == 0) {
@@ -133,7 +133,7 @@ public class ExcelTableImportService implements IExcelTableImportService {
             record.setValidationStatusId(RecordValidationStatus.Accepted);
             record.setIncludedInMap(true);
 
-            if (record.getHerbariums().size() > 0) {
+            if (!record.getHerbariums().isEmpty()) {
                 record.setHerbariumQuality(true);
             }
         }
@@ -143,7 +143,7 @@ public class ExcelTableImportService implements IExcelTableImportService {
         if (_configService.isNonVascular())
             return true;
 
-        return record.getHerbariums().size() > 0;
+        return !record.getHerbariums().isEmpty();
     }
 
     private void prepareImport(Record record, Batch batch, Project project, Set<Taxon> supervisedTaxons) {

@@ -8,11 +8,9 @@ import service.trait.detailexport.excel.TraitDetailsExportExcelBuilder;
 public class DetailedExportBuilderFactory {
 
     public static IDetailedExportBuilder create(Trait trait) throws Exception {
-        switch (trait.getFeature().getInheritanceType().getId()) {
-            case InheritanceType.EnumSyntaxon:
-                return new TraitDetailsExportCsvBuilder();
-            default:
-                return new TraitDetailsExportExcelBuilder();
-        }
+        return switch (trait.getFeature().getInheritanceType().getId()) {
+            case InheritanceType.EnumSyntaxon -> new TraitDetailsExportCsvBuilder();
+            default -> new TraitDetailsExportExcelBuilder();
+        };
     }
 }

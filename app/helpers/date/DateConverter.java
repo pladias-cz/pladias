@@ -36,20 +36,14 @@ public class DateConverter {
             return parse(DayDotMonthDotYearFormat, input, DatePrecision.DAY, messages);
         }
 
-        switch (input.length()) {
-            case 4:
-                return parse(YearFormat, input, DatePrecision.YEAR, messages);
-            case 6:
-                return parse(MonthYearFormat, input, DatePrecision.MONTH, messages);
-            case 7:
-                return parseYearMonPattern(input, messages);
-            case 8:
-                return parse(DayMonthYearFormat, input, DatePrecision.DAY, messages);
-            case 10:
-                return parseYearMonDayPattern(input, messages);
-            default:
-                throw new InvalidParameterException(messages.at("DateConverter.InvalidInputLength"));
-        }
+        return switch (input.length()) {
+            case 4 -> parse(YearFormat, input, DatePrecision.YEAR, messages);
+            case 6 -> parse(MonthYearFormat, input, DatePrecision.MONTH, messages);
+            case 7 -> parseYearMonPattern(input, messages);
+            case 8 -> parse(DayMonthYearFormat, input, DatePrecision.DAY, messages);
+            case 10 -> parseYearMonDayPattern(input, messages);
+            default -> throw new InvalidParameterException(messages.at("DateConverter.InvalidInputLength"));
+        };
     }
 
     private static boolean matchesDayDotMonthDotYearPattern(String input) {

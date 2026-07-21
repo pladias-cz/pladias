@@ -17,9 +17,9 @@ public class TerminologyVerificationRecordWrapperBuilder extends RecordDetailsBu
 
     @Override
     public ParsedRecordDetails build(RecordRow recordRow) {
-        List<ExcelErrorInfo> errors = new ArrayList<ExcelErrorInfo>();
-        List<ExcelErrorInfo> warnings = new ArrayList<ExcelErrorInfo>();
-        List<ExcelErrorInfo> infos = new ArrayList<ExcelErrorInfo>();
+        List<ExcelErrorInfo> errors = new ArrayList<>();
+        List<ExcelErrorInfo> warnings = new ArrayList<>();
+        List<ExcelErrorInfo> infos = new ArrayList<>();
 
         return new ParsedRecordDetails(null, recordRow, null, errors, warnings, infos);
     }

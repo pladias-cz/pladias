@@ -90,9 +90,6 @@ public class RecordStatistics {
     /**
      * Returns set of Quadrants that contain at least one record with specified statusId
      *
-     * @param taxonId
-     * @param statusId
-     * @return
      */
     // TODO
     // WITH sub AS (

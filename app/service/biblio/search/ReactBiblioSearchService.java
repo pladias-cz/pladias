@@ -51,7 +51,7 @@ public class ReactBiblioSearchService {
                 b.isExcerpted(),
                 b.getJournal(),
                 b.getJournalId(),
-                Integer.valueOf(b.getRecordsCount())
+                b.getRecordsCount()
             ))
             .collect(Collectors.toList());
 
@@ -99,7 +99,7 @@ public class ReactBiblioSearchService {
                 b.isExcerpted(),
                 b.getJournal(),
                 b.getJournalId(),
-                Integer.valueOf(b.getRecordsCount())
+                b.getRecordsCount()
             ))
             .collect(Collectors.toList());
 
@@ -176,24 +176,20 @@ public class ReactBiblioSearchService {
     }
 
     private Comparator<Bibliography> getComparator(String sortBy) {
-        switch (sortBy) {
-            case "authors":
-                return Comparator.comparing(Bibliography::getAuthors, Comparator.nullsLast(Comparator.naturalOrder()));
-            case "year":
-                return Comparator.comparing(Bibliography::getYear, Comparator.nullsLast(Comparator.naturalOrder()));
-            case "title":
-                return Comparator.comparing(Bibliography::getTitle, Comparator.nullsLast(Comparator.naturalOrder()));
-            case "journal":
-                return Comparator.comparing(Bibliography::getJournal, Comparator.nullsLast(Comparator.naturalOrder()));
-            case "etc":
-                return Comparator.comparing(Bibliography::getEtc, Comparator.nullsLast(Comparator.naturalOrder()));
-            case "excerpted":
-                return Comparator.comparing(Bibliography::isExcerpted);
-            case "recordsCount":
-                return Comparator.comparing(Bibliography::getRecordsCount, Comparator.nullsLast(Comparator.naturalOrder()));
-            default:
-                return null;
-        }
+        return switch (sortBy) {
+            case "authors" ->
+                Comparator.comparing(Bibliography::getAuthors, Comparator.nullsLast(Comparator.naturalOrder()));
+            case "year" -> Comparator.comparing(Bibliography::getYear, Comparator.nullsLast(Comparator.naturalOrder()));
+            case "title" ->
+                Comparator.comparing(Bibliography::getTitle, Comparator.nullsLast(Comparator.naturalOrder()));
+            case "journal" ->
+                Comparator.comparing(Bibliography::getJournal, Comparator.nullsLast(Comparator.naturalOrder()));
+            case "etc" -> Comparator.comparing(Bibliography::getEtc, Comparator.nullsLast(Comparator.naturalOrder()));
+            case "excerpted" -> Comparator.comparing(Bibliography::isExcerpted);
+            case "recordsCount" ->
+                Comparator.comparing(Bibliography::getRecordsCount, Comparator.nullsLast(Comparator.naturalOrder()));
+            default -> null;
+        };
     }
 
     private List<Bibliography> paginate(List<Bibliography> results, int page, int pageSize) {

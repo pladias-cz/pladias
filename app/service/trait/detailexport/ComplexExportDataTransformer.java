@@ -11,8 +11,8 @@ import java.util.Map;
 public class ComplexExportDataTransformer implements IExportDataTransformer {
     private final static CellDetail EmptyCell = new CellDetail(1, "", CellType.HeaderTaxonInfo);
     private final List<Taxon> sortedTaxons;
-    private final List<List<CellDetail>> headers = new ArrayList<List<CellDetail>>();
-    private final Map<Long, List<CellDetail>> taxonDetails = new HashMap<Long, List<CellDetail>>();
+    private final List<List<CellDetail>> headers = new ArrayList<>();
+    private final Map<Long, List<CellDetail>> taxonDetails = new HashMap<>();
 
     public ComplexExportDataTransformer(List<Taxon> sortedTaxons) {
         this.sortedTaxons = sortedTaxons;
@@ -32,8 +32,8 @@ public class ComplexExportDataTransformer implements IExportDataTransformer {
 
         List<String> headerValues = TaxonDetailsProvider.getCommonRecordHeaders();
 
-        List<CellDetail> list1 = new ArrayList<CellDetail>();
-        List<CellDetail> list2 = new ArrayList<CellDetail>();
+        List<CellDetail> list1 = new ArrayList<>();
+        List<CellDetail> list2 = new ArrayList<>();
         for (int i = 0; i < headerValues.size(); i++) {
             list1.add(EmptyCell);
             list2.add(EmptyCell);
@@ -41,7 +41,7 @@ public class ComplexExportDataTransformer implements IExportDataTransformer {
         headers.add(list1);
         headers.add(list2);
 
-        List<CellDetail> list3 = new ArrayList<CellDetail>();
+        List<CellDetail> list3 = new ArrayList<>();
         for (String value : headerValues) {
             list3.add(new CellDetail(1, value, CellType.HeaderTaxonInfo));
         }
@@ -50,17 +50,13 @@ public class ComplexExportDataTransformer implements IExportDataTransformer {
     }
 
     public void recordData(long taxonId, List<CellDetail> list) {
-        List<CellDetail> row = taxonDetails.get(taxonId);
-        if (row == null) {
-            row = new ArrayList<CellDetail>();
-            taxonDetails.put(taxonId, row);
-        }
+        List<CellDetail> row = taxonDetails.computeIfAbsent(taxonId, k -> new ArrayList<CellDetail>());
         row.addAll(list);
     }
 
     public void recordHeaders(List<List<CellDetail>> headerData) {
         while (headerData.size() < headers.size()) {
-            headerData.add(new ArrayList<CellDetail>());
+            headerData.add(new ArrayList<>());
         }
         for (int i = 0; i < headers.size(); i++) {
             List<CellDetail> source = headerData.get(i);
@@ -72,7 +68,7 @@ public class ComplexExportDataTransformer implements IExportDataTransformer {
     @Override
     public List<List<CellDetail>> collectData() {
 
-        List<List<CellDetail>> result = new ArrayList<List<CellDetail>>();
+        List<List<CellDetail>> result = new ArrayList<>();
         collectHeaders(result);
         collectTaxonData(result);
         return result;

@@ -18,24 +18,16 @@ public class DatatypeFactory<T> {
     }
 
     public Model create(TraitDetailsEntryType entryType, T value) {
-        switch (datatype.getId()) {
-            case Datatype.EnumOrdinalDatatypeId:
-            case Datatype.EnumNominalDatatypeId:
-            case Datatype.EnumOrdinalSingleDatatypeId:
-                return createEnumType(entryType, toInteger(value));
-            case Datatype.PercentageDatatypeId:
-                return createPercentage(entryType, toDouble(value));
-            case Datatype.RealDatatypeId:
-                return createDoubleType(entryType, toDouble(value));
-            case Datatype.YearDatatypeId:
-                return createYearType(entryType, toInteger(value));
-            case Datatype.IntegerDatatypeId:
-                return createIntType(entryType, toInteger(value));
-            case Datatype.RealMultiDatatypeId:
-                return createDoubleMultiType(entryType, toDouble(value));
-            default:
-                throw new RuntimeException("Unable to process datatype " + datatype.getDescriptionEn());
-        }
+        return switch (datatype.getId()) {
+            case Datatype.EnumOrdinalDatatypeId, Datatype.EnumNominalDatatypeId, Datatype.EnumOrdinalSingleDatatypeId ->
+                createEnumType(entryType, toInteger(value));
+            case Datatype.PercentageDatatypeId -> createPercentage(entryType, toDouble(value));
+            case Datatype.RealDatatypeId -> createDoubleType(entryType, toDouble(value));
+            case Datatype.YearDatatypeId -> createYearType(entryType, toInteger(value));
+            case Datatype.IntegerDatatypeId -> createIntType(entryType, toInteger(value));
+            case Datatype.RealMultiDatatypeId -> createDoubleMultiType(entryType, toDouble(value));
+            default -> throw new RuntimeException("Unable to process datatype " + datatype.getDescriptionEn());
+        };
     }
 
     private int toInteger(T value) {

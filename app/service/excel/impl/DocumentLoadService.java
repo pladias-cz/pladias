@@ -35,7 +35,7 @@ public class DocumentLoadService implements IDocumentLoadService {
     private Iterable<ParsedRecordDetails> doLoadRecords(RecordRowProvider rowProvider) throws IOException {
         RowIterator iter = new RowIterator(rowProvider, recordsDetailsBuilder);
 
-        List<ParsedRecordDetails> items = new ArrayList<ParsedRecordDetails>();
+        List<ParsedRecordDetails> items = new ArrayList<>();
 
         while (iter.hasMoreElements()) {
             items.add(iter.nextElement());

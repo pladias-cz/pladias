@@ -51,7 +51,7 @@ public class RecordRetrievalService {
 
     public List<RecordQuadrantDistribution> getIncludedInMapByQuadrant(TaxonMapSettings settings) throws Exception {
         List<Record> records = getRecords(settings);
-        if (records.size() == 0) {
+        if (records.isEmpty()) {
             throw new Exception("No records collected. Is the taxon correctly configured?");
         }
         logger.info(records.size() + " records collected");
@@ -63,11 +63,11 @@ public class RecordRetrievalService {
     }
 
     private List<RecordQuadrantDistribution> partitionIntoQuadrantSlots(List<Record> records, TaxonMapSettings settings) {
-        List<RecordQuadrantDistribution> result = new ArrayList<RecordQuadrantDistribution>();
+        List<RecordQuadrantDistribution> result = new ArrayList<>();
 
         logger.info("partitining records into quadrant slots");
         QuadrantNew currentQuadrant = null;
-        List<Record> currentRecords = new ArrayList<Record>();
+        List<Record> currentRecords = new ArrayList<>();
         for (Record r : records) {
             if (currentQuadrant == null && !r.getQuadrant().isPresent()) {
                 continue;
@@ -88,11 +88,11 @@ public class RecordRetrievalService {
                     result.add(distribution);
                 }
                 currentQuadrant = r.getQuadrant().get();
-                currentRecords = new ArrayList<Record>();
+                currentRecords = new ArrayList<>();
                 currentRecords.add(r);
             }
         }
-        if (currentRecords.size() > 0) {
+        if (!currentRecords.isEmpty()) {
             logger.info("Computing last quadrant highest validation status");
             RecordQuadrantDistribution distribution =
                 new RecordQuadrantDistribution(currentQuadrant, currentRecords, settings);
@@ -105,7 +105,7 @@ public class RecordRetrievalService {
     }
 
     private List<Record> filterRecordsWithOneQuadrant(List<Record> records) {
-        List<Record> recordsWithOneQuadrant = new ArrayList<Record>();
+        List<Record> recordsWithOneQuadrant = new ArrayList<>();
         for (Record r : records) {
             if (r.hasCoords())
                 recordsWithOneQuadrant.add(r);
@@ -115,48 +115,43 @@ public class RecordRetrievalService {
     }
 
     private List<Record> sort(List<Record> records) {
-        Collections.sort(records, new Comparator<Record>() {
+        records.sort((arg0, arg1) -> {
+            QuadrantNew q0 = arg0.getQuadrant().get();
+            QuadrantNew q1 = arg1.getQuadrant().get();
 
-            @Override
-            public int compare(Record arg0, Record arg1) {
-                QuadrantNew q0 = arg0.getQuadrant().get();
-                QuadrantNew q1 = arg1.getQuadrant().get();
-
-                if (!q0.equals(q1)) {
-                    return q0.getCode().compareTo(q1.getCode());
-                }
-                if (arg1.getProject().getCredibility() != arg0.getProject().getCredibility()) {
-                    //descending
-                    return arg1.getProject().getCredibility() - arg0.getProject().getCredibility();
-                }
-
-                long t1 = arg1.getBatch().getCreateTimestamp().getTime();
-                long t0 = arg0.getBatch().getCreateTimestamp().getTime();
-                if (t1 != t0) {
-                    //ascending
-                    return (int)
-                        Math.signum(
-                            arg0.getBatch().getCreateTimestamp().getTime() -
-                                arg1.getBatch().getCreateTimestamp().getTime());
-                }
-                DateSpecifier ds0 = arg0.getDateSpecifier();
-                DateSpecifier ds1 = arg1.getDateSpecifier();
-
-                if (ds0.getDate() != null && ds1.getDate() != null) {
-                    Calendar cal0 = Calendar.getInstance();
-                    Calendar cal1 = Calendar.getInstance();
-                    cal0.setTime(ds0.getDate());
-                    cal1.setTime(ds1.getDate());
-                    //descending
-                    return cal1.get(Calendar.YEAR) - cal0.get(Calendar.YEAR);
-                } else if (ds0.getDate() == null && ds1.getDate() != null) {
-                    return 1;
-                } else if (ds0.getDate() != null && ds1.getDate() == null) {
-                    return -1;
-                }
-                return 0;
+            if (!q0.equals(q1)) {
+                return q0.getCode().compareTo(q1.getCode());
+            }
+            if (arg1.getProject().getCredibility() != arg0.getProject().getCredibility()) {
+                //descending
+                return arg1.getProject().getCredibility() - arg0.getProject().getCredibility();
             }
 
+            long t1 = arg1.getBatch().getCreateTimestamp().getTime();
+            long t0 = arg0.getBatch().getCreateTimestamp().getTime();
+            if (t1 != t0) {
+                //ascending
+                return (int)
+                    Math.signum(
+                        arg0.getBatch().getCreateTimestamp().getTime() -
+                            arg1.getBatch().getCreateTimestamp().getTime());
+            }
+            DateSpecifier ds0 = arg0.getDateSpecifier();
+            DateSpecifier ds1 = arg1.getDateSpecifier();
+
+            if (ds0.getDate() != null && ds1.getDate() != null) {
+                Calendar cal0 = Calendar.getInstance();
+                Calendar cal1 = Calendar.getInstance();
+                cal0.setTime(ds0.getDate());
+                cal1.setTime(ds1.getDate());
+                //descending
+                return cal1.get(Calendar.YEAR) - cal0.get(Calendar.YEAR);
+            } else if (ds0.getDate() == null && ds1.getDate() != null) {
+                return 1;
+            } else if (ds0.getDate() != null && ds1.getDate() == null) {
+                return -1;
+            }
+            return 0;
         });
         return records;
     }

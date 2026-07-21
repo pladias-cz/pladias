@@ -23,15 +23,15 @@ public class MonthExportAccumulator extends TriStateExportAccumulator {
 
     @Override
     public List<List<CellDetail>> getColumnHeaderData(boolean isComplexExport) {
-        List<List<CellDetail>> result = new ArrayList<List<CellDetail>>();
+        List<List<CellDetail>> result = new ArrayList<>();
 
         if (isComplexExport) {
             List<CellDetail> listTraitName = getTraitNameRow();
             result.add(listTraitName);
         }
 
-        List<CellDetail> rowTypes = new ArrayList<CellDetail>();
-        List<CellDetail> rowValues = new ArrayList<CellDetail>();
+        List<CellDetail> rowTypes = new ArrayList<>();
+        List<CellDetail> rowValues = new ArrayList<>();
         result.add(rowTypes);
         result.add(rowValues);
 
@@ -64,7 +64,7 @@ public class MonthExportAccumulator extends TriStateExportAccumulator {
 
         long taxonId = daoPk.getTaxonId();
         if (!cachedData.containsKey(taxonId)) {
-            List<CellDetail> list = new ArrayList<CellDetail>();
+            List<CellDetail> list = new ArrayList<>();
             for (int i = 0; i < getColumnCount(); i++) {
                 list.add(NoValue);
             }

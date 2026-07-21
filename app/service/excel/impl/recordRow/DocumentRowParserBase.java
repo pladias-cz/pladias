@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public abstract class DocumentRowParserBase implements IRecordRowParser, IRecordColumnMapper {
-    private final Map<String, Integer> columnMap = new HashMap<String, Integer>();
+    private final Map<String, Integer> columnMap = new HashMap<>();
 
     public DocumentRowParserBase() {
         initCommonColumnMapping(columnMap);

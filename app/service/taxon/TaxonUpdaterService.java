@@ -158,8 +158,8 @@ public class TaxonUpdaterService {
         Taxon refNode = newParent;
         List<Taxon> children = newParent.getChildren();
         boolean moveAsFirstSibling = true;
-        if (children.size() > 0) {
-            refNode = children.get(children.size() - 1);
+        if (!children.isEmpty()) {
+            refNode = children.getLast();
             moveAsFirstSibling = false;
         }
 

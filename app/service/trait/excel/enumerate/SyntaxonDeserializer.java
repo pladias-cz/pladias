@@ -17,8 +17,8 @@ import java.util.*;
 
 public class SyntaxonDeserializer extends EnumAbstractDeserializer {
     private final Map<String, Syntaxon> syntaxonsMap;
-    private final Set<SyntaxonDatatypePK> seenPrivateKeysSet = new HashSet<SyntaxonDatatypePK>();
-    private final Set<Pair<Long, Integer>> seenDominantTaxonSyntaxonPairSet = new HashSet<Pair<Long, Integer>>();
+    private final Set<SyntaxonDatatypePK> seenPrivateKeysSet = new HashSet<>();
+    private final Set<Pair<Long, Integer>> seenDominantTaxonSyntaxonPairSet = new HashSet<>();
 
 
     public SyntaxonDeserializer(Feature feature, UserOptions options, Messages messages) {
@@ -29,7 +29,7 @@ public class SyntaxonDeserializer extends EnumAbstractDeserializer {
     private Map<String, Syntaxon> populateSyntaxonMap(int syntaxonRankId) {
         List<Syntaxon> syntaxons = Syntaxon.find().query().where().eq("rank", syntaxonRankId).findList();
 
-        Map<String, Syntaxon> mapping = new HashMap<String, Syntaxon>();
+        Map<String, Syntaxon> mapping = new HashMap<>();
         for (Syntaxon s : syntaxons) {
             mapping.put(s.getForeignId(), s);
 

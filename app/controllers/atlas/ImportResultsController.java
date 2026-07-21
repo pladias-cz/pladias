@@ -109,17 +109,11 @@ public class ImportResultsController extends ControllerBase {
 
             // Apply sorting
             if (sortBy != null && !sortBy.isEmpty()) {
-                String sortExpr;
-                switch (sortBy) {
-                    case "importTimestamp":
-                        sortExpr = "batch.createTimestamp";
-                        break;
-                    case "filename":
-                        sortExpr = "filename";
-                        break;
-                    default:
-                        sortExpr = sortBy;
-                }
+                String sortExpr = switch (sortBy) {
+                    case "importTimestamp" -> "batch.createTimestamp";
+                    case "filename" -> "filename";
+                    default -> sortBy;
+                };
                 if ("desc".equalsIgnoreCase(sortOrder)) {
                     sortExpr += " desc";
                 }
@@ -268,17 +262,11 @@ public class ImportResultsController extends ControllerBase {
 
             // Apply sorting
             if (sortBy != null && !sortBy.isEmpty()) {
-                String sortExpr;
-                switch (sortBy) {
-                    case "importTimestamp":
-                        sortExpr = "batch.createTimestamp";
-                        break;
-                    case "filename":
-                        sortExpr = "filename";
-                        break;
-                    default:
-                        sortExpr = sortBy;
-                }
+                String sortExpr = switch (sortBy) {
+                    case "importTimestamp" -> "batch.createTimestamp";
+                    case "filename" -> "filename";
+                    default -> sortBy;
+                };
                 if ("desc".equalsIgnoreCase(sortOrder)) {
                     sortExpr += " desc";
                 }

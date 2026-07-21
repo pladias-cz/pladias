@@ -23,7 +23,7 @@ public class IntegerDeserializer extends AbstractDatatypeDeserializer implements
     public IntegerDeserializer(Feature feature, UserOptions options, Messages messages) {
         super(options, messages);
         this.feature = feature;
-        previouslyVisitedRecords = new HashSet<IntegerDatatype>();
+        previouslyVisitedRecords = new HashSet<>();
     }
 
     @Override

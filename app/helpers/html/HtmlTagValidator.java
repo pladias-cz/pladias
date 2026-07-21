@@ -11,7 +11,6 @@ public class HtmlTagValidator {
 
     private static final String HTML_TAG_PATTERN = "<(/?[^<>]*)>";
     private final Pattern pattern;
-    private Matcher matcher;
 
     public HtmlTagValidator() {
         pattern = Pattern.compile(HTML_TAG_PATTERN);
@@ -22,7 +21,7 @@ public class HtmlTagValidator {
             return;
 
         Stack<String> stack = new Stack<>();
-        matcher = pattern.matcher(input);
+        Matcher matcher = pattern.matcher(input);
         int start = 0;
         while (matcher.find(start)) {
             String tag = matcher.group(1);

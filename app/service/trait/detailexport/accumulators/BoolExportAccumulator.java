@@ -13,7 +13,7 @@ import java.util.*;
 
 public class BoolExportAccumulator extends BaseExportAccumulator {
 
-    private final Map<Long, List<Set<Boolean>>> collectedValues = new HashMap<Long, List<Set<Boolean>>>();
+    private final Map<Long, List<Set<Boolean>>> collectedValues = new HashMap<>();
 
     public BoolExportAccumulator(
         Trait trait, UserOptions userOptions, Set<TraitDetailsEntryType> exportTypes, Messages messages) {
@@ -22,8 +22,8 @@ public class BoolExportAccumulator extends BaseExportAccumulator {
 
     @Override
     public List<List<CellDetail>> getColumnHeaderData(boolean isComplexExport) {
-        List<List<CellDetail>> result = new ArrayList<List<CellDetail>>();
-        List<CellDetail> list = new ArrayList<CellDetail>();
+        List<List<CellDetail>> result = new ArrayList<>();
+        List<CellDetail> list = new ArrayList<>();
 
         if (isComplexExport) {
             List<CellDetail> listTraitName = getTraitNameRow();
@@ -99,7 +99,7 @@ public class BoolExportAccumulator extends BaseExportAccumulator {
             for (Boolean b : set) {
                 builder.append(userOptions.boolToUserString(b)).append(";");
             }
-            if (builder.length() > 0) {
+            if (!builder.isEmpty()) {
                 builder.setLength(builder.length() - 1);
             }
             values.add(createCellDetail(1, builder.toString(), CellType.Data));
@@ -125,9 +125,9 @@ public class BoolExportAccumulator extends BaseExportAccumulator {
 
     private void createCollectedValuesEntryIfNeeded(long taxonId) {
         if (!collectedValues.containsKey(taxonId)) {
-            List<Set<Boolean>> list = new ArrayList<Set<Boolean>>();
+            List<Set<Boolean>> list = new ArrayList<>();
             for (int i = 0; i < getColumnCount(); i++) {
-                list.add(new HashSet<Boolean>());
+                list.add(new HashSet<>());
             }
             collectedValues.put(taxonId, list);
         }
@@ -135,7 +135,7 @@ public class BoolExportAccumulator extends BaseExportAccumulator {
 
     private void initializeTaxonRowIfNeeded(long taxonId) {
         if (!cachedData.containsKey(taxonId)) {
-            cachedData.put(taxonId, new ArrayList<CellDetail>());
+            cachedData.put(taxonId, new ArrayList<>());
         }
     }
 

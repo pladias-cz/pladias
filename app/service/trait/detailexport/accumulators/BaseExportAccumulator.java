@@ -19,8 +19,8 @@ public abstract class BaseExportAccumulator implements IExportAccumulator {
     protected final String DELIMITER = ";";
     protected Trait trait;
     protected UserOptions userOptions;
-    protected List<Long> taxonIdsOrderedByLeft = new ArrayList<Long>();
-    protected Map<Long, List<CellDetail>> cachedData = new HashMap<Long, List<CellDetail>>();
+    protected List<Long> taxonIdsOrderedByLeft = new ArrayList<>();
+    protected Map<Long, List<CellDetail>> cachedData = new HashMap<>();
     protected Messages messages;
     private final Set<TraitDetailsEntryType> exportTypes;
 
@@ -97,7 +97,7 @@ public abstract class BaseExportAccumulator implements IExportAccumulator {
     }
 
     protected List<CellDetail> getTraitNameRow() {
-        List<CellDetail> listTraitName = new ArrayList<CellDetail>();
+        List<CellDetail> listTraitName = new ArrayList<>();
         for (int i = 0; i < getColumnCount(); i++) {
             String traitDefinition = buildTraitDefinition();
             listTraitName.add(new CellDetail(1, traitDefinition, CellType.HeaderOriginalValue));
@@ -129,7 +129,7 @@ public abstract class BaseExportAccumulator implements IExportAccumulator {
     }
 
     protected List<CellDetail> getEmptyHeaderRow() {
-        List<CellDetail> emptyLine = new ArrayList<CellDetail>();
+        List<CellDetail> emptyLine = new ArrayList<>();
         for (int i = 0; i < getColumnCount(); i++) {
             emptyLine.add(new CellDetail(1, "", CellType.HeaderTaxonInfo));
         }
@@ -143,7 +143,7 @@ public abstract class BaseExportAccumulator implements IExportAccumulator {
     }
 
     private List<CellDetail> getNullRow() {
-        List<CellDetail> nullRow = new ArrayList<CellDetail>();
+        List<CellDetail> nullRow = new ArrayList<>();
         int columnCount = getColumnCount();
         for (int i = 0; i < columnCount; i++) {
             nullRow.add(new CellDetail(1, userOptions.getNullSubstitution(), CellType.Data));

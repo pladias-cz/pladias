@@ -10,7 +10,7 @@ import java.util.List;
 public class TaxonCsvGenerator {
 
     public List<String> getTaxonHeaders() {
-        List<String> list = new ArrayList<String>();
+        List<String> list = new ArrayList<>();
         list.add("IdPladias");
         list.add("IdDanihelka");
         list.add("NameLat");
@@ -30,7 +30,7 @@ public class TaxonCsvGenerator {
     public List<String> prepareTaxonFields(Taxon taxon) {
         try {
             TaxonMapSettings settings = taxon.getTaxonMapSettings();
-            List<String> list = new ArrayList<String>();
+            List<String> list = new ArrayList<>();
             list.add(Long.toString(taxon.getId()));
 
             Long idDanihelka = taxon.getIdDanihelka();

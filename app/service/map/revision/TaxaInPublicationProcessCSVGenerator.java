@@ -33,7 +33,7 @@ public class TaxaInPublicationProcessCSVGenerator {
     }
 
     private List<String> getRecordHeaders() {
-        List<String> list = new ArrayList<String>();
+        List<String> list = new ArrayList<>();
         list.add("taxon_id");
         list.add("taxon_name");
         list.add("is_protected");
@@ -44,13 +44,13 @@ public class TaxaInPublicationProcessCSVGenerator {
 
     private List<String> prepareTaxondFields(TaxonMapSettings settings, ITaxonService taxonService) throws Exception {
         try {
-            List<String> list = new ArrayList<String>();
+            List<String> list = new ArrayList<>();
             list.add(settings.getId().toString());
             list.add(settings.getTaxon().getNameLat());
             list.add(settings.isProtected() ? "1" : "0");
 
-            List<User> supervisors = new ArrayList<User>(taxonService.getInheritedRevisors(settings.getTaxon()));
-            Collections.sort(supervisors, new UserComparator());
+            List<User> supervisors = new ArrayList<>(taxonService.getInheritedRevisors(settings.getTaxon()));
+            supervisors.sort(new UserComparator());
             String serializedSupervisors = UserSerializer.serialize(supervisors, true);
             list.add(serializedSupervisors);
             list.add("");

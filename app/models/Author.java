@@ -36,9 +36,9 @@ public class Author extends Model implements Comparable<Author> {
 
     public static Author findByName(String surname, String name) {
         List<Author> authorList = find().query().where().eq("name", name).eq("surname", surname).findList();
-        if (authorList.size() == 0)
+        if (authorList.isEmpty())
             return null;
-        return authorList.get(0);
+        return authorList.getFirst();
     }
 
     public static Author findById(int id) {
@@ -70,7 +70,7 @@ public class Author extends Model implements Comparable<Author> {
     }
 
     public String toString() {
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder buffer = new StringBuilder();
         buffer.append(surname);
         if (StringUtils.isNotBlank(name)) {
             buffer.append(", ").append(name);

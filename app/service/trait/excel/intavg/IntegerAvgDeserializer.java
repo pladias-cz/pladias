@@ -22,7 +22,7 @@ public class IntegerAvgDeserializer extends AbstractDatatypeDeserializer impleme
     public IntegerAvgDeserializer(UserOptions options, Messages messages) {
         super(options, messages);
         this.options = options;
-        seenRecords = new HashSet<DatatypePK>();
+        seenRecords = new HashSet<>();
 
     }
 

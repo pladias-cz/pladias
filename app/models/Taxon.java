@@ -17,7 +17,7 @@ public class Taxon extends Model {
     public static final String QualifiedName = "public.taxons";
     @ManyToMany
     @JoinTable(name = "atlas.taxons_users")
-    public List<User> supervisors = new ArrayList<User>();
+    public List<User> supervisors = new ArrayList<>();
     @Id
     @Column(name = "id")
     private long id;
@@ -319,7 +319,7 @@ public class Taxon extends Model {
 
     /* Returns taxons hierarchy ordered from root to this taxon (inclusive)*/
     public Taxon[] getParentHierarchy() {
-        Deque<Taxon> ancestors = new ArrayDeque<Taxon>();
+        Deque<Taxon> ancestors = new ArrayDeque<>();
         Taxon taxon = this;
         while (taxon != null) {
             ancestors.addFirst(taxon);

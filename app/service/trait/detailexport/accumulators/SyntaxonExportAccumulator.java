@@ -26,15 +26,15 @@ public class SyntaxonExportAccumulator extends TriStateExportAccumulator {
 
     @Override
     public List<List<CellDetail>> getColumnHeaderData(boolean isComplexExport) {
-        List<List<CellDetail>> result = new ArrayList<List<CellDetail>>();
+        List<List<CellDetail>> result = new ArrayList<>();
 
         if (isComplexExport) {
             List<CellDetail> listTraitName = getTraitNameRow();
             result.add(listTraitName);
         }
 
-        List<CellDetail> rowTypes = new ArrayList<CellDetail>();
-        List<CellDetail> rowValues = new ArrayList<CellDetail>();
+        List<CellDetail> rowTypes = new ArrayList<>();
+        List<CellDetail> rowValues = new ArrayList<>();
         result.add(rowTypes);
         result.add(rowValues);
 
@@ -65,7 +65,7 @@ public class SyntaxonExportAccumulator extends TriStateExportAccumulator {
 
         long taxonId = dao.getSytaxonDatatypePK().getTaxonId();
         if (!cachedData.containsKey(taxonId)) {
-            List<CellDetail> list = new ArrayList<CellDetail>();
+            List<CellDetail> list = new ArrayList<>();
             for (int i = 0; i < syntaxonMap.getSize() * getExportTypesCount(); i++) {
                 list.add(NoValue);
             }
@@ -94,9 +94,9 @@ public class SyntaxonExportAccumulator extends TriStateExportAccumulator {
 
     private class SyntaxonMap {
         private int size = 0;
-        private final Map<Integer, Integer> syntaxonOrdering = new HashMap<Integer, Integer>();
-        private final Map<Integer, Syntaxon> orderToSyntaxonMap = new HashMap<Integer, Syntaxon>();
-        private final Map<Integer, Syntaxon> syntaxonMap = new HashMap<Integer, Syntaxon>();
+        private final Map<Integer, Integer> syntaxonOrdering = new HashMap<>();
+        private final Map<Integer, Syntaxon> orderToSyntaxonMap = new HashMap<>();
+        private final Map<Integer, Syntaxon> syntaxonMap = new HashMap<>();
         public SyntaxonMap(List<Syntaxon> orderedSyntaxons) {
             registerSyntaxons(orderedSyntaxons);
         }

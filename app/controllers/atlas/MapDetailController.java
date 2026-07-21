@@ -161,7 +161,7 @@ public class MapDetailController extends ControllerBase {
             fieldStatus = new FieldValidationStatus(messages.at("Atlas.undefined"),
                 FieldValidationStatus.UndefinedColor);
         } else {
-            validationStatus = rows.get(0).getInteger("validation_status");
+            validationStatus = rows.getFirst().getInteger("validation_status");
             RecordValidationStatus recStatus = RecordValidationStatus.find().byId(validationStatus);
             fieldStatus = new FieldValidationStatus(recStatus.getDescription(), recStatus.getColor());
         }
@@ -200,16 +200,12 @@ public class MapDetailController extends ControllerBase {
 
 
         // Delegate to specific project type method
-        switch (projectType) {
-            case PLADIAS:
-                return getNearbyPladiasRecords(taxon, square, currentUser);
-            case INATURALIST:
-                return getNearbyGbifRecords(taxon, square, true);
-            case GBIF:
-                return getNearbyGbifRecords(taxon, square, false);
-            default:
-                return badRequest(JsonResult.error("Unsupported project type"));
-        }
+        return switch (projectType) {
+            case PLADIAS -> getNearbyPladiasRecords(taxon, square, currentUser);
+            case INATURALIST -> getNearbyGbifRecords(taxon, square, true);
+            case GBIF -> getNearbyGbifRecords(taxon, square, false);
+            default -> badRequest(JsonResult.error("Unsupported project type"));
+        };
     }
 
     /**
@@ -233,20 +229,21 @@ public class MapDetailController extends ControllerBase {
         // Query records within 20km
         // Join with geodata.quadrants_full to get computed quadrant code from coordinates
         // Sort by latitude and longitude
-        String sql = "SELECT r.id,\n" +
-            "       q.code AS computed_quadrant_code\n" +
-            "FROM atlas.records r\n" +
-            "LEFT JOIN geodata.quadrants_full q\n" +
-            "       ON ST_Contains(q.geom_wgs, r.coords_wgs)\n" +
-            "WHERE r.taxon_id = :taxonId\n" +
-            "  AND r.coords_wgs && ST_MakeEnvelope(\n" +
-            "        :longitude - :dLon,\n" +
-            "        :latitude  - :dLat,\n" +
-            "        :longitude + :dLon,\n" +
-            "        :latitude  + :dLat,\n" +
-            "        4326\n" +
-            "  )\n" +
-            "ORDER BY r.latitude DESC, r.longitude DESC, r.id;";
+        String sql = """
+            SELECT r.id,
+                   q.code AS computed_quadrant_code
+            FROM atlas.records r
+            LEFT JOIN geodata.quadrants_full q
+                   ON ST_Contains(q.geom_wgs, r.coords_wgs)
+            WHERE r.taxon_id = :taxonId
+              AND r.coords_wgs && ST_MakeEnvelope(
+                    :longitude - :dLon,
+                    :latitude  - :dLat,
+                    :longitude + :dLon,
+                    :latitude  + :dLat,
+                    4326
+              )
+            ORDER BY r.latitude DESC, r.longitude DESC, r.id;""";
 
         List<io.ebean.SqlRow> rows = DB.sqlQuery(sql)
             .setParameter("taxonId", taxon.getId())

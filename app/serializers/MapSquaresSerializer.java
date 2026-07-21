@@ -12,7 +12,7 @@ public class MapSquaresSerializer {
 
         StringBuilder serialized = new StringBuilder();
         for (MapSquareNew square : mapSquares) {
-            if (serialized.length() > 0) {
+            if (!serialized.isEmpty()) {
                 serialized.append(';');
             }
             serialized.append(square.getCode());

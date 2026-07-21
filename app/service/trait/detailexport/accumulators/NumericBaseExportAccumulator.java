@@ -20,13 +20,13 @@ public abstract class NumericBaseExportAccumulator extends BaseExportAccumulator
     @Override
     public List<List<CellDetail>> getColumnHeaderData(boolean isComplexExport) {
 
-        List<List<CellDetail>> result = new ArrayList<List<CellDetail>>();
+        List<List<CellDetail>> result = new ArrayList<>();
         if (isComplexExport) {
             List<CellDetail> listTraitName = getTraitNameRow();
             result.add(listTraitName);
         }
 
-        List<CellDetail> listColumnHeaders = new ArrayList<CellDetail>();
+        List<CellDetail> listColumnHeaders = new ArrayList<>();
 
         for (int i = 0; i < columnTypeLocalizedLabels.length; i++) {
             /*EntryTypes values are 1-based*/
@@ -52,7 +52,7 @@ public abstract class NumericBaseExportAccumulator extends BaseExportAccumulator
 
     protected void updateCachedDataIfNeeded(long taxonId) {
         if (!cachedData.containsKey(taxonId)) {
-            List<CellDetail> list = new ArrayList<CellDetail>();
+            List<CellDetail> list = new ArrayList<>();
             for (int i = 0; i < getColumnCount(); i++) {
                 list.add(NoValue);
             }

@@ -20,8 +20,8 @@ public class TraitsImportService {
     private final int traitId;
     private final AbstractDatatypeDeserializer deserializer;
 
-    private List<Model> datatypes = new ArrayList<Model>();
-    private List<ValueComment> comments = new ArrayList<ValueComment>();
+    private List<Model> datatypes = new ArrayList<>();
+    private List<ValueComment> comments = new ArrayList<>();
 
     public TraitsImportService(Feature feature, int traitId, UserOptions userOptions, Messages messages) throws Exception {
         this.traitId = traitId;
@@ -41,7 +41,7 @@ public class TraitsImportService {
     }
 
     private List<Model> extractDatatypes(Iterable<DatatypeWrapper> wrappers) {
-        List<Model> datatypes = new ArrayList<Model>();
+        List<Model> datatypes = new ArrayList<>();
         for (DatatypeWrapper adw : wrappers) {
             datatypes.add(adw.getDatatype());
         }
@@ -49,7 +49,7 @@ public class TraitsImportService {
     }
 
     private List<ValueComment> extractComments(Iterable<DatatypeWrapper> wrappers) {
-        List<ValueComment> comments = new ArrayList<ValueComment>();
+        List<ValueComment> comments = new ArrayList<>();
         for (DatatypeWrapper adw : wrappers) {
             if (adw.getComment() != null) {
                 comments.add(adw.getComment());
@@ -62,7 +62,7 @@ public class TraitsImportService {
         try {
             datatypes.clear();
 
-            List<DatatypeWrapper> wrappers = new ArrayList<DatatypeWrapper>();
+            List<DatatypeWrapper> wrappers = new ArrayList<>();
 
             int currentRow = 1;
             while (true) {

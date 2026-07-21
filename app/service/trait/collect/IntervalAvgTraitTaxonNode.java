@@ -50,7 +50,7 @@ public class IntervalAvgTraitTaxonNode extends BaseTraitTaxonNode {
 
     @Override
     public List<Model> getComputedEntities() {
-        List<Model> entities = new ArrayList<Model>();
+        List<Model> entities = new ArrayList<>();
 
         IntervalAvgData composedValue = null;
         if (!originalValue.isEmpty()) {

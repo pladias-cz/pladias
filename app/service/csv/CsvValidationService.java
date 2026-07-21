@@ -73,7 +73,7 @@ public class CsvValidationService {
     }
 
     private Iterable<String> serializeEntry(IRecordColumnMapper colMapper, RecordRow row) {
-        List<String> result = new ArrayList<String>();
+        List<String> result = new ArrayList<>();
         int lastColumn = colMapper.getColumn(IExcelTableColumns.INFO_REPORT_COLUMN_ID);
         for (int i = 0; i <= lastColumn; i++) {
             String value = row.get(i);

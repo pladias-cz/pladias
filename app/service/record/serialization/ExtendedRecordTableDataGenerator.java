@@ -28,7 +28,7 @@ public class ExtendedRecordTableDataGenerator
 
     @Override
     public List<String> prepareRecordFields(Record r) {
-        List<String> list = new ArrayList<String>();
+        List<String> list = new ArrayList<>();
         list.add(Long.toString(r.getId()));
         list.add(r.getTaxon().getNameLat());
         list.add(guardNullValue(r.getOriginalName()));
@@ -77,10 +77,7 @@ public class ExtendedRecordTableDataGenerator
 
     private String getQuadrant(Record r) {
         Optional<QuadrantNew> quadrant = r.getQuadrant();
-        if (quadrant.isPresent()) {
-            return QuadrantsSerializer.serialize(quadrant.get());
-        }
-        return "";
+        return quadrant.map(QuadrantsSerializer::serialize).orElse("");
     }
 
     private String getPhytochorion(Record r) {
@@ -110,7 +107,7 @@ public class ExtendedRecordTableDataGenerator
     }
 
     private void createRecordHeaders() {
-        recordHeaders = new ArrayList<String>();
+        recordHeaders = new ArrayList<>();
         recordHeaders.add("ID");
         recordHeaders.add("jméno stand.");
         recordHeaders.add("jméno orig.");

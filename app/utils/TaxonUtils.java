@@ -62,7 +62,7 @@ public class TaxonUtils {
         if (presliaSet != null)
             return presliaSet;
 
-        presliaSet = new TreeSet<String>();
+        presliaSet = new TreeSet<>();
         String sql = "SELECT DISTINCT preslia FROM atlas.taxon_mapsettings";
         SqlQuery query = DB.sqlQuery(sql);
         List<SqlRow> rows = query.findList();
@@ -76,7 +76,7 @@ public class TaxonUtils {
     }
 
     public static Set<Integer> getTaxonsIdsWithTraitData() {
-        Set<Integer> taxonIds = new TreeSet<Integer>();
+        Set<Integer> taxonIds = new TreeSet<>();
         String sql = "SELECT taxon_id FROM measurements.taxons_having_traitdata";
         SqlQuery query = DB.sqlQuery(sql);
         List<SqlRow> rows = query.findList();

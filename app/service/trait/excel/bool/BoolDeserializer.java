@@ -22,7 +22,7 @@ public class BoolDeserializer extends AbstractDatatypeDeserializer implements IB
     public BoolDeserializer(UserOptions options, Messages messages) {
         super(options, messages);
         this.options = options;
-        seenPrimKeys = new HashSet<DatatypePK>();
+        seenPrimKeys = new HashSet<>();
     }
 
     @Override

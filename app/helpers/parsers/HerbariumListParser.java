@@ -15,7 +15,7 @@ public class HerbariumListParser {
 
 
     public static List<String> parse(String input) {
-        List<String> herbariums = new ArrayList<String>();
+        List<String> herbariums = new ArrayList<>();
         if (input == null)
             return herbariums;
 

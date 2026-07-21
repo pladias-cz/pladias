@@ -13,7 +13,7 @@ import java.util.Locale;
 import java.util.Map;
 
 public class SyntaxonSerializer extends EnumAbstractSerializer {
-    private final Map<Integer, Syntaxon> syntaxonCache = new HashMap<Integer, Syntaxon>();
+    private final Map<Integer, Syntaxon> syntaxonCache = new HashMap<>();
 
     public SyntaxonSerializer(UserOptions options, Messages messages, Locale locale, Workbook wb, Sheet sheet) {
         super(options, messages, locale, wb, sheet);

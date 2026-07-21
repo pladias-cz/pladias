@@ -25,7 +25,7 @@ public class EnumSerializer extends EnumAbstractSerializer {
     }
 
     private Map<Integer, EnumerateValue> populateEnumMap(Enumerate enumerate) {
-        Map<Integer, EnumerateValue> map = new HashMap<Integer, EnumerateValue>();
+        Map<Integer, EnumerateValue> map = new HashMap<>();
         for (EnumerateValue v : enumerate.getEnumerateValues()) {
             map.put(v.getId(), v);
         }

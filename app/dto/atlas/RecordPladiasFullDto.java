@@ -201,7 +201,7 @@ public record RecordPladiasFullDto(
             ? String.valueOf(record.getQuadrant().get().getQuadrantLetter()) : null;
 
         String squareCode = record.getMapSquares() != null && !record.getMapSquares().isEmpty()
-            ? record.getMapSquares().get(0).getCode() : null;
+            ? record.getMapSquares().getFirst().getCode() : null;
 
         District district = record.getDistrict();
         Long districtId = district != null ? district.getId() : null;

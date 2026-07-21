@@ -9,7 +9,7 @@ import java.util.List;
 
 public class DataExtractingVisitor implements INodeVisitor {
 
-    private final List<Model> entitiesCollection = new ArrayList<Model>();
+    private final List<Model> entitiesCollection = new ArrayList<>();
 
     public List<Model> getEntities() {
         return entitiesCollection;

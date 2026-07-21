@@ -15,7 +15,7 @@ public class MailInfo {
         this.subject = subject;
         this.contents = contents;
         this.recipient = recipient;
-        attachments = new ArrayList<MailAttachment>();
+        attachments = new ArrayList<>();
     }
 
     public String getSubject() {

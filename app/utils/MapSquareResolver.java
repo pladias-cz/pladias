@@ -20,12 +20,12 @@ public class MapSquareResolver {
     }
 
     public SquareData resolve(String[] definitions) {
-        Set<MapSquareNew> squares = new HashSet<MapSquareNew>();
-        Set<QuadrantNew> quadrants = new HashSet<QuadrantNew>();
+        Set<MapSquareNew> squares = new HashSet<>();
+        Set<QuadrantNew> quadrants = new HashSet<>();
 
-        for (int i = 0; i < definitions.length; i++) {
-            if (StringUtils.isNotEmpty(definitions[i])) {
-                String definition = definitions[i].trim();
+        for (String s : definitions) {
+            if (StringUtils.isNotEmpty(s)) {
+                String definition = s.trim();
 
                 if (m_SquareRepository.isWildcard(definition)) {
                     Pair<MapSquareNew, QuadrantNew[]> data = m_SquareRepository.parseWildcard(definition);

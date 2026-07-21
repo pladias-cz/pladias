@@ -25,8 +25,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class DuplicationValidationServiceNonVascular extends DuplicationValidationServiceBase {
-    private final int BufferLengthMetersWarning = 2000;
-    private final int BufferLengthMetersError = 50;
 
     private final Logger _logger = LoggerFactory.getLogger(DuplicationValidationServiceNonVascular.class);
 
@@ -50,8 +48,9 @@ public class DuplicationValidationServiceNonVascular extends DuplicationValidati
             softValidationRange = yearRange(currentYear - 1, currentYear + 1);
         }
         StringBuilder builder = createFromClause(authorsSurnames);
+        int bufferLengthMetersWarning = 2000;
         populateWhereClause(builder, record, softValidationRange, authorsSurnames, noSubstrate,
-            BufferLengthMetersWarning);
+            bufferLengthMetersWarning);
 
         try {
             Optional<Record> dupWarn = searchForDuplicates(builder);
@@ -66,8 +65,9 @@ public class DuplicationValidationServiceNonVascular extends DuplicationValidati
                     hardValidationRange = yearRange(currentYear, currentYear);
                 }
 
+                int bufferLengthMetersError = 50;
                 populateWhereClause(builder, record, hardValidationRange, authorsSurnames, substrate2,
-                    BufferLengthMetersError);
+                    bufferLengthMetersError);
                 Optional<Record> dupError = searchForDuplicates(builder);
 
                 long duplicateId = dupError.isPresent()
@@ -121,7 +121,7 @@ public class DuplicationValidationServiceNonVascular extends DuplicationValidati
         List<Record> duplicates = sqlQuery.findList();
         return duplicates.isEmpty()
             ? Optional.empty()
-            : Optional.of(duplicates.get(0));
+            : Optional.of(duplicates.getFirst());
     }
 
     private List<String> getAuthorSurnames(Record record) {
@@ -177,7 +177,7 @@ public class DuplicationValidationServiceNonVascular extends DuplicationValidati
             for (String surname : authorsSurnames) {
                 query.append(surname).append("','");
             }
-            query.append(authorsSurnames.get(0)).append("') "); //we copy this field one more time as this is the simplest implementation
+            query.append(authorsSurnames.getFirst()).append("') "); //we copy this field one more time as this is the simplest implementation
             query.append("AND ");
         }
 
@@ -197,9 +197,7 @@ public class DuplicationValidationServiceNonVascular extends DuplicationValidati
             query.append(" AND ");
         }
 
-        if (substrate2.isPresent()) {
-            query.append(" NonVasc.substrate_2_id = ").append(substrate2.get().getId()).append(" AND ");
-        }
+        substrate2.ifPresent(value -> query.append(" NonVasc.substrate_2_id = ").append(value.getId()).append(" AND "));
 
         query.append(" TRUE "); //complete the condition
         query.append(" limit 1");

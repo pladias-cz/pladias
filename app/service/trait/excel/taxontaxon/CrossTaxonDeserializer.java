@@ -23,7 +23,7 @@ public class CrossTaxonDeserializer extends AbstractDatatypeDeserializer impleme
 
     public CrossTaxonDeserializer(UserOptions options, Messages messages) {
         super(options, messages);
-        seenRecords = new HashSet<CrossTaxonDatatypePK>();
+        seenRecords = new HashSet<>();
     }
 
     @Override

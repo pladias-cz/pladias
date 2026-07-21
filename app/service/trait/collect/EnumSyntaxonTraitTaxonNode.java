@@ -15,11 +15,11 @@ import java.util.*;
 
 public class EnumSyntaxonTraitTaxonNode extends BaseTraitTaxonNode {
     private Map<Integer, Boolean> originalValues;
-    private final Map<Integer, Boolean> inherited = new HashMap<Integer, Boolean>();
-    private final Map<Integer, Boolean> aggregated = new HashMap<Integer, Boolean>();
+    private final Map<Integer, Boolean> inherited = new HashMap<>();
+    private final Map<Integer, Boolean> aggregated = new HashMap<>();
 
-    private final Map<Integer, Integer> originalValueFrequencies = new HashMap<Integer, Integer>();
-    private final Map<Integer, Boolean> originalValueDominancy = new HashMap<Integer, Boolean>();
+    private final Map<Integer, Integer> originalValueFrequencies = new HashMap<>();
+    private final Map<Integer, Boolean> originalValueDominancy = new HashMap<>();
 
     private final Map<Integer, Syntaxon> allSyntaxonMap;
 
@@ -31,7 +31,7 @@ public class EnumSyntaxonTraitTaxonNode extends BaseTraitTaxonNode {
     }
 
     private void populateOriginalValues(Map<Integer, SyntaxonDatatype> syntaxons) {
-        Map<Integer, Boolean> map = new HashMap<Integer, Boolean>();
+        Map<Integer, Boolean> map = new HashMap<>();
         for (SyntaxonDatatype sd : syntaxons.values()) {
             int syntaxonId = sd.getSytaxonDatatypePK().getSyntaxonId();
             map.put(syntaxonId, true);
@@ -52,10 +52,10 @@ public class EnumSyntaxonTraitTaxonNode extends BaseTraitTaxonNode {
 
     @Override
     public List<Model> getComputedEntities() {
-        List<Model> results = new ArrayList<Model>();
+        List<Model> results = new ArrayList<>();
 
         List<Pair<TraitDetailsEntryType, Map<Integer, Boolean>>> list =
-            new ArrayList<Pair<TraitDetailsEntryType, Map<Integer, Boolean>>>();
+                new ArrayList<>();
 
         list.add(Pair.of(TraitDetailsEntryType.Original, originalValues));
         list.add(Pair.of(TraitDetailsEntryType.Aggregated, aggregated));

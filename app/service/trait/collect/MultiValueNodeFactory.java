@@ -38,14 +38,14 @@ public class MultiValueNodeFactory {
         if (isIntType) {
             Set<Integer> intValues = collectIntValues(taxon);
             if (inheritanceType.getId() == InheritanceType.Basic) {
-                return new BasicTraitTaxonNode<Integer>(trait, taxon, intValues);
-            } else return new NumericTraitTaxonNode<Integer>(trait, taxon, intValues);
+                return new BasicTraitTaxonNode<>(trait, taxon, intValues);
+            } else return new NumericTraitTaxonNode<>(trait, taxon, intValues);
         }
 
         Set<Double> doubleValues = collectDoubleValues(taxon);
         if (inheritanceType.getId() == InheritanceType.Basic) {
-            return new BasicTraitTaxonNode<Double>(trait, taxon, doubleValues);
-        } else return new NumericTraitTaxonNode<Double>(trait, taxon, doubleValues);
+            return new BasicTraitTaxonNode<>(trait, taxon, doubleValues);
+        } else return new NumericTraitTaxonNode<>(trait, taxon, doubleValues);
     }
 
     private Set<Integer> collectIntValues(Taxon taxon) {
@@ -106,7 +106,7 @@ public class MultiValueNodeFactory {
     private Set<Integer> doExtractIntegerValues(String sql) {
         List<SqlRow> rows = getRows(sql);
 
-        Set<Integer> set = new HashSet<Integer>();
+        Set<Integer> set = new HashSet<>();
 
         for (SqlRow row : rows) {
             int enumId = row.getInteger("value");
@@ -118,7 +118,7 @@ public class MultiValueNodeFactory {
     private Set<Double> doExtractDoubleValues(String sql) {
         List<SqlRow> rows = getRows(sql);
 
-        Set<Double> set = new HashSet<Double>();
+        Set<Double> set = new HashSet<>();
         for (SqlRow row : rows) {
             double value = row.getDouble("value");
             set.add(value);

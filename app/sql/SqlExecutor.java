@@ -17,8 +17,6 @@ import java.util.List;
 public class SqlExecutor {
 
     private final Logger _logger = LoggerFactory.getLogger(SqlExecutor.class);
-    private final String COLUMN_NAME = "column_name";
-    private final int BATCH_RECORDS_SIZE = 5000;
     private final Database database;
 
     @Inject
@@ -92,6 +90,7 @@ public class SqlExecutor {
     }
 
     private String createSql(String qualifiedTableName, String primaryKey, String startingPrimaryKey) {
+        int BATCH_RECORDS_SIZE = 5000;
         return " SELECT * FROM " + qualifiedTableName +
             " WHERE " + primaryKey + " > " + startingPrimaryKey +
             " ORDER BY " + primaryKey +
@@ -102,8 +101,9 @@ public class SqlExecutor {
 
         try (Connection connection = database.getConnection()) {
             ResultSet rs = executeQuery(connection, sql);
-            List<String> columnNames = new ArrayList<String>();
+            List<String> columnNames = new ArrayList<>();
             while (rs.next()) {
+                String COLUMN_NAME = "column_name";
                 String colName = rs.getString(COLUMN_NAME);
                 columnNames.add(colName);
             }
@@ -125,7 +125,7 @@ public class SqlExecutor {
     }
 
     private List<String> buildRow(ResultSet rs, int columnCount) throws SQLException {
-        List<String> row = new ArrayList<String>();
+        List<String> row = new ArrayList<>();
         for (int i = 1; i <= columnCount; i++) {
             row.add(rs.getString(i));
         }

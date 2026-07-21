@@ -9,8 +9,8 @@ import java.util.List;
 
 public class EnumTraitDictionary {
     private final Datatype datatype;
-    private final HashMap<Integer, EnumerateValue> idToEnumerateValueMap = new HashMap<Integer, EnumerateValue>();
-    private final HashMap<Integer, Integer> idToOrderMap = new HashMap<Integer, Integer>();
+    private final HashMap<Integer, EnumerateValue> idToEnumerateValueMap = new HashMap<>();
+    private final HashMap<Integer, Integer> idToOrderMap = new HashMap<>();
 
     public EnumTraitDictionary(Datatype datatype, Enumerate enumerate) {
         this.datatype = datatype;
@@ -30,7 +30,7 @@ public class EnumTraitDictionary {
     }
 
     private void populate(List<EnumerateValue> values) {
-        if (values.size() == 0)
+        if (values.isEmpty())
             return;
 
         sortByOrder(values);

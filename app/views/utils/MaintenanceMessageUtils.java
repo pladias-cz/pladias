@@ -11,6 +11,6 @@ public class MaintenanceMessageUtils {
         if (all.isEmpty()) {
             return null;
         }
-        return all.get(0);
+        return all.getFirst();
     }
 }

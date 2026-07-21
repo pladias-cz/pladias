@@ -8,12 +8,10 @@ public class AccessRightsService implements IAccessRightsService {
 
     @Override
     public boolean IsActionAllowed(User user, AccessRights accessRights) {
-        switch (accessRights) {
-            case TraitBackup:
-                return user.isTraitAdmin();
-            default:
-                return false;
-        }
+        return switch (accessRights) {
+            case TraitBackup -> user.isTraitAdmin();
+            default -> false;
+        };
     }
 
     @Override

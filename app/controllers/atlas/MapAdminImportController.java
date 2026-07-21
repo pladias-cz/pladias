@@ -114,26 +114,14 @@ public class MapAdminImportController extends ControllerBase {
 
             // Apply sorting
             if (sortBy != null && !sortBy.isEmpty()) {
-                String sortExpr;
-                switch (sortBy) {
-                    case "committerName":
-                        sortExpr = "batch.committer.name";
-                        break;
-                    case "importTimestamp":
-                        sortExpr = "batch.createTimestamp";
-                        break;
-                    case "batchId":
-                        sortExpr = "batch.id";
-                        break;
-                    case "filename":
-                        sortExpr = "filename";
-                        break;
-                    case "recordsCount":
-                        sortExpr = "records";
-                        break;
-                    default:
-                        sortExpr = sortBy;
-                }
+                String sortExpr = switch (sortBy) {
+                    case "committerName" -> "batch.committer.name";
+                    case "importTimestamp" -> "batch.createTimestamp";
+                    case "batchId" -> "batch.id";
+                    case "filename" -> "filename";
+                    case "recordsCount" -> "records";
+                    default -> sortBy;
+                };
                 if ("desc".equalsIgnoreCase(sortOrder)) {
                     sortExpr += " desc";
                 }
@@ -301,7 +289,7 @@ public class MapAdminImportController extends ControllerBase {
 
         }
 
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder buffer = new StringBuilder();
         buffer.append("BEGIN;")
             .append("delete from atlas.users_comments UC where exists ")
             .append("(select 1 from atlas.records R INNER JOIN atlas.comments C on R.id = C.record_id ")

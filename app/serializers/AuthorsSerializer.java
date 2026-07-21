@@ -18,7 +18,7 @@ public class AuthorsSerializer {
             } else {
                 a = String.format("%s %s", author.getName(), author.getSurname());
             }
-            if (authorList.length() > 0) {
+            if (!authorList.isEmpty()) {
                 authorList.append("; ");
             }
             authorList.append(a);

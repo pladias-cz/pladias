@@ -30,7 +30,7 @@ public class DistributionTraitTaxonNode extends BaseTraitTaxonNode {
 
     @Override
     public List<Model> getComputedEntities() throws Exception {
-        List<Model> result = new ArrayList<Model>();
+        List<Model> result = new ArrayList<>();
 
         result.add(createEntity(TraitDetailsEntryType.Original, originalValues));
         result.add(createEntity(TraitDetailsEntryType.Inherited, inherited));
@@ -89,8 +89,8 @@ public class DistributionTraitTaxonNode extends BaseTraitTaxonNode {
     }
 
     public static class DistributionDetails {
-        public Set<Integer> Squares = new HashSet<Integer>();
-        public Set<Integer> Quadrants = new HashSet<Integer>();
+        public Set<Integer> Squares = new HashSet<>();
+        public Set<Integer> Quadrants = new HashSet<>();
     }
 
 }

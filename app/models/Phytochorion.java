@@ -30,7 +30,7 @@ public class Phytochorion extends PhytochorionBase<Phytochorion> {
 
     public static Set<Phytochorion> findByBuffer(Coordinates coords, int bufferMeters) {
         if (!coords.isValid()) {
-            return new HashSet<Phytochorion>();
+            return new HashSet<>();
         }
 
         String sql;

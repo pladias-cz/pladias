@@ -31,12 +31,7 @@ public class CoordinatesParser {
     private static final Pattern InputPattern5 =
         Pattern.compile("(\\d+)°(\\d+)'(\\d+(?:\\,\\d+)?)\"(:?N|S)?,\\s*(\\d+)°(\\d+)'(\\d+(:?\\,\\d+)?)\"(:?E|W)?");
 
-    /**
-     *
-     * @param input
-     * @return Pair<Double, Double>  (longitude, latitude)
-     * @throws InvalidParameterException
-     */
+
     public static Pair<Double, Double> parse(String input, Messages messages) throws InvalidParameterException {
         if (input == null) {
             throw new InvalidParameterException(messages.at("CoordinatesParser.InvalidInput"));

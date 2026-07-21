@@ -30,14 +30,14 @@ public class EnumOrdinalExportAccumulator extends BaseExportAccumulator {
 
     @Override
     public List<List<CellDetail>> getColumnHeaderData(boolean isComplexExport) {
-        List<List<CellDetail>> result = new ArrayList<List<CellDetail>>();
+        List<List<CellDetail>> result = new ArrayList<>();
 
         if (isComplexExport) {
             List<CellDetail> listTraitName = getTraitNameRow();
             result.add(listTraitName);
         }
 
-        List<CellDetail> rowTypes = new ArrayList<CellDetail>();
+        List<CellDetail> rowTypes = new ArrayList<>();
         result.add(rowTypes);
 
         for (int i = 0; i < columnTypeLocalizedLabels.length; i++) {
@@ -74,7 +74,7 @@ public class EnumOrdinalExportAccumulator extends BaseExportAccumulator {
 
         long taxonId = enumDtPk.getTaxonId();
         if (!cachedData.containsKey(taxonId)) {
-            List<CellDetail> list = new ArrayList<CellDetail>();
+            List<CellDetail> list = new ArrayList<>();
             for (int i = 0; i < getExportTypesCount(); i++) {
                 list.add(NoValue);
             }

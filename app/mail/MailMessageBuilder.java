@@ -11,10 +11,10 @@ import java.util.List;
 
 public class MailMessageBuilder {
 
-    private final List<String> recipients = new ArrayList<String>();
+    private final List<String> recipients = new ArrayList<>();
     private String contents = "";
     private String subject = "";
-    private final List<MimeBodyPart> attachments = new ArrayList<MimeBodyPart>();
+    private final List<MimeBodyPart> attachments = new ArrayList<>();
 
     public MailMessageBuilder() {
     }

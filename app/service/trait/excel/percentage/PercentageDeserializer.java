@@ -22,7 +22,7 @@ public class PercentageDeserializer extends AbstractDatatypeDeserializer impleme
         super(userOptions, messages);
         this.percentageConvertor = new PercentageConvertor(messages, userOptions.percentageAsInteger());
         this.nullSubstitution = userOptions.getNullSubstitution();
-        seenRecords = new HashSet<DatatypePK>();
+        seenRecords = new HashSet<>();
     }
 
     @Override

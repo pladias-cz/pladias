@@ -67,7 +67,7 @@ public class TraitsExportService {
         SqlQuery sqlQuery = DB.sqlQuery(sql);
         List<SqlRow> rows = sqlQuery.findList();
 
-        List<DataUnmeasurable> unmeasurables = new ArrayList<DataUnmeasurable>();
+        List<DataUnmeasurable> unmeasurables = new ArrayList<>();
         for (SqlRow row : rows) {
             DatatypePK pk = new DatatypePK();
             DataUnmeasurable datatype = new DataUnmeasurable();

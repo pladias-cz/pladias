@@ -34,7 +34,7 @@ public class TaxonOccurrenceService {
     }
 
     private List<Pair<String, String>> createConsolidatedTaxonMap(List<SqlRow> rows) {
-        List<Pair<String, String>> result = new ArrayList<Pair<String, String>>();
+        List<Pair<String, String>> result = new ArrayList<>();
         Map<String, Set<String>> consolidated = createConsolidatedTaxonOccurrences(rows);
         for (String key : consolidated.keySet()) {
             String quadrants = concatenateQuadrants(consolidated.get(key));
@@ -44,13 +44,13 @@ public class TaxonOccurrenceService {
     }
 
     private TreeMap<String, Set<String>> createConsolidatedTaxonOccurrences(List<SqlRow> rows) {
-        TreeMap<String, Set<String>> consolidatedTaxonOccurrence = new TreeMap<String, Set<String>>();
+        TreeMap<String, Set<String>> consolidatedTaxonOccurrence = new TreeMap<>();
         for (SqlRow r : rows) {
             String quadrant = r.getString("quadrant");
             String nameLat = r.getString("nameLat");
             Set<String> quadrants = null;
             if (!consolidatedTaxonOccurrence.containsKey(nameLat)) {
-                quadrants = new TreeSet<String>();
+                quadrants = new TreeSet<>();
                 consolidatedTaxonOccurrence.put(nameLat, quadrants);
             } else {
                 quadrants = consolidatedTaxonOccurrence.get(nameLat);

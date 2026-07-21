@@ -10,7 +10,7 @@ public class UserSerializer {
         StringBuilder builder = new StringBuilder();
 
         for (User u : users) {
-            if (builder.length() > 0) {
+            if (!builder.isEmpty()) {
                 builder.append(", ");
             }
             if (includeFirstNames) {

@@ -57,7 +57,7 @@ public class TraitDetailsExportExcelBuilder implements IDetailedExportBuilder {
     }
 
     private void initStyles(XSSFWorkbook wb) {
-        styles = new HashMap<CellType, CellStyle>();
+        styles = new HashMap<>();
 
         Font cellFont = wb.createFont();
         cellFont.setFontHeightInPoints((short) 10);

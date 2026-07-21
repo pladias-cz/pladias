@@ -40,7 +40,7 @@ public class VascularExcelTableValidationService extends AbstractExcelTableValid
 
     private Set<Long> populateImportableTaxonsIds() {
         List<Taxon> taxons = TaxonSearchService.getImportableTaxons("");
-        Set<Long> taxonIds = new HashSet<Long>();
+        Set<Long> taxonIds = new HashSet<>();
         for (Taxon t : taxons) {
             taxonIds.add(t.getId());
         }
@@ -194,7 +194,7 @@ public class VascularExcelTableValidationService extends AbstractExcelTableValid
                         messages.at("ExcelTableValidationService.noMatchingQuadrantFoundForGpsCoords")));
                     return;
                 }
-                List<QuadrantNew> list = new ArrayList<QuadrantNew>();
+                List<QuadrantNew> list = new ArrayList<>();
                 list.add(q);
                 record.setQuadrantsLegacy(list);
                 record.setQuadrantLegacyComputed(true);
@@ -240,7 +240,7 @@ public class VascularExcelTableValidationService extends AbstractExcelTableValid
             //nearest town empty -> warn that it has been automatically generated
             List<District> hierarchy = District.findTownHierarchyByPoint(coords);
             if (!hierarchy.isEmpty()) {
-                District targetTown = hierarchy.get(0);
+                District targetTown = hierarchy.getFirst();
                 String errorMessage = messages.at("ExcelTableValidationService.nearestTownComputedFromGpsCoords", targetTown);
                 wrapper.addInfo(new ExcelErrorInfo(wrapper.getRowNumber(),
                     colMapper.getColumn(IExcelTableColumns.NEAREST_TOWN_COLUMN_ID), errorMessage));
@@ -299,7 +299,7 @@ public class VascularExcelTableValidationService extends AbstractExcelTableValid
             ieq("name", nearestTownName).orderBy().desc("depth").findList();
 
         if (!candidates.isEmpty()) {
-            nearestTown = candidates.get(0);
+            nearestTown = candidates.getFirst();
 
         } else if (nearestTownName.contains("-")) {
             String[] components = nearestTownName.split("-");
@@ -339,7 +339,7 @@ public class VascularExcelTableValidationService extends AbstractExcelTableValid
 
                 //since candidateDistricts use small buffer, it can happen that the GPS location lies outside of Czech Republic and still
                 //the candidate list is not empty. Thus we must be careful so that we do not get NullPointerException
-                District computedDistrict = exactlyComputedDistrict != null ? exactlyComputedDistrict : computedDistrictCandidates.get(0);
+                District computedDistrict = exactlyComputedDistrict != null ? exactlyComputedDistrict : computedDistrictCandidates.getFirst();
                 wrapper.addUpdate(new UpdateEntryInfo(wrapper.getRowNumber(),
                     colMapper.getColumn(IExcelTableColumns.DISTRICT_COLUMN_ID), computedDistrict.getName()));
 

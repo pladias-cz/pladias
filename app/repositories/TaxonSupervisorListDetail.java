@@ -13,16 +13,13 @@ public enum TaxonSupervisorListDetail {
     }
 
     public static TaxonSupervisorListDetail fromValue(int value) {
-        switch (value) {
-            case 0:
-                return LOW;
-            case 1:
-                return NORMAL;
-            case 2:
-                return DETAILED;
-        }
+        return switch (value) {
+            case 0 -> LOW;
+            case 1 -> NORMAL;
+            case 2 -> DETAILED;
+            default -> null;
+        };
 
-        return null;
     }
 
     public int toValue() {

@@ -53,8 +53,8 @@ public class DuplicationValidationServiceVascular extends DuplicationValidationS
         if (record.getLocality() != null)
             expr = expr.eq("locality", record.getLocality());
         try {
-            final Set<Author> ownAuthors = new HashSet<Author>(record.getAuthorsSorted());
-            final Set<Herbarium> ownHerbariumSet = new HashSet<Herbarium>(record.getHerbariums());
+            final Set<Author> ownAuthors = new HashSet<>(record.getAuthorsSorted());
+            final Set<Herbarium> ownHerbariumSet = new HashSet<>(record.getHerbariums());
 
             List<Record> candidates = expr.findList();
             _logger.info(String.format("Duplicity test - found %d candidates", candidates.size()));
@@ -62,14 +62,14 @@ public class DuplicationValidationServiceVascular extends DuplicationValidationS
             for (Record candidate : candidates) {
 
                 //verify that authors match
-                Set<Author> candidateAuthors = new HashSet<Author>(candidate.getAuthorsSorted());
+                Set<Author> candidateAuthors = new HashSet<>(candidate.getAuthorsSorted());
 
                 if (!ownAuthors.equals(candidateAuthors)) {
                     continue;
                 }
 
                 //verify that herbariums match
-                Set<Herbarium> candidateHerbariumsSet = new HashSet<Herbarium>(candidate.getHerbariums());
+                Set<Herbarium> candidateHerbariumsSet = new HashSet<>(candidate.getHerbariums());
                 if (!ownHerbariumSet.equals(candidateHerbariumsSet)) {
                     continue;
                 }

@@ -84,18 +84,13 @@ public class CvsBatchValidationTask extends CsvBaseTask {
     private void validate(Batch batch)
         throws IOException, UnsupportedEncodingException, FileNotFoundException {
 
-        File validatedFile = withCsvDocument(new IDocProcessor<File>() {
+        File validatedFile = withCsvDocument(doc -> {
 
-            @Override
-            public File execute(CsvDocument doc) throws IOException {
+            CsvValidationService csvValidationService =
+                new CsvValidationService(
+                    _project, _loadServiceFactory, _validationServiceFactory, _messages);
 
-                CsvValidationService csvValidationService =
-                    new CsvValidationService(
-                        _project, _loadServiceFactory, _validationServiceFactory, _messages);
-
-                return csvValidationService.runValidation(doc);
-            }
-
+            return csvValidationService.runValidation(doc);
         });
 
         byte[] zippedImportFile = zipToBytes(validatedFile, _sourceFile.getName());

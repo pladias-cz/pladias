@@ -18,47 +18,28 @@ public class TraitAccumulatorFactory {
     public static final BaseExportAccumulator create(
         Trait t, UserOptions userOptions, Set<TraitDetailsEntryType> exportTypes,
         Messages messages) throws NotSupportedException {
-        switch (t.getFeature().getDatatype().getId()) {
-            case Datatype.IntegerDatatypeId:
-                return new IntExportAccumulator(t, userOptions, exportTypes, messages);
-
-            case Datatype.BooleanDatatypeId:
-                return new BoolExportAccumulator(t, userOptions, exportTypes, messages);
-
-            case Datatype.EnumNominalDatatypeId:
-            case Datatype.EnumOrdinalDatatypeId:
-                return resolveEnumTypeBasedOnInheritance(t, userOptions, exportTypes, messages);
-
-            case Datatype.EnumOrdinalSingleDatatypeId:
-                return new EnumOrdinalExportAccumulator(t, userOptions, exportTypes, messages);
-
-            case Datatype.EnumSyntaxonsDatatypeId:
+        return switch (t.getFeature().getDatatype().getId()) {
+            case Datatype.IntegerDatatypeId -> new IntExportAccumulator(t, userOptions, exportTypes, messages);
+            case Datatype.BooleanDatatypeId -> new BoolExportAccumulator(t, userOptions, exportTypes, messages);
+            case Datatype.EnumNominalDatatypeId, Datatype.EnumOrdinalDatatypeId ->
+                resolveEnumTypeBasedOnInheritance(t, userOptions, exportTypes, messages);
+            case Datatype.EnumOrdinalSingleDatatypeId ->
+                new EnumOrdinalExportAccumulator(t, userOptions, exportTypes, messages);
+            case Datatype.EnumSyntaxonsDatatypeId -> {
                 List<Syntaxon> syntaxons = Syntaxon.find().query().where().eq("rank", t.getFeature().getSyntaxonRestrictedRankId()).orderBy("foreignId").findList();
-                return new SyntaxonExportAccumulator(t, userOptions, exportTypes, syntaxons, messages);
-
-            case Datatype.IntervalAvgDatatypeId:
-                return new AvgExportAccumulator(t, userOptions, exportTypes, messages);
-
-            case Datatype.MonthDatatypeId:
-                return new MonthExportAccumulator(t, userOptions, exportTypes, messages);
-
-            case Datatype.YearDatatypeId:
-                return new YearExportAccumulator(t, userOptions, exportTypes, messages);
-
-            case Datatype.RealDatatypeId:
-                return new RealExportAccumulator(t, userOptions, exportTypes, messages);
-
-            case Datatype.RealMultiDatatypeId:
-                return new RealMultiExportAccumulator(t, userOptions, exportTypes, messages);
-
-            case Datatype.PercentageDatatypeId:
-                return new PercentageExportAccumulator(t, userOptions, exportTypes, messages);
-
-            case Datatype.DistributionDatatypeId:
-                return new DistributionExportAccumulator(t, userOptions, exportTypes, messages);
-            default:
-                throw new NotSupportedException("Trait inheritance type not supported");
-        }
+                yield new SyntaxonExportAccumulator(t, userOptions, exportTypes, syntaxons, messages);
+            }
+            case Datatype.IntervalAvgDatatypeId -> new AvgExportAccumulator(t, userOptions, exportTypes, messages);
+            case Datatype.MonthDatatypeId -> new MonthExportAccumulator(t, userOptions, exportTypes, messages);
+            case Datatype.YearDatatypeId -> new YearExportAccumulator(t, userOptions, exportTypes, messages);
+            case Datatype.RealDatatypeId -> new RealExportAccumulator(t, userOptions, exportTypes, messages);
+            case Datatype.RealMultiDatatypeId -> new RealMultiExportAccumulator(t, userOptions, exportTypes, messages);
+            case Datatype.PercentageDatatypeId ->
+                new PercentageExportAccumulator(t, userOptions, exportTypes, messages);
+            case Datatype.DistributionDatatypeId ->
+                new DistributionExportAccumulator(t, userOptions, exportTypes, messages);
+            default -> throw new NotSupportedException("Trait inheritance type not supported");
+        };
     }
 
     private static BaseExportAccumulator resolveEnumTypeBasedOnInheritance(

@@ -4,6 +4,7 @@ import org.apache.commons.codec.binary.Base64;
 
 import javax.crypto.*;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 
@@ -23,7 +24,7 @@ public class DesEncrypter {
 
     public String encrypt(String str) throws UnsupportedEncodingException, IllegalBlockSizeException, BadPaddingException {
         // Encode the string into bytes using utf-8
-        byte[] utf8 = str.getBytes(UTF8);
+        byte[] utf8 = str.getBytes(StandardCharsets.UTF_8);
 
         // Encrypt
         byte[] enc = ecipher.doFinal(utf8);
@@ -39,6 +40,6 @@ public class DesEncrypter {
         byte[] utf8 = dcipher.doFinal(dec);
 
         // Decode using utf-8
-        return new String(utf8, UTF8);
+        return new String(utf8, StandardCharsets.UTF_8);
     }
 }

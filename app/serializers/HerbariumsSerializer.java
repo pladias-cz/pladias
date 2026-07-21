@@ -12,7 +12,7 @@ public class HerbariumsSerializer {
 
         StringBuilder serialized = new StringBuilder();
         for (Herbarium h : herbariums) {
-            if (serialized.length() > 0) {
+            if (!serialized.isEmpty()) {
                 serialized.append(';');
             }
             serialized.append(h.getName());

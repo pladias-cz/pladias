@@ -21,7 +21,7 @@ public class SimpleExportDataTransformer implements IExportDataTransformer {
     }
 
     public List<List<CellDetail>> collectData() {
-        List<List<CellDetail>> result = new ArrayList<List<CellDetail>>();
+        List<List<CellDetail>> result = new ArrayList<>();
         populateInitialDetails(result);
         populateColumnHeaderDetails(result);
         populateTaxonDetails(result);
@@ -57,7 +57,7 @@ public class SimpleExportDataTransformer implements IExportDataTransformer {
     }
 
     private List<CellDetail> populateWithCommonHeaderNames(List<CellDetail> headerRow, List<String> commonHeaderNames) {
-        List<CellDetail> result = new ArrayList<CellDetail>();
+        List<CellDetail> result = new ArrayList<>();
         for (String s : commonHeaderNames) {
             result.add(new CellDetail(1, s, CellType.HeaderTaxonInfo));
         }
@@ -66,7 +66,7 @@ public class SimpleExportDataTransformer implements IExportDataTransformer {
     }
 
     private List<CellDetail> prepopulateWithEmptyCells(List<CellDetail> headerRow, int size) {
-        List<CellDetail> result = new ArrayList<CellDetail>();
+        List<CellDetail> result = new ArrayList<>();
         for (int i = 0; i < size; i++) {
             result.add(EmptyHeaderCell);//prepopulate with empty cells
         }
@@ -75,12 +75,12 @@ public class SimpleExportDataTransformer implements IExportDataTransformer {
     }
 
     private void populateInitialDetails(List<List<CellDetail>> result) {
-        List<CellDetail> list = new ArrayList<CellDetail>();
+        List<CellDetail> list = new ArrayList<>();
         list.add(new CellDetail(1, trait.getSource() + ", " + trait.getFeature().getDescriptionCz(), CellType.HeaderTaxonInfo));
         result.add(list);
 
         for (int i = 0; i < 2; i++) {
-            list = new ArrayList<CellDetail>();
+            list = new ArrayList<>();
             list.add(new CellDetail(1, "", CellType.HeaderTaxonInfo));
             result.add(list);
         }

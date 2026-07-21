@@ -80,7 +80,7 @@ public class Record extends Model {
     private String source;
 
     @ManyToMany(cascade = CascadeType.PERSIST)
-    private List<Herbarium> herbariums = new ArrayList<Herbarium>();
+    private List<Herbarium> herbariums = new ArrayList<>();
 
     @ManyToOne
     @Column(name = "phytochorion_id")
@@ -101,14 +101,14 @@ public class Record extends Model {
         name = "atlas.records_squares",
         joinColumns = @JoinColumn(name = "records_id"),
         inverseJoinColumns = @JoinColumn(name = "squares_id"))
-    private List<MapSquareNew> mapSquares_legacy = new ArrayList<MapSquareNew>();
+    private List<MapSquareNew> mapSquares_legacy = new ArrayList<>();
 
     @ManyToMany(cascade = CascadeType.PERSIST)
     @JoinTable(
         name = "atlas.records_quadrants",
         joinColumns = @JoinColumn(name = "records_id"),
         inverseJoinColumns = @JoinColumn(name = "quadrants_id"))
-    private List<QuadrantNew> quadrants_legacy = new ArrayList<QuadrantNew>();
+    private List<QuadrantNew> quadrants_legacy = new ArrayList<>();
 
     @Column(name = "quadrant_computed")
     private boolean quadrantComputed_legacy;
@@ -216,7 +216,7 @@ public class Record extends Model {
 
         String sql = String.format(
             "SELECT DISTINCT record_id FROM %s WHERE record_id IN (%s)",
-            RecordHistory.QualifiedTableName, inClause.toString()
+            RecordHistory.QualifiedTableName, inClause
         );
 
         io.ebean.SqlQuery query = DB.sqlQuery(sql);
@@ -285,7 +285,7 @@ public class Record extends Model {
             if (coords != null) {
                 List<District> newHierarchy = District.findTownHierarchyByPoint(coords);
                 if (!newHierarchy.isEmpty()) {
-                    nearestTownId = newHierarchy.get(newHierarchy.size() - 1);
+                    nearestTownId = newHierarchy.getLast();
                 }
             }
         }
@@ -338,7 +338,7 @@ public class Record extends Model {
         if (!recordAuthorsSorted) {
             //this.refresh();
 
-            Collections.sort(recordAuthors, new Comparator<RecordAuthor>() {
+            recordAuthors.sort(new Comparator<>() {
 
                 private final Comparator<RecordAuthor> etAliiComparator = new AuthorsEtAliiComparator();
 
@@ -362,9 +362,8 @@ public class Record extends Model {
     }
 
     private List<Author> extractAuthors() {
-        List<Author> authors = new ArrayList<Author>();
-        for (Iterator<RecordAuthor> iterator = recordAuthors.iterator(); iterator.hasNext(); ) {
-            RecordAuthor ra = iterator.next();
+        List<Author> authors = new ArrayList<>();
+        for (RecordAuthor ra : recordAuthors) {
             Author author = ra.getAuthor();
             authors.add(author);
         }
@@ -496,7 +495,7 @@ public class Record extends Model {
         } else if (getAltitudeMin() == null) {
             return Integer.toString(getAltitudeMax());
         }
-        return Integer.toString(getAltitudeMin()) + "-" + Integer.toString(getAltitudeMax());
+        return getAltitudeMin() + "-" + getAltitudeMax();
     }
 
     public Boolean isAltitudeApproximation() {

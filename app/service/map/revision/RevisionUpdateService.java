@@ -36,7 +36,7 @@ public class RevisionUpdateService extends MapStatusUpdateService {
         verifyTransitionIsFeasible(oldStatus, newStatus, taxon);
 
         settings.setRevisionStatus(newStatus);
-        _logger.info(String.format("MapRevision updated from state '%s' to state '%s'", oldStatus.toString(), newStatus.toString()));
+        _logger.info(String.format("MapRevision updated from state '%s' to state '%s'", oldStatus, newStatus));
         settings.update();
 
         if (newStatus.getId() == RevisionStatus.StatusMapSubmitted) {
@@ -75,7 +75,7 @@ public class RevisionUpdateService extends MapStatusUpdateService {
             }
         }
 
-        if (newStatusId == RevisionStatus.StatusNotStarted && taxon.getSupervisors().size() > 0) {
+        if (newStatusId == RevisionStatus.StatusNotStarted && !taxon.getSupervisors().isEmpty()) {
             throw new NotEligibleException(
                 messages.at("MapStatusUpdateService.statusNotStartedCanOnlyBeSetByEmptyingSupervisorList"));
         }
@@ -88,7 +88,7 @@ public class RevisionUpdateService extends MapStatusUpdateService {
 
         Taxon taxon = Taxon.find().byId(settings.getId());
         List<User> supervisors = taxon.getSupervisors();
-        List<Long> supervisorIds = new ArrayList<Long>();
+        List<Long> supervisorIds = new ArrayList<>();
         for (User u : supervisors) {
             supervisorIds.add(u.getId());
         }

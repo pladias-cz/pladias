@@ -18,7 +18,7 @@ public class RecordQuadrantDistribution {
     private RecordValidationStatus highestValidationStatus;
 
     public RecordQuadrantDistribution(QuadrantNew quadrant, List<Record> sortedRecords, TaxonMapSettings settings) {
-        if (sortedRecords == null || sortedRecords.size() == 0) {
+        if (sortedRecords == null || sortedRecords.isEmpty()) {
             throw new InvalidParameterException("RecordQuadrantDistribution.recordsMustBeNonEmpty");
         }
         this.quadrant = quadrant;
@@ -36,7 +36,7 @@ public class RecordQuadrantDistribution {
     }
 
     public List<Record> getRecords() {
-        return new ArrayList<Record>(records);
+        return new ArrayList<>(records);
     }
 
     public void setSortedRecords(List<Record> sortedRecords) {
@@ -70,7 +70,7 @@ public class RecordQuadrantDistribution {
 
     //this is only executed for common taxons
     private void preprocessRecordList(TaxonMapSettings settings) {
-        List<Record> updatedRecords = new ArrayList<Record>();
+        List<Record> updatedRecords = new ArrayList<>();
         if (highestValidationStatus.getId() == RecordValidationStatus.Accepted) {
             //remove all Unprocessed
             for (Record r : records) {

@@ -21,7 +21,7 @@ public class SearchTableDataGenerator
 
     @Override
     public List<String> prepareRecordFields(PageSearchResults.Row r) {
-        List<String> list = new ArrayList<String>();
+        List<String> list = new ArrayList<>();
         list.add(Long.toString(r.getRecordId()));
         list.add(r.getTaxonName());
         list.add(guardNullValue(r.getTaxonNameOriginal()));
@@ -59,7 +59,7 @@ public class SearchTableDataGenerator
     }
 
     private void createRecordHeaders() {
-        recordHeaders = new ArrayList<String>();
+        recordHeaders = new ArrayList<>();
         recordHeaders.add("ID");
         recordHeaders.add("jméno stand.");
         recordHeaders.add("jméno orig.");

@@ -13,7 +13,7 @@ public class BiblioParserService {
 
     public List<Bibliography> parse(Sheet sheet) throws IOException {
         Logger.info("Starting biblio excel parse service.");
-        List<Bibliography> items = new ArrayList<Bibliography>();
+        List<Bibliography> items = new ArrayList<>();
         try {
             int currentRow = 1;
 

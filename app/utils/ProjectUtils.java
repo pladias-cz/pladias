@@ -33,10 +33,6 @@ public class ProjectUtils {
     }
 
     private static void SortByName(List<Project> projects) {
-        Collections.sort(projects, new Comparator<Project>() {
-            public int compare(Project o1, Project o2) {
-                return o2.getName().compareTo(o1.getName());
-            }
-        });
+        projects.sort((o1, o2) -> o2.getName().compareTo(o1.getName()));
     }
 }

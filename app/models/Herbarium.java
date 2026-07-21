@@ -45,17 +45,17 @@ public class Herbarium extends Model {
 
     public static Herbarium findByImportId(String importId) {
         List<Herbarium> herbList = find().query().where().ieq("import_id", importId).findList();
-        if (herbList.size() == 0)
+        if (herbList.isEmpty())
             return null;
-        return herbList.get(0);
+        return herbList.getFirst();
 
     }
 
     public static Herbarium findByAbbrev(String abbrev) {
         List<Herbarium> herbList = find().query().where().eq("abbrev", abbrev).findList();
-        if (herbList.size() == 0)
+        if (herbList.isEmpty())
             return null;
-        return herbList.get(0);
+        return herbList.getFirst();
     }
 
     public static boolean isValidHerbId(int herbariumId) {

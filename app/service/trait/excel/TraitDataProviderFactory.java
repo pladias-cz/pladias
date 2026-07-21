@@ -24,48 +24,24 @@ public class TraitDataProviderFactory {
 
     public List<Model> getData(Trait trait, List<Integer> taxonFilterList, TraitDetailsEntryType[] entryTypes) {
         int datatypeId = metaDatatype.getId();
-        List<Model> absList = new ArrayList<Model>();
+        List<Model> absList = new ArrayList<>();
 
-        switch (datatypeId) {
-            case Datatype.BooleanDatatypeId:
-                absList = collectBoolData(trait, taxonFilterList, entryTypes);
-                break;
-            case Datatype.EnumNominalDatatypeId:
-            case Datatype.EnumOrdinalDatatypeId:
-            case Datatype.EnumOrdinalSingleDatatypeId:
-                absList = collectEnumData(trait, taxonFilterList, entryTypes);
-                break;
-            case Datatype.EnumSyntaxonsDatatypeId:
-                absList = collectEnumSyntaxonData(trait, taxonFilterList, entryTypes);
-                break;
-            case Datatype.IntegerDatatypeId:
-                absList = collectIntData(trait, taxonFilterList, entryTypes);
-                break;
-            case Datatype.YearDatatypeId:
-                absList = collectYearData(trait, taxonFilterList, entryTypes);
-                break;
-            case Datatype.MonthDatatypeId:
-                absList = collectMonthData(trait, taxonFilterList, entryTypes);
-                break;
-            case Datatype.RealDatatypeId:
-                absList = collectRealData(trait, taxonFilterList, entryTypes);
-                break;
-            case Datatype.RealMultiDatatypeId:
-                absList = collectRealMultiData(trait, taxonFilterList, entryTypes);
-                break;
-            case Datatype.PercentageDatatypeId:
-                absList = collectPercentageData(trait, taxonFilterList, entryTypes);
-                break;
-            case Datatype.CrossTaxonDatatypeId:
-                absList = collectCrossTaxonData(trait, taxonFilterList, entryTypes);
-                break;
-            case Datatype.IntervalAvgDatatypeId:
-                absList = collectIntervalAvgData(trait, taxonFilterList, entryTypes);
-                break;
-            case Datatype.DistributionDatatypeId:
-                absList = collectOccurrenceFrequencyData(trait, taxonFilterList, entryTypes);
-                break;
-        }
+        absList = switch (datatypeId) {
+            case Datatype.BooleanDatatypeId -> collectBoolData(trait, taxonFilterList, entryTypes);
+            case Datatype.EnumNominalDatatypeId, Datatype.EnumOrdinalDatatypeId, Datatype.EnumOrdinalSingleDatatypeId ->
+                collectEnumData(trait, taxonFilterList, entryTypes);
+            case Datatype.EnumSyntaxonsDatatypeId -> collectEnumSyntaxonData(trait, taxonFilterList, entryTypes);
+            case Datatype.IntegerDatatypeId -> collectIntData(trait, taxonFilterList, entryTypes);
+            case Datatype.YearDatatypeId -> collectYearData(trait, taxonFilterList, entryTypes);
+            case Datatype.MonthDatatypeId -> collectMonthData(trait, taxonFilterList, entryTypes);
+            case Datatype.RealDatatypeId -> collectRealData(trait, taxonFilterList, entryTypes);
+            case Datatype.RealMultiDatatypeId -> collectRealMultiData(trait, taxonFilterList, entryTypes);
+            case Datatype.PercentageDatatypeId -> collectPercentageData(trait, taxonFilterList, entryTypes);
+            case Datatype.CrossTaxonDatatypeId -> collectCrossTaxonData(trait, taxonFilterList, entryTypes);
+            case Datatype.IntervalAvgDatatypeId -> collectIntervalAvgData(trait, taxonFilterList, entryTypes);
+            case Datatype.DistributionDatatypeId -> collectOccurrenceFrequencyData(trait, taxonFilterList, entryTypes);
+            default -> absList;
+        };
         return absList;
     }
 
@@ -84,7 +60,7 @@ public class TraitDataProviderFactory {
 
     public Iterable<Model> getData(Trait trait, Taxon taxon) {
         int datatypeId = metaDatatype.getId();
-        List<Model> absList = new ArrayList<Model>();
+        List<Model> absList = new ArrayList<>();
 
         switch (datatypeId) {
             case Datatype.BooleanDatatypeId:
@@ -133,53 +109,25 @@ public class TraitDataProviderFactory {
 
     public void deleteData(Trait trait, TraitDetailsEntryType[] entryTypes) throws Exception {
         int datatypeId = trait.getFeature().getDatatype().getId();
-        String tableName = "";
-
-        switch (datatypeId) {
-            case Datatype.BooleanDatatypeId:
-                tableName = BoolDatatype.QualifiedTableName;
-                break;
-            case Datatype.EnumNominalDatatypeId:
-            case Datatype.EnumOrdinalDatatypeId:
-            case Datatype.EnumOrdinalSingleDatatypeId:
-                tableName = EnumerateDatatype.QualifiedTableName;
-                break;
-            case Datatype.EnumSyntaxonsDatatypeId:
-                tableName = SyntaxonDatatype.QualifiedTableName;
-                break;
-            case Datatype.IntegerDatatypeId:
-                tableName = IntegerDatatype.QualifiedTableName;
-                break;
-            case Datatype.MonthDatatypeId:
-                tableName = MonthDatatype.QualifiedTableName;
-                break;
-            case Datatype.PercentageDatatypeId:
-                tableName = PercentageDatatype.QualifiedTableName;
-                break;
-            case Datatype.YearDatatypeId:
-                tableName = YearDatatype.QualifiedTableName;
-                break;
-            case Datatype.CrossTaxonDatatypeId:
-                tableName = CrossTaxonDatatype.QualifiedTableName;
-                break;
-            case Datatype.RealMultiDatatypeId:
-                tableName = RealMultiDatatype.QualifiedTableName;
-                break;
-            case Datatype.RealDatatypeId:
-                tableName = RealDatatype.QualifiedTableName;
-                break;
-
-            case Datatype.IntervalAvgDatatypeId:
-                tableName = IntervalAvgDatatype.QualifiedTableName;
-                break;
-            case Datatype.DistributionDatatypeId:
-                tableName = DistributionDatatype.QualifiedTableName;
-                break;
-
-            default:
+        String tableName = switch (datatypeId) {
+            case Datatype.BooleanDatatypeId -> BoolDatatype.QualifiedTableName;
+            case Datatype.EnumNominalDatatypeId, Datatype.EnumOrdinalDatatypeId, Datatype.EnumOrdinalSingleDatatypeId ->
+                EnumerateDatatype.QualifiedTableName;
+            case Datatype.EnumSyntaxonsDatatypeId -> SyntaxonDatatype.QualifiedTableName;
+            case Datatype.IntegerDatatypeId -> IntegerDatatype.QualifiedTableName;
+            case Datatype.MonthDatatypeId -> MonthDatatype.QualifiedTableName;
+            case Datatype.PercentageDatatypeId -> PercentageDatatype.QualifiedTableName;
+            case Datatype.YearDatatypeId -> YearDatatype.QualifiedTableName;
+            case Datatype.CrossTaxonDatatypeId -> CrossTaxonDatatype.QualifiedTableName;
+            case Datatype.RealMultiDatatypeId -> RealMultiDatatype.QualifiedTableName;
+            case Datatype.RealDatatypeId -> RealDatatype.QualifiedTableName;
+            case Datatype.IntervalAvgDatatypeId -> IntervalAvgDatatype.QualifiedTableName;
+            case Datatype.DistributionDatatypeId -> DistributionDatatype.QualifiedTableName;
+            default -> {
                 String message = String.format("Cannot delete unsupported datatype '%s'", trait.getFeature().getDatatype().getDescriptionEn());
                 throw new Exception(message);
-        }
+            }
+        };
 
         String entryTypeSet = toSqlSet(entryTypes);
 
@@ -210,7 +158,7 @@ public class TraitDataProviderFactory {
         SqlQuery sqlQuery = DB.sqlQuery(sql);
         List<SqlRow> rows = sqlQuery.findList();
 
-        List<Model> absList = new ArrayList<Model>();
+        List<Model> absList = new ArrayList<>();
         for (SqlRow row : rows) {
             DatatypePK pk = new DatatypePK();
             BoolDatatype datatype = new BoolDatatype();
@@ -227,7 +175,7 @@ public class TraitDataProviderFactory {
     private String toSqlSet(TraitDetailsEntryType[] entryTypes) {
 
         Stream<Integer> intStream = Arrays.stream(entryTypes)
-            .map(p -> p.getIndex());
+            .map(TraitDetailsEntryType::getIndex);
 
         return toSqlSet(intStream);
     }
@@ -264,7 +212,7 @@ public class TraitDataProviderFactory {
         SqlQuery sqlQuery = DB.sqlQuery(sql);
         List<SqlRow> rows = sqlQuery.findList();
 
-        List<Model> absList = new ArrayList<Model>();
+        List<Model> absList = new ArrayList<>();
         for (SqlRow row : rows) {
             IntegerDatatype datatype = new IntegerDatatype();
             datatype.setTraitId(row.getLong("trait_id"));
@@ -295,7 +243,7 @@ public class TraitDataProviderFactory {
         SqlQuery sqlQuery = DB.sqlQuery(sql);
         List<SqlRow> rows = sqlQuery.findList();
 
-        List<Model> absList = new ArrayList<Model>();
+        List<Model> absList = new ArrayList<>();
         for (SqlRow row : rows) {
             MonthDatatypePK pk = new MonthDatatypePK();
             pk.setMinimum(row.getInteger("minimum"));
@@ -329,7 +277,7 @@ public class TraitDataProviderFactory {
         SqlQuery sqlQuery = DB.sqlQuery(sql);
         List<SqlRow> rows = sqlQuery.findList();
 
-        List<Model> absList = new ArrayList<Model>();
+        List<Model> absList = new ArrayList<>();
         for (SqlRow row : rows) {
             YearDatatype datatype = new YearDatatype();
             datatype.setTraitId(row.getLong("trait_id"));
@@ -360,7 +308,7 @@ public class TraitDataProviderFactory {
         SqlQuery sqlQuery = DB.sqlQuery(sql);
         List<SqlRow> rows = sqlQuery.findList();
 
-        List<Model> absList = new ArrayList<Model>();
+        List<Model> absList = new ArrayList<>();
         for (SqlRow row : rows) {
             DatatypePK pk = new DatatypePK();
             RealDatatype datatype = new RealDatatype();
@@ -391,7 +339,7 @@ public class TraitDataProviderFactory {
         SqlQuery sqlQuery = DB.sqlQuery(sql);
         List<SqlRow> rows = sqlQuery.findList();
 
-        List<Model> absList = new ArrayList<Model>();
+        List<Model> absList = new ArrayList<>();
         for (SqlRow row : rows) {
             RealMultiDatatype datatype = new RealMultiDatatype();
             datatype.setTraitId(row.getLong("trait_id"));
@@ -421,7 +369,7 @@ public class TraitDataProviderFactory {
         SqlQuery sqlQuery = DB.sqlQuery(sql);
         List<SqlRow> rows = sqlQuery.findList();
 
-        List<Model> absList = new ArrayList<Model>();
+        List<Model> absList = new ArrayList<>();
         for (SqlRow row : rows) {
             DistributionDatatype datatype = new DistributionDatatype();
             datatype.setTraitId(row.getLong("trait_id"));
@@ -453,7 +401,7 @@ public class TraitDataProviderFactory {
         SqlQuery sqlQuery = DB.sqlQuery(sql);
         List<SqlRow> rows = sqlQuery.findList();
 
-        List<Model> absList = new ArrayList<Model>();
+        List<Model> absList = new ArrayList<>();
         for (SqlRow row : rows) {
             DatatypePK pk = new DatatypePK();
             IntervalAvgDatatype datatype = new IntervalAvgDatatype();
@@ -489,7 +437,7 @@ public class TraitDataProviderFactory {
         SqlQuery sqlQuery = DB.sqlQuery(sql);
         List<SqlRow> rows = sqlQuery.findList();
 
-        List<Model> absList = new ArrayList<Model>();
+        List<Model> absList = new ArrayList<>();
         for (SqlRow row : rows) {
             CrossTaxonDatatypePK pk = new CrossTaxonDatatypePK();
             CrossTaxonDatatype datatype = new CrossTaxonDatatype();
@@ -521,7 +469,7 @@ public class TraitDataProviderFactory {
         SqlQuery sqlQuery = DB.sqlQuery(sql);
         List<SqlRow> rows = sqlQuery.findList();
 
-        List<Model> absList = new ArrayList<Model>();
+        List<Model> absList = new ArrayList<>();
         for (SqlRow row : rows) {
             DatatypePK pk = new DatatypePK();
             PercentageDatatype datatype = new PercentageDatatype();
@@ -580,7 +528,7 @@ public class TraitDataProviderFactory {
         SqlQuery sqlQuery = DB.sqlQuery(sql);
         List<SqlRow> rows = sqlQuery.findList();
 
-        List<Model> absList = new ArrayList<Model>();
+        List<Model> absList = new ArrayList<>();
         for (SqlRow row : rows) {
             EnumerateDatatype datatype = new EnumerateDatatype();
             EnumerateDatatypePK pk = new EnumerateDatatypePK();
@@ -616,7 +564,7 @@ public class TraitDataProviderFactory {
         SqlQuery sqlQuery = DB.sqlQuery(sql);
         List<SqlRow> rows = sqlQuery.findList();
 
-        List<Model> absList = new ArrayList<Model>();
+        List<Model> absList = new ArrayList<>();
         for (SqlRow row : rows) {
             SyntaxonDatatypePK pk = new SyntaxonDatatypePK();
             SyntaxonDatatype datatype = new SyntaxonDatatype();

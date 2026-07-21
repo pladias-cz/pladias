@@ -25,7 +25,6 @@ public class PageSearchService implements IPageSearchService {
     private static final int SEARCH_RESULTS_BATCH_SIZE = 10000;
     private static final Logger logger = LoggerFactory.getLogger(PageSearchService.class);
     private static ISquareRepository squareRepository;
-    private MapSquareResolver.SquareData squareData;
     private final IConfigService configService;
 
     @Inject
@@ -38,7 +37,7 @@ public class PageSearchService implements IPageSearchService {
     public PageSearchResults search(User currentUser, SearchController.SearchForm form,
                                     int page, int pageSize, boolean getTotalCount) {
         try {
-            squareData = getSquareData(form);
+            MapSquareResolver.SquareData squareData = getSquareData(form);
             Set<QuadrantNew> quadrants = squareData != null ? squareData.quadrants : null;
             Set<MapSquareNew> squares = squareData != null ? squareData.squares : null;
 
@@ -97,7 +96,7 @@ public class PageSearchService implements IPageSearchService {
         List<SqlRow> rows = DB.sqlQuery(query).findList();
         List<Long> recordIds = rows.stream()
             .map(row -> row.getLong("id"))
-            .filter(id -> id != null)
+            .filter(Objects::nonNull)
             .distinct()
             .collect(Collectors.toList());
         return recordIds;
@@ -590,7 +589,7 @@ public class PageSearchService implements IPageSearchService {
 
         if (searchTaxa != null) {
             if (searchTaxa.size() == 1) {
-                whereClause.append(" R.taxon_id=").append(searchTaxa.get(0).getId()).append(" AND ");
+                whereClause.append(" R.taxon_id=").append(searchTaxa.getFirst().getId()).append(" AND ");
             } else {
                 StringBuilder builder = new StringBuilder();
                 builder.append("(");
@@ -598,7 +597,7 @@ public class PageSearchService implements IPageSearchService {
                     builder.append(t.getId()).append(',');
                 }
                 builder.append("-1)"); //-1 => unexisting taxon to simplify creation of the list
-                whereClause.append(" R.taxon_id IN ").append(builder.toString()).append(" AND ");
+                whereClause.append(" R.taxon_id IN ").append(builder).append(" AND ");
             }
         }
     }

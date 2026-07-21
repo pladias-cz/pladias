@@ -13,7 +13,7 @@ public class TaskQueue {
 
 
     TaskQueue(int maxQueueSize) {
-        this.queue = new ArrayBlockingQueue<ITask>(maxQueueSize);
+        this.queue = new ArrayBlockingQueue<>(maxQueueSize);
     }
 
     public void registerTask(ITask task) throws QueueFullException {

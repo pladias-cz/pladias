@@ -2,30 +2,6 @@ package dto;
 
 import java.sql.Timestamp;
 
-/**
- * DTO for Excel batch data, combining information from Excel and Batch models
- * for use in React frontend.
- *
- * @param id                Excel record ID
- * @param filename          Original filename
- * @param size              Size of the processed file in bytes
- * @param warningsCount     Number of warnings during processing
- * @param errorsCount       Number of errors during processing
- * @param infosCount        Number of info messages during processing
- * @param recordsCount      Number of records in the Excel file
- * @param originalSourceKey Reference to the original source
- * @param processedFilename Name of the processed/modified file
- * @param batchId           ID of the associated batch
- * @param imported          Whether the batch has been imported
- * @param importTimestamp   When the batch was created/imported
- * @param authorId          ID of the user who created the batch
- * @param authorName        Full name of the author (name + surname)
- * @param authorEmail       Email of the author
- * @param committerId       ID of the user who committed the batch
- * @param committerName     Full name of the committer (name + surname)
- * @param committerEmail    Email of the committer
- * @param hasDeletionCode   Whether the batch has a deletion code set (null or empty = false)
- */
 public record ExcelBatchDto(
     Long id,
     String filename,

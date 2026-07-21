@@ -36,7 +36,7 @@ public class BasicCsvRecordGenerator {
     }
 
     private List<String> getRecordHeaders() {
-        List<String> list = new ArrayList<String>();
+        List<String> list = new ArrayList<>();
         list.add("recordID");
         list.add("zdroj");
         list.add("stav_validace");
@@ -67,13 +67,13 @@ public class BasicCsvRecordGenerator {
     private List<String> prepareRecordFields(Record record, TaxonMapSettings settings, QuadrantNew q,
                                              RecordValidationStatus quadrantHighestValidationStatus) {
         try {
-            List<String> list = new ArrayList<String>();
+            List<String> list = new ArrayList<>();
             list.add(record.getId().toString());
             list.add(StringUtils.defaultString(record.getSource()));
             list.add(record.getValidationStatus().getDescription());
             list.add(Boolean.toString(record.isHerbariumQuality()));
             list.add(record.hasCoords() ?
-                Double.toString(record.getLongitude()) + "," + Double.toString(record.getLatitude()) :
+                record.getLongitude() + "," + record.getLatitude() :
                 ",");
             list.add(q != null ? q.getCode() : "");
             list.add(record.getGpsCoordsPrecision() != null ?

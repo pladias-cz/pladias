@@ -19,6 +19,6 @@ public class MapRenderDetailsDataProvider {
             SqlQuery sqlQuery = DB.sqlQuery(sql);
             return sqlQuery.findList();
         }
-        return new ArrayList<SqlRow>();
+        return new ArrayList<>();
     }
 }

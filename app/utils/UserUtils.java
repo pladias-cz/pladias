@@ -54,7 +54,7 @@ public class UserUtils {
     }
 
     private static User[] getUsersByIds(List<Integer> userIds) {
-        List<User> users = new ArrayList<User>();
+        List<User> users = new ArrayList<>();
         for (int userId : userIds) {
             User user = User.find().byId((long) userId);
             if (user != null) {

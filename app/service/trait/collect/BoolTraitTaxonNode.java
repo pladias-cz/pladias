@@ -50,11 +50,11 @@ public class BoolTraitTaxonNode extends BaseTraitTaxonNode {
 
     @Override
     public List<Model> getComputedEntities() {
-        List<Model> result = new ArrayList<Model>();
+        List<Model> result = new ArrayList<>();
 
-        for (int i = 0; i < aggregated.length; i++) {
-            if (aggregated[i] != null) {
-                result.add(createDetail(TraitDetailsEntryType.Aggregated, aggregated[i]));
+        for (Boolean aBoolean : aggregated) {
+            if (aBoolean != null) {
+                result.add(createDetail(TraitDetailsEntryType.Aggregated, aBoolean));
             }
         }
 

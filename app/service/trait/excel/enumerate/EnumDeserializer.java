@@ -16,12 +16,12 @@ import settings.user.UserOptions;
 import java.util.*;
 
 public class EnumDeserializer extends EnumAbstractDeserializer {
-    private final Set<EnumerateDatatypePK> seenPrimaryKeysSet = new HashSet<EnumerateDatatypePK>();
+    private final Set<EnumerateDatatypePK> seenPrimaryKeysSet = new HashSet<>();
     private final Map<String, EnumerateValue> enumerateMappingValues;
-    private final Set<Long> seenDominantTaxonsSet = new HashSet<Long>();
+    private final Set<Long> seenDominantTaxonsSet = new HashSet<>();
 
     private final boolean allowMultiplicity;
-    private final Set<Pair<Integer, Integer>> traitTaxonSet = new HashSet<Pair<Integer, Integer>>();
+    private final Set<Pair<Integer, Integer>> traitTaxonSet = new HashSet<>();
 
     public EnumDeserializer(Enumerate enumerate, UserOptions options, Messages messages, boolean allowMultiplicity) {
         super(options, messages);
@@ -30,7 +30,7 @@ public class EnumDeserializer extends EnumAbstractDeserializer {
     }
 
     private Map<String, EnumerateValue> populateEnumMap(Enumerate enumerate) {
-        Map<String, EnumerateValue> mapping = new HashMap<String, EnumerateValue>();
+        Map<String, EnumerateValue> mapping = new HashMap<>();
         for (EnumerateValue v : enumerate.getEnumerateValues()) {
             String name = (displayInEnglish ? v.getNameEn() : v.getNameCz());
             if (StringUtils.isNotBlank(name)) {

@@ -10,7 +10,7 @@ import java.util.List;
 public class TaxonDetailsProvider {
 
     public static List<String> getCommonRecordHeaders() {
-        List<String> list = new ArrayList<String>();
+        List<String> list = new ArrayList<>();
         list.add("lat_name");
         list.add("pladias_id");
         list.add("lft");
@@ -22,7 +22,7 @@ public class TaxonDetailsProvider {
     }
 
     public static List<CellDetail> populateCommonRecordFields(Taxon taxon) {
-        List<CellDetail> list = new ArrayList<CellDetail>();
+        List<CellDetail> list = new ArrayList<>();
 
         list.add(new CellDetail(1, taxon.getNameLat(), CellType.Data));
         list.add(new CellDetail(1, Long.toString(taxon.getId()), CellType.Data));

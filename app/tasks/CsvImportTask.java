@@ -90,13 +90,9 @@ public class CsvImportTask extends CsvBaseTask {
         CsvImportService csvImportService = new CsvImportService(
             _project, _loadServiceFactory, batch, _messages);
 
-        withCsvDocument(new IDocProcessor<Object>() {
-
-            @Override
-            public Void execute(CsvDocument doc) throws IOException {
-                csvImportService.runImport(doc);
-                return null;
-            }
+        withCsvDocument((IDocProcessor<Object>) doc -> {
+            csvImportService.runImport(doc);
+            return null;
         });
 
         // import succeeded, record the zipped csv file in the database

@@ -458,7 +458,7 @@ public class RecordsService {
             }
 
             // Auto-set herbarium_quality to true if conditions met
-            if (!record.isHerbariumQuality() && record.getHerbariums().size() > 0 &&
+            if (!record.isHerbariumQuality() && !record.getHerbariums().isEmpty() &&
                 record.getBatch().getAuthor().getId().equals(currentUser.getId())) {
                 histories.add(RecordHistory.build(record.getId(), currentUser, RecordChangeType.FLAG,
                     "herbarium_quality", Boolean.FALSE.toString(), Boolean.TRUE.toString()));
@@ -589,7 +589,7 @@ public class RecordsService {
     public MoveRecordResult moveRecordCoords(Record record, User currentUser, double latitude, double longitude, int gpsPrecision, long timestamp, Messages messages) {
         // Check timestamp for conflict detection
         if (timestamp < record.getLastEditTimestamp().getTime()) {
-            return new MoveRecordResult(false, "", Long.valueOf(0), false, 0L, messages.at("RecordEditController.newVersionRecordExists"));
+            return new MoveRecordResult(false, "", 0L, false, 0L, messages.at("RecordEditController.newVersionRecordExists"));
         }
 
         // Determine new coords source
@@ -600,7 +600,7 @@ public class RecordsService {
         Coordinates newCoords = Coordinates.of(longitude, latitude);
         District newDistrict = District.findDistrictByPoint(newCoords);
         if (newDistrict == null) {
-            return new MoveRecordResult(false, "", Long.valueOf(0), false, 0L, messages.at("RecordEditController.gpsCoordsOutOfRange"));
+            return new MoveRecordResult(false, "", 0L, false, 0L, messages.at("RecordEditController.gpsCoordsOutOfRange"));
         }
 
         // Store old values for history
@@ -658,7 +658,7 @@ public class RecordsService {
 
             return new MoveRecordResult(true, newCoordsSource, record.getId(), phytochorionChanged, record.getLastEditTimestamp().getTime(), null);
         } catch (Exception e) {
-            return new MoveRecordResult(false, "", Long.valueOf(0), false, 0L, messages.at("RecordEditController.unableToUpdateCoords"));
+            return new MoveRecordResult(false, "", 0L, false, 0L, messages.at("RecordEditController.unableToUpdateCoords"));
         }
     }
 

@@ -12,7 +12,7 @@ public class UserActivityMap {
     private final HashMap<Long, DateTime> userActivityMap;
 
     private UserActivityMap() {
-        userActivityMap = new HashMap<Long, DateTime>();
+        userActivityMap = new HashMap<>();
     }
 
     public static synchronized UserActivityMap getInstance() {

@@ -33,9 +33,9 @@ public abstract class SharedRecordWrapperBuilder extends RecordDetailsBuilderBas
     private static final String[] APPROXIMATIONS = new String[]{"cca.", "ca.", "cca", "ca", "asi"};
     private static final String SPECIES = " sp.";
     protected MapSquareResolver squareResolver;
-    private final HashMap<String, Herbarium> herbariumsMap = new HashMap<String, Herbarium>();
-    private final HashMap<String, Author> authorsMap = new HashMap<String, Author>();
-    private final HashMap<String, Author> unknownAuthorsMap = new HashMap<String, Author>();
+    private final HashMap<String, Herbarium> herbariumsMap = new HashMap<>();
+    private final HashMap<String, Author> authorsMap = new HashMap<>();
+    private final HashMap<String, Author> unknownAuthorsMap = new HashMap<>();
 
 
     public SharedRecordWrapperBuilder(MapSquareResolver squareResolver, IRecordColumnMapper colMapper, Messages messages) {
@@ -46,9 +46,9 @@ public abstract class SharedRecordWrapperBuilder extends RecordDetailsBuilderBas
     @Override
     public ParsedRecordDetails build(RecordRow recordRow) {
         Record item = new Record();
-        List<ExcelErrorInfo> errors = new ArrayList<ExcelErrorInfo>();
-        List<ExcelErrorInfo> warnings = new ArrayList<ExcelErrorInfo>();
-        List<ExcelErrorInfo> infos = new ArrayList<ExcelErrorInfo>();
+        List<ExcelErrorInfo> errors = new ArrayList<>();
+        List<ExcelErrorInfo> warnings = new ArrayList<>();
+        List<ExcelErrorInfo> infos = new ArrayList<>();
 
         resolveTaxonId(recordRow, item, errors);
 
@@ -110,7 +110,7 @@ public abstract class SharedRecordWrapperBuilder extends RecordDetailsBuilderBas
     }
 
     protected List<Herbarium> validateOrCreateHerbariumsIfNeeded(List<String> nonDuplicateRawInput, RecordRow recordRow, int column, List<ExcelErrorInfo> errors) {
-        List<Herbarium> herbariums = new ArrayList<Herbarium>();
+        List<Herbarium> herbariums = new ArrayList<>();
         for (String name : nonDuplicateRawInput) {
             String abbrev;
             String herbKey;
@@ -163,7 +163,7 @@ public abstract class SharedRecordWrapperBuilder extends RecordDetailsBuilderBas
         List<String> list = HerbariumListParser.parse(input);
         list = ImmutableSet.copyOf(list).asList();
 
-        if (list.size() > 0) {
+        if (!list.isEmpty()) {
             List<Herbarium> herbariums = validateOrCreateHerbariumsIfNeeded(list, recordRow, column, errors);
             record.setHerbariums(herbariums);
         } else {
@@ -185,7 +185,7 @@ public abstract class SharedRecordWrapperBuilder extends RecordDetailsBuilderBas
             List<Pair<String, String>> authorNames = AuthorListParser.parse(input, messages);
             //verify that there is no duplicate author:
             verifyNoDuplicateAuthors(authorNames);
-            List<RecordAuthor> recordAuthors = new ArrayList<RecordAuthor>();
+            List<RecordAuthor> recordAuthors = new ArrayList<>();
             int authorOrder = 1;
             for (Pair<String, String> name : authorNames) {
                 Author author = null;
@@ -228,7 +228,7 @@ public abstract class SharedRecordWrapperBuilder extends RecordDetailsBuilderBas
     }
 
     private void verifyNoDuplicateAuthors(List<Pair<String, String>> authorNames) throws Exception {
-        Set<String> authorsSet = new HashSet<String>();
+        Set<String> authorsSet = new HashSet<>();
         for (Pair<String, String> author : authorNames) {
             String surname = Strings.nullToEmpty(author.getLeft());
             String name = Strings.nullToEmpty(author.getRight());

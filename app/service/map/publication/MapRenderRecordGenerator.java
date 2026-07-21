@@ -33,7 +33,7 @@ public class MapRenderRecordGenerator {
     }
 
     private List<String> getRecordHeaders() {
-        List<String> list = new ArrayList<String>();
+        List<String> list = new ArrayList<>();
         list.add(RecordIdColumn);
         list.add(QuadrantIdColumn);
         list.add(SymbolForMapColumn);
@@ -46,7 +46,7 @@ public class MapRenderRecordGenerator {
     }
 
     private List<String> getRecordFields(SqlRow row) {
-        List<String> list = new ArrayList<String>();
+        List<String> list = new ArrayList<>();
         list.add(row.getString(RecordIdColumn));
         list.add(row.getString(QuadrantIdColumn));
         list.add(row.getString(SymbolForMapColumn));

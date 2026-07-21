@@ -39,7 +39,7 @@ public class TraitExportService {
     }
 
     private Set<TraitDetailsEntryType> initExportTypesSet() {
-        Set<TraitDetailsEntryType> set = new HashSet<TraitDetailsEntryType>();
+        Set<TraitDetailsEntryType> set = new HashSet<>();
         set.add(TraitDetailsEntryType.Original);
         set.add(TraitDetailsEntryType.Inherited);
         set.add(TraitDetailsEntryType.Aggregated);

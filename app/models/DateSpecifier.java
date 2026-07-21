@@ -22,20 +22,12 @@ public class DateSpecifier {
 
     public static DateSpecifier createFromDateDescriptor(DateDescriptor dateDesc) {
 
-        String datePrecision;
-        switch (dateDesc.getPrecision()) {
-            case DAY:
-                datePrecision = DateSpecifier.DATE_PRECISION_DAY;
-                break;
-            case MONTH:
-                datePrecision = DateSpecifier.DATE_PRECISION_MONTH;
-                break;
-            case YEAR:
-                datePrecision = DateSpecifier.DATE_PRECISION_YEAR;
-                break;
-            default:
-                datePrecision = null;
-        }
+        String datePrecision = switch (dateDesc.getPrecision()) {
+            case DAY -> DateSpecifier.DATE_PRECISION_DAY;
+            case MONTH -> DateSpecifier.DATE_PRECISION_MONTH;
+            case YEAR -> DateSpecifier.DATE_PRECISION_YEAR;
+            default -> null;
+        };
         return new DateSpecifier(dateDesc.getDate(), datePrecision);
     }
 
@@ -73,20 +65,13 @@ public class DateSpecifier {
         Calendar cal = Calendar.getInstance();
         cal.setTime(date);
 
-        String result = "";
-        switch (datePrecision) {
-            case DATE_PRECISION_YEAR:
-                result = String.format("%d", cal.get(Calendar.YEAR));
-                break;
-            case DATE_PRECISION_MONTH:
-                result = String.format("%d-%02d", cal.get(Calendar.YEAR), cal.get(Calendar.MONTH) + 1);
-                break;
-            case DATE_PRECISION_DAY:
-                result = String.format("%d-%02d-%02d", cal.get(Calendar.YEAR), cal.get(Calendar.MONTH) + 1, cal.get(Calendar.DAY_OF_MONTH));
-                break;
-            default:
-                result = "DateSpecifier.InvalidDate";
-        }
+        String result = switch (datePrecision) {
+            case DATE_PRECISION_YEAR -> String.format("%d", cal.get(Calendar.YEAR));
+            case DATE_PRECISION_MONTH -> String.format("%d-%02d", cal.get(Calendar.YEAR), cal.get(Calendar.MONTH) + 1);
+            case DATE_PRECISION_DAY ->
+                    String.format("%d-%02d-%02d", cal.get(Calendar.YEAR), cal.get(Calendar.MONTH) + 1, cal.get(Calendar.DAY_OF_MONTH));
+            default -> "DateSpecifier.InvalidDate";
+        };
         return result;
     }
 }

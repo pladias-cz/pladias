@@ -48,14 +48,12 @@ public abstract class DuplicationValidationServiceBase implements IExcelTableVal
 
     private String createErrorMessage(DuplicationStatus duplicationStatus, MutableLong duplicateRecordId) {
         String recordId = Long.toString(duplicateRecordId.getValue());
-        switch (duplicationStatus) {
-            case DuplicityError:
-                return messages.at("ExcelTableValidationService.duplicateEntryAlreadyExists", recordId);
-            case DuplicityWarning:
-                return messages.at("ExcelTableValidationService.possibleDuplicateEntryAlreadyExists", recordId);
-            default:
-                return "";
-        }
+        return switch (duplicationStatus) {
+            case DuplicityError -> messages.at("ExcelTableValidationService.duplicateEntryAlreadyExists", recordId);
+            case DuplicityWarning ->
+                    messages.at("ExcelTableValidationService.possibleDuplicateEntryAlreadyExists", recordId);
+            default -> "";
+        };
     }
 
     private void reportDuplicateEntry(DuplicationStatus duplicationStatus, ParsedRecordDetails wrapper, ExcelErrorInfo errorInfo) {

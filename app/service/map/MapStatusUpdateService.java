@@ -94,7 +94,7 @@ public abstract class MapStatusUpdateService {
     }
 
     private List<String> getRevisorEmails(Set<User> revisors) {
-        List<String> emails = new ArrayList<String>();
+        List<String> emails = new ArrayList<>();
         for (User r : revisors) {
             emails.add(r.getEmail());
         }

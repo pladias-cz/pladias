@@ -17,7 +17,7 @@ abstract public class BaseTraitTaxonNode {
     public BaseTraitTaxonNode(Trait trait, Taxon taxon) {
         this.trait = trait;
         this.taxon = taxon;
-        children = new ArrayList<BaseTraitTaxonNode>();
+        children = new ArrayList<>();
     }
 
     public Trait getTrait() {
@@ -38,7 +38,7 @@ abstract public class BaseTraitTaxonNode {
     }
 
     public List<BaseTraitTaxonNode> getChildren() {
-        return new ArrayList<BaseTraitTaxonNode>(children);
+        return new ArrayList<>(children);
     }
 
     public abstract void accept(INodeVisitor visitor);

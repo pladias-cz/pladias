@@ -17,7 +17,7 @@ public class MapRecordSelectionFilter implements IMapRecordSelectionFilter {
 
     @Override
     public List<Long> getTaxonIds() {
-        List<Long> result = new ArrayList<Long>();
+        List<Long> result = new ArrayList<>();
         result.add(settings.getId());
         for (TaxonMapSettings s : settings.getAggregatedChildren()) {
             result.add(s.getId());

@@ -20,7 +20,7 @@ public class RealMultiDeserializer extends AbstractDatatypeDeserializer implemen
 
     public RealMultiDeserializer(UserOptions options, Messages messages, Feature feature) {
         super(options, messages);
-        this.previouslyVisitedRecords = new HashSet<RealMultiDatatype>();
+        this.previouslyVisitedRecords = new HashSet<>();
         this.feature = feature;
     }
 

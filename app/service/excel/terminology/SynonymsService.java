@@ -80,7 +80,7 @@ public class SynonymsService {
     private void computeOriginalTaxonDetails(ParsedRecordDetails wrapper, String inputTaxon, Taxon taxon,
                                              List<TaxonSynonym> taxonSynonyms) {
         if (oneSynonymMatches(taxonSynonyms)) {
-            TaxonSynonym synonym = taxonSynonyms.get(0);
+            TaxonSynonym synonym = taxonSynonyms.getFirst();
             Taxon referenceTaxon = synonym.getTaxon();
             String text = inputTaxon + " - " + referenceTaxon.getNameLat();
             wrapper.addInfo(buildReport(wrapper, text));
@@ -95,7 +95,7 @@ public class SynonymsService {
         if (notDefined(taxon, taxonSynonyms) || multipleSynonyms(taxonSynonyms)) {
             errorInfo = buildReport(wrapper, inputTaxon);
         } else if (oneSynonymMatches(taxonSynonyms)) {
-            TaxonSynonym synonym = taxonSynonyms.get(0);
+            TaxonSynonym synonym = taxonSynonyms.getFirst();
             Taxon referenceTaxon = synonym.getTaxon();
             errorInfo = buildReport(wrapper, referenceTaxon.getNameLat());
         } else if (taxon != null) {
@@ -120,7 +120,7 @@ public class SynonymsService {
     }
 
     private boolean notDefined(Taxon taxon, List<TaxonSynonym> synonyms) {
-        return notDefined(taxon) && synonyms.size() == 0;
+        return notDefined(taxon) && synonyms.isEmpty();
     }
 
     private void buildStatusDetails(ParsedRecordDetails wrapper, TaxonSynonymsStatus status) {
@@ -131,18 +131,11 @@ public class SynonymsService {
     }
 
     private String getStatusMessage(TaxonSynonymsStatus status) {
-        String message = null;
-        switch (status) {
-            case Changed:
-                message = messages.at("SynonymsService.ChangedTaxon");
-                break;
-            case Duplicate:
-                message = messages.at("SynonymsService.DuplicateTaxon");
-                break;
-            case NotFound:
-                message = messages.at("SynonymsService.NotFound");
-                break;
-        }
+        String message = switch (status) {
+            case Changed -> messages.at("SynonymsService.ChangedTaxon");
+            case Duplicate -> messages.at("SynonymsService.DuplicateTaxon");
+            case NotFound -> messages.at("SynonymsService.NotFound");
+        };
         return message;
     }
 
@@ -152,14 +145,11 @@ public class SynonymsService {
     }
 
     private TaxonSynonymsStatus computeTaxonSynonymsStatus(List<TaxonSynonym> taxonSynonyms) {
-        switch (taxonSynonyms.size()) {
-            case 0:
-                return TaxonSynonymsStatus.NotFound;
-            case 1:
-                return TaxonSynonymsStatus.Changed;
-            default:
-                return TaxonSynonymsStatus.Duplicate;
-        }
+        return switch (taxonSynonyms.size()) {
+            case 0 -> TaxonSynonymsStatus.NotFound;
+            case 1 -> TaxonSynonymsStatus.Changed;
+            default -> TaxonSynonymsStatus.Duplicate;
+        };
     }
 
     enum TaxonSynonymsStatus {

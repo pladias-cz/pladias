@@ -23,7 +23,7 @@ public class YearDeserializer extends AbstractDatatypeDeserializer implements IY
     public YearDeserializer(Feature feature, UserOptions options, Messages messages) {
         super(options, messages);
         this.feature = feature;
-        seenRecords = new HashSet<YearDatatype>();
+        seenRecords = new HashSet<>();
     }
 
     @Override

@@ -38,7 +38,7 @@ public class ExcelTableValidationServiceFactory implements IExcelTableValidation
     private List<IExcelTableValidationService> getNonVascularServices(IRecordColumnMapper colMapper,
                                                                       Project project, Messages messages) {
         List<IExcelTableValidationService> validationServices =
-            new ArrayList<IExcelTableValidationService>();
+                new ArrayList<>();
 
         validationServices.add(new NonVascularExcelTableValidationService(
             colMapper, _phytochorionService, project, messages, _configService));
@@ -48,7 +48,7 @@ public class ExcelTableValidationServiceFactory implements IExcelTableValidation
 
     private List<IExcelTableValidationService> getVascularServices(IRecordColumnMapper colMapper, Project project,
                                                                    Messages messages) {
-        List<IExcelTableValidationService> validationServices = new ArrayList<IExcelTableValidationService>();
+        List<IExcelTableValidationService> validationServices = new ArrayList<>();
 
         validationServices.add(new VascularExcelTableValidationService(
             _squareRepository, colMapper, _phytochorionService, project, messages, _configService));

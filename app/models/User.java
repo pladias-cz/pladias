@@ -75,7 +75,7 @@ public class User extends Model {
 
     @ManyToMany(mappedBy = "supervisors")
     @JoinTable(name = "atlas.taxons_users")
-    private Set<Taxon> supervisedTaxons = new HashSet<Taxon>();
+    private Set<Taxon> supervisedTaxons = new HashSet<>();
 
     @ManyToMany
     @JoinTable(
@@ -87,7 +87,7 @@ public class User extends Model {
 
     @ManyToMany(cascade = CascadeType.PERSIST)
     @JoinTable(name = "atlas.users_comments")
-    private List<RecordComment> recordComments = new ArrayList<RecordComment>();
+    private List<RecordComment> recordComments = new ArrayList<>();
 
     @Transient
     private List<Feature> supervisedFeatures;
@@ -161,14 +161,8 @@ public class User extends Model {
     }
 
     public List<Taxon> getSupervisedTaxonsSorted() {
-        List<Taxon> list = new ArrayList<Taxon>(supervisedTaxons);
-        list.sort(new Comparator<Taxon>() {
-
-            @Override
-            public int compare(Taxon t1, Taxon t2) {
-                return t1.getNameLat().compareTo(t2.getNameLat());
-            }
-        });
+        List<Taxon> list = new ArrayList<>(supervisedTaxons);
+        list.sort((t1, t2) -> t1.getNameLat().compareTo(t2.getNameLat()));
         return list;
     }
 
@@ -270,7 +264,6 @@ public class User extends Model {
 
     /**
      *
-     * @param taxon
      * @return Returns true if the user is a mapAdmin or supervises specified taxon.
      */
 

@@ -38,67 +38,42 @@ public class DatatypeSerializerFactory {
     }
 
     public static AbstractDatatypeDeserializer createDeserializer(Feature feature, UserOptions options, Messages messages) throws Exception {
-        switch (feature.getDatatype().getId()) {
-            case Datatype.BooleanDatatypeId:
-                return new BoolDeserializer(options, messages);
-            case Datatype.EnumNominalDatatypeId:
-            case Datatype.EnumOrdinalDatatypeId:
-                return new EnumDeserializer(feature.getEnumerate(), options, messages, true);
-            case Datatype.EnumOrdinalSingleDatatypeId:
-                return new EnumDeserializer(feature.getEnumerate(), options, messages, false);
-            case Datatype.EnumSyntaxonsDatatypeId:
-                return new SyntaxonDeserializer(feature, options, messages);
-            case Datatype.IntegerDatatypeId:
-                return new IntegerDeserializer(feature, options, messages);
-            case Datatype.YearDatatypeId:
-                return new YearDeserializer(feature, options, messages);
-            case Datatype.MonthDatatypeId:
-                return new MonthDeserializer(options, messages);
-            case Datatype.PercentageDatatypeId:
-                return new PercentageDeserializer(options, messages);
-            case Datatype.CrossTaxonDatatypeId:
-                return new CrossTaxonDeserializer(options, messages);
-            case Datatype.RealDatatypeId:
-                return new RealDeserializer(options, messages, feature);
-            case Datatype.RealMultiDatatypeId:
-                return new RealMultiDeserializer(options, messages, feature);
-            case Datatype.IntervalAvgDatatypeId:
-                return new IntegerAvgDeserializer(options, messages);
-            default:
-                throw new Exception("Invalid datatype");
-        }
+        return switch (feature.getDatatype().getId()) {
+            case Datatype.BooleanDatatypeId -> new BoolDeserializer(options, messages);
+            case Datatype.EnumNominalDatatypeId, Datatype.EnumOrdinalDatatypeId ->
+                new EnumDeserializer(feature.getEnumerate(), options, messages, true);
+            case Datatype.EnumOrdinalSingleDatatypeId ->
+                new EnumDeserializer(feature.getEnumerate(), options, messages, false);
+            case Datatype.EnumSyntaxonsDatatypeId -> new SyntaxonDeserializer(feature, options, messages);
+            case Datatype.IntegerDatatypeId -> new IntegerDeserializer(feature, options, messages);
+            case Datatype.YearDatatypeId -> new YearDeserializer(feature, options, messages);
+            case Datatype.MonthDatatypeId -> new MonthDeserializer(options, messages);
+            case Datatype.PercentageDatatypeId -> new PercentageDeserializer(options, messages);
+            case Datatype.CrossTaxonDatatypeId -> new CrossTaxonDeserializer(options, messages);
+            case Datatype.RealDatatypeId -> new RealDeserializer(options, messages, feature);
+            case Datatype.RealMultiDatatypeId -> new RealMultiDeserializer(options, messages, feature);
+            case Datatype.IntervalAvgDatatypeId -> new IntegerAvgDeserializer(options, messages);
+            default -> throw new Exception("Invalid datatype");
+        };
     }
 
     public static AbstractDatatypeSerializer createSerializer(Feature feature, UserOptions options, Messages messages, Locale locale, Workbook workbook, Sheet sheet) throws Exception {
-        switch (feature.getDatatype().getId()) {
-            case Datatype.BooleanDatatypeId:
-                return new BoolSerializer(options, messages, locale, workbook, sheet);
-            case Datatype.EnumNominalDatatypeId:
-            case Datatype.EnumOrdinalDatatypeId:
-            case Datatype.EnumOrdinalSingleDatatypeId:
-                return new EnumSerializer(feature.getEnumerate(), options, messages, locale, workbook, sheet);
-            case Datatype.EnumSyntaxonsDatatypeId:
-                return new SyntaxonSerializer(options, messages, locale, workbook, sheet);
-            case Datatype.IntegerDatatypeId:
-                return new IntegerSerializer(options, messages, locale, workbook, sheet);
-            case Datatype.YearDatatypeId:
-                return new YearSerializer(options, messages, locale, workbook, sheet);
-            case Datatype.MonthDatatypeId:
-                return new MonthSerializer(options, messages, locale, workbook, sheet);
-            case Datatype.PercentageDatatypeId:
-                return new PercentageSerializer(options, messages, locale, workbook, sheet);
-            case Datatype.CrossTaxonDatatypeId:
-                return new CrossTaxonSerializer(options, messages, locale, workbook, sheet);
-            case Datatype.RealDatatypeId:
-                return new RealSerializer(options, messages, locale, workbook, sheet);
-            case Datatype.RealMultiDatatypeId:
-                return new RealMultiSerializer(options, messages, locale, workbook, sheet);
-            case Datatype.IntervalAvgDatatypeId:
-                return new IntegerAvgSerializer(options, messages, locale, workbook, sheet);
-            case Datatype.DistributionDatatypeId:
-                return new DistributionSerializer(options, messages, locale, workbook, sheet);
-            default:
-                throw new Exception("Invalid datatype");
-        }
+        return switch (feature.getDatatype().getId()) {
+            case Datatype.BooleanDatatypeId -> new BoolSerializer(options, messages, locale, workbook, sheet);
+            case Datatype.EnumNominalDatatypeId, Datatype.EnumOrdinalDatatypeId, Datatype.EnumOrdinalSingleDatatypeId ->
+                new EnumSerializer(feature.getEnumerate(), options, messages, locale, workbook, sheet);
+            case Datatype.EnumSyntaxonsDatatypeId -> new SyntaxonSerializer(options, messages, locale, workbook, sheet);
+            case Datatype.IntegerDatatypeId -> new IntegerSerializer(options, messages, locale, workbook, sheet);
+            case Datatype.YearDatatypeId -> new YearSerializer(options, messages, locale, workbook, sheet);
+            case Datatype.MonthDatatypeId -> new MonthSerializer(options, messages, locale, workbook, sheet);
+            case Datatype.PercentageDatatypeId -> new PercentageSerializer(options, messages, locale, workbook, sheet);
+            case Datatype.CrossTaxonDatatypeId -> new CrossTaxonSerializer(options, messages, locale, workbook, sheet);
+            case Datatype.RealDatatypeId -> new RealSerializer(options, messages, locale, workbook, sheet);
+            case Datatype.RealMultiDatatypeId -> new RealMultiSerializer(options, messages, locale, workbook, sheet);
+            case Datatype.IntervalAvgDatatypeId -> new IntegerAvgSerializer(options, messages, locale, workbook, sheet);
+            case Datatype.DistributionDatatypeId ->
+                new DistributionSerializer(options, messages, locale, workbook, sheet);
+            default -> throw new Exception("Invalid datatype");
+        };
     }
 }

@@ -27,7 +27,7 @@ public class SearchResults {
     }
 
     public void sort() {
-        Collections.sort(records, new Comparator<Record>() {
+        records.sort(new Comparator<>() {
             final TaxonLatNameComparator taxonComparator = new TaxonLatNameComparator();
             final RecordDateComparator recordDateComparator = new RecordDateComparator();
 

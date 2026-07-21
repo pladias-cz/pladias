@@ -26,14 +26,11 @@ public class Scheduler implements IScheduler {
     }
 
     private Runnable createRunnable(ITask task) {
-        return new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    task.execute();
-                } catch (Exception ex) {
-                    logger.error("Failed to run periodic task '" + task.getName() + "'.", ex);
-                }
+        return () -> {
+            try {
+                task.execute();
+            } catch (Exception ex) {
+                logger.error("Failed to run periodic task '" + task.getName() + "'.", ex);
             }
         };
     }

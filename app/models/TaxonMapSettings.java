@@ -86,7 +86,7 @@ public class TaxonMapSettings extends Model {
     }
 
     public static List<Integer> getPossibleCommonThresholdValues() {
-        List<Integer> allowed = new ArrayList<Integer>();
+        List<Integer> allowed = new ArrayList<>();
         allowed.add(0);
         allowed.add(1);
         allowed.add(2);
@@ -240,7 +240,7 @@ public class TaxonMapSettings extends Model {
 
     public List<TaxonMapSettings> getAggregatedChildren() {
         if (!isAggregateRoot())
-            return new ArrayList<TaxonMapSettings>();
+            return new ArrayList<>();
 
         return TaxonMapSettings.find().query().where()
             .eq("parent.id", id) //this taxon is their parent

@@ -25,13 +25,14 @@ import service.taxon.TaxonSerializationService;
 import javax.inject.Inject;
 import java.text.Normalizer;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
 
 @Security.Authenticated(Authorized.class)
 public class ModelDataSourceController extends ControllerBase {
-    private final static List<TaxonSynonym> EmptySynonymList = new ArrayList<TaxonSynonym>();
+    private final static List<TaxonSynonym> EmptySynonymList = new ArrayList<>();
 
     @Inject
     private FormFactory formFactory;
@@ -64,7 +65,7 @@ public class ModelDataSourceController extends ControllerBase {
 
     private List<Taxon> getTaxonsByPrefix(String prefix) {
         if (prefix == null || prefix.length() < 2) {
-            return new ArrayList<Taxon>();
+            return new ArrayList<>();
         } else {
             return TaxonSearchService.getImportableTaxons(prefix);
         }
@@ -131,7 +132,7 @@ public class ModelDataSourceController extends ControllerBase {
             projects = Project.find().all();
         }
 
-        projects.sort((o1, o2) -> Normalizer.normalize(o1.getName(), Normalizer.Form.NFD).compareTo(Normalizer.normalize(o2.getName(), Normalizer.Form.NFD)));
+        projects.sort(Comparator.comparing(o -> Normalizer.normalize(o.getName(), Normalizer.Form.NFD)));
 
 
         ArrayNode result = Json.newObject().arrayNode();

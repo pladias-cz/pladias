@@ -20,9 +20,9 @@ public class DateFormatter extends SimpleFormatter<LocalDate> {
     public LocalDate parse(String input, Locale locale) throws ParseException {
         Matcher m = DatePattern.matcher(input);
         if (!m.find()) throw new ParseException("No valid Input", 0);
-        int year = Integer.valueOf(m.group(1));
-        int month = Integer.valueOf(m.group(2));
-        int day = Integer.valueOf(m.group(3));
+        int year = Integer.parseInt(m.group(1));
+        int month = Integer.parseInt(m.group(2));
+        int day = Integer.parseInt(m.group(3));
         return new LocalDate(year, month, day);
     }
 }

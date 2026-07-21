@@ -32,15 +32,15 @@ public class AvgExportAccumulator extends BaseExportAccumulator {
 
     @Override
     public List<List<CellDetail>> getColumnHeaderData(boolean isComplexExport) {
-        List<List<CellDetail>> result = new ArrayList<List<CellDetail>>();
+        List<List<CellDetail>> result = new ArrayList<>();
 
         if (isComplexExport) {
             List<CellDetail> listTraitName = getTraitNameRow();
             result.add(listTraitName);
         }
 
-        List<CellDetail> rowTypes = new ArrayList<CellDetail>();
-        List<CellDetail> rowValues = new ArrayList<CellDetail>();
+        List<CellDetail> rowTypes = new ArrayList<>();
+        List<CellDetail> rowValues = new ArrayList<>();
         result.add(rowTypes);
         result.add(rowValues);
 
@@ -50,9 +50,9 @@ public class AvgExportAccumulator extends BaseExportAccumulator {
                 continue;
 
             String localizedColumnTypeName = columnTypeLocalizedLabels[i];
-            for (int j = 0; j < keys.length; j++) {
+            for (String key : keys) {
                 rowTypes.add(createCellDetail(1, localizedColumnTypeName, CellType.HeaderOriginalValue));
-                rowValues.add(createCellDetail(1, messages.at(keys[j]), CellType.HeaderTaxonInfo));
+                rowValues.add(createCellDetail(1, messages.at(key), CellType.HeaderTaxonInfo));
             }
         }
 
@@ -76,7 +76,7 @@ public class AvgExportAccumulator extends BaseExportAccumulator {
 
         long taxonId = dao.getDatatypePk().getTaxonId();
         if (!cachedData.containsKey(taxonId)) {
-            List<CellDetail> list = new ArrayList<CellDetail>();
+            List<CellDetail> list = new ArrayList<>();
             for (int i = 0; i < getColumnCount(); i++) {
                 list.add(NoValue);
             }

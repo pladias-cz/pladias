@@ -21,7 +21,7 @@ public class QuadrantsSerializer {
             return "";
         StringBuilder serialized = new StringBuilder();
         for (QuadrantNew q : quadrants) {
-            if (serialized.length() > 0) {
+            if (!serialized.isEmpty()) {
                 serialized.append(';');
             }
             serialized.append(q.toString());

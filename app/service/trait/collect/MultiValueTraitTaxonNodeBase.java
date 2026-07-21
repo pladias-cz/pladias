@@ -10,15 +10,15 @@ import models.traitsExport.TraitDetailsEntryType;
 import java.util.*;
 
 public abstract class MultiValueTraitTaxonNodeBase<T> extends BaseTraitTaxonNode {
-    private final Set<T> originalValues = new TreeSet<T>();
-    private final Set<T> inherited = new TreeSet<T>();
-    private final Set<T> aggregated = new TreeSet<T>();
+    private final Set<T> originalValues = new TreeSet<>();
+    private final Set<T> inherited = new TreeSet<>();
+    private final Set<T> aggregated = new TreeSet<>();
     private final DatatypeFactory<T> datatypeFactory;
 
     public MultiValueTraitTaxonNodeBase(Trait trait, Taxon taxon, Collection<T> values) {
         super(trait, taxon);
 
-        datatypeFactory = new DatatypeFactory<T>(trait, taxon);
+        datatypeFactory = new DatatypeFactory<>(trait, taxon);
         for (T s : values) {
             originalValues.add(s);
         }
@@ -26,7 +26,7 @@ public abstract class MultiValueTraitTaxonNodeBase<T> extends BaseTraitTaxonNode
 
     @Override
     public List<Model> getComputedEntities() {
-        List<Model> entities = new ArrayList<Model>();
+        List<Model> entities = new ArrayList<>();
         Set<T> composedValues = null;
         if (!originalValues.isEmpty()) {
             //original values have already been persisted
@@ -51,7 +51,7 @@ public abstract class MultiValueTraitTaxonNodeBase<T> extends BaseTraitTaxonNode
     }
 
     private Collection<Model> populateEntities(TraitDetailsEntryType entryType, Set<T> values) {
-        List<Model> result = new ArrayList<Model>();
+        List<Model> result = new ArrayList<>();
         for (T v : values) {
             Model m = datatypeFactory.create(entryType, v);
             result.add(m);

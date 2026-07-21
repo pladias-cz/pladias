@@ -25,6 +25,6 @@ public class TaxonStatistics {
     public List<Pair<Project, Integer>> recordsByProject;
 
     public TaxonStatistics() {
-        recordsByProject = new ArrayList<Pair<Project, Integer>>();
+        recordsByProject = new ArrayList<>();
     }
 }

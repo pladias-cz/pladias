@@ -11,12 +11,12 @@ import java.util.*;
 public abstract class EnumBaseTraitTaxonNode extends BaseTraitTaxonNode {
 
     private final Enumerate enumerate;
-    private final Set<Integer> originalValues = new HashSet<Integer>();
-    private final Map<Integer, Integer> originalValueFrequencies = new HashMap<Integer, Integer>();
-    private final Map<Integer, Boolean> originalValueDominancy = new HashMap<Integer, Boolean>();
+    private final Set<Integer> originalValues = new HashSet<>();
+    private final Map<Integer, Integer> originalValueFrequencies = new HashMap<>();
+    private final Map<Integer, Boolean> originalValueDominancy = new HashMap<>();
 
-    private final Map<Integer, Boolean> aggregatedValues = new HashMap<Integer, Boolean>();
-    private final Map<Integer, Boolean> inheritedValues = new HashMap<Integer, Boolean>();
+    private final Map<Integer, Boolean> aggregatedValues = new HashMap<>();
+    private final Map<Integer, Boolean> inheritedValues = new HashMap<>();
 
     public EnumBaseTraitTaxonNode(Trait trait, Taxon taxon, TraitDataProviderFactory factory) {
         super(trait, taxon);
@@ -61,7 +61,7 @@ public abstract class EnumBaseTraitTaxonNode extends BaseTraitTaxonNode {
     }
 
     public List<Model> getComputedEntities() {
-        List<Model> results = new ArrayList<Model>();
+        List<Model> results = new ArrayList<>();
 
         for (EnumerateValue enumVal : enumerate.getEnumerateValues()) {
             Boolean composedValue = null;

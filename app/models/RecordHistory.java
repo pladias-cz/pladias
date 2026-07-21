@@ -58,7 +58,7 @@ public class RecordHistory extends Model {
         SqlQuery query = DB.sqlQuery(sql);
         List<SqlRow> list = query.findList();
 
-        List<String> fields = new ArrayList<String>();
+        List<String> fields = new ArrayList<>();
         for (SqlRow row : list) {
             String field = row.getString("field_desc");
             if (field != null) {

@@ -51,7 +51,7 @@ public class VascularRecordWrapperBuilder extends SharedRecordWrapperBuilder {
         List<String> list = HerbariumListParser.parse(input);
         list = ImmutableSet.copyOf(list).asList();
 
-        if (list.size() > 0) {
+        if (!list.isEmpty()) {
             List<Herbarium> herbariums = validateOrCreateHerbariumsIfNeeded(list, recordRow, column, errors);
             item.setHerbariums(herbariums);
         } else {
@@ -94,7 +94,7 @@ public class VascularRecordWrapperBuilder extends SharedRecordWrapperBuilder {
                 errors.add(createErrorInfo(recordRow, column, messages.at("ExcelTableLoadService.invalidQuadrantId")));
             }
 
-            List<QuadrantNew> quadrants = new ArrayList<QuadrantNew>();
+            List<QuadrantNew> quadrants = new ArrayList<>();
             quadrants.addAll(data.quadrants);
             item.setQuadrantsLegacy(quadrants);
         } catch (Exception e) {

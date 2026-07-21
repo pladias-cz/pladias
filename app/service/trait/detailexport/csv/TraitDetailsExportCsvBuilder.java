@@ -48,7 +48,7 @@ public class TraitDetailsExportCsvBuilder implements IDetailedExportBuilder {
     }
 
     private void serialize(List<CellDetail> row) throws IOException {
-        List<String> values = new ArrayList<String>();
+        List<String> values = new ArrayList<>();
         for (CellDetail cell : row) {
             values.add(cell.getText());
             for (int i = 1; i < cell.getColumnSpan(); i++) {

@@ -22,7 +22,7 @@ public class AuthorListParser {
 
 
     public static List<Pair<String, String>> parse(String input, Messages messages) {
-        List<Pair<String, String>> authors = new ArrayList<Pair<String, String>>();
+        List<Pair<String, String>> authors = new ArrayList<>();
         if (input == null)
             throw new IllegalArgumentException(messages.at("AuthorListParser.InputCannotBeEmpty"));
 

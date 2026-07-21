@@ -81,7 +81,7 @@ public class NonVascularRecordWrapperBuilder extends SharedRecordWrapperBuilder 
             herbarium.setImportId(input);
         }
         herbarium.save();
-        List<Herbarium> herbList = new ArrayList<Herbarium>();
+        List<Herbarium> herbList = new ArrayList<>();
         herbList.add(herbarium);
         item.setHerbariums(herbList);
     }

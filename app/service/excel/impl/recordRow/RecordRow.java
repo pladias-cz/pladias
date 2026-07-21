@@ -9,7 +9,7 @@ public class RecordRow {
     private long rowNumber;
 
     public RecordRow() {
-        map = new HashMap<Integer, String>();
+        map = new HashMap<>();
     }
 
     public String get(int key) {

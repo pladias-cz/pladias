@@ -24,9 +24,9 @@ public abstract class AbstractDatatypeDeserializer implements IAbstractTypeSeria
     protected String nullSubstitution;
     protected Messages messages;
     private final TaxonRepository taxonRepository = TaxonRepository.getInstance();
-    private final Set<DatatypePK> seenTraitComments = new HashSet<DatatypePK>();
-    private final Set<Long> visitedTaxons = new HashSet<Long>();
-    private final Set<Long> unmeasuredTaxons = new HashSet<Long>();
+    private final Set<DatatypePK> seenTraitComments = new HashSet<>();
+    private final Set<Long> visitedTaxons = new HashSet<>();
+    private final Set<Long> unmeasuredTaxons = new HashSet<>();
 
     public AbstractDatatypeDeserializer(UserOptions options, Messages messages) {
         unmeasurableValue = options.getUnmeasurableValue();
@@ -53,7 +53,7 @@ public abstract class AbstractDatatypeDeserializer implements IAbstractTypeSeria
             ExcelErrorInfo info = createError(row, TaxonColumn, messages.at("AbstractDatatypeDeserializer.DuplicateKey"));
             return new DatatypeWrapper(null, null, new ExcelErrorInfo[]{info});
         }
-        List<ExcelErrorInfo> errorList = new ArrayList<ExcelErrorInfo>();
+        List<ExcelErrorInfo> errorList = new ArrayList<>();
         Model model = deserializeDatatypeFields(row, traitId, taxon.getId(), errorList);
         ValueComment comment = deserializeComment(row, traitId, taxon.getId());
         if (comment != null && visitedTaxons.contains(taxon.getId()) && !(this instanceof CrossTaxonDeserializer)) {
@@ -61,7 +61,7 @@ public abstract class AbstractDatatypeDeserializer implements IAbstractTypeSeria
             errorList.add(info);
         }
         visitedTaxons.add(taxon.getId());
-        return (model != null || errorList.size() > 0)
+        return (model != null || !errorList.isEmpty())
             ? new DatatypeWrapper(model, comment, errorList.toArray(new ExcelErrorInfo[errorList.size()]))
             : null;
     }

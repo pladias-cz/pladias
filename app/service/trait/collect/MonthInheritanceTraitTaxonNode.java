@@ -50,7 +50,7 @@ public class MonthInheritanceTraitTaxonNode extends BaseTraitTaxonNode {
 
     @Override
     public List<Model> getComputedEntities() {
-        List<Model> results = new ArrayList<Model>();
+        List<Model> results = new ArrayList<>();
 
         for (MonthDatatype row : rows) {
             MonthDatatypePK monthPk = row.getDatatypePk();
@@ -113,7 +113,7 @@ public class MonthInheritanceTraitTaxonNode extends BaseTraitTaxonNode {
         SqlQuery sqlQuery = DB.sqlQuery(sql);
         List<SqlRow> rows = sqlQuery.findList();
 
-        List<MonthDatatype> results = new ArrayList<MonthDatatype>();
+        List<MonthDatatype> results = new ArrayList<>();
         for (SqlRow row : rows) {
             MonthDatatype datatype = convertToEntity(row);
             results.add(datatype);

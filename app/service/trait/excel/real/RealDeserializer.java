@@ -21,7 +21,7 @@ public class RealDeserializer extends AbstractDatatypeDeserializer implements IR
 
     public RealDeserializer(UserOptions options, Messages messages, Feature feature) {
         super(options, messages);
-        this.seenRecords = new HashSet<DatatypePK>();
+        this.seenRecords = new HashSet<>();
         this.feature = feature;
     }
 

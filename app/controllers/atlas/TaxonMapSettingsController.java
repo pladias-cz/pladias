@@ -781,29 +781,15 @@ public class TaxonMapSettingsController extends ControllerBase {
         }
 
         // Validate sort field - only allow specific column names
-        String validatedField;
-        switch (sortField) {
-            case "taxonNameLat":
-                validatedField = "t.name_lat";
-                break;
-            case "isMapped":
-                validatedField = "ms.is_mapped";
-                break;
-            case "commonThreshold":
-                validatedField = "ms.common_threshold";
-                break;
-            case "isProtected":
-                validatedField = "ms.is_protected";
-                break;
-            case "revisionStatusId":
-                validatedField = "ms.revision_status";
-                break;
-            case "publicationStatusId":
-                validatedField = "ms.publication_status";
-                break;
-            default:
-                validatedField = "t.name_lat";
-        }
+        String validatedField = switch (sortField) {
+            case "taxonNameLat" -> "t.name_lat";
+            case "isMapped" -> "ms.is_mapped";
+            case "commonThreshold" -> "ms.common_threshold";
+            case "isProtected" -> "ms.is_protected";
+            case "revisionStatusId" -> "ms.revision_status";
+            case "publicationStatusId" -> "ms.publication_status";
+            default -> "t.name_lat";
+        };
 
         // Validate sort direction - only ASC or DESC
         String direction = "ASC";
@@ -815,7 +801,7 @@ public class TaxonMapSettingsController extends ControllerBase {
     }
 
     private ObjectNode buildSuccessResponse(String value, TaxonMapSettings settings) {
-        Map<String, String> map = new HashMap<String, String>();
+        Map<String, String> map = new HashMap<>();
         map.put("timestamp", Long.toString(settings.getLastEditTimestamp().getTime()));
         String escapedValue = StringEscapeUtils.escapeHtml4(value);
         map.put("text", escapedValue);

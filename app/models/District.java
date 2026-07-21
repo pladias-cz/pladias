@@ -96,12 +96,12 @@ public class District extends Model {
         Query<District> query = find().query().setRawSql(rawSql);
         List<District> list = query.findList();
         if (list.isEmpty()) return null;
-        return list.get(0);
+        return list.getFirst();
     }
 
     public static List<District> findTownHierarchyByPoint(Coordinates coords) {
         if (!coords.isValid())
-            return new ArrayList<District>();
+            return new ArrayList<>();
 
         StringBuilder sqlBuilder = new StringBuilder();
         sqlBuilder.append("SELECT id, lft, rgt, depth, abbrev, identificator, name ").
@@ -124,7 +124,7 @@ public class District extends Model {
 
     public static List<District> findNearestTownsByBufferedPoint(Coordinates coords, int bufferMeters, int utm_srid) {
         if (!coords.isValid())
-            return new ArrayList<District>();
+            return new ArrayList<>();
 
         StringBuilder sqlBuilder = new StringBuilder();
         sqlBuilder.append("SELECT id, lft, rgt, depth, abbrev, identificator, name ").
@@ -204,7 +204,7 @@ public class District extends Model {
         Query<District> query = find().query().setRawSql(rawSql);
         List<District> list = query.findList();
         if (list.isEmpty()) return null;
-        return list.get(0);
+        return list.getFirst();
     }
 
     public long getId() {
@@ -268,7 +268,7 @@ public class District extends Model {
             gt("lft", this.getLeft()).
             lt("rgt", this.getRight()).
             eq("name", containingTown).orderBy().desc("depth").findList();
-        return (list.isEmpty() ? null : list.get(0));
+        return (list.isEmpty() ? null : list.getFirst());
     }
 
     public String toString() {

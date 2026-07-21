@@ -11,102 +11,90 @@ import models.Taxon;
 import models.TaxonMapSettings;
 
 public class TaxonCache {
-	
+
 	class Value
 	{
 		public ReadableInstant expiration;
 		public Object object;
 	}
-	
+
 	private static TaxonCache instance = new TaxonCache();
-	
+
 	public static TaxonCache getInstance()
 	{
 		return instance;
 	}
-	
-	private Map<String, Value> cache; 
-	
+
+	private Map<String, Value> cache;
+
 	public TaxonCache()
 	{
 	    HashMap<String,Value> map = new HashMap<>();
 		cache = java.util.Collections.synchronizedMap(map);
 	}
-	
+
 	public void clear()
 	{
 	    cache.clear();
 	}
-	
+
 	public Taxon getTaxon(long id)
 	{
-		return getObject(id, Taxon.class, new IEntityFactory<Long, Taxon>(){
-			
-			@Override
-			public Taxon fetch(Long id) {
-				return Taxon.find().byId(id);
-			}
-		});
+		return getObject(id, Taxon.class, (IEntityFactory<Long, Taxon>) id1 -> Taxon.find().byId(id1));
 	}
-	
+
 	public TaxonMapSettings getTaxonMapSettings(long id)
 	{
-		return getObject(id, TaxonMapSettings.class, new IEntityFactory<Long, TaxonMapSettings>(){
-			
-			@Override
-			public TaxonMapSettings fetch(Long id) {
-				return TaxonMapSettings.find().byId(id);
-			}
-		});
+		return getObject(id, TaxonMapSettings.class, (IEntityFactory<Long, TaxonMapSettings>) id1 -> TaxonMapSettings.find().byId(id1));
 	}
-	
+
 	public void update(TaxonMapSettings settings)
 	{
 		String key = createKey(TaxonMapSettings.class, settings.getId());
 		Value value = cache.get(key);
 		if (value == null)
 		{
-			value = new Value();	
+			value = new Value();
 		}
 		value.object = settings;
 		value.expiration = getDefaultExpiration();
 		cache.put(key, value);
 	}
-	
+
 	public void update(Taxon taxon)
 	{
 		String key = createKey(Taxon.class, taxon.getId());
 		Value value = cache.get(key);
 		if (value == null)
 		{
-			value = new Value();	
+			value = new Value();
 		}
 		value.object = taxon;
 		value.expiration = getDefaultExpiration();
 		cache.put(key, value);
 	}
-	
+
 	public void clear(Taxon taxon)
 	{
 		String key = createKey(Taxon.class, taxon.getId());
 		cache.remove(key);
 	}
-	
+
 	public void clear(TaxonMapSettings settings)
 	{
 		String key = createKey(TaxonMapSettings.class, settings.getId());
 		cache.remove(key);
 	}
-	
+
 	private <T extends Model> String createKey(Class<T> clazz, long id)
 	{
 		return clazz.getName() + id;
 	}
-	
-	
+
+
 	private <T extends Model> T getObject(long id, Class<T> clazz, IEntityFactory<Long, T> factory){
 		String key = createKey(clazz, id);
-		
+
 		Value value = cache.get(key);
 		if (value == null)
 		{
@@ -115,7 +103,7 @@ public class TaxonCache {
 			value.object = factory.fetch(id);
 			cache.put(key, value);
 		}
-		else 
+		else
 		{
 			ReadableInstant now = DateTime.now().toInstant();
 			if (value.expiration != null && value.expiration.isBefore(now))
@@ -125,7 +113,7 @@ public class TaxonCache {
 				value.expiration = getDefaultExpiration();
 			}
 		}
-		
+
 		return (T)value.object;
 	}
 

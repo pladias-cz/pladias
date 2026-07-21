@@ -18,7 +18,7 @@ public class NodesPopulatingVisitor implements INodeVisitor {
         List<BaseTraitTaxonNode> children = enumSingleTaxonDetail.getChildren();
 
         if (children.size() == 1) {
-            EnumSingleTraitTaxonNode child = (EnumSingleTraitTaxonNode) children.get(0);
+            EnumSingleTraitTaxonNode child = (EnumSingleTraitTaxonNode) children.getFirst();
 
             //update the only child
             Map<Integer, Boolean> childInheritedValues = child.getInheritedValues();
@@ -52,7 +52,7 @@ public class NodesPopulatingVisitor implements INodeVisitor {
             try {
                 Set<Integer> childValues = ((EnumBaseTraitTaxonNode) ch).getValues();
                 Map<Integer, Boolean> childAggregatedValues = ((EnumBaseTraitTaxonNode) ch).getAggregatedValues();
-                if (childValues.size() == 0 && childAggregatedValues.size() == 0)
+                if (childValues.isEmpty() && childAggregatedValues.isEmpty())
                     continue;
 
                 Integer currentMax = getMaxValue(childValues);
@@ -121,7 +121,7 @@ public class NodesPopulatingVisitor implements INodeVisitor {
     public void visit(EnumAdditiveTraitTaxonNode enumAdditiveTaxonDetail) {
         List<BaseTraitTaxonNode> children = enumAdditiveTaxonDetail.getChildren();
         if (children.size() == 1) {
-            EnumAdditiveTraitTaxonNode child = (EnumAdditiveTraitTaxonNode) children.get(0);
+            EnumAdditiveTraitTaxonNode child = (EnumAdditiveTraitTaxonNode) children.getFirst();
 
             //update the only child
             Map<Integer, Boolean> inheritedValues = child.getInheritedValues();
@@ -168,7 +168,7 @@ public class NodesPopulatingVisitor implements INodeVisitor {
     public void visit(EnumStandardTraitTaxonNode enumStdTaxonDetail) {
         List<BaseTraitTaxonNode> children = enumStdTaxonDetail.getChildren();
         if (children.size() == 1) {
-            EnumStandardTraitTaxonNode child = (EnumStandardTraitTaxonNode) children.get(0);
+            EnumStandardTraitTaxonNode child = (EnumStandardTraitTaxonNode) children.getFirst();
 
             //update the only child
             Map<Integer, Boolean> childInheritedValues = child.getInheritedValues();
@@ -221,7 +221,7 @@ public class NodesPopulatingVisitor implements INodeVisitor {
 
         List<BaseTraitTaxonNode> children = monthInheritanceTraitTaxonDetail.getChildren();
         if (children.size() == 1) {
-            MonthInheritanceTraitTaxonNode child = (MonthInheritanceTraitTaxonNode) children.get(0);
+            MonthInheritanceTraitTaxonNode child = (MonthInheritanceTraitTaxonNode) children.getFirst();
             RangeList ranges = new RangeList();
 
             for (MonthDatatype datatype : monthInheritanceTraitTaxonDetail.getMonths()) {
@@ -271,7 +271,7 @@ public class NodesPopulatingVisitor implements INodeVisitor {
         if (children.size() == 1) {
             Boolean originalValue = boolTraitTaxonDetail.getOriginalValue();
             Boolean inheritedValue = boolTraitTaxonDetail.getInherited();
-            BoolTraitTaxonNode child = (BoolTraitTaxonNode) children.get(0);
+            BoolTraitTaxonNode child = (BoolTraitTaxonNode) children.getFirst();
 
             if (originalValue != null) {
                 child.setInherited(originalValue);
@@ -312,7 +312,7 @@ public class NodesPopulatingVisitor implements INodeVisitor {
         if (children.size() == 1) {
             Set<?> originalValues = basicTraitTaxonDetail.getOriginalValues();
             Set<?> inheritedValues = basicTraitTaxonDetail.getInherited();
-            BasicTraitTaxonNode<?> child = (BasicTraitTaxonNode<?>) children.get(0);
+            BasicTraitTaxonNode<?> child = (BasicTraitTaxonNode<?>) children.getFirst();
 
             for (Object value : originalValues) {
                 child.addInherited(value);
@@ -326,7 +326,7 @@ public class NodesPopulatingVisitor implements INodeVisitor {
         visitChildren(children);
 
         if (children.size() == 1) {
-            BasicTraitTaxonNode<?> detail = (BasicTraitTaxonNode<?>) children.get(0);
+            BasicTraitTaxonNode<?> detail = (BasicTraitTaxonNode<?>) children.getFirst();
             Set<?> childValues = detail.getOriginalValues();
             Set<?> childAggrValues = detail.getAggregated();
 
@@ -345,7 +345,7 @@ public class NodesPopulatingVisitor implements INodeVisitor {
         List<BaseTraitTaxonNode> children = numericInheritanceDetail.getChildren();
 
         if (children.size() == 1) {
-            NumericTraitTaxonNode<?> child = (NumericTraitTaxonNode<?>) children.get(0);
+            NumericTraitTaxonNode<?> child = (NumericTraitTaxonNode<?>) children.getFirst();
 
             //update the only child
             Set<?> inheritedValues = numericInheritanceDetail.getInherited();
@@ -382,7 +382,7 @@ public class NodesPopulatingVisitor implements INodeVisitor {
         List<BaseTraitTaxonNode> children = intervalAvgTraitTaxonDetail.getChildren();
 
         if (children.size() == 1) {
-            IntervalAvgTraitTaxonNode child = (IntervalAvgTraitTaxonNode) children.get(0);
+            IntervalAvgTraitTaxonNode child = (IntervalAvgTraitTaxonNode) children.getFirst();
 
             //update the only child
             IntervalAvgTraitTaxonNode.IntervalAvgData inheritedValues = intervalAvgTraitTaxonDetail.getInheritedValue();
@@ -452,10 +452,10 @@ public class NodesPopulatingVisitor implements INodeVisitor {
     }
 
     private List<BaseTraitTaxonNode> collectDescendants(BaseTraitTaxonNode traitTaxonDetail) {
-        Queue<BaseTraitTaxonNode> queue = new LinkedList<BaseTraitTaxonNode>();
+        Queue<BaseTraitTaxonNode> queue = new LinkedList<>();
         queue.addAll(traitTaxonDetail.getChildren());
 
-        List<BaseTraitTaxonNode> result = new ArrayList<BaseTraitTaxonNode>();
+        List<BaseTraitTaxonNode> result = new ArrayList<>();
         while (!queue.isEmpty()) {
             BaseTraitTaxonNode elem = queue.remove();
             result.add(elem);
@@ -470,7 +470,7 @@ public class NodesPopulatingVisitor implements INodeVisitor {
                                                    List<BaseTraitTaxonNode> children) {
 
         if (children.size() == 1) {
-            IntervalAvgTraitTaxonNode child = (IntervalAvgTraitTaxonNode) children.get(0);
+            IntervalAvgTraitTaxonNode child = (IntervalAvgTraitTaxonNode) children.getFirst();
 
             //update the only child
             IntervalAvgTraitTaxonNode.IntervalAvgData aggregatedValues = intervalAvgTraitTaxonDetail.getAggregatedValue();
@@ -489,7 +489,7 @@ public class NodesPopulatingVisitor implements INodeVisitor {
         List<BaseTraitTaxonNode> children = enumSyntaxonDetail.getChildren();
 
         if (children.size() == 1) {
-            EnumSyntaxonTraitTaxonNode child = (EnumSyntaxonTraitTaxonNode) children.get(0);
+            EnumSyntaxonTraitTaxonNode child = (EnumSyntaxonTraitTaxonNode) children.getFirst();
 
             Map<Integer, Boolean> childInheritedValues = child.getInherited();
             Map<Integer, Boolean> inheritedValues = enumSyntaxonDetail.getInherited();
@@ -508,7 +508,7 @@ public class NodesPopulatingVisitor implements INodeVisitor {
         visitChildren(children);
 
         if (children.size() == 1) {
-            EnumSyntaxonTraitTaxonNode child = (EnumSyntaxonTraitTaxonNode) children.get(0);
+            EnumSyntaxonTraitTaxonNode child = (EnumSyntaxonTraitTaxonNode) children.getFirst();
 
             Map<Integer, Boolean> aggregatedValues = enumSyntaxonDetail.getAggregated();
             Map<Integer, Boolean> childOriginalValues = child.getOriginalValues();
@@ -534,7 +534,7 @@ public class NodesPopulatingVisitor implements INodeVisitor {
         if (children.size() == 1) {
             DistributionTraitTaxonNode.DistributionDetails inheritedValues = aggrDistTaxonTraitDetail.getInherited();
 
-            DistributionTraitTaxonNode child = (DistributionTraitTaxonNode) children.get(0);
+            DistributionTraitTaxonNode child = (DistributionTraitTaxonNode) children.getFirst();
             DistributionTraitTaxonNode.DistributionDetails childInhValues = child.getInherited();
 
             childInhValues.Quadrants = Sets.union(

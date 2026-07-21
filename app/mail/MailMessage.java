@@ -10,7 +10,7 @@ public class MailMessage {
     private final MimeMultipart body;
 
     public MailMessage(String recipientEmail, String subject, MimeMultipart body) {
-        recipients = new ArrayList<String>();
+        recipients = new ArrayList<>();
         recipients.add(recipientEmail);
         this.subject = subject;
         this.body = body;

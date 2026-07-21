@@ -175,7 +175,7 @@ public class Application extends ControllerBase {
         UserActivityService.recordActivity(user, UserActivity.Login);
         logger.info(String.format("User %s logged in", user.getEmail()));
 
-        Map<String, String> map = new HashMap<String, String>();
+        Map<String, String> map = new HashMap<>();
         map.put(SessionUtils.UserIdKey, "" + user.getId());
         map.put(SessionUtils.EmailKey, user.getEmail());
 

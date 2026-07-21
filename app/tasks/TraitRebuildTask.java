@@ -16,7 +16,6 @@ import javax.mail.MessagingException;
 import java.util.concurrent.TimeUnit;
 
 public class TraitRebuildTask implements ITask {
-    private final String Name = "traitRebuildTask";
 
     private final Logger _logger = LoggerFactory.getLogger(TraitRebuildTask.class);
 
@@ -40,7 +39,8 @@ public class TraitRebuildTask implements ITask {
 
     @Override
     public String getName() {
-        return Name;
+        String name = "traitRebuildTask";
+        return name;
     }
 
     @Override

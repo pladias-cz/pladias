@@ -23,7 +23,7 @@ import java.util.Locale;
 
 public class ModifiedRecordsExportService {
     private static List<String> buildRecordHistoryData(long recordId, RecordHistory recHistory) {
-        List<String> recordData = new ArrayList<String>();
+        List<String> recordData = new ArrayList<>();
         recordData.add(Long.toString(recordId));
         recordData.add("");
         recordData.add(recHistory.getCreateTimestamp().toString());
@@ -44,7 +44,7 @@ public class ModifiedRecordsExportService {
     private List<Record> getModifiedRecords(Long batchId) {
         List<Record> records = Record.find().query().where().eq("batch_id", batchId).findList();
 
-        List<Record> modified = new ArrayList<Record>();
+        List<Record> modified = new ArrayList<>();
         for (Record r : records) {
             if (!r.getComments().isEmpty() || !r.getHistory().isEmpty()) {
                 modified.add(r);
@@ -74,7 +74,7 @@ public class ModifiedRecordsExportService {
     }
 
     private List<String> buildDataHeader(Messages messages) {
-        List<String> recordData = new ArrayList<String>();
+        List<String> recordData = new ArrayList<>();
         recordData.add(messages.at("ModifiedRecordsExcelBuilder.RecordId"));
         recordData.add(messages.at("ModifiedRecordsExcelBuilder.Taxon"));
         recordData.add(messages.at("ModifiedRecordsExcelBuilder.CreationTimestamp"));
@@ -118,7 +118,7 @@ public class ModifiedRecordsExportService {
     }
 
     private List<String> buildRecordData(Record record, String creationTimestamp) {
-        List<String> recordData = new ArrayList<String>();
+        List<String> recordData = new ArrayList<>();
         recordData.add(Long.toString(record.getId()));
         recordData.add(record.getTaxon().getNameLat());
         recordData.add(creationTimestamp);

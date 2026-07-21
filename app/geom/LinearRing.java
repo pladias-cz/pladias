@@ -8,7 +8,7 @@ public class LinearRing {
     private final Point[] points;
 
     public LinearRing(org.postgis.LinearRing linearRing) {
-        List<Point> pointList = new ArrayList<Point>();
+        List<Point> pointList = new ArrayList<>();
         for (org.postgis.Point postgisPoint : linearRing.getPoints()) {
             int srid = postgisPoint.getSrid();
             Point p = new Point(postgisPoint.getX(), postgisPoint.getY(), srid);

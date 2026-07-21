@@ -18,7 +18,6 @@ public class SchedulerConfigurator {
     private final IConfigService _configService;
     private final ITraitRepository _traitRepository;
     private final IRecordsExportService _recordsExportService;
-    private final int DaysInWeek = 7;
     private final int MinutesInDay = 24 * 60;
     private final int ScheduleTime = 3 * 60; //3:00 am
 
@@ -53,7 +52,8 @@ public class SchedulerConfigurator {
         ExportRecordsToFileTask task = new ExportRecordsToFileTask(_recordsExportService);
 
         int initialDelay = computeInitialDelay();
-        _scheduler.registerPeriodic(task, initialDelay, MinutesInDay * DaysInWeek, TimeUnit.MINUTES);
+        int daysInWeek = 7;
+        _scheduler.registerPeriodic(task, initialDelay, MinutesInDay * daysInWeek, TimeUnit.MINUTES);
         _logger.info(String.format("Task %s will be scheduled in %d minutes.", task.getName(), initialDelay));
     }
 

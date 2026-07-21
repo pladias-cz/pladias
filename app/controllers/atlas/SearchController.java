@@ -61,7 +61,7 @@ public class SearchController extends ControllerBase {
         User currentUser = SessionUtils.getCurrentUser(request.session());
         Messages messages = getMessages(request);
         if (SearchController.SearchForm.ExportTypeExcel.equals(form.export_type) &&
-            currentUser.getContributionProjects().size() == 0) {
+            currentUser.getContributionProjects().isEmpty()) {
             return ok(JsonResult.error(messages.at("Search.UserNotAssignedToAnyProject")));
         }
 
@@ -131,7 +131,7 @@ public class SearchController extends ControllerBase {
             return new Integer[0];
         }
 
-        List<Integer> result = new ArrayList<Integer>();
+        List<Integer> result = new ArrayList<>();
         for (String s : data) {
             if (StringUtils.isNotBlank(s))
                 result.add(Integer.parseInt(s));

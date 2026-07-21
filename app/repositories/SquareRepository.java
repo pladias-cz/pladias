@@ -33,8 +33,8 @@ public class SquareRepository implements ISquareRepository {
 
     public SquareRepository() {
         logger.info("Instantiating SquareRepository");
-        m_MapSquares = new Hashtable<String, MapSquareNew>();
-        m_QuadrantMap = new Hashtable<MapSquareNew, Map<Character, QuadrantNew>>();
+        m_MapSquares = new Hashtable<>();
+        m_QuadrantMap = new Hashtable<>();
         m_RegexPattern = Pattern.compile(PATTERN);
         m_WildcardPattern = Pattern.compile(WildcardPattern);
     }
@@ -69,11 +69,7 @@ public class SquareRepository implements ISquareRepository {
         logger.info("collected quadrants");
         for (QuadrantNew quadrant : list) {
             MapSquareNew mapSquare = quadrant.getSquare();
-            Map<Character, QuadrantNew> map = m_QuadrantMap.get(mapSquare);
-            if (map == null) {
-                map = new Hashtable<Character, QuadrantNew>();
-                m_QuadrantMap.put(mapSquare, map);
-            }
+            Map<Character, QuadrantNew> map = m_QuadrantMap.computeIfAbsent(mapSquare, k -> new Hashtable<Character, QuadrantNew>());
 
             map.put(quadrant.getQuadrantLetter(), quadrant);
             m_MapSquares.put(mapSquare.getCode(), mapSquare);

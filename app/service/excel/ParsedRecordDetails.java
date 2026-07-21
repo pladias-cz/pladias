@@ -31,10 +31,10 @@ public class ParsedRecordDetails implements IVerifiableRecord {
         this.record = item;
         this.recordRow = recordRow;
         this.nonVascularExtension = nonVascularExtension;
-        this.errors = new ArrayList<ExcelErrorInfo>();
-        this.warnings = new ArrayList<ExcelErrorInfo>();
-        this.infos = new ArrayList<ExcelErrorInfo>();
-        this.updates = new ArrayList<UpdateEntryInfo>();
+        this.errors = new ArrayList<>();
+        this.warnings = new ArrayList<>();
+        this.infos = new ArrayList<>();
+        this.updates = new ArrayList<>();
 
         this.errors.addAll(errors);
         this.warnings.addAll(warnings);

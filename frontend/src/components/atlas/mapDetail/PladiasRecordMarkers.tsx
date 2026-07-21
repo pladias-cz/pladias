@@ -59,7 +59,7 @@ function PladiasRecordMarkers({ records, highlightedRecordId, onRecordHover }: P
                             {record.recordAuthorsNames && (
                                 <span>Sběratel: {record.recordAuthorsNames}<br /></span>
                             )}
-                            <a href={`/react/atlas/record/${record.id}`} target="_blank" rel="noopener noreferrer">
+                            <a href={`/atlas/record/${record.id}`} target="_blank" rel="noopener noreferrer">
                                 Otevřít záznam
                             </a>
                         </div>
@@ -73,9 +73,9 @@ function PladiasRecordMarkers({ records, highlightedRecordId, onRecordHover }: P
                                 key={`precision-${record.id}`}
                                 center={[record.latitude, record.longitude]}
                                 radius={record.gpsPrecision! / 2}
-                                pathOptions={{ 
-                                    color: MARKER_CONFIG.strokeColor, 
-                                    fillColor: color, 
+                                pathOptions={{
+                                    color: MARKER_CONFIG.strokeColor,
+                                    fillColor: color,
                                     fillOpacity: 0.25,
                                     weight: 1,
                                     dashArray: '4, 4'
@@ -88,11 +88,11 @@ function PladiasRecordMarkers({ records, highlightedRecordId, onRecordHover }: P
                             key={record.id}
                             center={[record.latitude, record.longitude]}
                             radius={radius}
-                            pathOptions={{ 
-                                color: MARKER_CONFIG.strokeColor, 
-                                fillColor: color, 
-                                fillOpacity: isHighlighted ? 0.9 : 0.6, 
-                                weight: 2 
+                            pathOptions={{
+                                color: MARKER_CONFIG.strokeColor,
+                                fillColor: color,
+                                fillOpacity: isHighlighted ? 0.9 : 0.6,
+                                weight: 2
                             }}
                             eventHandlers={commonEventHandlers}
                         >

@@ -55,7 +55,7 @@ export function ImportResult({result, onReset}: ImportResultProps) {
                     {t("atlas.import.component.validationExplanation")}
                     <br/>
                     {t("atlas.import.component.proceedToImport")}
-                     <a href="/react/atlas/import">{t("atlas.import.component.proceedToImportLink")}</a>.
+                     <a href="/atlas/import">{t("atlas.import.component.proceedToImportLink")}</a>.
 
                 </Alert>
             );

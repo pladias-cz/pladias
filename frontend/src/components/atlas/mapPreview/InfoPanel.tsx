@@ -76,7 +76,7 @@ export function InfoPanel({type = 1, taxonId, taxonName}: InfoPanelProps) {
     return (
         <div className="d-flex flex-column h-100 overflow-hidden">
             <div className={`p-3 bg-warning flex-shrink-0`}>
-                <h2>{t("atlas.mapPreview.preview")} <span className={`small`}> <a href={`/react/atlas/mapMain/${taxonId}`}>{t("atlas.mapPreview.backToMainMap")}</a></span> </h2>
+                <h2>{t("atlas.mapPreview.preview")} <span className={`small`}> <a href={`/atlas/mapMain/${taxonId}`}>{t("atlas.mapPreview.backToMainMap")}</a></span> </h2>
                 {taxonName && (
                     <h4>
                         <span dangerouslySetInnerHTML={{__html: taxonName}}/>
@@ -112,7 +112,7 @@ export function InfoPanel({type = 1, taxonId, taxonName}: InfoPanelProps) {
                 <div className="mt-2">
                     <p><strong>{t("atlas.mapPreview.legend")}</strong></p>
                     {type === 1 && getLegendColors().map((color, index) => {
-                        const legendKeys = !mapSettings?.commonThreshold 
+                        const legendKeys = !mapSettings?.commonThreshold
                             ? ['certainQuadrant', 'uncertainQuadrant']
                             : ['certainQuadrant', 'uncertainQuadrant', 'quadrantByThreshold'];
                         if (!legendKeys[index]) return null;

@@ -114,7 +114,7 @@ export function InfoPanel({taxonName, taxonId}: InfoPanelProps) {
     const [lastEditTimestamp, setLastEditTimestamp] = useState<number>(0);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    
+
     const {updateRevisorsComment, updateRevisorsPrintMapComment, updateMapType} = useTaxonUpdates();
 
     useEffect(() => {
@@ -295,7 +295,7 @@ export function InfoPanel({taxonName, taxonId}: InfoPanelProps) {
                                         <label className="form-check-label" htmlFor={`mapType-${mapTypeOption.id}`}>
                                             {t(mapTypeOption.key)}
                                         </label>
-                                        <a href={`/react/atlas/mapPreview/${taxonId}/${mapTypeOption.id}`} className="ms-2 small">
+                                        <a href={`/atlas/mapPreview/${taxonId}/${mapTypeOption.id}`} className="ms-2 small">
                                             {t("atlas.mapMain.component.infoPanel.preview")}
                                         </a>
                                     </div>

@@ -86,7 +86,7 @@ export default function MapDetail() {
         }
 
         setHighlightedRecordId(recordId);
-        
+
         if (recordId !== null) {
             // Lock this highlight for 800ms to allow user to move to table
             hoverLockRef.current.recordId = recordId;
@@ -158,7 +158,7 @@ export default function MapDetail() {
         }
 
         setRecordsLoading(true);
-        
+
         const fetchPladiasRecords = async (): Promise<RecordPladias[]> => {
             const response = await fetch(`/api/react/atlas/records/${squareId}/${taxonId}/pladias`);
             if (!response.ok) throw new Error('Failed to fetch pladias records');
@@ -167,8 +167,8 @@ export default function MapDetail() {
             // Convert lastEditTimestamp string to lastEditTimestampNum for conflict detection
             return data.map((record: RecordPladias) => ({
                 ...record,
-                lastEditTimestampNum: record.lastEditTimestamp 
-                    ? new Date(record.lastEditTimestamp).getTime() 
+                lastEditTimestampNum: record.lastEditTimestamp
+                    ? new Date(record.lastEditTimestamp).getTime()
                     : 0
             }));
         };
@@ -227,13 +227,13 @@ export default function MapDetail() {
                         <span className="text-muted small ms-2">
                                     ({t("atlas.mapDetail.square")} {squareId})
                                 </span>
-                        <a href={`/react/atlas/mapMain/${taxonId}`} className="small ms-2 fs-5">
+                        <a href={`/atlas/mapMain/${taxonId}`} className="small ms-2 fs-5">
                              zpět na hlavní mapu
                         </a>
                     </h5>
                     <MapComponent
 
-                        taxonId={taxon?.id ?? undefined} 
+                        taxonId={taxon?.id ?? undefined}
                         squareId={squareId}
                         records={records}
                         highlightedRecordId={highlightedRecordId}
@@ -243,8 +243,8 @@ export default function MapDetail() {
                 </Col>
                 <Col lg={7} xl={8} className="h-100 overflow-hidden">
                     <div className="h-100 p-3">
-                        <InfoPanel 
-                            taxonName={taxon?.nameHtml} 
+                        <InfoPanel
+                            taxonName={taxon?.nameHtml}
                             taxonId={taxon?.id ?? undefined}
                             records={records}
                             recordsLoading={recordsLoading}

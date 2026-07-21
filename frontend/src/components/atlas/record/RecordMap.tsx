@@ -42,7 +42,7 @@ function MapClickHandler({onLocationSelect, showIndicator, indicatorPosition, ca
             }
         },
     });
-    
+
     return showIndicator && indicatorPosition ? (
         <Marker position={indicatorPosition as LatLngExpression}>
             <Popup>New location (click map again to change)</Popup>
@@ -61,7 +61,7 @@ const defaultIcon = new Icon({
 export default function RecordMap({record, onLocationSelectWithGeocode, hasProposedLocation}: RecordMapProps) {
     const {t} = useTranslation();
     const {canEdit} = useRecordPermissions(record);
-    
+
     const [selectedLocation, setSelectedLocation] = useState<[number, number] | null>(null);
     const [clickDetected, setClickDetected] = useState(false);
 
@@ -74,14 +74,14 @@ export default function RecordMap({record, onLocationSelectWithGeocode, hasPropo
         }
     }, [hasProposedLocation]);
 
-    const center: [number, number] = selectedLocation || 
+    const center: [number, number] = selectedLocation ||
         (record.latitude && record.longitude ? [record.latitude, record.longitude] : [49.8, 15.5]);
 
     const fetchReverseGeocoding = useCallback(async (lat: number, lng: number) => {
         try {
             const response = await fetch(`/api/react/query/reverseGeocoding/lon/${lng}/lat/${lat}`);
             const data = await response.json();
-            
+
             // The backend returns an array of objects like:
             // [{success: true}, {quadrant: {...}}, {district: {...}}, {townHierarchy: [...]}, {phytochorions: [...]}]
             // We need to merge all non-success objects into a single object
@@ -93,7 +93,7 @@ export default function RecordMap({record, onLocationSelectWithGeocode, hasPropo
                     Object.assign(mergedData, item);
                 }
             }
-            
+
             if (onLocationSelectWithGeocode) {
                 onLocationSelectWithGeocode(lat, lng, mergedData);
             }
@@ -113,7 +113,7 @@ export default function RecordMap({record, onLocationSelectWithGeocode, hasPropo
         <Card className="mb-3">
             <Card.Header>
                 <strong>{t("record.map")}</strong>
-                <a href={`/react/atlas/mapDetail/${record.taxon.id}/${record.quadrantCodeComputed?.slice(0, 4) ?? ""}`} className="small ms-2 fs-5">
+                <a href={`/atlas/mapDetail/${record.taxon.id}/${record.quadrantCodeComputed?.slice(0, 4) ?? ""}`} className="small ms-2 fs-5">
                     zpět na mapu
                 </a>
                 {canEdit && <span className="ms-2 text-muted">({t("record.clickOnMap")})</span>}
@@ -130,8 +130,8 @@ export default function RecordMap({record, onLocationSelectWithGeocode, hasPropo
                             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                         />
-                        <MapClickHandler 
-                            onLocationSelect={handleLocationSelect} 
+                        <MapClickHandler
+                            onLocationSelect={handleLocationSelect}
                             showIndicator={clickDetected && canEdit}
                             indicatorPosition={selectedLocation || undefined}
                             canEdit={canEdit}

@@ -30,17 +30,17 @@ const ATLAS_EXCERPTIONS_PROJECT_ID = 14;
 const getVisibilityByStatus = (record: RecordPladias) => {
     const statusId = record.validationStatusId;
     const isProjectExcerptions = record.projectId === ATLAS_EXCERPTIONS_PROJECT_ID;
-    
+
     return {
         // IncludeInMap: shown for UNCERTAIN (1) and ACCEPTED (3), hidden for UNPROCESSED (0) and DECLINED (2)
         showIncludeInMap: statusId === ValidationStatusId.UNCERTAIN || statusId === ValidationStatusId.ACCEPTED,
-        
+
         // HerbariumQuality: shown only for project 14, and for statuses UNCERTAIN (1), DECLINED (2), ACCEPTED (3)
-        showHerbariumQuality: isProjectExcerptions && 
-                             (statusId === ValidationStatusId.UNCERTAIN || 
-                              statusId === ValidationStatusId.DECLINED || 
+        showHerbariumQuality: isProjectExcerptions &&
+                             (statusId === ValidationStatusId.UNCERTAIN ||
+                              statusId === ValidationStatusId.DECLINED ||
                               statusId === ValidationStatusId.ACCEPTED),
-        
+
         // Originality: shown only for ACCEPTED (3)
         showOriginality: statusId === ValidationStatusId.ACCEPTED,
     };
@@ -150,7 +150,7 @@ export function PladiasRecordsTable({
                                               </>
                                           )}
                                           <b>
-                                             {isVascular 
+                                             {isVascular
                                                  ? (record.nearestTownText || record.nearestTownName || '')
                                                  : (record.nearestTownName || '')}
                                              {record.districtName && `, okres ${record.districtName}`}
@@ -321,7 +321,7 @@ export function PladiasRecordsTable({
                                                     variant="link"
                                                     size="sm"
                                                     as="a"
-                                                    href={`/react/atlas/record/${record.id}`}
+                                                    href={`/atlas/record/${record.id}`}
                                                     style={{padding: 0, textDecoration: 'none'}}
                                                 >
                                                     editovat záznam/zobrazit detail
@@ -377,11 +377,11 @@ export function PladiasRecordsTable({
                                             <><br/><small>Zahrnut do mapy: {record.includedInMap ? 'ANO' : 'NE'}</small></>
                                         )}
                                         <br/>
-                                        
+
                                         {/* Herbarium Quality display - always show the text, but checkbox is conditional */}
                                         <small>Revidovaný herbář: {record.herbariumQuality ? 'ANO' : 'NE'}</small>
                                         <br/>
-                                        
+
                                          {/* Originality Status - conditionally rendered based on validation status */}
                                          <small>Původní výskyt: </small>
                                          {record.canEdit ? (

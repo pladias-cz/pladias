@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers.ControllerBase;
 import controllers.security.Authorized;
+import dto.atlas.RecordMapFieldsDto;
 import models.Record;
 import models.User;
 import org.slf4j.Logger;
@@ -100,6 +101,36 @@ public class RecordUpdateController extends ControllerBase {
         } catch (Exception e) {
             return internalServerError(JsonResult.error(e.getMessage()));
         }
+    }
+
+    /**
+     * GET record fields for map detail view.
+     * Returns all fields that can be edited from map detail with their current values.
+     * Used to refresh the UI after cascading changes.
+     * 
+     * GET /api/react/atlas/record/:recordId/mapFields
+     */
+    public Result getMapFields(Http.Request request, Long recordId) {
+        User currentUser = SessionUtils.getCurrentUser(request.session());
+        if (currentUser == null) {
+            return unauthorized(JsonResult.error("Authentication required"));
+        }
+
+        RecordMapFieldsDto fields = recordsService.getMapFields(recordId, currentUser);
+        if (fields == null) {
+            return notFound(JsonResult.error("Record not found"));
+        }
+
+        ObjectNode result = Json.newObject();
+        result.put("id", fields.id());
+        result.put("validationStatusId", fields.validationStatusId());
+        result.put("originalityStatusId", fields.originalityStatusId());
+        result.put("herbariumQuality", fields.herbariumQuality());
+        result.put("includedInMap", fields.includedInMap());
+        result.put("lastEditTimestampNum", fields.lastEditTimestampNum());
+        result.put("canEdit", fields.canEdit());
+
+        return ok(result);
     }
 
     /**

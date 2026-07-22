@@ -24,7 +24,9 @@ export function OriginalityStatusIcons({ record, onRecordUpdated }: OriginalityS
                     (updatedRecord) => {
                         // Propagate updated record with new timestamp to parent
                         onRecordUpdated?.(updatedRecord);
-                    }
+                    },
+                    undefined,  // no error callback needed - handled by catch
+                    true  // refreshAfterUpdate: fetch fresh data to get cascading changes
                 );
                 if (!result.success) {
                     // Revert on error

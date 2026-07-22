@@ -45,7 +45,8 @@ export function ValidationStatusCheckboxes({ record, onRecordUpdated }: Validati
                 () => {
                     // Error callback - revert optimistic update
                     setOptimisticStatus(null);
-                }
+                },
+                true  // refreshAfterUpdate: fetch fresh data to get cascading changes
             );
             if (!result.success) {
                 // Revert on error

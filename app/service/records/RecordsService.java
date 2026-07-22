@@ -1,5 +1,6 @@
 package service.records;
 
+import dto.atlas.RecordMapFieldsDto;
 import geom.Coordinates;
 import helpers.date.DateConverter;
 import helpers.date.DateDescriptor;
@@ -738,6 +739,37 @@ public class RecordsService {
 
     private boolean isElligibleForRecordValidation(User user, Record record) {
         return user.isMapAdmin() || isSupervised(record.getTaxon(), user);
+    }
+
+    /**
+     * Get record fields displayed in map detail view.
+     * Returns all fields that can be edited from map detail and their current values.
+     * 
+     * @param recordId the record ID
+     * @param currentUser the current user (for canEdit calculation)
+     * @return RecordMapFieldsDto with current field values
+     */
+    public RecordMapFieldsDto getMapFields(Long recordId, User currentUser) {
+        Record record = Record.find().byId(recordId);
+        if (record == null) {
+            return null;
+        }
+
+        // Calculate canEdit permission (same logic as in RecordPladiasDto)
+        boolean canEdit = false;
+        if (currentUser != null) {
+            canEdit = currentUser.isMapAdmin() || isSupervised(record.getTaxon(), currentUser);
+        }
+
+        return new RecordMapFieldsDto(
+            record.getId(),
+            record.getValidationStatusId(),
+            record.getOriginalityStatus().getId(),
+            record.isHerbariumQuality(),
+            record.isIncludedInMap(),
+            record.getLastEditTimestamp().getTime(),
+            canEdit
+        );
     }
 
     public record MoveRecordResult(boolean success, String coordsSource, Long recordId, boolean phytochorionComputed,

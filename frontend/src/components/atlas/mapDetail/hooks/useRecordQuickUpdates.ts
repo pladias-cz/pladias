@@ -15,6 +15,16 @@ interface UpdateResult {
     error?: string;
 }
 
+interface RecordMapFields {
+    id: number;
+    validationStatusId: number;
+    originalityStatusId: number;
+    herbariumQuality: boolean;
+    includedInMap: boolean;
+    lastEditTimestampNum: number;
+    canEdit: boolean;
+}
+
 export function useRecordQuickUpdates() {
     const [updatingRecordId, setUpdatingRecordId] = useState<number | null>(null);
 
@@ -58,15 +68,46 @@ export function useRecordQuickUpdates() {
         }
     }, []);
 
+    /**
+     * Fetch fresh record fields from backend after cascading changes
+     */
+    const fetchRecordMapFields = useCallback(async (recordId: number): Promise<RecordMapFields | null> => {
+        try {
+            const response = await axios.get(`/api/react/atlas/record/${recordId}/mapFields`);
+            return response.data;
+        } catch (error: any) {
+            console.error(`Error fetching map fields for record ${recordId}:`, error);
+            return null;
+        }
+    }, []);
+
     const updateValidationStatus = useCallback(async (
         record: RecordPladias, newStatus: number,
-        onSuccess?: (updatedRecord: RecordPladias) => void, onError?: (message: string) => void
+        onSuccess?: (updatedRecord: RecordPladias) => void, onError?: (message: string) => void,
+        refreshAfterUpdate: boolean = false
     ): Promise<UpdateResult> => {
         setUpdatingRecordId(record.id);
         const result = await updateField(record.id, 'VALIDATION_STATUS', newStatus, record.lastEditTimestampNum || 0, record);
         
         if (result.success && result.record) {
-            // Also update the validationStatusColor for map marker propagation
+            if (refreshAfterUpdate) {
+                // Fetch fresh data to get cascading changes (includedInMap, originalityStatus, etc.)
+                const freshFields = await fetchRecordMapFields(record.id);
+                if (freshFields) {
+                    const color = ValidationStatusMeta[newStatus as ValidationStatusId]?.color || '#808080';
+                    const updatedRecord = {
+                        ...record,
+                        ...freshFields,
+                        validationStatusId: newStatus,
+                        validationStatusColor: color
+                    };
+                    onSuccess?.(updatedRecord);
+                    setUpdatingRecordId(null);
+                    return {success: true, timestamp: freshFields.lastEditTimestampNum, record: updatedRecord};
+                }
+            }
+            
+            // Fallback to old behavior if refresh not requested or failed
             const color = ValidationStatusMeta[newStatus as ValidationStatusId]?.color || '#808080';
             const updatedRecordWithColor = {
                 ...result.record,
@@ -80,18 +121,41 @@ export function useRecordQuickUpdates() {
         
         setUpdatingRecordId(null);
         return result;
-    }, [updateField]);
+    }, [updateField, fetchRecordMapFields]);
 
     const updateOriginalityStatus = useCallback(async (
         record: RecordPladias, newOriginality: number,
-        onSuccess?: (updatedRecord: RecordPladias) => void, onError?: (message: string) => void
+        onSuccess?: (updatedRecord: RecordPladias) => void, onError?: (message: string) => void,
+        refreshAfterUpdate: boolean = false
     ): Promise<UpdateResult> => {
         setUpdatingRecordId(record.id);
         const result = await updateField(record.id, 'ORIGINALITY_STATUS', newOriginality, record.lastEditTimestampNum || 0, record);
-        result.success ? onSuccess?.(result.record!) : onError?.(result.error || 'Failed to update originality status');
+        
+        if (result.success && result.record) {
+            if (refreshAfterUpdate) {
+                // Fetch fresh data to get cascading changes (includedInMap, etc.)
+                const freshFields = await fetchRecordMapFields(record.id);
+                if (freshFields) {
+                    const updatedRecord = {
+                        ...record,
+                        ...freshFields,
+                        originalityStatusId: newOriginality
+                    };
+                    onSuccess?.(updatedRecord);
+                    setUpdatingRecordId(null);
+                    return {success: true, timestamp: freshFields.lastEditTimestampNum, record: updatedRecord};
+                }
+            }
+            
+            // Fallback to old behavior if refresh not requested or failed
+            onSuccess?.(result.record!);
+        } else {
+            onError?.(result.error || 'Failed to update originality status');
+        }
+        
         setUpdatingRecordId(null);
         return result;
-    }, [updateField]);
+    }, [updateField, fetchRecordMapFields]);
 
     const updateHerbariumQuality = useCallback(async (
         record: RecordPladias, newValue: boolean,

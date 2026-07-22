@@ -145,5 +145,6 @@ GET   /query/reverseGeocoding/lon/:lon/lat/:lat controllers.common.ModelDataSour
 
 POST  /atlas/record/moveCoordinates             controllers.atlas.RecordUpdateController.moveRecordCoords(request: Request)
 PATCH /atlas/record/:recordId                   controllers.atlas.RecordUpdateController.editField(request: Request, recordId: Long)
+GET   /atlas/record/:recordId/mapFields         controllers.atlas.RecordUpdateController.getMapFields(request: Request, recordId: Long)
 GET /atlas/record/:recordId/unassignedHerbaria  controllers.atlas.HerbariumController.getNotAssigned(request: Request, recordId: Long)
 GET /atlas/record/:recordId/unassignedAuthors  controllers.atlas.CollectorController.getNotAssigned(request: Request, recordId: Long)

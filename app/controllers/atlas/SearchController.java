@@ -31,6 +31,7 @@ import java.io.PipedOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 @Security.Authenticated(Authorized.class)
 public class SearchController extends ControllerBase {
@@ -199,6 +200,7 @@ public class SearchController extends ControllerBase {
         public Integer committerId;
         public String validationStatus;
         public String foreignId;
+        public String pladiasId;
         public Integer buffer;
         public String sortBy;
         public String sortOrder;
@@ -221,6 +223,14 @@ public class SearchController extends ControllerBase {
         public String substrate2;
         public String chemicalData;
         public String localityExtra;
+
+        public String getPladiasId() {
+            return pladiasId;
+        }
+
+        public void setPladiasId(String pladiasId) {
+            this.pladiasId = pladiasId;
+        }
 
         public String getSortBy() {
             return sortBy;
@@ -436,6 +446,19 @@ public class SearchController extends ControllerBase {
 
         public void setForeignId(String foreignId) {
             this.foreignId = foreignId;
+        }
+
+        public List<Integer> getPladiasIdValues() {
+            if (StringUtils.isBlank(this.pladiasId)) {
+                return Collections.emptyList();
+            }
+
+            return Arrays.stream(this.pladiasId.split("[;\\r\\n]+"))
+                .map(String::trim)
+                .filter(StringUtils::isNotBlank)
+                .filter(token -> token.chars().allMatch(Character::isDigit))
+                .map(Integer::valueOf)
+                .collect(Collectors.toList());
         }
 
         public Integer getBuffer() {

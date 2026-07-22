@@ -321,7 +321,7 @@ export function PladiasRecordsTable({
                                                     variant="link"
                                                     size="sm"
                                                     as="a"
-                                                    href={`/react/atlas/record/${record.id}`}
+                                                    href={`${import.meta.env.BASE_URL.replace(/\/$/, "")}/atlas/record/${record.id}`}
                                                     style={{padding: 0, textDecoration: 'none'}}
                                                 >
                                                     editovat záznam/zobrazit detail

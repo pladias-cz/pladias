@@ -372,6 +372,13 @@ public class PageSearchService implements IPageSearchService {
                 .append("R.original_id like '").append(wildcard).append("'")
                 .append(") AND ");
         }
+
+        List<Integer> pladiasIds = form.getPladiasIdValues();
+        if (!pladiasIds.isEmpty()) {
+            whereClause.append("R.id IN (")
+                .append(pladiasIds.stream().map(String::valueOf).collect(Collectors.joining(",")))
+                .append(") AND ");
+        }
     }
 
     private void addAltitudeAndMapFilters(SearchController.SearchForm form, StringBuilder whereClause) {

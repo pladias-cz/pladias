@@ -269,7 +269,10 @@
       "bulkEdit": {
         "emptyValue": "<prázdné>",
         "messages": {
-          "actionPrepared": "{{message}} Akce připravena pro {{count}} záznamů (frontend only, backend zatím není napojen).",
+          "actionPrepared": "{{message}} Akce připravena pro {{count}} záznamů.",
+          "batchFinished": "{{operationName}} Hotovo: {{success}} úspěšně, {{failed}} neúspěšně (celkem {{total}}).",
+          "batchProgress": "Průběh: {{processed}} / {{total}}",
+          "batchStartFailed": "Nepodařilo se spustit hromadnou operaci.",
           "bufferChangeReady": "Akce (změna samotného bufferu na {{value}}) připravena.",
           "confirmSemafor": "Opravdu chcete změnit semafor pro všechny vybrané záznamy?",
           "confirmTaxon": "Opravdu chcete změnit taxon u všech vybraných záznamů?",
@@ -278,16 +281,22 @@
           "coordsRequired": "Vyplňte Lat i Lon pro přesun lokality.",
           "dateChangeReady": "Akce (změna data na {{value}}) připravena.",
           "finderAddReady": "Akce (přidání nálezce) připravena.",
+          "invalidBuffer": "Buffer musí být kladné celé číslo.",
+          "loadingCandidates": "Načítám záznamy podle aktuálního filtru...",
           "localityChangeReady": "Akce (nový popis lokality) připravena.",
           "locationChangeReady": "Akce (změna lokace + buffer {{buffer}}) připravena.",
           "nearestTownChangeReady": "Akce (změna nejbližší obce na {{value}}) připravena.",
           "noRecords": "Nejsou k dispozici žádné záznamy pro hromadnou úpravu.",
           "noteChangeReady": "Akce (nový text poznámky) připravena.",
           "phytochorionChangeReady": "Akce (změna fytochorionu na {{value}}) připravena.",
+          "searchFirst": "Nejprve spusťte vyhledávání, aby bylo možné načíst záznamy k úpravě.",
           "semaforChangeReady": "Akce (změna semaforu) připravena.",
           "selectSemafor": "Vyberte nový semafor.",
+          "showFailedIds": "Neúspěšné záznamy ({{count}})",
+          "showSuccessfulIds": "Úspěšně upravené záznamy ({{count}})",
           "sourceChangeReady": "Akce (změna pramene) připravena.",
-          "taxonChangeReady": "Akce (změna taxonu) připravena."
+          "taxonChangeReady": "Akce (změna taxonu) připravena.",
+          "tooManyRecords": "Filtru odpovídá {{count}} záznamů. Hromadně lze upravit maximálně {{max}} záznamů. Zpřesněte filtr."
         },
         "sections": {
           "buffer": {
@@ -367,7 +376,7 @@
           "unreviewed": "šedá -> Nerevidovaný záznam"
         },
         "title": "Hromadné úpravy záznamů",
-        "warning": "Aplikace zatím nevolá backend endpointy. Form je připravený na stejné operace jako původní bulk edit, ale slouží jen pro přípravu hodnot. ID záznamů se berou automaticky ze zobrazených výsledků vyhledávání."
+        "warning": "Hromadné úpravy běží nad výsledkem aktuálního filtru. Změny se provádí postupně po jednotlivých záznamech. Maximálně je možné měnit naráz 1000 záznamů."
       },
       "form": {
         "excelExportTitleAdmin": "Export dat do XLSX bez uživatelského omezení.",

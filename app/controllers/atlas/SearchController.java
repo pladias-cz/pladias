@@ -18,6 +18,7 @@ import service.config.IConfigService;
 import service.record.serialization.PageSearchResultSerialization;
 import service.search.IPageSearchService;
 import service.search.PageSearchResults;
+import service.search.RecordIdEditTimestampPair;
 import service.user.ActivityDetails;
 import service.user.UserActivityService;
 import utils.JsonResult;
@@ -37,6 +38,7 @@ import java.util.stream.Collectors;
 public class SearchController extends ControllerBase {
     private static final int EXCEL_EXPORT_PAGE_SIZE = 10000;
     private static final int EXCEL_EXPORT_PAGE_SIZE_MAPADMIN = 100000;
+    private static final int SEARCH_RECORD_EDIT_TIMESTAMPS_MAX_RESULTS = 1000;
     private final Logger logger = LoggerFactory.getLogger(SearchController.class);
     @Inject
     private FormFactory formFactory;
@@ -88,6 +90,46 @@ public class SearchController extends ControllerBase {
 
     public Result getRecordsWithCommentsCurrentUser(Http.Request request) {
         return getRecordsWithComments(request, null);
+    }
+
+    public Result searchRecordEditTimestamps(Http.Request request) {
+        Form<SearchForm> searchForm = formFactory.form(SearchForm.class).bindFromRequest(request);
+        if (searchForm.hasErrors()) {
+            return badRequest(JsonResult.error("Neplatna data vyhledavaciho formulare"));
+        }
+
+        SearchForm form = searchForm.get();
+        form.projects = retrieveProjectsFromRequest(request);
+        User currentUser = SessionUtils.getCurrentUser(request.session());
+        User bulkImporter = UserUtils.getBulkImporter();
+        boolean isBulkEditUser = bulkImporter != null && Objects.equals(bulkImporter.getId(), currentUser.getId());
+        if (!currentUser.isMapAdmin() && !isBulkEditUser) {
+            return forbidden(JsonResult.error("User not authorized to call searchRecordEditTimestamps"));
+        }
+
+        try {
+            List<RecordIdEditTimestampPair> records = searchService.searchRecordEditTimestamps(currentUser, form);
+            if (records.size() > SEARCH_RECORD_EDIT_TIMESTAMPS_MAX_RESULTS) {
+                return badRequest(JsonResult.error(String.format(
+                    "Too many records for bulk edit (%d). Maximum is %d.",
+                    records.size(),
+                    SEARCH_RECORD_EDIT_TIMESTAMPS_MAX_RESULTS
+                )));
+            }
+
+            List<Map<String, Object>> payload = records.stream()
+                .map(record -> {
+                    Map<String, Object> row = new HashMap<>();
+                    row.put("id", record.getRecordId());
+                    row.put("edit_timestamp", record.getEditTimestamp() != null ? record.getEditTimestamp().getTime() : null);
+                    return row;
+                })
+                .collect(Collectors.toList());
+            return ok(JsonResult.buildSuccess(payload));
+        } catch (Exception e) {
+            logger.error("Error while processing search record edit timestamps request:", e);
+            return ok(JsonResult.error(e.getMessage()));
+        }
     }
 
     public Result getRecordsWithComments(Http.Request request, Long commentsOwnerUserId) {

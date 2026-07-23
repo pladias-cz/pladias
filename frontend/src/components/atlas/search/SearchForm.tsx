@@ -1097,7 +1097,7 @@ export default function SearchForm() {
                         showTaxonName={true}
                     />
 
-                    {canUseBulkEdit && <BulkEdit records={records} totalCount={totalCount} />}
+                    {canUseBulkEdit && <BulkEdit records={records} totalCount={totalCount} searchPayloadEntries={lastPayloadEntries} />}
                 </div>
             )}
 

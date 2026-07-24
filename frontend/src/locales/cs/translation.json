@@ -276,6 +276,8 @@
           "bufferChangeReady": "Akce (změna samotného bufferu na {{value}}) připravena.",
           "confirmSemafor": "Opravdu chcete změnit semafor pro všechny vybrané záznamy?",
           "confirmTaxon": "Opravdu chcete změnit taxon u všech vybraných záznamů?",
+          "confirmEmptyNote": "Poznámka je prázdná. Opravdu ji chcete nastavit na prázdnou hodnotu?",
+          "confirmEmptySource": "Pramen je prázdný. Opravdu ho chcete nastavit na prázdnou hodnotu?",
           "coordsParseFailed": "Souřadnice nelze automaticky rozparsovat. Použijte formát lat,lon nebo vyplňte Lat/Lon ručně.",
           "coordsPrefilled": "Souřadnice byly předvyplněny do polí Lat/Lon.",
           "coordsRequired": "Vyplňte Lat i Lon pro přesun lokality.",
@@ -290,9 +292,15 @@
           "noRecords": "Nejsou k dispozici žádné záznamy pro hromadnou úpravu.",
           "noteChangeReady": "Akce (nový text poznámky) připravena.",
           "phytochorionChangeReady": "Akce (změna fytochorionu na {{value}}) připravena.",
+          "requiredDate": "Datum je povinné.",
+          "requiredLocality": "Lokalita je povinná.",
+          "requiredNearestTown": "Nejbližší obec je povinná.",
           "searchFirst": "Nejprve spusťte vyhledávání, aby bylo možné načíst záznamy k úpravě.",
           "semaforChangeReady": "Akce (změna semaforu) připravena.",
+          "selectFinder": "Vyberte nálezce.",
+          "selectPhytochorion": "Vyberte fytochorion.",
           "selectSemafor": "Vyberte nový semafor.",
+          "selectTaxon": "Vyberte taxon.",
           "showFailedIds": "Neúspěšné záznamy ({{count}})",
           "showSuccessfulIds": "Úspěšně upravené záznamy ({{count}})",
           "sourceChangeReady": "Akce (změna pramene) připravena.",
@@ -312,10 +320,10 @@
             "title": "Datum nálezu"
           },
           "finder": {
-            "helper": "Poslední přidaný by měl být uveden jako první autor.",
-            "label": "Autor",
-            "placeholder": "ID nebo jméno autora",
-            "submitButton": "Přidat autora",
+            "helper": "Přidává se na začátek, tj. poslední přidaný bude uveden jako první autor.",
+            "label": "Nálezce",
+            "placeholder": "Vyberte nálezce...",
+            "submitButton": "Přidat nálezce",
             "title": "Přidání nálezce"
           },
           "locality": {
@@ -335,7 +343,7 @@
           },
           "phytochorion": {
             "label": "Nový fytochorion",
-            "placeholder": "ID nebo název",
+            "placeholder": "Vyberte fytochorion...",
             "submitButton": "Potvrdit změnu fytochorionu",
             "title": "Fytochorion"
           },
@@ -350,9 +358,8 @@
             "title": "Pozice + Buffer"
           },
           "semafor": {
-            "helper": "V původní verzi byl update semaforu pomalejší na každý záznam. Tady je připraveno jen frontend UI.",
             "label": "Nový semafor",
-            "placeholder": "- - nevybráno - -",
+            "placeholder": "Vyberte nový stav...",
             "submitButton": "Změnit semafor",
             "title": "Změna semaforu"
           },
@@ -362,9 +369,8 @@
             "title": "Pramen"
           },
           "taxon": {
-            "helper": "Před potvrzením zkontrolujte taxon, operace je hromadná.",
+            "helper": "No tak s tímhle opatrně!",
             "label": "Nový taxon",
-            "placeholder": "ID nebo název taxonu",
             "submitButton": "Změnit taxon",
             "title": "Změna taxonu"
           }

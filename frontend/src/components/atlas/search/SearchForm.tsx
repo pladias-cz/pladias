@@ -523,6 +523,14 @@ export default function SearchForm() {
         setPladiasId("");
     };
 
+    const handleBulkEditComplete = useCallback(async () => {
+        if (lastPayloadEntries.length === 0) {
+            return;
+        }
+
+        await fetchSearchPage(currentPage, false, lastPayloadEntries, {sortBy, sortOrder});
+    }, [currentPage, fetchSearchPage, lastPayloadEntries, sortBy, sortOrder]);
+
     return (
         <>
             <div id="searchRecordsFormView" className="pladiasView" />
@@ -1097,7 +1105,14 @@ export default function SearchForm() {
                         showTaxonName={true}
                     />
 
-                    {canUseBulkEdit && <BulkEdit records={records} totalCount={totalCount} searchPayloadEntries={lastPayloadEntries} />}
+                    {canUseBulkEdit && (
+                        <BulkEdit
+                            records={records}
+                            totalCount={totalCount}
+                            searchPayloadEntries={lastPayloadEntries}
+                            onBulkEditComplete={handleBulkEditComplete}
+                        />
+                    )}
                 </div>
             )}
 

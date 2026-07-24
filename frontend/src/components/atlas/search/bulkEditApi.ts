@@ -64,6 +64,28 @@ const checkApiResponse = (
     }
 };
 
+const patchRecordField = async (
+    record: BulkRecordVersion,
+    key: string,
+    value: string,
+    defaultErrorMessage: string,
+): Promise<void> => {
+    const response = await fetch(`/api/react/atlas/record/${record.id}`, {
+        method: "PATCH",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            key,
+            value,
+            lastEditTimestampNum: record.lastEditTimestampNum,
+        }),
+    });
+
+    const payload = await response.json().catch(() => ({}));
+    checkApiResponse(response, payload, defaultErrorMessage);
+};
+
 export async function fetchRecordEditTimestamps(payloadEntries: Array<[string, FormDataEntryValue]>): Promise<BulkRecordVersion[]> {
     const response = await fetch("/api/react/atlas/search/records-edit-timestamps", {
         method: "POST",
@@ -109,52 +131,41 @@ export async function moveCoordinates(record: BulkRecordVersion, latitude: numbe
 }
 
 export async function updateCoordsPrecision(record: BulkRecordVersion, gpsPrecision: number): Promise<void> {
-    const response = await fetch(`/api/react/atlas/record/${record.id}`, {
-        method: "PATCH",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-            key: "COORDSPRECISION",
-            value: gpsPrecision.toString(),
-            lastEditTimestampNum: record.lastEditTimestampNum,
-        }),
-    });
-
-    const payload = await response.json().catch(() => ({}));
-    checkApiResponse(response, payload, "Failed to update coords precision");
+    await patchRecordField(record, "COORDSPRECISION", gpsPrecision.toString(), "Failed to update coords precision");
 }
 
 export async function updateDate(record: BulkRecordVersion, date: string): Promise<void> {
-    const response = await fetch(`/api/react/atlas/record/${record.id}`, {
-        method: "PATCH",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-            key: "DATE",
-            value: date,
-            lastEditTimestampNum: record.lastEditTimestampNum,
-        }),
-    });
-
-    const payload = await response.json().catch(() => ({}));
-    checkApiResponse(response, payload, "Failed to update date");
+    await patchRecordField(record, "DATE", date, "Failed to update date");
 }
 
 export async function updatePhytochorion(record: BulkRecordVersion, phytochorionId: string): Promise<void> {
-    const response = await fetch(`/api/react/atlas/record/${record.id}`, {
-        method: "PATCH",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-            key: "PHYTOCHORION",
-            value: phytochorionId,
-            lastEditTimestampNum: record.lastEditTimestampNum,
-        }),
-    });
+    await patchRecordField(record, "PHYTOCHORION", phytochorionId, "Failed to update phytochorion");
+}
 
-    const payload = await response.json().catch(() => ({}));
-    checkApiResponse(response, payload, "Failed to update phytochorion");
+export async function updateLocality(record: BulkRecordVersion, locality: string): Promise<void> {
+    await patchRecordField(record, "LOCALITY", locality, "Failed to update locality");
+}
+
+export async function updateNearestTownName(record: BulkRecordVersion, nearestTownName: string): Promise<void> {
+    await patchRecordField(record, "NEARESTTOWNNAME", nearestTownName, "Failed to update nearest town");
+}
+
+export async function updateSource(record: BulkRecordVersion, source: string): Promise<void> {
+    await patchRecordField(record, "SOURCE", source, "Failed to update source");
+}
+
+export async function updateNote(record: BulkRecordVersion, note: string): Promise<void> {
+    await patchRecordField(record, "IMPORTCOMMENT", note, "Failed to update note");
+}
+
+export async function updateFinder(record: BulkRecordVersion, finderId: string): Promise<void> {
+    await patchRecordField(record, "ADDFINDER", finderId, "Failed to add finder");
+}
+
+export async function updateTaxon(record: BulkRecordVersion, taxonId: string): Promise<void> {
+    await patchRecordField(record, "TAXON", taxonId, "Failed to update taxon");
+}
+
+export async function updateValidationStatus(record: BulkRecordVersion, statusValue: string): Promise<void> {
+    await patchRecordField(record, "VALIDATION_STATUS", statusValue, "Failed to update validation status");
 }

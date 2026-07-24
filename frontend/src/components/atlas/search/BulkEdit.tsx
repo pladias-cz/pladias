@@ -3,8 +3,11 @@ import {Link} from "react-router-dom";
 import {Accordion, ProgressBar} from "react-bootstrap";
 import {Typeahead} from "react-bootstrap-typeahead";
 import {useTranslation} from "react-i18next";
+import {Autocomplete} from "@/components/autocomplete/Autocomplete";
+import {createTaxaImportableProvider} from "@/components/autocomplete/TaxaImportableProvider";
 import type { RecordPladias } from "@/models";
-import {fetchRecordEditTimestamps, moveCoordinates, updateCoordsPrecision, updateDate, updatePhytochorion} from "./bulkEditApi";
+import type {TaxonId} from "@/models/TaxonId";
+import {fetchRecordEditTimestamps, moveCoordinates, updateCoordsPrecision, updateDate, updatePhytochorion, updateLocality, updateNearestTownName, updateSource, updateNote, updateFinder, updateTaxon, updateValidationStatus} from "./bulkEditApi";
 import {runBulkOperationSequential, type BulkOperationFailure} from "./bulkEditOperations";
 import "./BulkEdit.css";
 
@@ -23,10 +26,16 @@ type TypeaheadOption = {
     label: string;
 };
 
+type FinderOptionRow = {
+    id?: string | number;
+    name?: string;
+};
+
 type BulkEditProps = {
     records: RecordPladias[];
     totalCount?: number | null;
     searchPayloadEntries: Array<[string, FormDataEntryValue]>;
+    onBulkEditComplete?: () => Promise<void> | void;
 };
 
 type BulkOperationSummary = {
@@ -36,8 +45,6 @@ type BulkOperationSummary = {
 };
 
 const MAX_BULK_EDIT_RECORDS = 1000;
-const NOT_IMPLEMENTED_TEXT = "neimplementováno";
-
 type CoordAxis = "lat" | "lon";
 
 const formatCoord = (value: number): string => {
@@ -143,7 +150,7 @@ const isValidDateValue = (value: string): boolean => {
     return true;
 };
 
-export default function BulkEdit({records, totalCount, searchPayloadEntries}: BulkEditProps) {
+export default function BulkEdit({records, totalCount, searchPayloadEntries, onBulkEditComplete}: BulkEditProps) {
     const {t} = useTranslation();
     const [activeKey, setActiveKey] = useState<string>("0");
     const [rawCoords, setRawCoords] = useState<string>("");
@@ -159,6 +166,12 @@ export default function BulkEdit({records, totalCount, searchPayloadEntries}: Bu
     const [bufferSingle, setBufferSingle] = useState<string>("200");
     const [bufferSingleError, setBufferSingleError] = useState<boolean>(false);
     const [dateSingleError, setDateSingleError] = useState<boolean>(false);
+    const [phytochorionError, setPhytochorionError] = useState<boolean>(false);
+    const [localityError, setLocalityError] = useState<boolean>(false);
+    const [nearestTownError, setNearestTownError] = useState<boolean>(false);
+    const [finderError, setFinderError] = useState<boolean>(false);
+    const [taxonError, setTaxonError] = useState<boolean>(false);
+    const [semaforError, setSemaforError] = useState<boolean>(false);
     const [newDate, setNewDate] = useState<string>("");
     const [phytochorions, setPhytochorions] = useState<PhytochorionOption[]>([]);
     const [selectedPhytochorion, setSelectedPhytochorion] = useState<TypeaheadOption[]>([]);
@@ -166,8 +179,9 @@ export default function BulkEdit({records, totalCount, searchPayloadEntries}: Bu
     const [newNearestTownName, setNewNearestTownName] = useState<string>("");
     const [newSource, setNewSource] = useState<string>("");
     const [newImportComment, setNewImportComment] = useState<string>("");
-    const [newFinder, setNewFinder] = useState<string>("");
-    const [newTaxon, setNewTaxon] = useState<string>("");
+    const [finderOptions, setFinderOptions] = useState<TypeaheadOption[]>([]);
+    const [selectedFinder, setSelectedFinder] = useState<TypeaheadOption[]>([]);
+    const [selectedTaxon, setSelectedTaxon] = useState<TaxonId | null>(null);
     const [newSemafor, setNewSemafor] = useState<string>("");
     const [formMessage, setFormMessage] = useState<string>("");
     const [isRunning, setIsRunning] = useState<boolean>(false);
@@ -183,6 +197,10 @@ export default function BulkEdit({records, totalCount, searchPayloadEntries}: Bu
         {value: "2", label: t("atlas.search.bulkEdit.semaforOptions.rejected")},
         {value: "3", label: t("atlas.search.bulkEdit.semaforOptions.accepted")},
     ]), [t]);
+    const taxonProvider = useMemo(
+        () => createTaxaImportableProvider(t("atlas.search.form.taxonAutocompletePlaceholder")),
+        [t],
+    );
     const phytochorionOptions = useMemo<TypeaheadOption[]>(() => (
         phytochorions.map((phytochorion) => ({id: phytochorion.rowid, label: phytochorion.name}))
     ), [phytochorions]);
@@ -212,6 +230,52 @@ export default function BulkEdit({records, totalCount, searchPayloadEntries}: Bu
             isMounted = false;
         };
     }, []);
+
+    useEffect(() => {
+        let isMounted = true;
+
+        const loadFinders = async () => {
+            const firstRecordId = recordIds[0];
+            if (firstRecordId == null) {
+                if (isMounted) {
+                    setFinderOptions([]);
+                    setSelectedFinder([]);
+                }
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/react/atlas/record/${firstRecordId}/unassignedAuthors`);
+                const data = await response.json();
+
+                if (!response.ok || data?.success === false || !Array.isArray(data?.data)) {
+                    return;
+                }
+
+                const options = (data.data as FinderOptionRow[])
+                    .filter((item) => item != null && (typeof item.id === "number" || typeof item.id === "string") && typeof item.name === "string")
+                    .map((item) => ({
+                        id: item.id as string | number,
+                        label: item.name as string,
+                    }));
+
+                if (isMounted) {
+                    setFinderOptions(options);
+                    setSelectedFinder([]);
+                }
+            } catch {
+                if (isMounted) {
+                    setFinderOptions([]);
+                    setSelectedFinder([]);
+                }
+            }
+        };
+
+        void loadFinders();
+        return () => {
+            isMounted = false;
+        };
+    }, [recordIds]);
 
     const progressPercent = batchProgress.total > 0
         ? Math.round((batchProgress.processed / batchProgress.total) * 100)
@@ -244,18 +308,6 @@ export default function BulkEdit({records, totalCount, searchPayloadEntries}: Bu
         setRequiredCoordErrors((prev) => ({...prev, lat: false, lon: false}));
         setRawCoordsError("");
         setFormMessage(t("atlas.search.bulkEdit.messages.coordsPrefilled"));
-    };
-
-    const applyAction = (message: string) => {
-        if (!canRunActions) {
-            setFormMessage(t("atlas.search.bulkEdit.messages.noRecords"));
-            return;
-        }
-
-        setFormMessage(t("atlas.search.bulkEdit.messages.actionPrepared", {
-            message,
-            count: effectiveRecordCount,
-        }));
     };
 
     const executeBulkOperation = useCallback(async (
@@ -305,13 +357,17 @@ export default function BulkEdit({records, totalCount, searchPayloadEntries}: Bu
                 failed: result.failed.length,
                 total: candidates.length,
             }));
+
+            if (onBulkEditComplete) {
+                await onBulkEditComplete();
+            }
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : t("atlas.search.bulkEdit.messages.batchStartFailed");
             setFormMessage(errorMessage);
         } finally {
             setIsRunning(false);
         }
-    }, [canRunActions, searchPayloadEntries, t]);
+    }, [canRunActions, onBulkEditComplete, searchPayloadEntries, t]);
 
     const submitCoordsChange = async () => {
         const latMissing = newLat.trim() === "";
@@ -354,17 +410,23 @@ export default function BulkEdit({records, totalCount, searchPayloadEntries}: Bu
         );
     };
 
-    const submitSemafor = () => {
+    const submitSemafor = async () => {
         if (!newSemafor) {
+            setSemaforError(true);
             setFormMessage(t("atlas.search.bulkEdit.messages.selectSemafor"));
             return;
         }
+
+        setSemaforError(false);
 
         if (!window.confirm(t("atlas.search.bulkEdit.messages.confirmSemafor"))) {
             return;
         }
 
-        applyAction(t("atlas.search.bulkEdit.messages.semaforChangeReady"));
+        await executeBulkOperation(
+            t("atlas.search.bulkEdit.messages.semaforChangeReady"),
+            (record) => updateValidationStatus(record, newSemafor),
+        );
     };
 
     const submitBufferChange = async () => {
@@ -387,6 +449,12 @@ export default function BulkEdit({records, totalCount, searchPayloadEntries}: Bu
     const submitDateChange = async () => {
         const value = newDate.trim();
 
+        if (!value) {
+            setDateSingleError(true);
+            setFormMessage(t("atlas.search.bulkEdit.messages.requiredDate", {defaultValue: "Datum je povinné."}));
+            return;
+        }
+
         if (!isValidDateValue(value)) {
             setDateSingleError(true);
             setFormMessage(t("atlas.search.bulkEdit.messages.invalidDateFormat"));
@@ -401,13 +469,116 @@ export default function BulkEdit({records, totalCount, searchPayloadEntries}: Bu
     };
 
     const submitPhytochorionChange = async () => {
-        const selectedId = selectedPhytochorion[0]?.id;
-        const value = selectedId == null ? "" : String(selectedId);
-        const label = selectedPhytochorion[0]?.label || t("atlas.search.bulkEdit.emptyValue");
+        const selectedOption = selectedPhytochorion[0];
+        if (!selectedOption) {
+            setPhytochorionError(true);
+            setFormMessage(t("atlas.search.bulkEdit.messages.selectPhytochorion", {defaultValue: "Vyberte fytochorion."}));
+            return;
+        }
+
+        setPhytochorionError(false);
+        const value = String(selectedOption.id);
+        const label = selectedOption.label;
 
         await executeBulkOperation(
             t("atlas.search.bulkEdit.messages.phytochorionChangeReady", {value: label}),
             (record) => updatePhytochorion(record, value),
+        );
+    };
+
+    const submitLocalityChange = async () => {
+        const value = newLocality.trim();
+
+        if (!value) {
+            setLocalityError(true);
+            setFormMessage(t("atlas.search.bulkEdit.messages.requiredLocality", {defaultValue: "Lokalita je povinná."}));
+            return;
+        }
+
+        setLocalityError(false);
+
+        await executeBulkOperation(
+            t("atlas.search.bulkEdit.messages.localityChangeReady"),
+            (record) => updateLocality(record, value),
+        );
+    };
+
+    const submitNearestTownChange = async () => {
+        const value = newNearestTownName.trim();
+
+        if (!value) {
+            setNearestTownError(true);
+            setFormMessage(t("atlas.search.bulkEdit.messages.requiredNearestTown", {defaultValue: "Nejbližší obec je povinná."}));
+            return;
+        }
+
+        setNearestTownError(false);
+
+        await executeBulkOperation(
+            t("atlas.search.bulkEdit.messages.nearestTownChangeReady", {value: value || t("atlas.search.bulkEdit.emptyValue")}),
+            (record) => updateNearestTownName(record, value),
+        );
+    };
+
+    const submitSourceChange = async () => {
+        const value = newSource.trim();
+
+        if (!value && !window.confirm(t("atlas.search.bulkEdit.messages.confirmEmptySource", {defaultValue: "Pramen je prázdný. Opravdu ho chcete nastavit na prázdnou hodnotu?"}))) {
+            return;
+        }
+
+        await executeBulkOperation(
+            t("atlas.search.bulkEdit.messages.sourceChangeReady"),
+            (record) => updateSource(record, value),
+        );
+    };
+
+    const submitNoteChange = async () => {
+        const value = newImportComment.trim();
+
+        if (!value && !window.confirm(t("atlas.search.bulkEdit.messages.confirmEmptyNote", {defaultValue: "Poznámka je prázdná. Opravdu ji chcete nastavit na prázdnou hodnotu?"}))) {
+            return;
+        }
+
+        await executeBulkOperation(
+            t("atlas.search.bulkEdit.messages.noteChangeReady"),
+            (record) => updateNote(record, value),
+        );
+    };
+
+    const submitFinderAdd = async () => {
+        const selectedFinderId = selectedFinder[0]?.id;
+
+        if (selectedFinderId == null) {
+            setFinderError(true);
+            setFormMessage(t("atlas.search.bulkEdit.messages.selectFinder", {defaultValue: "Vyberte nálezce."}));
+            return;
+        }
+
+        setFinderError(false);
+
+        await executeBulkOperation(
+            t("atlas.search.bulkEdit.messages.finderAddReady"),
+            (record) => updateFinder(record, String(selectedFinderId)),
+        );
+    };
+
+    const submitTaxonChange = async () => {
+        if (selectedTaxon == null) {
+            setTaxonError(true);
+            setFormMessage(t("atlas.search.bulkEdit.messages.selectTaxon", {defaultValue: "Vyberte taxon."}));
+            return;
+        }
+
+        setTaxonError(false);
+
+        if (!window.confirm(t("atlas.search.bulkEdit.messages.confirmTaxon"))) {
+            return;
+        }
+
+        await executeBulkOperation(
+            t("atlas.search.bulkEdit.messages.taxonChangeReady"),
+            (record) => updateTaxon(record, String(selectedTaxon.id)),
         );
     };
 
@@ -588,7 +759,7 @@ export default function BulkEdit({records, totalCount, searchPayloadEntries}: Bu
                                             onChange={(event) => {
                                                 const nextValue = event.target.value;
                                                 setNewDate(nextValue);
-                                                if (dateSingleError && isValidDateValue(nextValue.trim())) {
+                                                if (dateSingleError && nextValue.trim() !== "" && isValidDateValue(nextValue.trim())) {
                                                     setDateSingleError(false);
                                                 }
                                             }}
@@ -606,12 +777,17 @@ export default function BulkEdit({records, totalCount, searchPayloadEntries}: Bu
                     <Accordion.Header>{t("atlas.search.bulkEdit.sections.phytochorion.title")}</Accordion.Header>
                     <Accordion.Body>
                                 <div className="d-flex gap-2 align-items-end">
-                                    <div className="flex-grow-1">
+                                    <div className={`flex-grow-1 ${phytochorionError ? "bulk-edit-field-invalid" : ""}`}>
                                         <label className="form-label">{t("atlas.search.bulkEdit.sections.phytochorion.label")}</label>
                                         <Typeahead
                                             id="bulk-edit-phytochorion"
                                             labelKey="label"
-                                            onChange={(selected) => setSelectedPhytochorion(selected as TypeaheadOption[])}
+                                            onChange={(selected) => {
+                                                setSelectedPhytochorion(selected as TypeaheadOption[]);
+                                                if (phytochorionError && selected.length > 0) {
+                                                    setPhytochorionError(false);
+                                                }
+                                            }}
                                             options={phytochorionOptions}
                                             placeholder={t("atlas.search.bulkEdit.sections.phytochorion.placeholder")}
                                             selected={selectedPhytochorion}
@@ -628,13 +804,22 @@ export default function BulkEdit({records, totalCount, searchPayloadEntries}: Bu
                 <Accordion.Item eventKey="4" className="bulk-edit-card">
                     <Accordion.Header>{t("atlas.search.bulkEdit.sections.locality.title")}</Accordion.Header>
                     <Accordion.Body>
-                                <div className="alert alert-warning py-2 px-3 mb-3">{NOT_IMPLEMENTED_TEXT}</div>
                                 <div className="d-flex gap-2 align-items-end">
                                     <div className="flex-grow-1">
                                         <label className="form-label">{t("atlas.search.bulkEdit.sections.locality.label")}</label>
-                                        <input type="text" className="form-control" value={newLocality} onChange={(event) => setNewLocality(event.target.value)} />
+                                        <input
+                                            type="text"
+                                            className={`form-control ${localityError ? "is-invalid" : ""}`}
+                                            value={newLocality}
+                                            onChange={(event) => {
+                                                setNewLocality(event.target.value);
+                                                if (localityError && event.target.value.trim() !== "") {
+                                                    setLocalityError(false);
+                                                }
+                                            }}
+                                        />
                                     </div>
-                                    <button type="button" className="btn btn-warning btn-sm" onClick={() => applyAction(t("atlas.search.bulkEdit.messages.localityChangeReady"))}>
+                                    <button type="button" className="btn btn-warning btn-sm" onClick={() => void submitLocalityChange()} disabled={isRunning}>
                                         {t("atlas.search.bulkEdit.sections.locality.submitButton")}
                                     </button>
                                 </div>
@@ -644,13 +829,22 @@ export default function BulkEdit({records, totalCount, searchPayloadEntries}: Bu
                 <Accordion.Item eventKey="5" className="bulk-edit-card">
                     <Accordion.Header>{t("atlas.search.bulkEdit.sections.nearestTown.title")}</Accordion.Header>
                     <Accordion.Body>
-                                <div className="alert alert-warning py-2 px-3 mb-3">{NOT_IMPLEMENTED_TEXT}</div>
                                 <div className="d-flex gap-2 align-items-end">
                                     <div className="flex-grow-1">
                                         <label className="form-label">{t("atlas.search.bulkEdit.sections.nearestTown.label")}</label>
-                                        <input type="text" className="form-control" value={newNearestTownName} onChange={(event) => setNewNearestTownName(event.target.value)} />
+                                        <input
+                                            type="text"
+                                            className={`form-control ${nearestTownError ? "is-invalid" : ""}`}
+                                            value={newNearestTownName}
+                                            onChange={(event) => {
+                                                setNewNearestTownName(event.target.value);
+                                                if (nearestTownError && event.target.value.trim() !== "") {
+                                                    setNearestTownError(false);
+                                                }
+                                            }}
+                                        />
                                     </div>
-                                    <button type="button" className="btn btn-warning btn-sm" onClick={() => applyAction(t("atlas.search.bulkEdit.messages.nearestTownChangeReady", {value: newNearestTownName || t("atlas.search.bulkEdit.emptyValue")}))}>
+                                    <button type="button" className="btn btn-warning btn-sm" onClick={() => void submitNearestTownChange()} disabled={isRunning}>
                                         {t("atlas.search.bulkEdit.sections.nearestTown.submitButton")}
                                     </button>
                                 </div>
@@ -660,13 +854,12 @@ export default function BulkEdit({records, totalCount, searchPayloadEntries}: Bu
                 <Accordion.Item eventKey="6" className="bulk-edit-card">
                     <Accordion.Header>{t("atlas.search.bulkEdit.sections.source.title")}</Accordion.Header>
                     <Accordion.Body>
-                                <div className="alert alert-warning py-2 px-3 mb-3">{NOT_IMPLEMENTED_TEXT}</div>
                                 <div className="d-flex gap-2 align-items-end">
                                     <div className="flex-grow-1">
                                         <label className="form-label">{t("atlas.search.bulkEdit.sections.source.label")}</label>
                                         <input type="text" className="form-control" value={newSource} onChange={(event) => setNewSource(event.target.value)} />
                                     </div>
-                                    <button type="button" className="btn btn-warning btn-sm" onClick={() => applyAction(t("atlas.search.bulkEdit.messages.sourceChangeReady"))}>
+                                    <button type="button" className="btn btn-warning btn-sm" onClick={() => void submitSourceChange()} disabled={isRunning}>
                                         {t("atlas.search.bulkEdit.sections.source.submitButton")}
                                     </button>
                                 </div>
@@ -676,13 +869,12 @@ export default function BulkEdit({records, totalCount, searchPayloadEntries}: Bu
                 <Accordion.Item eventKey="7" className="bulk-edit-card">
                     <Accordion.Header>{t("atlas.search.bulkEdit.sections.note.title")}</Accordion.Header>
                     <Accordion.Body>
-                                <div className="alert alert-warning py-2 px-3 mb-3">{NOT_IMPLEMENTED_TEXT}</div>
                                 <div className="d-flex gap-2 align-items-end">
                                     <div className="flex-grow-1">
                                         <label className="form-label">{t("atlas.search.bulkEdit.sections.note.label")}</label>
                                         <input type="text" className="form-control" value={newImportComment} onChange={(event) => setNewImportComment(event.target.value)} />
                                     </div>
-                                    <button type="button" className="btn btn-warning btn-sm" onClick={() => applyAction(t("atlas.search.bulkEdit.messages.noteChangeReady"))}>
+                                    <button type="button" className="btn btn-warning btn-sm" onClick={() => void submitNoteChange()} disabled={isRunning}>
                                         {t("atlas.search.bulkEdit.sections.note.submitButton")}
                                     </button>
                                 </div>
@@ -692,14 +884,26 @@ export default function BulkEdit({records, totalCount, searchPayloadEntries}: Bu
                 <Accordion.Item eventKey="8" className="bulk-edit-card">
                     <Accordion.Header>{t("atlas.search.bulkEdit.sections.finder.title")}</Accordion.Header>
                     <Accordion.Body>
-                                <div className="alert alert-warning py-2 px-3 mb-3">{NOT_IMPLEMENTED_TEXT}</div>
                                 <p className="small text-muted">{t("atlas.search.bulkEdit.sections.finder.helper")}</p>
                                 <div className="d-flex gap-2 align-items-end">
-                                    <div className="flex-grow-1">
+                                    <div className={`flex-grow-1 ${finderError ? "bulk-edit-field-invalid" : ""}`}>
                                         <label className="form-label">{t("atlas.search.bulkEdit.sections.finder.label")}</label>
-                                        <input type="text" className="form-control" value={newFinder} onChange={(event) => setNewFinder(event.target.value)} placeholder={t("atlas.search.bulkEdit.sections.finder.placeholder")} />
+                                        <Typeahead
+                                            id="bulk-edit-finder"
+                                            labelKey="label"
+                                            onChange={(selected) => {
+                                                setSelectedFinder(selected as TypeaheadOption[]);
+                                                if (finderError && selected.length > 0) {
+                                                    setFinderError(false);
+                                                }
+                                            }}
+                                            options={finderOptions}
+                                            placeholder={t("atlas.search.bulkEdit.sections.finder.placeholder")}
+                                            selected={selectedFinder}
+                                            clearButton
+                                        />
                                     </div>
-                                    <button type="button" className="btn btn-warning btn-sm" onClick={() => applyAction(t("atlas.search.bulkEdit.messages.finderAddReady"))}>
+                                    <button type="button" className="btn btn-warning btn-sm" onClick={() => void submitFinderAdd()} disabled={isRunning}>
                                         {t("atlas.search.bulkEdit.sections.finder.submitButton")}
                                     </button>
                                 </div>
@@ -709,23 +913,23 @@ export default function BulkEdit({records, totalCount, searchPayloadEntries}: Bu
                 <Accordion.Item eventKey="9" className="bulk-edit-card">
                     <Accordion.Header>{t("atlas.search.bulkEdit.sections.taxon.title")}</Accordion.Header>
                     <Accordion.Body>
-                                <div className="alert alert-warning py-2 px-3 mb-3">{NOT_IMPLEMENTED_TEXT}</div>
                                 <p className="small text-muted">{t("atlas.search.bulkEdit.sections.taxon.helper")}</p>
                                 <div className="d-flex gap-2 align-items-end">
-                                    <div className="flex-grow-1">
+                                    <div className={`flex-grow-1 ${taxonError ? "bulk-edit-field-invalid" : ""}`}>
                                         <label className="form-label">{t("atlas.search.bulkEdit.sections.taxon.label")}</label>
-                                        <input type="text" className="form-control" value={newTaxon} onChange={(event) => setNewTaxon(event.target.value)} placeholder={t("atlas.search.bulkEdit.sections.taxon.placeholder")} />
+                                        <Autocomplete<TaxonId>
+                                            provider={taxonProvider}
+                                            cacheKey={0}
+                                            clearOnSelect={false}
+                                            onSelect={(taxon) => {
+                                                setSelectedTaxon(taxon);
+                                                if (taxonError && taxon != null) {
+                                                    setTaxonError(false);
+                                                }
+                                            }}
+                                        />
                                     </div>
-                                    <button
-                                        type="button"
-                                        className="btn btn-warning btn-sm"
-                                        onClick={() => {
-                                            if (!window.confirm(t("atlas.search.bulkEdit.messages.confirmTaxon"))) {
-                                                return;
-                                            }
-                                            applyAction(t("atlas.search.bulkEdit.messages.taxonChangeReady"));
-                                        }}
-                                    >
+                                    <button type="button" className="btn btn-warning btn-sm" onClick={() => void submitTaxonChange()} disabled={isRunning}>
                                         {t("atlas.search.bulkEdit.sections.taxon.submitButton")}
                                     </button>
                                 </div>
@@ -735,17 +939,18 @@ export default function BulkEdit({records, totalCount, searchPayloadEntries}: Bu
                 <Accordion.Item eventKey="10" className="bulk-edit-card">
                     <Accordion.Header>{t("atlas.search.bulkEdit.sections.semafor.title")}</Accordion.Header>
                     <Accordion.Body>
-                                <div className="alert alert-warning py-2 px-3 mb-3">{NOT_IMPLEMENTED_TEXT}</div>
-                                <p className="small text-muted">
-                                    {t("atlas.search.bulkEdit.sections.semafor.helper")}
-                                </p>
                                 <div className="d-flex gap-2 align-items-end">
                                     <div className="flex-grow-1">
                                         <label className="form-label">{t("atlas.search.bulkEdit.sections.semafor.label")}</label>
                                         <select
-                                            className="form-select"
+                                            className={`form-select ${semaforError ? "is-invalid" : ""}`}
                                             value={newSemafor}
-                                            onChange={(event) => setNewSemafor(event.target.value)}
+                                            onChange={(event) => {
+                                                setNewSemafor(event.target.value);
+                                                if (semaforError && event.target.value !== "") {
+                                                    setSemaforError(false);
+                                                }
+                                            }}
                                         >
                                             <option value="">{t("atlas.search.bulkEdit.sections.semafor.placeholder")}</option>
                                             {semaforOptions.map((option) => (
@@ -753,7 +958,7 @@ export default function BulkEdit({records, totalCount, searchPayloadEntries}: Bu
                                             ))}
                                         </select>
                                     </div>
-                                    <button type="button" className="btn btn-warning btn-sm" onClick={submitSemafor}>
+                                    <button type="button" className="btn btn-warning btn-sm" onClick={() => void submitSemafor()} disabled={isRunning}>
                                         {t("atlas.search.bulkEdit.sections.semafor.submitButton")}
                                     </button>
                                 </div>

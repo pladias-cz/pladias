@@ -21,8 +21,21 @@
 .bulk-edit-card {
     border: 1px solid #e5e7eb;
     border-radius: 0.3rem;
-    overflow: hidden;
+    overflow: visible;
     background: #ffffff;
+}
+
+.bulk-edit-accordion .accordion-collapse,
+.bulk-edit-accordion .accordion-body {
+    overflow: visible;
+}
+
+.bulk-edit-accordion .rbt {
+    position: relative;
+}
+
+.bulk-edit-accordion .rbt-menu {
+    z-index: 2000;
 }
 
 .bulk-edit-card-header {

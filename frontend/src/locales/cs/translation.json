@@ -282,6 +282,7 @@
           "dateChangeReady": "Akce (změna data na {{value}}) připravena.",
           "finderAddReady": "Akce (přidání nálezce) připravena.",
           "invalidBuffer": "Buffer musí být kladné celé číslo.",
+          "invalidDateFormat": "Datum musí být ve formátu YYYY, YYYY-MM nebo YYYY-MM-DD.",
           "loadingCandidates": "Načítám záznamy podle aktuálního filtru...",
           "localityChangeReady": "Akce (nový popis lokality) připravena.",
           "locationChangeReady": "Akce (změna lokace + buffer {{buffer}}) připravena.",

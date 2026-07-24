@@ -48,6 +48,22 @@ const parseRecordVersion = (row: RecordEditTimestampRow): BulkRecordVersion | nu
     };
 };
 
+const checkApiResponse = (
+    response: Response,
+    payload: any,
+    defaultErrorMessage: string,
+): void => {
+    if (!response.ok) {
+        const message = payload?.message || payload?.error || defaultErrorMessage;
+        throw new Error(message);
+    }
+
+    if (!payload?.success) {
+        const message = payload?.message || payload?.error || defaultErrorMessage;
+        throw new Error(message);
+    }
+};
+
 export async function fetchRecordEditTimestamps(payloadEntries: Array<[string, FormDataEntryValue]>): Promise<BulkRecordVersion[]> {
     const response = await fetch("/api/react/atlas/search/records-edit-timestamps", {
         method: "POST",
@@ -55,10 +71,7 @@ export async function fetchRecordEditTimestamps(payloadEntries: Array<[string, F
     });
 
     const payload = await response.json().catch(() => ({}));
-    if (!response.ok) {
-        const message = payload?.message || payload?.error || "Failed to load editable records";
-        throw new Error(message);
-    }
+    checkApiResponse(response, payload, "Failed to load editable records");
 
     const typedPayload = payload as JsonResponse<RecordEditTimestampRow[]> | RecordEditTimestampRow[];
     const rows = Array.isArray(typedPayload)
@@ -92,13 +105,56 @@ export async function moveCoordinates(record: BulkRecordVersion, latitude: numbe
     });
 
     const payload = await response.json().catch(() => ({}));
-    if (!response.ok) {
-        const message = payload?.message || payload?.error || "Failed to move record";
-        throw new Error(message);
-    }
+    checkApiResponse(response, payload, "Failed to move record");
+}
 
-    if (!payload?.success) {
-        const message = payload?.message || payload?.error || "Failed to move record";
-        throw new Error(message);
-    }
+export async function updateCoordsPrecision(record: BulkRecordVersion, gpsPrecision: number): Promise<void> {
+    const response = await fetch(`/api/react/atlas/record/${record.id}`, {
+        method: "PATCH",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            key: "COORDSPRECISION",
+            value: gpsPrecision.toString(),
+            lastEditTimestampNum: record.lastEditTimestampNum,
+        }),
+    });
+
+    const payload = await response.json().catch(() => ({}));
+    checkApiResponse(response, payload, "Failed to update coords precision");
+}
+
+export async function updateDate(record: BulkRecordVersion, date: string): Promise<void> {
+    const response = await fetch(`/api/react/atlas/record/${record.id}`, {
+        method: "PATCH",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            key: "DATE",
+            value: date,
+            lastEditTimestampNum: record.lastEditTimestampNum,
+        }),
+    });
+
+    const payload = await response.json().catch(() => ({}));
+    checkApiResponse(response, payload, "Failed to update date");
+}
+
+export async function updatePhytochorion(record: BulkRecordVersion, phytochorionId: string): Promise<void> {
+    const response = await fetch(`/api/react/atlas/record/${record.id}`, {
+        method: "PATCH",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            key: "PHYTOCHORION",
+            value: phytochorionId,
+            lastEditTimestampNum: record.lastEditTimestampNum,
+        }),
+    });
+
+    const payload = await response.json().catch(() => ({}));
+    checkApiResponse(response, payload, "Failed to update phytochorion");
 }

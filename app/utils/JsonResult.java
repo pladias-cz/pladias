@@ -57,6 +57,13 @@ public class JsonResult {
         return result;
     }
 
+    public static ObjectNode buildSuccess(ObjectNode data) {
+        ObjectNode result = Json.newObject();
+        result.put("success", true);
+        result.set("data", data);
+        return result;
+    }
+
     public static ObjectNode buildError(String message) {
         ObjectNode result = Json.newObject();
         result.put("success", false);

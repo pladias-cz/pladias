@@ -2,7 +2,10 @@ package modules;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Singleton;
+import com.google.inject.matcher.Matchers;
 
+import db.DatabaseContextInterceptor;
+import db.UseReplica;
 import mail.MailService;
 import scheduler.IScheduler;
 import scheduler.Scheduler;
@@ -40,6 +43,14 @@ public class ServicesModule extends AbstractModule {
 
     @Override
     protected void configure() {
+        
+        // Registrace interceptoru pro @UseReplica anotace
+        // Automaticky přepíná databázový kontext na replica pro read-only operace
+        bindInterceptor(
+            Matchers.any(),
+            Matchers.annotatedWith(UseReplica.class),
+            new DatabaseContextInterceptor()
+        );
 
         bind(IAccessRightsService.class)
             .to(AccessRightsService.class)

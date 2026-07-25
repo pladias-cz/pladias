@@ -2,6 +2,7 @@ package controllers.atlas;
 
 import controllers.ControllerBase;
 import controllers.security.Authorized;
+import db.UseReplica;
 import dto.atlas.RecordGbifMinimalDto;
 import dto.atlas.RecordPladiasDto;
 import dto.atlas.RecordPladiasFullDto;
@@ -38,6 +39,7 @@ public class MapDetailController extends ControllerBase {
      * @param taxonId    The ID of the taxon
      * @return JSON response with SquareValidationStatusResponse containing neighbors and current square info
      */
+    @UseReplica
     public Result getSquareInfo(Http.Request request, int squareCode, Long taxonId) {
         Messages messages = getMessages(request);
         Taxon taxon = Taxon.find().byId(taxonId);

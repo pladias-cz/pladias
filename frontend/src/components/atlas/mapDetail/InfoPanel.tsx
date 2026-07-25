@@ -1,5 +1,5 @@
 import type { RecordPladias } from '@/models';
-import type {RecordGbifMinimal} from '@/pages/atlas/MapDetail';
+import type {RecordsByProject} from '@/pages/atlas/MapDetail';
 import {useTranslation} from 'react-i18next';
 import {PladiasRecordsTable} from './PladiasRecordsTable';
 import {ExternalRecordsTable} from './ExternalRecordsTable';
@@ -10,7 +10,7 @@ import './InfoPanel.scss';
 interface InfoPanelProps {
     taxonName?: string;
     taxonId?: number;
-    records?: { pladias: RecordPladias[]; gbif: RecordGbifMinimal[]; inaturalist: RecordGbifMinimal[] };
+    records?: RecordsByProject;
     recordsLoading?: boolean;
     highlightedRecordId?: number | null;
     onRecordHover?: (recordId: number | null) => void;
@@ -36,21 +36,9 @@ export function InfoPanel({
                           }: InfoPanelProps) {
     const {t} = useTranslation();
 
-    // Filter PLADIAS records by square using computedSquareCode (based on exact coordinates)
-    const filterPladiasBySquare = (recs: RecordPladias[]) => {
-        if (!currentSquareCode) return recs;
-        return recs.filter(record => record.computedSquareCode === currentSquareCode);
-    };
-
-    // Filter GBIF/iNaturalist records by computedSquareCode (based on exact coordinates)
-    const filterMinimalBySquare = (recs: RecordGbifMinimal[]) => {
-        if (!currentSquareCode) return recs;
-        return recs.filter(record => record.computedSquareCode === currentSquareCode);
-    };
-
-    const pladiasRecords = filterPladiasBySquare(records.pladias || []);
-    const gbifRecords = filterMinimalBySquare(records.gbif || []);
-    const inaturalistRecords = filterMinimalBySquare(records.inaturalist || []);
+    const pladiasRecords = records.pladias;
+    const gbifRecords = records.gbif;
+    const inaturalistRecords = records.inaturalist;
     const [activeKey, setActiveKey] = useState<string>("0");
 
     return (

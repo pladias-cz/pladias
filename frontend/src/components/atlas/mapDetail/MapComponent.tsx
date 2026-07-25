@@ -73,7 +73,7 @@ export interface SquareInfoResponse {
     currentSquare: CurrentSquareInfo;
 }
 
-import type { RecordsByProject } from '@/pages/atlas/MapDetail';
+import type { RecordsByProject, RecordsByProjectMinimal } from '@/pages/atlas/MapDetail';
 import RecordMarkers from './RecordMarkers';
 import PladiasRecordMarkers from './PladiasRecordMarkers';
 
@@ -82,7 +82,7 @@ interface MapComponentProps {
     initialZoom?: number;
     taxonId?: number;
     squareId: string;
-    records?: RecordsByProject;
+    records?: RecordsByProject | RecordsByProjectMinimal;
     highlightedRecordId?: number | null;
     onRecordHover?: (recordId: number | null) => void;
     onRecordHoverWithScroll?: (recordId: number) => void;

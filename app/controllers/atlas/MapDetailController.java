@@ -6,6 +6,7 @@ import db.UseReplica;
 import dto.atlas.RecordGbifMinimalDto;
 import dto.atlas.RecordPladiasDto;
 import dto.atlas.RecordPladiasFullDto;
+import dto.atlas.RecordPladiasMinimalDto;
 import dto.atlas.SquareValidationStatusResponse;
 import io.ebean.DB;
 import io.ebean.SqlRow;
@@ -174,23 +175,19 @@ public class MapDetailController extends ControllerBase {
     /**
      * Get records within 10km distance from the centroid of a given square for a specific taxon and project.
      * Delegates to specific project type methods.
+     * This endpoint returns MINIMAL data suitable for map display.
      *
      * @param request    HTTP request
      * @param squareCode The square code (e.g., 5252)
      * @param taxonId    The taxon ID
      * @param project    Project type (gbif, inaturalist, pladias)
-     * @return JSON response with list of record DTOs
+     * @return JSON response with list of record DTOs (minimal)
      */
+    @UseReplica
     public Result getNearbyRecords(Http.Request request, String squareCode, Long taxonId, String project) {
         ProjectType projectType = ProjectType.fromString(project);
         if (projectType == null) {
             return badRequest(JsonResult.error("Invalid project type. Must be one of: gbif, inaturalist, pladias"));
-        }
-
-        // Validate common parameters
-        Taxon taxon = Taxon.find().byId(taxonId);
-        if (taxon == null) {
-            return notFound(JsonResult.error("Taxon not found"));
         }
 
         MapSquareNew square = MapSquareNew.find().query().where().eq("code", squareCode).findOne();
@@ -203,21 +200,53 @@ public class MapDetailController extends ControllerBase {
 
         // Delegate to specific project type method
         return switch (projectType) {
-            case PLADIAS -> getNearbyPladiasRecords(taxon, square, currentUser);
-            case INATURALIST -> getNearbyGbifRecords(taxon, square, true);
-            case GBIF -> getNearbyGbifRecords(taxon, square, false);
+            case PLADIAS -> getNearbyPladiasRecords(taxonId, square, currentUser);
+            case INATURALIST -> getNearbyGbifRecords(taxonId, square, true);
+            case GBIF -> getNearbyGbifRecords(taxonId, square, false);
+            default -> badRequest(JsonResult.error("Unsupported project type"));
+        };
+    }
+
+    /**
+     * Get records ONLY from the given square for a specific taxon and project.
+     * Delegates to specific project type methods.
+     * This endpoint returns FULL data suitable for table display.
+     *
+     * @param request    HTTP request
+     * @param squareCode The square code (e.g., 5252)
+     * @param taxonId    The taxon ID
+     * @param project    Project type (gbif, inaturalist, pladias)
+     * @return JSON response with list of record DTOs (full)
+     */
+    @UseReplica
+    public Result getSquareRecords(Http.Request request, String squareCode, Long taxonId, String project) {
+        ProjectType projectType = ProjectType.fromString(project);
+        if (projectType == null) {
+            return badRequest(JsonResult.error("Invalid project type. Must be one of: gbif, inaturalist, pladias"));
+        }
+
+        User currentUser = SessionUtils.getCurrentUser(request.session());
+
+
+        // Delegate to specific project type method
+        return switch (projectType) {
+            case PLADIAS -> getSquarePladiasRecords(taxonId, squareCode, currentUser);
+            case INATURALIST -> getSquareGbifRecords(taxonId, squareCode, true);
+            case GBIF -> getSquareGbifRecords(taxonId, squareCode, false);
             default -> badRequest(JsonResult.error("Unsupported project type"));
         };
     }
 
     /**
      * Get PLADIAS records within 10km distance from the square centroid.
+     * Returns MINIMAL data suitable for map display.
      *
      * @param taxon  The taxon to filter by
      * @param square The square to get centroid from
-     * @return JSON response with list of RecordPladiasDto
+     * @param currentUser The current user for permission checks
+     * @return JSON response with list of RecordPladiasMinimalDto
      */
-    private Result getNearbyPladiasRecords(Taxon taxon, MapSquareNew square, User currentUser) {
+    private Result getNearbyPladiasRecords(Long taxon, MapSquareNew square, User currentUser) {
         geom.Point centroid = square.getCentroid();
         double longitude = centroid.getX();
         double latitude = centroid.getY();
@@ -228,15 +257,25 @@ public class MapDetailController extends ControllerBase {
         double latDegrees = bufferMeters / 111320.0;
         double lonDegrees = bufferMeters / (111320.0 * Math.cos(Math.toRadians(latitude)));
 
-        // Query records within 20km
-        // Join with geodata.quadrants_full to get computed quadrant code from coordinates
-        // Sort by latitude and longitude
+        // Query records within buffer zone
+        // Join with geodata.quadrants_full to get computed quadrant/square code from coordinates
+        // Include validation status for map coloring
         String sql = """
             SELECT r.id,
+                   r.latitude,
+                   r.longitude,
+                   r.gps_coords_precision,
+                   r.datum,
+                   CONCAT_WS(', ', COALESCE(a.surname, '')) AS recorded_by,
+                   r.validation_status,
+                   rvs.color AS validation_status_color,
                    q.code AS computed_quadrant_code
             FROM atlas.records r
             LEFT JOIN geodata.quadrants_full q
                    ON ST_Contains(q.geom_wgs, r.coords_wgs)
+            LEFT JOIN atlas.records_authors ra ON r.id = ra.records_id
+            LEFT JOIN atlas.authors a ON a.id = ra.authors_id
+            LEFT JOIN atlas.record_validation_status rvs ON r.validation_status = rvs.id
             WHERE r.taxon_id = :taxonId
               AND r.coords_wgs && ST_MakeEnvelope(
                     :longitude - :dLon,
@@ -248,16 +287,60 @@ public class MapDetailController extends ControllerBase {
             ORDER BY r.latitude DESC, r.longitude DESC, r.id;""";
 
         List<io.ebean.SqlRow> rows = DB.sqlQuery(sql)
-            .setParameter("taxonId", taxon.getId())
+            .setParameter("taxonId", taxon)
             .setParameter("longitude", longitude)
             .setParameter("latitude", latitude)
             .setParameter("dLat", latDegrees)
             .setParameter("dLon", lonDegrees)
             .findList();
 
-        // Fetch full records by ID with computed quadrant/square code from coordinates
-        Map<Long, String> quadrantCodes = new HashMap<>();
+        List<RecordPladiasMinimalDto> dtos = new ArrayList<>();
+        for (io.ebean.SqlRow row : rows) {
+            String computedQuadrantCode = row.getString("computed_quadrant_code");
+            String computedSquareCode = null;
+            if (computedQuadrantCode != null && computedQuadrantCode.length() > 1) {
+                computedSquareCode = computedQuadrantCode.substring(0, computedQuadrantCode.length() - 1);
+            }
 
+            dtos.add(new RecordPladiasMinimalDto(
+                row.getLong("id"),
+                row.getDouble("latitude"),
+                row.getDouble("longitude"),
+                row.getInteger("gps_precision"),
+                row.getInteger("year"),
+                row.getString("recorded_by"),
+                row.getInteger("validation_status_id"),
+                row.getString("validation_status_color"),
+                computedSquareCode
+            ));
+        }
+
+        return ok(JsonResult.buildSuccess(dtos));
+    }
+
+    /**
+     * Get PLADIAS records ONLY from the given square.
+     * Returns FULL data suitable for table display.
+     *
+     */
+    private Result getSquarePladiasRecords(Long taxonId, String squareCode, User currentUser) {
+
+        // Query records where computed_square_code matches the given square
+        String sql = """
+            SELECT r.id
+            FROM atlas.records r
+            LEFT JOIN geodata.squares_full s
+                   ON ST_Contains(s.geom_wgs, r.coords_wgs)
+            WHERE r.taxon_id = :taxonId
+              AND s.code = :squareCode
+            ORDER BY r.latitude DESC, r.longitude DESC, r.id;""";
+
+        List<io.ebean.SqlRow> rows = DB.sqlQuery(sql)
+            .setParameter("taxonId", taxonId)
+            .setParameter("squareCode", squareCode)
+            .findList();
+
+        Map<Long, String> quadrantCodes = new HashMap<>();
         List<Long> ids = new ArrayList<>();
 
         for (io.ebean.SqlRow row : rows) {
@@ -292,7 +375,6 @@ public class MapDetailController extends ControllerBase {
         Map<Long, Record> records = recordList.stream()
             .collect(Collectors.toMap(Record::getId, Function.identity()));
 
-        // Batch-fetch history existence for all records to avoid N+1 queries
         Map<Long, Boolean> historyByRecordId = Record.hasHistoryById(ids);
 
         List<RecordPladiasDto> dtos = new ArrayList<>();
@@ -301,12 +383,10 @@ public class MapDetailController extends ControllerBase {
             Record record = records.get(id);
             if (record != null) {
                 String computedQuadrantCode = quadrantCodes.get(id);
-
                 String computedSquareCode = null;
                 if (computedQuadrantCode != null && computedQuadrantCode.length() > 1) {
                     computedSquareCode = computedQuadrantCode.substring(0, computedQuadrantCode.length() - 1);
                 }
-
                 Boolean hasHistory = historyByRecordId.get(id);
 
                 dtos.add(
@@ -333,7 +413,7 @@ public class MapDetailController extends ControllerBase {
      * @param inaturalistOnly If true, filter for iNaturalist records only; if false, exclude iNaturalist
      * @return JSON response with list of RecordGbifMinimalDto
      */
-    private Result getNearbyGbifRecords(Taxon taxon, MapSquareNew square, boolean inaturalistOnly) {
+    private Result getNearbyGbifRecords(Long taxon, MapSquareNew square, boolean inaturalistOnly) {
         geom.Point centroid = square.getCentroid();
         double longitude = centroid.getX();
         double latitude = centroid.getY();
@@ -366,9 +446,58 @@ public class MapDetailController extends ControllerBase {
             "ORDER BY q.letter";
 
         List<io.ebean.SqlRow> rows = DB.sqlQuery(sql)
-            .setParameter("taxonId", taxon.getId())
+            .setParameter("taxonId", taxon)
             .setParameter("longitude", longitude)
             .setParameter("latitude", latitude)
+            .findList();
+
+        List<RecordGbifMinimalDto> dtos = new ArrayList<>();
+        for (io.ebean.SqlRow row : rows) {
+            dtos.add(RecordGbifMinimalDto.fromSqlRow(row));
+        }
+
+        return ok(JsonResult.buildSuccess(dtos));
+    }
+
+    /**
+     * Get GBIF records ONLY from the given square.
+     * Returns data suitable for table display (same DTO as nearby, but filtered).
+     *
+     * @param taxon           The taxon to filter by
+     * @param square          The square to filter by
+     * @param inaturalistOnly If true, filter for iNaturalist records only; if false, exclude iNaturalist
+     * @return JSON response with list of RecordGbifMinimalDto
+     */
+    private Result getSquareGbifRecords(Long taxon, String square, boolean inaturalistOnly) {
+        // Build institution_code filter
+        String institutionFilter = inaturalistOnly
+            ? "institution_code = 'iNaturalist'"
+            : "(institution_code IS NULL OR institution_code != 'iNaturalist')";
+
+        // Query GBIF records filtered by square code
+        // Join with geodata.quadrants_full and geodata.squares_full to get quadrant letter and square code
+        String sql = "SELECT g.gbif_id, " +
+            "       ST_Y(g.coords) AS latitude, " +
+            "       ST_X(g.coords) AS longitude, " +
+            "       g.coords_precision, " +
+            "       g.year, " +
+            "       g.recorded_by, " +
+            "       g.institution_code, " +
+            "       q.letter AS quadrant_letter, " +
+            "       s.code AS square_code, " +
+            "       s.code AS computed_square_code " +
+            "FROM gbif.records g " +
+            "LEFT JOIN geodata.quadrants_full q ON ST_Contains(q.geom_wgs, g.coords) " +
+            "LEFT JOIN geodata.squares_full s ON s.id = q.square_id " +
+            "INNER JOIN gbif.taxa t ON t.taxon_key = g.taxon_key " +
+            "WHERE t.pladias_taxon_id = :taxonId " +
+            "  AND " + institutionFilter +
+            "  AND s.code = :squareCode " +
+            "ORDER BY q.letter";
+
+        List<io.ebean.SqlRow> rows = DB.sqlQuery(sql)
+            .setParameter("taxonId", taxon)
+            .setParameter("squareCode", square)
             .findList();
 
         List<RecordGbifMinimalDto> dtos = new ArrayList<>();

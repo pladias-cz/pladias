@@ -1,9 +1,10 @@
 import { Circle, CircleMarker, Popup, Tooltip } from 'react-leaflet';
 import type { RecordPladias } from '@/models';
+import type { RecordPladiasMinimal } from '@/pages/atlas/MapDetail';
 import './RecordMarkers.scss';
 
 interface PladiasRecordMarkersProps {
-    records: RecordPladias[];
+    records: (RecordPladias | RecordPladiasMinimal)[];
     highlightedRecordId?: number | null;
     onRecordHover?: (recordId: number | null) => void;
 }
@@ -15,17 +16,19 @@ const MARKER_CONFIG = {
 };
 
 function PladiasRecordMarkers({ records, highlightedRecordId, onRecordHover }: PladiasRecordMarkersProps) {
-    const getValidationColor = (record: RecordPladias): string => {
+    const getValidationColor = (record: RecordPladias | RecordPladiasMinimal): string => {
         return record.validationStatusColor || '#808080';
     };
 
-    const formatRecordLabel = (record: RecordPladias): string => {
+    const formatRecordLabel = (record: RecordPladias | RecordPladiasMinimal): string => {
         const parts: string[] = [];
         if (record.year) {
             parts.push(`${record.year}`);
         }
 
-        parts.push(record.recordAuthorsNames ?? '');
+        // Use type guard to access the correct property
+        const recordedBy = 'recordedBy' in record ? record.recordedBy : record.recordAuthorsNames;
+        parts.push(recordedBy ?? '');
 
         return parts.join(' - ') || '';
     };
@@ -56,9 +59,10 @@ function PladiasRecordMarkers({ records, highlightedRecordId, onRecordHover }: P
                             <strong>ID: {record.id}</strong><br />
                             <span className="text-muted">PLADIAS</span><br />
                             {record.year && <span>Rok: {record.year}<br /></span>}
-                            {record.recordAuthorsNames && (
-                                <span>Sběratel: {record.recordAuthorsNames}<br /></span>
-                            )}
+                            {(() => {
+                                const recordedBy = 'recordedBy' in record ? record.recordedBy : record.recordAuthorsNames;
+                                return recordedBy && <span>Sběratel: {recordedBy}<br /></span>;
+                            })()}
                             <a href={`${import.meta.env.BASE_URL.replace(/\/$/, "")}/atlas/record/${record.id}`} target="_blank" rel="noopener noreferrer">
                                 Otevřít záznam
                             </a>

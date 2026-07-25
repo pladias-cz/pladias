@@ -4,6 +4,7 @@
 GET /taxonStatistics/:taxonId           controllers.taxon.TaxonStatisticsController.getInfo(request: Request, taxonId: Long)
 GET /atlas/squareInfo/:square/:taxonId   controllers.atlas.MapDetailController.getSquareInfo(request: Request, square: Integer, taxonId: Long)
 GET /atlas/records/:square/:taxonId/:project controllers.atlas.MapDetailController.getNearbyRecords(request: Request, square: String, taxonId: Long, project: String)
+GET /atlas/records-square/:square/:taxonId/:project controllers.atlas.MapDetailController.getSquareRecords(request: Request, square: String, taxonId: Long, project: String)
 GET /atlas/record/:recordId/full         controllers.atlas.MapDetailController.getRecordFull(request: Request, recordId: Long)
 GET /atlas/record/history/:recordId      controllers.atlas.RecordHistoryController.getRecordHistory(request: Request, recordId: Long)
 GET /atlas/record/comments/:recordId     controllers.atlas.RecordCommentController.getRecordComments(request: Request, recordId: Long)

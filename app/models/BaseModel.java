@@ -11,23 +11,23 @@ import io.ebean.Finder;
  * <p>Poskytuje helper metody pro získání {@link Finder} a {@link Database}
  * instancí na aktuálně vybraném serveru (master nebo replica).</p>
  * 
- * <p>Tato třída NENÍ určena k dědění - poskytuje pouze statické helper metody.
- * Entity třídy by měly stále dědit přímo z {@code io.ebean.Model}.</p>
+ * <p>⚠️ <b>Tato třída NENÍ určena k dědění!</b> Poskytuje pouze statické helper metody.
+ * Entity třídy musí vždy dědit přímo z {@code io.ebean.Model} aby fungoval Ebean enhancement.</p>
  * 
  * <p>Příklad použití:</p>
  * <pre>{@code
  * @Entity
  * public class Record extends Model {
  *     
- *     // Použití helper metody pro aktuální kontext (master)
+ *     // Správně: vytvořte Finder přímo
  *     public static Finder<Long, Record> find() {
- *         return BaseModel.find(Record.class);
+ *         return new Finder<>(Record.class);
  *     }
  *     
  *     // Explicitní použití replica
  *     public static List<Record> findAllOnReplica() {
  *         try (DatabaseContext.Scope replica = DatabaseContext.useReplica()) {
- *             return BaseModel.find(Record.class).findList();
+ *             return find().findList();
  *         }
  *     }
  * }
@@ -36,15 +36,15 @@ import io.ebean.Finder;
  * <p>Přímé použití v kódu:</p>
  * <pre>{@code
  * // Použije aktuální kontext (default master)
- * Record record = BaseModel.find(Record.class).byId(123);
+ * Record record = new Finder<>(Record.class).byId(123);
  * 
  * // Explicitní replica
  * try (DatabaseContext.Scope replica = DatabaseContext.useReplica()) {
- *     List<Record> records = BaseModel.find(Record.class).findList();
+ *     List<Record> records = new Finder<>(Record.class).findList();
  * }
  * 
- * // Pomocí currentDb() metody pro SQL dotazy
- * SqlRow row = BaseModel.currentDb().sqlQuery("SELECT ...").findOne();
+ * // Pomocí DatabaseContext.getDatabase() pro SQL dotazy
+ * SqlRow row = DatabaseContext.getDatabase().sqlQuery("SELECT ...").findOne();
  * }</pre>
  * 
  * @see db.DatabaseContext

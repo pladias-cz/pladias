@@ -1,6 +1,7 @@
 package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import db.DatabaseContext;
 import geom.LinearRing;
 import geom.Point;
 import io.ebean.Finder;
@@ -31,11 +32,19 @@ public class MapSquareNew extends Model {
     /**
      * Vytvoří Finder pro aktuálně vybraný databázový server.
      * Respektuje DatabaseContext kontext (master nebo replica).
-     * 
+     *
      * @return Finder připojený k aktuální databázi
      */
     public static Finder<Integer, MapSquareNew> find() {
-        return BaseModel.find(MapSquareNew.class);
+        // DEBUG: Ověření že se opravdu použije replica když je nastavena
+        String currentDb = DatabaseContext.getCurrentDatabase();
+        System.out.println("### MapSquareNew.find() - aktuální DB kontext: " + currentDb);
+        if ("replica".equals(currentDb)) {
+            System.out.println("### ✓ PRÁVĚ BĚŽÍ NA REPLICE!");
+        } else {
+            System.out.println("### ℹ BĚŽÍ NA MASTERU (default)");
+        }
+        return new Finder<>(MapSquareNew.class);
     }
 
     public int getId() {
@@ -56,10 +65,7 @@ public class MapSquareNew extends Model {
 
     /**
      * Získá centroid čtverce.
-     * 
-     * <p>SQL dotaz automaticky použije aktuální databázový kontext
-     * (master nebo replica dle {@link db.DatabaseContext}).</p>
-     * 
+     *
      * @return Point s centroidem ve WGS84
      */
     public Point getCentroid() {
@@ -68,33 +74,38 @@ public class MapSquareNew extends Model {
                 " FROM " + MapSquareNew.QualifiedTableName +
                 " WHERE id=:id;";
 
-            // Použije aktuální database kontext (master nebo replica)
-            SqlRow row = BaseModel.currentDb().sqlQuery(sql).setParameter("id", id).findOne();
-            centroid = new Point(row.getDouble("LON"), row.getDouble("LAT"), Srid.WGS84);
+            try (DatabaseContext.Scope replica = DatabaseContext.useReplica()) {
+                SqlRow row = DatabaseContext.getDatabase().sqlQuery(sql).setParameter("id", id).findOne();
+                centroid = new Point(row.getDouble("LON"), row.getDouble("LAT"), Srid.WGS84);
+            }
         }
         return centroid;
     }
 
     /**
      * Získá hranici čtverce jako LinearRing.
-     * 
-     * <p>SQL dotaz automaticky použije aktuální databázový kontext
-     * (master nebo replica dle {@link db.DatabaseContext}).</p>
-     * 
+     *
      * @return LinearRing hranice čtverce
      * @throws SQLException pokud selže databázový dotaz
      */
     public LinearRing getLinearRing() throws SQLException {
         String sql = "SELECT ST_ASTEXT(Box2D(geom_wgs)) AS polygon FROM " + MapSquareNew.QualifiedTableName +
             " WHERE id = :squareId;";
-        
-        // Použije aktuální database kontext (master nebo replica)
-        SqlRow row = BaseModel.currentDb().sqlQuery(sql).setParameter("squareId", id).findOne();
-        String polygonDefinition = row.getString("polygon");
 
-        Polygon poly = new Polygon(polygonDefinition);
-        org.postgis.LinearRing ring = poly.getRing(0);
-        return new LinearRing(ring);
+        // DEBUG: Ověření databázového kontextu
+        String currentDbBefore = DatabaseContext.getCurrentDatabase();
+        System.out.println("### MapSquareNew.getLinearRing() - před přepnutím: " + currentDbBefore);
+
+        try (DatabaseContext.Scope replica = DatabaseContext.useReplica()) {
+            String currentDbInside = DatabaseContext.getCurrentDatabase();
+            System.out.println("### MapSquareNew.getLinearRing() - uvnitř try bloku: " + currentDbInside);
+            SqlRow row = DatabaseContext.getDatabase().sqlQuery(sql).setParameter("squareId", id).findOne();
+            String polygonDefinition = row.getString("polygon");
+
+            Polygon poly = new Polygon(polygonDefinition);
+            org.postgis.LinearRing ring = poly.getRing(0);
+            return new LinearRing(ring);
+        }
     }
 
     public void save() {

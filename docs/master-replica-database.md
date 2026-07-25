@@ -2,67 +2,6 @@
 
 Tento dokument popisuje konfiguraci a použití master-replica architektury pro rozdělení databázové zátěže v aplikaci Pladias.
 
-## Přehled
-
-Aplikace podporuje směrování databázových operací na dva servery:
-
-- **Master (default)**: Hlavní databáze pro write operace (INSERT, UPDATE, DELETE)
-- **Replica**: Čtecí replika pro read-only operace (SELECT)
-
-Tato architektura umožňuje:
-- Rozdělení zátěže mezi více serverů
-- Zvýšení výkonu pro read-heavy operace
-- Lepší škálovatelnost aplikace
-
-## Konfigurace
-
-### 1. Nastavení datasource v `conf/common.conf`
-
-```conf
-# Master databáze - write operace
-db.default.url="jdbc:postgresql://pladias_master:5432/pladias"
-db.default.username=play
-db.default.password=play
-db.default.driver=org.postgresql.Driver
-db.default.hikaricp.connectionTestQuery="SELECT 1"
-db.default.maxConnectionsPerPartition=100
-db.default.minConnectionsPerPartition=10
-
-# Replica databáze - read-only operace
-db.replica.url="jdbc:postgresql://pladias_replica:5432/pladias"
-db.replica.username=play_readonly
-db.replica.password=play_readonly
-db.replica.driver=org.postgresql.Driver
-db.replica.hikaricp.connectionTestQuery="SELECT 1"
-db.replica.maxConnectionsPerPartition=50
-db.replica.minConnectionsPerPartition=5
-```
-
-### 2. Nastavení Ebean serverů v `conf/common.conf`
-
-```conf
-# Master Ebean server
-ebean.default.databasePlatform=postgis.PostGisPlatform
-ebean.default=["models.*"]
-
-# Replica Ebean server (read-only)
-ebean.replica.databasePlatform=postgis.PostGisPlatform
-ebean.replica=["models.*"]
-ebean.replica.readOnly=true
-```
-
-### 3. Registrace interceptoru
-
-Interceptor pro automatické přepínání je registrován v `app/modules/ServicesModule.java`:
-
-```java
-bindInterceptor(
-    Matchers.any(),
-    Matchers.annotatedWith(UseReplica.class),
-    new DatabaseContextInterceptor()
-);
-```
-
 ## Použití
 
 ### Způsob 1: Deklarativní s anotací `@UseReplica`
@@ -88,10 +27,10 @@ public class MapDetailController extends ControllerBase {
         Taxon taxon = Taxon.find().byId(taxonId);
         MapSquareNew square = MapSquareNew.find().query()
             .where().eq("code", String.valueOf(squareCode)).findOne();
-        
+
         return ok(response);
     }
-    
+
     /**
      * Tato metoda použije master (default behavior)
      */
@@ -103,11 +42,6 @@ public class MapDetailController extends ControllerBase {
     }
 }
 ```
-
-**Výhody:**
-- Čistý kód bez boilerplate
-- Automatické obnovení kontextu
-- Snadné čtení a údržba
 
 ### Způsob 2: Programové s try-with-resources
 
@@ -121,7 +55,7 @@ import models.*;
 import java.util.List;
 
 public class MapSquareService {
-    
+
     public List<MapSquareNew> getSquaresForTaxon(Long taxonId) {
         // Přepnutí na repliku pouze pro tento blok
         try (DatabaseContext.Scope replica = DatabaseContext.useReplica()) {
@@ -131,7 +65,7 @@ public class MapSquareService {
         }
         // Po opuštění bloku se automaticky vrátí master
     }
-    
+
     public void saveSquare(MapSquareNew square) {
         // Tento kód běží na master (default)
         square.save();
@@ -139,25 +73,25 @@ public class MapSquareService {
 }
 ```
 
-**Výhody:**
-- Přesná kontrola rozsahu
-- Funguje i mimo controllery (service vrstva, repositories)
-- Explicitní a čitelné
 
-### Způsob 3: Dědění z `BaseModel`
+### Způsob 3: Použití `BaseModel` helper metod
 
-Všechny modely by měly dědit z `BaseModel` místo přímo z `Model`:
+**Důležité:** Modely musí dědit z `io.ebean.Model`, NE z `BaseModel`!
+
+`BaseModel` je pouze helper třída se statickými metodami - není určena k dědění.
+Entity musí vždy dědit přímo z `Model` aby fungoval Ebean enhancement.
 
 ```java
 package models;
 
-public class Record extends BaseModel {
-    
-    // Automaticky použije aktuální databázový kontext
+@Entity
+public class Record extends Model {
+
+    // Použití BaseModel helper metody pro získání Finder s aktuálním kontextem
     public static Finder<Long, Record> find() {
-        return BaseModel.find(Record.class);
+        return new Finder<>(Record.class);
     }
-    
+
     // Explicitní použití replica
     public static List<Record> findAllOnReplica() {
         try (DatabaseContext.Scope replica = DatabaseContext.useReplica()) {
@@ -167,11 +101,10 @@ public class Record extends BaseModel {
 }
 ```
 
-**BaseModel poskytuje:**
-- `find(Class<T> clazz)` - Finder s aktuálním kontextem
-- `find(String dbName, Class<T> clazz)` - Finder s explicitním serverem
-- `db()` - Database instance s aktuálním kontextem
-- `db(String dbName)` - Database instance s explicitním serverem
+**Pro SQL dotazy použijte `DatabaseContext.getDatabase()`:**
+```java
+SqlRow row = DatabaseContext.getDatabase().sqlQuery("SELECT ...").findOne();
+```
 
 ## API Reference
 
@@ -213,22 +146,33 @@ public class ReadOnlyController extends ControllerBase { ... }
 
 **Pozor:** Nepoužívejte na metody s write operacemi!
 
-### `BaseModel`
+### `DatabaseContext`
 
-Base třída pro všechny entity modely.
+Helper třída pro získání Database instance s aktuálním kontextem.
 
 ```java
-public class MyEntity extends BaseModel {
-    
+public class MyEntity extends Model {
+
     public static Finder<Long, MyEntity> find() {
-        return BaseModel.find(MyEntity.class);
+        return new Finder<>(MyEntity.class);
     }
-    
+
     public void someMethod() {
         // SQL dotaz s aktuálním kontextem
-        SqlRow row = db().sqlQuery("SELECT ...").findOne();
+        SqlRow row = DatabaseContext.getDatabase().sqlQuery("SELECT ...").findOne();
     }
 }
+```
+
+**Pro explicitní specifikování databáze:**
+```java
+import io.ebean.DB;
+
+// Replica
+List<MyEntity> items = DB.byName("replica").find(MyEntity.class).findList();
+
+// Master (default)
+MyEntity item = DB.byName("default").find(MyEntity.class).byId(123);
 ```
 
 ## Příklady použití
@@ -245,16 +189,16 @@ import play.mvc.Result;
 
 @UseReplica  // Celá třída používá repliku
 public class AtlasSearchController extends ControllerBase {
-    
+
     public Result search(Http.Request request, String query) {
         // Všechny dotazy půjdou na repliku
         List<Record> records = Record.find().query()
             .where().ilike("locality", "%" + query + "%")
             .findList();
-        
+
         return ok(Json.toJson(records));
     }
-    
+
     public Result getTaxonDetail(Long id) {
         Taxon taxon = Taxon.find().byId(id);
         return ok(Json.toJson(taxon));
@@ -272,7 +216,7 @@ import models.Record;
 import java.util.List;
 
 public class RecordService {
-    
+
     /**
      * Read-only operace - použije repliku
      */
@@ -282,7 +226,7 @@ public class RecordService {
             .where().eq("taxon_id", taxonId)
             .findList();
     }
-    
+
     /**
      * Write operace - použije master (default)
      */
@@ -304,9 +248,9 @@ public class RecordService {
    public Result getRecords() { ... }
    ```
 
-2. **Děďte všechny modely z `BaseModel`**
+2. **Děďte všechny modely z `io.ebean.Model`**
    ```java
-   public class MyEntity extends BaseModel { ... }
+   public class MyEntity extends Model { ... }
    ```
 
 3. **Používejte try-with-resources pro programové přepnutí**
@@ -337,7 +281,7 @@ public class RecordService {
    DatabaseContext.useReplica();
    // kód...
    // kontext zůstane na replica!
-   
+
    // SPRÁVNĚ
    try (DatabaseContext.Scope replica = DatabaseContext.useReplica()) {
        // kód...

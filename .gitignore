@@ -50,5 +50,6 @@ dist
 bin
 activator-sbt-*-shim.sbt
 /conf/evolutions/default/1.sql
+/conf/evolutions/replica/1.sql
 
 public/react

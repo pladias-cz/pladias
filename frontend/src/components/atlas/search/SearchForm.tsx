@@ -99,6 +99,7 @@ export default function SearchForm() {
     const [selectedValidationStatus, setSelectedValidationStatus] = useState<TypeaheadOption[]>([]);
     const [selectedHistoryFlag, setSelectedHistoryFlag] = useState<TypeaheadOption[]>([]);
     const [selectedLicense, setSelectedLicense] = useState<TypeaheadOption[]>([]);
+    const [pladiasId, setPladiasId] = useState<string>("");
     const [includeSubtaxa, setIncludeSubtaxa] = useState<boolean>(true);
 
     const hasRecords = records.length > 0;
@@ -519,7 +520,16 @@ export default function SearchForm() {
         setSelectedValidationStatus([]);
         setSelectedHistoryFlag([]);
         setSelectedLicense([]);
+        setPladiasId("");
     };
+
+    const handleBulkEditComplete = useCallback(async () => {
+        if (lastPayloadEntries.length === 0) {
+            return;
+        }
+
+        await fetchSearchPage(currentPage, false, lastPayloadEntries, {sortBy, sortOrder});
+    }, [currentPage, fetchSearchPage, lastPayloadEntries, sortBy, sortOrder]);
 
     return (
         <>
@@ -957,6 +967,21 @@ export default function SearchForm() {
                                     </td>
                                 </tr>
 
+                                <tr title={t("atlas.search.form.labels.pladiasId")}>
+                                    <td>{t("atlas.search.form.labels.pladiasId")}</td>
+                                    <td>
+                                        <input type="hidden" name="pladiasID" value={pladiasId} />
+                                        <textarea
+                                            name="pladiasId"
+                                            rows={4}
+                                            className="form-control input-sm"
+                                            placeholder="3299984;3300112;3300148;13583673"
+                                            value={pladiasId}
+                                            onChange={(event) => setPladiasId(event.target.value)}
+                                        />
+                                    </td>
+                                </tr>
+
                                 <tr>
                                     <td />
                                     <td>
@@ -1080,7 +1105,14 @@ export default function SearchForm() {
                         showTaxonName={true}
                     />
 
-                    {canUseBulkEdit && <BulkEdit records={records} totalCount={totalCount} />}
+                    {canUseBulkEdit && (
+                        <BulkEdit
+                            records={records}
+                            totalCount={totalCount}
+                            searchPayloadEntries={lastPayloadEntries}
+                            onBulkEditComplete={handleBulkEditComplete}
+                        />
+                    )}
                 </div>
             )}
 

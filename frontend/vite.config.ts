@@ -11,7 +11,7 @@ const __dirname = dirname(__filename);
 // https://vite.dev/config/
 export default defineConfig(({ command }) => ({
   plugins: [react()],
-  base: command === "serve" ? "/react/" : "/assets/react/",
+  base: command === "serve" ? "/" : "/assets/react/",
   server: {
     proxy: {
       "/api": {

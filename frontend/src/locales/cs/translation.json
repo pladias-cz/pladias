@@ -269,25 +269,43 @@
       "bulkEdit": {
         "emptyValue": "<prázdné>",
         "messages": {
-          "actionPrepared": "{{message}} Akce připravena pro {{count}} záznamů (frontend only, backend zatím není napojen).",
+          "actionPrepared": "{{message}} Akce připravena pro {{count}} záznamů.",
+          "batchFinished": "{{operationName}} Hotovo: {{success}} úspěšně, {{failed}} neúspěšně (celkem {{total}}).",
+          "batchProgress": "Průběh: {{processed}} / {{total}}",
+          "batchStartFailed": "Nepodařilo se spustit hromadnou operaci.",
           "bufferChangeReady": "Akce (změna samotného bufferu na {{value}}) připravena.",
           "confirmSemafor": "Opravdu chcete změnit semafor pro všechny vybrané záznamy?",
           "confirmTaxon": "Opravdu chcete změnit taxon u všech vybraných záznamů?",
+          "confirmEmptyNote": "Poznámka je prázdná. Opravdu ji chcete nastavit na prázdnou hodnotu?",
+          "confirmEmptySource": "Pramen je prázdný. Opravdu ho chcete nastavit na prázdnou hodnotu?",
           "coordsParseFailed": "Souřadnice nelze automaticky rozparsovat. Použijte formát lat,lon nebo vyplňte Lat/Lon ručně.",
           "coordsPrefilled": "Souřadnice byly předvyplněny do polí Lat/Lon.",
           "coordsRequired": "Vyplňte Lat i Lon pro přesun lokality.",
           "dateChangeReady": "Akce (změna data na {{value}}) připravena.",
           "finderAddReady": "Akce (přidání nálezce) připravena.",
+          "invalidBuffer": "Buffer musí být kladné celé číslo.",
+          "invalidDateFormat": "Datum musí být ve formátu YYYY, YYYY-MM nebo YYYY-MM-DD.",
+          "loadingCandidates": "Načítám záznamy podle aktuálního filtru...",
           "localityChangeReady": "Akce (nový popis lokality) připravena.",
           "locationChangeReady": "Akce (změna lokace + buffer {{buffer}}) připravena.",
           "nearestTownChangeReady": "Akce (změna nejbližší obce na {{value}}) připravena.",
           "noRecords": "Nejsou k dispozici žádné záznamy pro hromadnou úpravu.",
           "noteChangeReady": "Akce (nový text poznámky) připravena.",
           "phytochorionChangeReady": "Akce (změna fytochorionu na {{value}}) připravena.",
+          "requiredDate": "Datum je povinné.",
+          "requiredLocality": "Lokalita je povinná.",
+          "requiredNearestTown": "Nejbližší obec je povinná.",
+          "searchFirst": "Nejprve spusťte vyhledávání, aby bylo možné načíst záznamy k úpravě.",
           "semaforChangeReady": "Akce (změna semaforu) připravena.",
+          "selectFinder": "Vyberte nálezce.",
+          "selectPhytochorion": "Vyberte fytochorion.",
           "selectSemafor": "Vyberte nový semafor.",
+          "selectTaxon": "Vyberte taxon.",
+          "showFailedIds": "Neúspěšné záznamy ({{count}})",
+          "showSuccessfulIds": "Úspěšně upravené záznamy ({{count}})",
           "sourceChangeReady": "Akce (změna pramene) připravena.",
-          "taxonChangeReady": "Akce (změna taxonu) připravena."
+          "taxonChangeReady": "Akce (změna taxonu) připravena.",
+          "tooManyRecords": "Filtru odpovídá {{count}} záznamů. Hromadně lze upravit maximálně {{max}} záznamů. Zpřesněte filtr."
         },
         "sections": {
           "buffer": {
@@ -302,10 +320,10 @@
             "title": "Datum nálezu"
           },
           "finder": {
-            "helper": "Poslední přidaný by měl být uveden jako první autor.",
-            "label": "Autor",
-            "placeholder": "ID nebo jméno autora",
-            "submitButton": "Přidat autora",
+            "helper": "Přidává se na začátek, tj. poslední přidaný bude uveden jako první autor.",
+            "label": "Nálezce",
+            "placeholder": "Vyberte nálezce...",
+            "submitButton": "Přidat nálezce",
             "title": "Přidání nálezce"
           },
           "locality": {
@@ -325,7 +343,7 @@
           },
           "phytochorion": {
             "label": "Nový fytochorion",
-            "placeholder": "ID nebo název",
+            "placeholder": "Vyberte fytochorion...",
             "submitButton": "Potvrdit změnu fytochorionu",
             "title": "Fytochorion"
           },
@@ -340,9 +358,8 @@
             "title": "Pozice + Buffer"
           },
           "semafor": {
-            "helper": "V původní verzi byl update semaforu pomalejší na každý záznam. Tady je připraveno jen frontend UI.",
             "label": "Nový semafor",
-            "placeholder": "- - nevybráno - -",
+            "placeholder": "Vyberte nový stav...",
             "submitButton": "Změnit semafor",
             "title": "Změna semaforu"
           },
@@ -352,9 +369,8 @@
             "title": "Pramen"
           },
           "taxon": {
-            "helper": "Před potvrzením zkontrolujte taxon, operace je hromadná.",
+            "helper": "No tak s tímhle opatrně!",
             "label": "Nový taxon",
-            "placeholder": "ID nebo název taxonu",
             "submitButton": "Změnit taxon",
             "title": "Změna taxonu"
           }
@@ -367,7 +383,7 @@
           "unreviewed": "šedá -> Nerevidovaný záznam"
         },
         "title": "Hromadné úpravy záznamů",
-        "warning": "Aplikace zatím nevolá backend endpointy. Form je připravený na stejné operace jako původní bulk edit, ale slouží jen pro přípravu hodnot. ID záznamů se berou automaticky ze zobrazených výsledků vyhledávání."
+        "warning": "Hromadné úpravy běží nad výsledkem aktuálního filtru. Změny se provádí postupně po jednotlivých záznamech. Maximálně je možné měnit naráz 1000 záznamů."
       },
       "form": {
         "excelExportTitleAdmin": "Export dat do XLSX bez uživatelského omezení.",
@@ -411,6 +427,7 @@
           "noMapSquare": "nemá pole ani kvadrant",
           "originalName": "původní jméno",
           "phytochorion": "fytochorion",
+          "pladiasId": "Pladias ID",
           "project": "původ",
           "quadrant": "mapovací pole",
           "source": "pramen",

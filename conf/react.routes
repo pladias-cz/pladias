@@ -25,6 +25,7 @@ DELETE  /importResult/validated/:id  controllers.atlas.ImportResultsController.d
 GET     /atlas/pngMap/taxon/:taxonId      controllers.atlas.PdfMapController.downloadPng(taxonId: Long)
 POST    /atlas/pngMap/taxon/:taxonId      controllers.atlas.PdfMapController.uploadPng(request: Request, taxonId: Long)
 POST    /atlas/search/page/:page/pageSize/:pageSize/getCount/:getCount  controllers.atlas.SearchController.search(request: Request, page: Integer, pageSize: Integer, getCount: Boolean)
+POST    /atlas/search/records-edit-timestamps  controllers.atlas.SearchController.searchRecordEditTimestamps(request: Request)
 GET     /atlas/search/records-with-comments/:commentsOwnerUserId  controllers.atlas.SearchController.getRecordsWithComments(request: Request, commentsOwnerUserId: Long)
 GET     /atlas/search/records-with-comments  controllers.atlas.SearchController.getRecordsWithCommentsCurrentUser(request: Request)
 

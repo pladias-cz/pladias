@@ -18,6 +18,7 @@ import service.config.IConfigService;
 import utils.MapSquareResolver;
 import utils.SqlUtils;
 
+import java.sql.Timestamp;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -37,21 +38,17 @@ public class PageSearchService implements IPageSearchService {
     public PageSearchResults search(User currentUser, SearchController.SearchForm form,
                                     int page, int pageSize, boolean getTotalCount) {
         try {
-            MapSquareResolver.SquareData squareData = getSquareData(form);
-            Set<QuadrantNew> quadrants = squareData != null ? squareData.quadrants : null;
-            Set<MapSquareNew> squares = squareData != null ? squareData.squares : null;
-
-            String whereClause = buildWhereClause(currentUser, form, quadrants, squares);
+            SearchFilterContext filterContext = buildSearchFilterContext(currentUser, form);
 
             Integer totalCount = null;
             if (getTotalCount) {
                 String totalFromClause = buildFromClause(currentUser, form, false);
-                totalCount = getTotalCountRecords(totalFromClause, whereClause);
+                totalCount = getTotalCountRecords(totalFromClause, filterContext.whereClause);
             }
 
             String fromClause = buildFromClause(currentUser, form, true);
             String orderClause = getOrderByClause(form);
-            List<Long> recordIds = getRecordIds(fromClause, whereClause, orderClause, page, pageSize);
+            List<Long> recordIds = getRecordIds(fromClause, filterContext.whereClause, orderClause, page, pageSize);
 
             PageSearchResults pageSearchResults = null;
 
@@ -66,6 +63,33 @@ public class PageSearchService implements IPageSearchService {
             logger.error("Failure during record loading.", e);
         }
         return new PageSearchResults();
+    }
+
+    @Override
+    public List<RecordIdEditTimestampPair> searchRecordEditTimestamps(User currentUser, SearchController.SearchForm form) {
+        try {
+            SearchFilterContext filterContext = buildSearchFilterContext(currentUser, form);
+            String fromClause = buildFromClause(currentUser, form, true);
+            String orderClause = getOrderByClause(form);
+
+            String query = buildSelectQuery("R.id, R.edit_timestamp", fromClause, filterContext.whereClause, orderClause, 0, 0);
+            List<SqlRow> rows = DB.sqlQuery(query).findList();
+
+            List<RecordIdEditTimestampPair> result = new ArrayList<>();
+            for (SqlRow row : rows) {
+                Long id = row.getLong("id");
+                Timestamp editTimestamp = row.getTimestamp("edit_timestamp");
+                if (id != null && editTimestamp != null) {
+                    result.add(new RecordIdEditTimestampPair(id, editTimestamp));
+                }
+            }
+
+            return result;
+        } catch (Exception e) {
+            logger.error("Failure during record edit timestamps loading.", e);
+        }
+
+        return List.of();
     }
 
     @Override
@@ -87,6 +111,14 @@ public class PageSearchService implements IPageSearchService {
         MapSquareResolver resolver = new MapSquareResolver(squareRepository);
         String[] definitions = form.quadrant.split(";");
         return resolver.resolve(definitions);
+    }
+
+    private SearchFilterContext buildSearchFilterContext(User currentUser, SearchController.SearchForm form) throws Exception {
+        MapSquareResolver.SquareData squareData = getSquareData(form);
+        Set<QuadrantNew> quadrants = squareData != null ? squareData.quadrants : null;
+        Set<MapSquareNew> squares = squareData != null ? squareData.squares : null;
+        String whereClause = buildWhereClause(currentUser, form, quadrants, squares);
+        return new SearchFilterContext(whereClause);
     }
 
     private List<Long> getRecordIds(String fromClause, String whereClause, String orderClause,
@@ -187,13 +219,15 @@ public class PageSearchService implements IPageSearchService {
 
     private String buildQuery(String fromClause, String whereClause, String orderClause,
                               boolean get_total, int limit, int offset) throws Exception {
+        String selectClause = get_total ? "COUNT(*) AS total_count" : "R.id";
+        return buildSelectQuery(selectClause, fromClause, whereClause, orderClause, limit, offset);
+    }
+
+    private String buildSelectQuery(String selectClause, String fromClause, String whereClause,
+                                    String orderClause, int limit, int offset) {
         StringBuilder queryBuilder = new StringBuilder();
 
-        if (get_total) {
-            queryBuilder.append("SELECT COUNT(*) AS total_count ");
-        } else {
-            queryBuilder.append("SELECT R.id ");
-        }
+        queryBuilder.append("SELECT ").append(selectClause).append(" ");
 
         queryBuilder.append(fromClause);
         queryBuilder.append(whereClause);
@@ -207,6 +241,14 @@ public class PageSearchService implements IPageSearchService {
         }
 
         return queryBuilder.toString();
+    }
+
+    private static class SearchFilterContext {
+        private final String whereClause;
+
+        private SearchFilterContext(String whereClause) {
+            this.whereClause = whereClause;
+        }
     }
 
     private String getOrderByClause(SearchController.SearchForm form) {
@@ -370,6 +412,13 @@ public class PageSearchService implements IPageSearchService {
             String wildcard = SqlUtils.toRegex(form.foreignId);
             whereClause.append("(")
                 .append("R.original_id like '").append(wildcard).append("'")
+                .append(") AND ");
+        }
+
+        List<Integer> pladiasIds = form.getPladiasIdValues();
+        if (!pladiasIds.isEmpty()) {
+            whereClause.append("R.id IN (")
+                .append(pladiasIds.stream().map(String::valueOf).collect(Collectors.joining(",")))
                 .append(") AND ");
         }
     }

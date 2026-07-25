@@ -90,12 +90,10 @@ public class RecordUpdateController extends ControllerBase {
             // Get the NEW timestamp after the update (record.update() was called inside editField)
             long newTimestamp = record.getLastEditTimestamp().getTime();
 
-            ObjectNode result = Json.newObject();
             ObjectNode data = Json.newObject();
             data.put(key.toLowerCase(), value);
             data.put("lastEditTimestampNum", newTimestamp);
-            result.set("data", data);
-            return ok(result);
+            return ok(JsonResult.buildSuccess(data));
         } catch (IllegalArgumentException e) {
             return badRequest(JsonResult.error(e.getMessage()));
         } catch (Exception e) {

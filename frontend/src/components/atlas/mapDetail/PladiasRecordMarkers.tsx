@@ -59,7 +59,7 @@ function PladiasRecordMarkers({ records, highlightedRecordId, onRecordHover }: P
                             {record.recordAuthorsNames && (
                                 <span>Sběratel: {record.recordAuthorsNames}<br /></span>
                             )}
-                            <a href={`/atlas/record/${record.id}`} target="_blank" rel="noopener noreferrer">
+                            <a href={`${import.meta.env.BASE_URL.replace(/\/$/, "")}/atlas/record/${record.id}`} target="_blank" rel="noopener noreferrer">
                                 Otevřít záznam
                             </a>
                         </div>

@@ -1,5 +1,4 @@
 import {Row} from "react-bootstrap";
-// @ts-ignore
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import {useTranslation} from "react-i18next";
 
@@ -13,15 +12,15 @@ export default function Datatypes() {
     return (
         <>
         <Row>
-            <p>Zakládání nových vlastností druhů, datových typů a změny v číselnících výčtových typů se provádějí ručně.
-                Tyto procesy vyřizuje Marcela Řezníčková <a href="mailto:mar.reznickova@@seznam.cz"
+            <h3>{t("trait.datatypes.title")}</h3>
+            <p>{t("trait.datatypes.text1")} <a href="mailto:mar.reznickova@@seznam.cz"
                                                             title="poslat email"><i className="bi bi-envelope fs-4 text-primary"></i>
                 </a>.
             </p>
 
             <hr/>
 
-            <p>Aktuální přehled dostupných datových typů, jejich popis a omezení prezentuje následující tabulka. </p>
+            <p>{t("trait.datatypes.text2")}</p>
 
         </Row>
         <DatatypesTable></DatatypesTable>

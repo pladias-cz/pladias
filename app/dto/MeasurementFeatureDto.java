@@ -12,6 +12,7 @@ public record MeasurementFeatureDto(
     Integer enumerate,
     Double minimum,
     Double maximum,
-    String units
+    String units,
+    String section
 ) {
 }

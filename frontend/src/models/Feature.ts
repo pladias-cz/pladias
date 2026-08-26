@@ -11,4 +11,5 @@ export interface Feature {
     minimum?: number;
     maximum?: number;
     units?: string;
+    section: string;
 }

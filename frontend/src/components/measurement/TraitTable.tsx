@@ -125,7 +125,7 @@ export default function TraitTable({feature}: Props) {
                                 {t.hasAttachment && (
                                     <>
                                         <br/>
-                                        <a href={`/traits/downloadTraitAttachment/trait/${t.id}`}>
+                                        <a href={`/measurement/trait/downloadAttachment/${t.id}`}>
                                             stáhnout přílohu
                                         </a>
                                     </>
@@ -134,7 +134,7 @@ export default function TraitTable({feature}: Props) {
                                 {t.canExport && (
                                     <>
                                         <br/>
-                                        <a href={`/exportTrait/trait/${t.id}`}>
+                                        <a href={`/measurement/trait/export/${t.id}`}>
                                             detailní export
                                         </a>
                                     </>

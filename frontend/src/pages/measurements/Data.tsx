@@ -11,7 +11,7 @@ import type {TraitDatatype} from "@/models/TraitDatatype.ts";
 export default function Data() {
     const { t } = useTranslation();
     const navigate = useNavigate();
-    usePageTitle(t("measurement.data.title"));
+    usePageTitle(t("trait.data.title"));
 
     const [groups, setGroups] = useState<FeatureGroup[]>([]);
     const [featuresByGroup, setFeaturesByGroup] =
@@ -71,7 +71,7 @@ export default function Data() {
 
     return (
         <Row>
-            <h3>{t("measurement.data.title")}</h3>
+            <h3>{t("trait.data.title")}</h3>
 
             <Accordion activeKey={activeKey}>
                 {groups.map(group => {
@@ -85,7 +85,7 @@ export default function Data() {
                                     loadFeatures(group.id);
                                 }}
                             >
-                                {t("measurement.data.section")} {group.name}
+                                {t("trait.data.section")} {group.name}
                             </Accordion.Header>
 
                             <Accordion.Body>
@@ -97,9 +97,10 @@ export default function Data() {
                                     <Table hover size="sm" className="mt-2">
                                         <thead>
                                         <tr>
-                                            <th>{t("measurement.feature.name")}</th>
-                                            <th>{t("measurement.feature.admin")}</th>
-                                            <th>{t("measurement.feature.datatype")}</th>
+                                            <th>ID</th>
+                                            <th>{t("trait.feature.name")}</th>
+                                            <th>{t("trait.feature.admin")}</th>
+                                            <th>{t("trait.datatypes.datatype")}</th>
                                         </tr>
                                         </thead>
                                         <tbody>
@@ -109,6 +110,7 @@ export default function Data() {
                                                 role="button"
                                                 onClick={() => goToDetail(f.id)}
                                             >
+                                                <td>{f.id}</td>
                                                 <td>{f.name}</td>
                                                 <td>
                                                     {f.administrator}

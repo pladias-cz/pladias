@@ -128,6 +128,7 @@ DELETE /taxon/:id                       controllers.taxon.TaxonManagerController
 POST   /taxon/moveBeforeSibling         controllers.taxon.TaxonManagerController.moveBeforeSibling(request: Request)
 
 GET   /downloads                        controllers.common.DownloadsController.getAll(request: Request)
+GET   /tempfiles/:fileId                controllers.common.TemporaryFilesProviderController.download(request: Request, fileId: Integer)
 
 GET   /measurement/datatypes                 controllers.measurement.MeasurementController.getDatatypes()
 GET   /measurement/aggregation-types         controllers.measurement.MeasurementController.getAggregationTypes()
@@ -139,6 +140,12 @@ GET   /measurement/visibility-status         controllers.measurement.Measurement
 GET   /measurement/traits-of-feature/:id     controllers.measurement.MeasurementController.getTraitsOfFeature(request: Request, id: Integer)
 GET   /measurement/backups                   controllers.measurement.MeasurementController.getTraitExportSnapshots()
 GET   /measurement/trait-entry-type          controllers.measurement.MeasurementController.getTraitDetailsEntryType()
+
+GET   /measurement/trait/downloadAttachment/:traitId  controllers.measurement.TraitsController.downloadAttachment(traitId: Integer)
+GET   /measurement/trait/export/:traitId         controllers.measurement.TraitExportController.exportTrait(request: Request, traitId: Integer)
+DELETE /measurement/trait/:traitId              controllers.measurement.TraitsController.delete(request: Request, traitId: Integer)
+POST   /measurement/trait       controllers.measurement.TraitsController.importResult(request: Request)
+
 
 GET   /bibliography/journals                 controllers.bibliography.BibliographyController.getJournals()
 GET   /bibliography/searchReact              controllers.bibliography.BibliographyController.searchReact(request: Request)

@@ -53,8 +53,8 @@ export default function AggregationTable() {
         <Table striped bordered hover responsive>
             <thead>
             <tr>
-                <th>{t("measurement.traitAggregation.key")}</th>
-                <th>{t("measurement.traitAggregation.description")}</th>
+                <th>{t("trait.aggregationTypes.key")}</th>
+                <th>{t("trait.aggregationTypes.description")}</th>
             </tr>
             </thead>
             <tbody>

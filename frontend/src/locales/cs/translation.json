@@ -913,16 +913,34 @@
       "paragraph1": "Komplexní export vlastností druhů umožňuje exportovat originální, zděděné, agregované, nebo sloučené hodnoty. <b>Originální hodnoty</b> jsou ty, které měly jednotlivé taxony pro danou vlastnost uvedeny ve výchozím datovém souboru. Tyto originální hodnoty však nejsou uvedeny pro všechny taxony. Existují případy, kdy jsou hodnoty uvedeny např. pro poddruh, ale nikoliv pro nadřazený druh. V takových případech je možné použít zděděné nebo agregované hodnoty. Proces <b>dědění</b> probíhá v taxonomickém stromu směrem dolů a hodnoty se přenášejí pouze na tzv. jedináčky, tj. taxony, které jsou jediné v rámci nadřazeného taxonu. U takového taxonu se pak ve zděděných hodnotách objeví všechny údaje, které lze nalézt v originálních hodnotách při pohledu nahoru ke kořeni stromu do takové vzdálenosti, dokud jsou rodiče rovněž jedináčci. Proces <b>agregace</b> naopak probíhá v taxonomickém stromu směrem nahoru. Existuje několik způsobů, jak se hodnoty uvedené u taxonů agregují. Přesně jsou tyto způsoby agregace popsány u jednotlivých typů agregace. Do exportu lze zahrnout originální, zděděné i agregované hodnoty najednou a exportovat je jako tzv. <b>sloučené hodnoty</b>. V tom případě mají originální hodnoty přednost před agregovanými a agregované hodnoty mají přednost před zděděnými. Pokud při exportu nezaškrtneme žádné políčko z nabízených hodnot, tak se automaticky exportují originální, zděděné a agregované hodnoty.",
       "paragraph2": "Při exportu je dále možné zvolit seznam taxonů, pro které chceme hodnoty exportovat. Pokud žádné taxony nezvolíme, exportují se automaticky všechny. Jako poslední možnost si uživatel může vybrat taxonomické ranky, které chce do exportu zahrnout. Pokud nezaškrtne žádné, automaticky se exportují všechny.",
       "paragraph3": "Přesný způsob exportu jednotlivých hodnot (originálních, zděděných, agregovaných) je dán typem agregace nastaveným pro každou vlastnost. Seznam jednotlivých typů agregace je uveden níže.",
-      "title": "Typy agregace"
+      "title": "Typy agregace",
+      "key": "kód",
+      "description": "popis"
     },
     "backup": {
       "title": "Záloha traitů"
     },
+    "feature": {
+      "name": "název",
+      "admin": "administrátor"
+    },
     "data": {
-      "title": "Data"
+      "title": "Data",
+      "section": "sekce"
     },
     "datatypes": {
-      "title": "Datové typy"
+      "datatype": "datový typ",
+      "title": "Základní informace k importům",
+      "text1": "Zakládání nových vlastností druhů, datových typů a změny v číselnících výčtových typů se provádějí ručně. Tyto procesy vyřizuje Marcela Řezníčková",
+      "text2": "Aktuální přehled dostupných datových typů, jejich popis a omezení prezentuje následující tabulka. ",
+      "name": "Jméno",
+      "nameCz": "Jméno CZ",
+      "description": "popis",
+      "multiplicity": "multiplicita",
+      "dominance": "dominance",
+      "frequency": "frekvence",
+      "comment": "komentář",
+      "immeasurability": "neměřitelnost"
     },
     "export": {
       "title": "Komplexní export vlastností druhů"

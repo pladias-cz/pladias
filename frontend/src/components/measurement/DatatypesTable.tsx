@@ -61,14 +61,14 @@ export default function DatatypesTable() {
         <Table striped bordered hover responsive>
             <thead>
             <tr>
-                <th>{t("measurement.traitDatatypes.name")}</th>
-                <th>{t("measurement.traitDatatypes.nameCz")}</th>
-                <th>{t("measurement.traitDatatypes.description")}</th>
-                <th>{t("measurement.traitDatatypes.multiplicity")}</th>
-                <th>{t("measurement.traitDatatypes.dominance")}</th>
-                <th>{t("measurement.traitDatatypes.frequency")}</th>
-                <th>{t("measurement.traitDatatypes.comment")}</th>
-                <th>{t("measurement.traitDatatypes.immeasurability")}</th>
+                <th>{t("trait.datatypes.name")}</th>
+                <th>{t("trait.datatypes.nameCz")}</th>
+                <th>{t("trait.datatypes.description")}</th>
+                <th>{t("trait.datatypes.multiplicity")}</th>
+                <th>{t("trait.datatypes.dominance")}</th>
+                <th>{t("trait.datatypes.frequency")}</th>
+                <th>{t("trait.datatypes.comment")}</th>
+                <th>{t("trait.datatypes.immeasurability")}</th>
             </tr>
             </thead>
             <tbody>

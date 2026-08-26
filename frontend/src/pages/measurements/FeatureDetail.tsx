@@ -1,6 +1,6 @@
 import {Col, Row} from "react-bootstrap";
 import {usePageTitle} from "@/hooks/usePageTitle";
-import {useParams, NavLink} from "react-router-dom";
+import {NavLink, useParams} from "react-router-dom";
 import type {Feature} from "@/models/Feature.ts";
 import {useEffect, useState} from "react";
 import {useTranslation} from "react-i18next";
@@ -21,9 +21,9 @@ export default function FeatureDetail() {
         if (!f) return;
 
         if (f.success) {
-            setFlash({ type: "success", message: f.success });
+            setFlash({type: "success", message: f.success});
         } else if (f.error) {
-            setFlash({ type: "danger", message: f.error });
+            setFlash({type: "danger", message: f.error});
         }
     }, []);
 
@@ -57,12 +57,12 @@ export default function FeatureDetail() {
     return (
         <>
             <Row>
-                <h1>
-                    {selectedFeature.name} <small>(
-                    <NavLink to="/measurements/data">{t("common.back")}</NavLink>)
-                    </small>
-                </h1>
-                <TraitTable feature={selectedFeature}/>
+                <Col>
+                    <h3>
+                        <NavLink to="/measurements/data">{selectedFeature.section}</NavLink> → {selectedFeature.name}
+                    </h3>
+                    <TraitTable feature={selectedFeature}/>
+                </Col>
             </Row>
 
             <Row>
@@ -72,8 +72,9 @@ export default function FeatureDetail() {
                             {flash.message}
                         </div>
                     )}
-                    <form method="post" action="/traits/importResult" encType="multipart/form-data" className="form-horizontal">
-                    <TraitUpload feature={selectedFeature}/>
+                    <form method="post" action="/measurement/trait" encType="multipart/form-data"
+                          className="form-horizontal">
+                        <TraitUpload feature={selectedFeature}/>
                     </form>
 
                 </Col>

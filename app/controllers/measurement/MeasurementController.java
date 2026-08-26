@@ -140,6 +140,7 @@ public class MeasurementController extends ControllerBase {
 
     public Result getFeaturesOfGroup(Integer id) {
         List<MeasurementFeatureDto> dtos = Feature.find().query()
+            .fetch("section")
             .where()
             .eq("section.id", id)
             .orderBy("succession")
@@ -161,11 +162,12 @@ public class MeasurementController extends ControllerBase {
                 t.getMaximum(),
                 t.getUnit() != null
                     ? t.getUnit().getNameCz()
-                    : null
-
+                    : null,
+                t.getSection() != null
+                    ? t.getSection().getNameCz()
+                    : ""
             ))
-            //.toList(); //java 16+
-            .collect(Collectors.toList());
+            .toList();
 
         return ok(JsonResult.buildSuccess(dtos));
 
@@ -193,6 +195,9 @@ public class MeasurementController extends ControllerBase {
             t.getMaximum(),
             t.getUnit() != null
                 ? t.getUnit().getNameCz()
+                : null,
+            t.getSection() != null
+                ? t.getSection().getNameCz()
                 : null
         );
 

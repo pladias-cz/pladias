@@ -36,14 +36,6 @@ public class MapSquareNew extends Model {
      * @return Finder připojený k aktuální databázi
      */
     public static Finder<Integer, MapSquareNew> find() {
-        // DEBUG: Ověření že se opravdu použije replica když je nastavena
-        String currentDb = DatabaseContext.getCurrentDatabase();
-        System.out.println("### MapSquareNew.find() - aktuální DB kontext: " + currentDb);
-        if ("replica".equals(currentDb)) {
-            System.out.println("### ✓ PRÁVĚ BĚŽÍ NA REPLICE!");
-        } else {
-            System.out.println("### ℹ BĚŽÍ NA MASTERU (default)");
-        }
         return new Finder<>(MapSquareNew.class);
     }
 

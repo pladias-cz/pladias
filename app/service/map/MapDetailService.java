@@ -429,7 +429,7 @@ public class MapDetailService {
                 "   FROM gbif.records g" +
                 " LEFT JOIN geodata.quadrants_full q ON ST_Contains(q.geom_wgs, g.coords)" +
                 " LEFT JOIN geodata.squares_full s ON s.id = q.square_id" +
-                " INNER JOIN gbif.taxa t ON t.taxon_key = g.taxon_key" +
+                " INNER JOIN gbif.taxa t ON t.col_id = g.taxon_col_id" +
                 " WHERE t.pladias_taxon_id = :taxonId" +
                 "  AND " + institutionFilter +
               "AND g.coords && ST_MakeEnvelope(" +
@@ -484,7 +484,7 @@ public class MapDetailService {
             "FROM gbif.records g " +
             "LEFT JOIN geodata.quadrants_full q ON ST_Contains(q.geom_wgs, g.coords) " +
             "LEFT JOIN geodata.squares_full s ON s.id = q.square_id " +
-            "INNER JOIN gbif.taxa t ON t.taxon_key = g.taxon_key " +
+            "INNER JOIN gbif.taxa t ON t.col_id = g.taxon_col_id " +
             "WHERE t.pladias_taxon_id = :taxonId " +
             "  AND " + institutionFilter +
             "  AND s.code = :squareCode " +

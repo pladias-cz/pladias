@@ -260,7 +260,7 @@ public record RecordPladiasDto(
         // Get comments information
         List<CommentDto> comments = record.getComments() != null
             ? record.getComments().stream()
-            .filter(c -> !c.isDeleted())
+            .filter(c -> !c.isDeleted() && !c.isResolved())
             .map(c -> new CommentDto(
                 c.getId(),
                 c.getAuthor() != null ? c.getAuthor().getId() : null,
@@ -268,7 +268,8 @@ public record RecordPladiasDto(
                 c.getMessage(),
                 c.getCreateTimestamp(),
                 c.isResolved(),
-                c.isDeleted()
+                c.isDeleted(),
+                currentUser != null && c.isLinkedForUser(currentUser.getId())
             ))
             .collect(Collectors.toList())
             : List.of();
@@ -478,7 +479,8 @@ public record RecordPladiasDto(
         String message,
         Timestamp createTimestamp,
         Boolean resolved,
-        Boolean deleted
+        Boolean deleted,
+        Boolean linkedForCurrentUser
     ) {
     }
 }

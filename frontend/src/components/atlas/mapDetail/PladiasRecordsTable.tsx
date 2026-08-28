@@ -10,6 +10,8 @@ import {ValidationStatusCheckboxes} from './ValidationStatusCheckboxes';
 import {OriginalityStatusIcons} from './OriginalityStatusIcons';
 import {IncludeInMapCheckbox} from './IncludeInMapCheckbox';
 import {useInstanceConfig} from '@/context/InstanceConfigContext';
+import {useUser} from '@/context/UserContext';
+import {markCommentAsRead} from '../record/recordService';
 
 interface PladiasRecordsTableProps {
     records: RecordPladias[];
@@ -20,6 +22,7 @@ interface PladiasRecordsTableProps {
     tableName?: string;
     onRecordUpdated?: (record: RecordPladias) => void;
     showTaxonName?: boolean;
+    showExpandAllButton?: boolean;
 }
 
 // Project ID for atlas excerptions (herbarium quality checkbox visibility)
@@ -53,31 +56,87 @@ export function PladiasRecordsTable({
                                         onRecordCenter,
                                         registerScrollFn,
                                         onRecordUpdated,
-                                        showTaxonName = false
+                                        showTaxonName = false,
+                                        showExpandAllButton = false
                                     }: PladiasRecordsTableProps) {
     const {t} = useTranslation();
+    const user = useUser();
     const config = useInstanceConfig() as {isVascular?: boolean};
     const isVascular = Boolean(config.isVascular);
-    const [expandedRecordId, setExpandedRecordId] = useState<number | null>(null);
+    const [expandedRecordIds, setExpandedRecordIds] = useState<Set<number>>(new Set());
+    const [readCommentIds, setReadCommentIds] = useState<Set<number>>(new Set());
+    const [markingCommentIds, setMarkingCommentIds] = useState<Set<number>>(new Set());
     const [commentModalRecordId, setCommentModalRecordId] = useState<number | null>(null);
     const rowRefs = useRef<{ [key: number]: HTMLTableRowElement | null }>({});
+    const isAllExpanded = records.length > 0 && expandedRecordIds.size === records.length;
 
     if (records.length === 0) {
         return null;
     }
+
+    useEffect(() => {
+        const validRecordIds = new Set(records.map((record) => record.id));
+        setExpandedRecordIds((prev) => {
+            const next = new Set(Array.from(prev).filter((id) => validRecordIds.has(id)));
+            return next.size === prev.size ? prev : next;
+        });
+    }, [records]);
 
     const toggleExpand = (recordId: number) => {
         const record = records.find(r => r.id === recordId);
         if (record && onRecordCenter) {
             onRecordCenter(record);
         }
-        setExpandedRecordId(expandedRecordId === recordId ? null : recordId);
+
+        setExpandedRecordIds((prev) => {
+            const next = new Set(prev);
+            if (next.has(recordId)) {
+                next.delete(recordId);
+            } else {
+                next.add(recordId);
+            }
+            return next;
+        });
 
         // Scroll to the row when explicitly clicking to expand
         if (rowRefs.current[recordId]) {
             rowRefs.current[recordId]?.scrollIntoView({
                 behavior: 'smooth',
                 block: 'center',
+            });
+        }
+    };
+
+    const toggleExpandAll = () => {
+        if (isAllExpanded) {
+            setExpandedRecordIds(new Set());
+            return;
+        }
+
+        setExpandedRecordIds(new Set(records.map((record) => record.id)));
+    };
+
+    const handleMarkCommentAsRead = async (commentId: number) => {
+        setMarkingCommentIds((prev) => {
+            const next = new Set(prev);
+            next.add(commentId);
+            return next;
+        });
+
+        try {
+            await markCommentAsRead(commentId, user.id);
+            setReadCommentIds((prev) => {
+                const next = new Set(prev);
+                next.add(commentId);
+                return next;
+            });
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setMarkingCommentIds((prev) => {
+                const next = new Set(prev);
+                next.delete(commentId);
+                return next;
             });
         }
     };
@@ -99,12 +158,19 @@ export function PladiasRecordsTable({
 
     return (
         <>
+            {showExpandAllButton && (
+                <div className="d-flex justify-content-end mb-2">
+                    <Button variant="outline-secondary" size="sm" onClick={toggleExpandAll}>
+                        {isAllExpanded ? t("atlas.mapDetail.collapseAll") : t("atlas.mapDetail.expandAll")}
+                    </Button>
+                </div>
+            )}
             <Table striped bordered hover size="sm">
                 <thead>
                 <tr>
-                    <th title={t("atlas.mapDetail.square")}>Kv.</th>
+                    <th title={t("atlas.mapDetail.square")}>{t("atlas.mapDetail.squareAbbrev")}</th>
                     {isVascular && (
-                        <th title={t("atlas.mapDetail.phytochorion")}>Fyt.</th>
+                        <th title={t("atlas.mapDetail.phytochorion")}>{t("atlas.mapDetail.phytochorionAbbrev")}</th>
                     )}
                     <th>{t("atlas.mapDetail.locality")}</th>
                     <th>{t("atlas.mapDetail.collectors")}</th>
@@ -116,7 +182,7 @@ export function PladiasRecordsTable({
                 <tbody>
                 {records.map((record) => {
                     const isHighlighted = highlightedRecordId === record.id;
-                    const isExpanded = expandedRecordId === record.id;
+                    const isExpanded = expandedRecordIds.has(record.id);
                     return (
                         <>
                             <tr
@@ -153,7 +219,7 @@ export function PladiasRecordsTable({
                                              {isVascular
                                                  ? (record.nearestTownText || record.nearestTownName || '')
                                                  : (record.nearestTownName || '')}
-                                             {record.districtName && `, okres ${record.districtName}`}
+                                             {record.districtName && t("atlas.mapDetail.districtInline", {district: record.districtName})}
                                          </b>
                                          {record.locality && (<br/>)}
                                          {record.locality && (
@@ -165,19 +231,19 @@ export function PladiasRecordsTable({
                                          )}
                                          {record.source && (
                                              <span><br/>
-                                             <b>pramen: </b>
+                                             <b>{t("atlas.mapDetail.sourceLower")}: </b>
                                                  {record.source}
                                                  <br/></span>
                                          )}
                                          {!isVascular && record.substrate && (
                                              <span><br/>
-                                             <b>Substrát:</b> {record.substrate}<br/></span>
+                                             <b>{t("atlas.mapDetail.substrate")}:</b> {record.substrate}<br/></span>
                                          )}
 
                                      </button>
                                      {record.herbariums.length > 0 && (
                                         <span><br/>
-        <b>herbář:</b>{" "}
+       <b>{t("atlas.mapDetail.herbariumLower")}:</b>{" "}
                                             {record.herbariums.map((herbarium, index) => (
                                                 <React.Fragment key={herbarium.id}>
                                                     {index > 0 && ", "}
@@ -206,13 +272,13 @@ export function PladiasRecordsTable({
                                     {(record.unresolvedCommentsCount ?? 0) > 0 && (
                                         <p style={{fontSize: '80%'}}>
                                             <span className="bi bi-paperclip" aria-hidden="true"></span>
-                                            {" "}komentovaný
+                                            {" "}{t("atlas.mapDetail.commented")}
                                         </p>
                                     )}
                                     {record.hasHistory && (
                                         <p style={{fontSize: '80%'}}>
                                             <span className="bi bi-pencil" aria-hidden="true"></span>
-                                            {" "}editovaný
+                                            {" "}{t("atlas.mapDetail.edited")}
                                         </p>
                                     )}
                                 </td>
@@ -224,7 +290,7 @@ export function PladiasRecordsTable({
                                 <td className="align-text-top" style={{fontSize: '80%'}}>
                                     {record.projectName || '-'}<br/>
                                     -- <br/>
-                                    importoval <b>{record.batchAuthorName}</b>
+                                    {t("atlas.mapDetail.importedBy")} <b>{record.batchAuthorName}</b>
 
                                 </td>
                                 <td className="align-text-top">
@@ -266,19 +332,18 @@ export function PladiasRecordsTable({
                                         <div className="row">
                                             <div className="col-md-6">
                                                 <div>
-                                                    <b>původní jméno:</b>{' '}
+                                                    <b>{t("atlas.mapDetail.originalName")}:</b>{' '}
                                                     {record.taxonOriginal}
                                                 </div>
-                                                <div><b>lokalita:</b> {record.locality || ''}</div>
+                                                <div><b>{t("atlas.mapDetail.localityLower")}:</b> {record.locality || ''}</div>
                                                 {isVascular && (
-                                                    <div><b>nejbližší
-                                                        obec:</b> {record.nearestTownText || record.nearestTownName || '-'}
-                                                        {record.districtName && `, okres ${record.districtName}`}
+                                                    <div><b>{t("atlas.mapDetail.nearestTownLower")}:</b> {record.nearestTownText || record.nearestTownName || '-'}
+                                                        {record.districtName && t("atlas.mapDetail.districtInline", {district: record.districtName})}
                                                     </div>
                                                 )}
                                                 {record.latitude && record.longitude && (
                                                     <div>
-                                                        <b>GPS: </b>
+                                                        <b>{t("atlas.mapDetail.gps")}: </b>
                                                         <a
                                                             href={`http://mapy.cz/turisticka?x=${record.longitude}&y=${record.latitude}&z=16&l=0&source=coor&id=${record.longitude}%2C${record.latitude}`}
                                                             target="_blank"
@@ -291,13 +356,13 @@ export function PladiasRecordsTable({
                                                         )}
                                                         <br/>
                                                         {record.gpsPrecision && (
-                                                            <><b>polohová přesnost:</b> {record.gpsPrecision} m</>
+                                                            <><b>{t("atlas.mapDetail.gpsPrecision")}:</b> {record.gpsPrecision} m</>
                                                         )}
                                                     </div>
                                                 )}
                                                 {(record.altitudeMin || record.altitudeMax) && (
                                                     <div>
-                                                        <b>nadmořská výška: </b>
+                                                        <b>{t("atlas.mapDetail.altitude")}:</b>
                                                         {record.altitudeMin === record.altitudeMax
                                                             ? `${record.altitudeMax} m`
                                                             : `${record.altitudeMin} - ${record.altitudeMax} m`}
@@ -307,7 +372,7 @@ export function PladiasRecordsTable({
                                             <div className="col-md-6">
                                                 {(record.environment || record.remarkExcerption || record.remarkDoubt || record.remarkOther) && (
                                                     <div>
-                                                        <b>ostatní poznámky:</b>
+                                                        <b>{t("atlas.mapDetail.otherNotes")}:</b>
                                                         {record.environment && <><br/>{record.environment}</>}
                                                         {record.remarkExcerption && <><br/>{record.remarkExcerption}</>}
                                                         {record.remarkDoubt && <><br/>{record.remarkDoubt}</>}
@@ -324,7 +389,7 @@ export function PladiasRecordsTable({
                                                     href={`${import.meta.env.BASE_URL.replace(/\/$/, "")}/atlas/record/${record.id}`}
                                                     style={{padding: 0, textDecoration: 'none'}}
                                                 >
-                                                    editovat záznam/zobrazit detail
+                                                    {t("atlas.mapDetail.editRecordShowDetail")}
                                                 </Button>
                                                 {' | '}
                                                 <Button
@@ -333,7 +398,7 @@ export function PladiasRecordsTable({
                                                     onClick={() => setCommentModalRecordId(record.id)}
                                                     style={{padding: 0, textDecoration: 'none'}}
                                                 >
-                                                    přidat komentář
+                                                    {t("atlas.mapDetail.addComment")}
                                                 </Button>
                                             </div>
                                         </div>
@@ -341,7 +406,7 @@ export function PladiasRecordsTable({
                                             <div className="col-md-6">
                                                 {record.comments && record.comments.length > 0 && (
                                                     <div>
-                                                        <b>Komentáře:</b>
+                                                        <b>{t("atlas.mapDetail.comments")}:</b>
                                                         {record.comments.map((comment) => (
                                                             <div key={comment.id} className="comment"
                                                                  style={{marginTop: '5px'}}>
@@ -349,6 +414,19 @@ export function PladiasRecordsTable({
                                                                 <span
                                                                     className="comment-author">{comment.authorName}</span>
                                                                     <small> {comment.createTimestamp}</small>:
+                                                                    {comment.linkedForCurrentUser && !readCommentIds.has(comment.id) && (
+                                                                        <Button
+                                                                            variant="outline-secondary"
+                                                                            size="sm"
+                                                                            style={{padding: '0 4px', marginLeft: '6px', lineHeight: 1}}
+                                                                            aria-label={t("atlas.mapDetail.markCommentAsRead", {defaultValue: "Označit komentář jako přečtený"})}
+                                                                            title={t("atlas.mapDetail.markCommentAsRead", {defaultValue: "Označit komentář jako přečtený"})}
+                                                                            onClick={() => handleMarkCommentAsRead(comment.id)}
+                                                                            disabled={markingCommentIds.has(comment.id)}
+                                                                        >
+                                                                            <span className="bi bi-eye" aria-hidden="true"></span>
+                                                                        </Button>
+                                                                    )}
                                                                 </p>
                                                                 <p style={{margin: '2px 0 5px 10px'}}>{comment.message}</p>
                                                             </div>
@@ -360,9 +438,9 @@ export function PladiasRecordsTable({
                                     </td>
                                     <td colSpan={isVascular ? 2 : 1}>
 
-                                        <small>ID záznamu: {record.id}</small>
+                                        <small>{t("atlas.mapDetail.recordIdLabel")}: {record.id}</small>
                                         {record.originalId && (
-                                            <><br/><small>Externí ID: {record.originalId}</small></>
+                                            <><br/><small>{t("atlas.mapDetail.externalIdLabel")}: {record.originalId}</small></>
                                         )}
                                         {/* Include in Map - conditionally rendered based on validation status */}
                                         {record.canEdit ? (
@@ -371,19 +449,19 @@ export function PladiasRecordsTable({
                                                 if (visibility.showIncludeInMap) {
                                                     return <IncludeInMapCheckbox record={record} onRecordUpdated={onRecordUpdated} />;
                                                 }
-                                                return <><br/><small>Zahrnut do mapy: {record.includedInMap ? 'ANO' : 'NE'}</small></>;
+                                                return <><br/><small>{t("atlas.mapDetail.includedInMapLabel")}: {record.includedInMap ? t("common.yes") : t("common.no")}</small></>;
                                             })()
                                         ) : (
-                                            <><br/><small>Zahrnut do mapy: {record.includedInMap ? 'ANO' : 'NE'}</small></>
+                                            <><br/><small>{t("atlas.mapDetail.includedInMapLabel")}: {record.includedInMap ? t("common.yes") : t("common.no")}</small></>
                                         )}
                                         <br/>
 
                                         {/* Herbarium Quality display - always show the text, but checkbox is conditional */}
-                                        <small>Revidovaný herbář: {record.herbariumQuality ? 'ANO' : 'NE'}</small>
+                                        <small>{t("atlas.mapDetail.revisedHerbariumLabel")}: {record.herbariumQuality ? t("common.yes") : t("common.no")}</small>
                                         <br/>
 
                                          {/* Originality Status - conditionally rendered based on validation status */}
-                                         <small>Původní výskyt: </small>
+                                         <small>{t("atlas.mapDetail.originalOccurrenceLabel")}: </small>
                                          {record.canEdit ? (
                                              (() => {
                                                  const visibility = getVisibilityByStatus(record);

@@ -3,14 +3,16 @@ package controllers.atlas;
 import controllers.ControllerBase;
 import controllers.security.Authorized;
 import dto.atlas.RecordCommentDto;
+import io.ebean.DB;
+import io.ebean.SqlUpdate;
+import models.*;
 import models.Record;
-import models.RecordComment;
-import models.User;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.mvc.Security;
 import utils.JsonResult;
 import utils.SessionUtils;
+import utils.UserUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -185,4 +187,50 @@ public class RecordCommentController extends ControllerBase {
             return ok(JsonResult.error(e.getMessage()));
         }
     }
+
+    public  Result deleteUserCommentAssociation(Http.Request request, Long commentId, Long boundUserId)
+    {
+        User currentUser = SessionUtils.getCurrentUser(request.session());
+        User linkedUser = User.find().byId(boundUserId);
+
+
+        if (currentUser == null || linkedUser == null)
+        {
+            return notFound(JsonResult.error("User not found or not logged in"));
+        }
+
+        User masterAdmin = UserUtils.getMasterAdmin();
+        if (!masterAdmin.equals(currentUser) && !currentUser.equals(linkedUser))
+        {
+            return unauthorized(JsonResult.error("User not authorized to delete this association"));
+        }
+
+
+        RecordComment comment = RecordComment.find().byId(commentId);
+        if (comment == null)
+        {
+            return notFound(JsonResult.error("Comment not found"));
+        }
+
+        String query = String.format(
+            "DELETE from atlas.users_comments WHERE users_id=%d AND comments_id=%d;",
+            linkedUser.getId(), comment.getId());
+        SqlUpdate update = DB.sqlUpdate(query);
+
+        try {
+            update.execute();
+
+            RecordHistory recHistory = RecordHistory.build(
+                comment.getRecord().getId(), currentUser, RecordChangeType.COMMENT,
+                "marked as read", "", "", comment.getId());
+            recHistory.save();
+
+            return ok(JsonResult.buildSuccess());
+        }
+        catch (Exception e)
+        {
+            return ok(JsonResult.error(e.getMessage()));
+        }
+    }
+
 }

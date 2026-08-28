@@ -42,7 +42,12 @@ export default function NewComments() {
     return (
         <Row className="g-3">
             <div className="d-flex justify-content-between align-items-center">
-                <h3 className="mb-0">{t("atlas.newComments.title")}</h3>
+                <div>
+                    <h3 className="mb-0">{t("atlas.newComments.title")}</h3>
+                    {!isLoading && !error && records.length > 0 && (
+                        <small className="text-muted">{t("atlas.newComments.recordsCount", {count: records.length})}</small>
+                    )}
+                </div>
                 {isLoading && <span className="text-muted">{t("common.loading")}</span>}
             </div>
 
@@ -52,7 +57,7 @@ export default function NewComments() {
                 <div className="text-muted">{t("atlas.newComments.noRecords")}</div>
             )}
 
-            {records.length > 0 && <PladiasRecordsTable records={records} showTaxonName={true} />}
+            {records.length > 0 && <PladiasRecordsTable records={records} showTaxonName={true} showExpandAllButton={true} />}
         </Row>
     );
 }

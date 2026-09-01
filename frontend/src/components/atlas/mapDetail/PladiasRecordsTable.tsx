@@ -409,7 +409,7 @@ export function PladiasRecordsTable({
                                                     variant="link"
                                                     size="sm"
                                                     as="a"
-                                                    href={`${import.meta.env.BASE_URL.replace(/\/$/, "")}/atlas/record/${record.id}`}
+                                                    href={`/atlas/record/${record.id}`}
                                                     style={{padding: 0, textDecoration: 'none'}}
                                                 >
                                                     {t("atlas.mapDetail.editRecordShowDetail")}

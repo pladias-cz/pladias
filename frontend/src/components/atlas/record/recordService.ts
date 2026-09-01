@@ -191,6 +191,31 @@ export async function deleteComment(commentId: number): Promise<void> {
     }
 }
 
+/**
+ * Remove comment association for a specific user (mark comment as read)
+ * @param commentId - The comment ID
+ * @param boundUserId - The linked user ID
+ * @returns Promise
+ */
+export async function markCommentAsRead(commentId: number, boundUserId: number): Promise<void> {
+    const response = await fetch(`/api/react/atlas/record/comment-assoc/${commentId}/linked-user/${boundUserId}`, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    });
+
+    if (!response.ok) {
+        const result = await response.json();
+        throw new Error(result.error || `Failed to mark comment as read: ${response.statusText}`);
+    }
+
+    const result = await response.json();
+    if (!result.success) {
+        throw new Error(result.error || 'Failed to mark comment as read');
+    }
+}
+
 
 /**
  * Update a record field

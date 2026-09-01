@@ -66,6 +66,7 @@ export interface RecordPladias {
         resolvedByName: string | null;
         resolvedTimestamp: string | null;
         deleted: boolean | null;
+        linkedForCurrentUser: boolean | null;
     }>;
     herbariums: Array<{
         id: number;

@@ -12,6 +12,7 @@ POST /atlas/record/comment               controllers.atlas.RecordCommentControll
 PUT /atlas/record/comment/:commentId     controllers.atlas.RecordCommentController.updateComment(request: Request, commentId: Long)
 DELETE /atlas/record/comment/:commentId  controllers.atlas.RecordCommentController.deleteComment(request: Request, commentId: Long)
 POST /atlas/record/comment/:commentId/resolve  controllers.atlas.RecordCommentController.resolveComment(request: Request, commentId: Long)
+DELETE /atlas/record/comment-assoc/:commentId/linked-user/:boundUserId controllers.atlas.RecordCommentController.deleteUserCommentAssociation(request: Request, commentId: Long, boundUserId: Long)
 
 POST    /import/validate              controllers.atlas.ImportController.validateExcel(request: Request)
 POST    /import/upload                controllers.atlas.ImportController.uploadExcel(request: Request)

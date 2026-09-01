@@ -27,6 +27,7 @@ interface PladiasRecordsTableProps {
 
 // Project ID for atlas excerptions (herbarium quality checkbox visibility)
 const ATLAS_EXCERPTIONS_PROJECT_ID = 14;
+const NDOP_PROJECT_ID = 9;
 
 // Helper function to determine visibility of UI elements based on validation status
 // Matches legacy JS behavior from atlas_detailed_map.js
@@ -195,7 +196,16 @@ export function PladiasRecordsTable({
                                 onMouseLeave={() => onRecordHover?.(null)}
                             >
                                  <td className="align-text-top">
-                                     {record.computedQuadrantCode || '-'}
+                                     {record.computedSquareCode && record.taxonId ? (
+                                         <a
+                                             href={`/atlas/mapDetail/${record.taxonId}/${record.computedSquareCode}`}
+                                             className="text-decoration-none"
+                                         >
+                                             {record.computedSquareCode}
+                                         </a>
+                                     ) : (
+                                         record.computedSquareCode || '-'
+                                     )}
                                  </td>
                                  {isVascular && (
                                      <td className="align-text-top"
@@ -288,7 +298,20 @@ export function PladiasRecordsTable({
                                     )}
                                 </td>
                                 <td className="align-text-top" style={{fontSize: '80%'}}>
-                                    {record.projectName || '-'}<br/>
+                                    {record.projectName || '-'}
+                                    {record.projectId === NDOP_PROJECT_ID && record.originalId && (
+                                        <>
+                                            <br/>
+                                            <a
+                                                href={`http://portal.nature.cz/nd/find.php?akce=view&akce2=stopValidaci&karta_id=${record.originalId}`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                            >
+                                                přímý odkaz
+                                            </a>
+                                        </>
+                                    )}
+                                    <br/>
                                     -- <br/>
                                     {t("atlas.mapDetail.importedBy")} <b>{record.batchAuthorName}</b>
 

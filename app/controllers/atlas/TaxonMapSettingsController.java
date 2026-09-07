@@ -27,6 +27,13 @@ import service.taxon.ITaxonService;
 import service.taxonmapsettings.TaxonMapSettingsParentUpdateService;
 import utils.JsonResult;
 import utils.SessionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import java.util.Set;
+import comparators.TaxonLatNameComparator;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Collections;
 
 import javax.inject.Inject;
 import java.util.HashMap;
@@ -60,6 +67,9 @@ public class TaxonMapSettingsController extends ControllerBase {
 
     @Inject
     private IConfigService configService;
+
+    private final Logger logger = LoggerFactory.getLogger(TaxonMapSettingsController.class);
+
 
     public Result updateMapSettings(Http.Request request) {
         try {
@@ -300,7 +310,7 @@ public class TaxonMapSettingsController extends ControllerBase {
                 "JOIN public.taxons_clear t ON t.id = ms.taxon_id " +
                 "LEFT JOIN atlas.taxon_mapsettings pms ON ms.superior_taxon = pms.taxon_id " +
                 "LEFT JOIN public.taxons_clear pt ON pms.taxon_id = pt.id " +
-                "WHERE 1=1 " + whereClause + " " +
+                "WHERE  1=1 " + whereClause + " " +
                 "ORDER BY t.name_lat ASC NULLS LAST " +
                 "LIMIT ? OFFSET ?";
 
@@ -437,11 +447,45 @@ public class TaxonMapSettingsController extends ControllerBase {
      * @return JSON response with taxa and their map settings
      */
     public Result getTaxaForUser(Http.Request request) {
+
+
         try {
             // Get current user
             User currentUser = SessionUtils.getCurrentUser(request.session());
             if (currentUser == null) {
                 return unauthorized(JsonResult.error("Unauthorized access - user not logged in"));
+            }
+
+            Set<Taxon> taxons = currentUser.getSupervisedTaxons();
+            List<Taxon> inheritedSupervisedTaxonList = new ArrayList<Taxon>();
+
+                 for (Taxon t : taxons)
+                 {
+                     inheritedSupervisedTaxonList.addAll(taxonService.getSubtree(t));
+                 }
+
+             Collections.sort(inheritedSupervisedTaxonList, new TaxonLatNameComparator());
+
+                List<Long> inheritedSupervisedTaxonIds = inheritedSupervisedTaxonList.stream()
+                    .map(Taxon::getId)
+                    .distinct()
+                    .collect(Collectors.toList());
+
+            String taxonPlaceholders = inheritedSupervisedTaxonIds.stream()
+                .map(id -> "?")
+                .collect(Collectors.joining(", "));
+
+            if (inheritedSupervisedTaxonIds.isEmpty()) {
+                        com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+                   ObjectNode response = mapper.createObjectNode();
+                   response.set("taxa", mapper.createArrayNode());
+                   response.put("filteredCount", 0);
+                   response.put("totalCount", 0);
+                   response.put("page", 1);
+                   response.put("pageSize", 20);
+                   response.put("success", true);
+
+                   return ok(response);
             }
 
             // Get query parameters for filtering
@@ -511,16 +555,17 @@ public class TaxonMapSettingsController extends ControllerBase {
                 "       pt.name_lat as parent_name_lat, pt.id as parent_taxon_id " +
                 "FROM atlas.taxon_mapsettings ms " +
                 "JOIN public.taxons_clear t ON t.id = ms.taxon_id " +
-                "JOIN atlas.taxons_users tu ON tu.taxons_id = t.id " +
                 "LEFT JOIN atlas.taxon_mapsettings pms ON ms.superior_taxon = pms.taxon_id " +
                 "LEFT JOIN public.taxons_clear pt ON pms.taxon_id = pt.id " +
-                "WHERE tu.users_id = ? " + whereClause + " " +
-                "ORDER BY t.name_lat ASC NULLS LAST " +
-                "LIMIT ? OFFSET ?";
-
+                 "WHERE t.id IN (" + taxonPlaceholders + ") " + whereClause  +
+                " ORDER BY t.name_lat ASC NULLS LAST " +
+                " LIMIT ? OFFSET ?";
+            logger.info(sql);
             SqlQuery sqlQuery = DB.sqlQuery(sql);
-            // Bind user ID parameter first
-            sqlQuery.setParameter(currentUser.getId());
+
+          for (Long taxonId : inheritedSupervisedTaxonIds) {
+              sqlQuery.setParameter(taxonId);
+          }
             // Bind filter parameters
             for (Object param : params) {
                 sqlQuery.setParameter(param);
@@ -534,25 +579,26 @@ public class TaxonMapSettingsController extends ControllerBase {
             // Get filtered count
             String countSql = "SELECT COUNT(*) FROM atlas.taxon_mapsettings ms " +
                 "JOIN public.taxons_clear t ON t.id = ms.taxon_id " +
-                "JOIN atlas.taxons_users tu ON tu.taxons_id = t.id " +
-                "WHERE tu.users_id = ? " + whereClause;
+                 "WHERE t.id IN (" + taxonPlaceholders + ") " + whereClause;
             SqlQuery countQuery = DB.sqlQuery(countSql);
-            // Bind user ID parameter first
-            countQuery.setParameter(currentUser.getId());
+             for (Long taxonId : inheritedSupervisedTaxonIds) {
+                          countQuery.setParameter(taxonId);
+                      }
+
             // Bind filter parameters (same as main query, without pagination)
             for (Object param : params) {
                 countQuery.setParameter(param);
             }
             long filteredCount = countQuery.findOne().getLong("count");
 
-            // Get total count of all taxa for current user (without filters)
-            String totalCountSql = "SELECT COUNT(*) FROM atlas.taxon_mapsettings ms " +
-                "JOIN atlas.taxons_users tu ON tu.taxons_id = ms.taxon_id " +
-                "WHERE tu.users_id = ?";
-            long totalCount = DB.sqlQuery(totalCountSql)
-                .setParameter(currentUser.getId())
-                .findOne()
-                .getLong("count");
+                String totalCountSql =
+                "SELECT COUNT(*) " + "FROM atlas.taxon_mapsettings ms " +
+                "WHERE ms.taxon_id IN (" + taxonPlaceholders + ")";
+                SqlQuery totalCountQuery = DB.sqlQuery(totalCountSql);
+                 for (Long taxonId : inheritedSupervisedTaxonIds) {
+                 totalCountQuery.setParameter(taxonId);
+                 }
+                 long totalCount = totalCountQuery .findOne() .getLong("count");
 
             // Convert to DTO format suitable for React datatable
             com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();

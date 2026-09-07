@@ -1,32 +1,15 @@
 package controllers.measurement;
 
 import controllers.ControllerBase;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-import utils.JsonResult;
-import javax.inject.Inject;
-
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import controllers.security.Authorized;
 import exceptions.NotEligibleException;
-import models.Taxon;
-import models.TaxonRank;
 import models.User;
 import models.UserActivity;
-import models.traits.InheritanceType;
-import models.traits.Section;
+import models.traits.Feature;
 import models.traits.Trait;
-import models.traitsExport.TraitDetailsEntryType;
+import models.traitsExport.TraitExportSnapshot;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import play.data.Form;
 import play.data.FormFactory;
 import play.i18n.Messages;
@@ -35,297 +18,202 @@ import play.mvc.Http.Request;
 import play.mvc.Http.Session;
 import play.mvc.Result;
 import play.mvc.Security;
-import service.trait.comparator.TraitComparator;
+import service.accessrights.AccessRights;
+import service.accessrights.IAccessRightsService;
+import service.trait.TraitDownloadService;
+import service.trait.export.TraitBackupService;
+import service.trait.export.TraitComplexExportService;
 import service.trait.export.TraitExportRequest;
+import service.trait.export.TraitExportRequestFactory;
+import service.trait.export.TraitExportRequestFactory.ComplexExportForm;
 import service.trait.export.TraitExportResponse;
-import service.trait.export.TraitExportService;
 import service.user.ActivityDetails;
 import service.user.UserActivityService;
-import taxons.config.TaxonConfiguration;
+import utils.JsonResult;
 import utils.SessionUtils;
-import utils.TaxonRanksUtils;
 import utils.UserUtils;
-import views.utils.SectionUtils;
 
-import play.data.Form;
-import play.data.FormFactory;
+import javax.inject.Inject;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
-@Security.Authenticated(Authorized.class)
-public class TraitExportController extends TraitBaseController
-{
-    final Logger logger = LoggerFactory.getLogger(TraitExportController.class);
+/**
+ * All measurement endpoints that return a file - the complex export, single trait downloads and backup snapshots.
+ * The remaining measurement API is in {@link MeasurementController}.
+ */
+public class TraitExportController extends ControllerBase {
+
+    private final Logger logger = LoggerFactory.getLogger(TraitExportController.class);
 
     @Inject
-    private TaxonConfiguration taxonConfiguration;
+    private FormFactory formFactory;
 
-	@Inject
-	private FormFactory formFactory;
-	public Result exportTrait(Request request, Integer traitId) throws Exception
-	{
-		Messages messages = getMessages(request);
-		Trait trait = Trait.find().byId(traitId);
-		if (trait==null)
-		{
-			return badRequest("Trait not found");
-		}
-		if (!isInheritanceTypeSupported(trait))
-		{
-			return badRequest("Trait type not supported");
-		}
-		Session session = request.session();
-		User user = SessionUtils.getCurrentUser(session);
-		if (!UserUtils.isElligibleForTraitDownload(user, trait))
-		{
-			return badRequest(messages.at("TraitsController.UserNotElligible"));
-		}
+    @Inject
+    private TraitExportRequestFactory requestFactory;
 
-		TraitExportResponse traitDetails = buildExport(session, trait);
-		return toResult(traitDetails);
-	}
+    @Inject
+    private TraitDownloadService downloadService;
 
-	private TraitExportResponse buildExport(Session session, Trait trait) throws Exception {
-		User currentUser = SessionUtils.getCurrentUser(session);
-		Messages messages = getMessages(session);
+    @Inject
+    private TraitBackupService backupService;
 
-		TraitExportService exportService = new TraitExportService(messages, currentUser, trait);
-		return exportService.buildDetailedExport();
-	}
+    @Inject
+    private IAccessRightsService accessRightsService;
 
-	private boolean isInheritanceTypeSupported(Trait trait) {
+    @Security.Authenticated(Authorized.class)
+    public Result complexExportResult(Http.Request request) {
+        Messages messages = getMessages(request);
 
-		int inheritanceType = trait.getFeature().getInheritanceType().getId();
+        Form<ComplexExportForm> form = formFactory.form(ComplexExportForm.class).bindFromRequest(request);
+        if (form.hasErrors()) {
+            return badRequest(JsonResult.error(messages.at("TraitExportController.invalidInput")));
+        }
 
-		return inheritanceType == InheritanceType.EnumAdditive ||
-				inheritanceType == InheritanceType.EnumSingle ||
-				inheritanceType == InheritanceType.EnumStandard ||
-				inheritanceType == InheritanceType.Month ||
-				inheritanceType == InheritanceType.Bool ||
-				inheritanceType == InheritanceType.Basic ||
-				inheritanceType == InheritanceType.Numeric ||
-				inheritanceType == InheritanceType.IntervalShallow ||
-				inheritanceType == InheritanceType.IntervalDeep ||
-				inheritanceType == InheritanceType.EnumSyntaxon ||
-				inheritanceType == InheritanceType.Distribution;
-	}
+        ComplexExportForm exportRequest = form.get();
+        Map<String, String[]> parameters = request.body().asFormUrlEncoded();
+        List<Integer> traitIdList = requestFactory.buildTraitIdList(parameters == null ? null : parameters.get("traitIds[]"));
 
-	public Result complexExportResult(Http.Request request) throws Exception
-	{
-		Messages messages = getMessages(request);
-		Form<ComplexExportForm> form = formFactory.form(ComplexExportForm.class).bindFromRequest(request);
-		if (form.hasErrors())
-		{
-			return badRequest(JsonResult.error(messages.at("TraitExportController.invalidInput")));
-		}
+        // validate the whole request before the expensive export itself
+        if (traitIdList.isEmpty()) {
+            return badRequest(JsonResult.error(messages.at("TraitExportController.noTraitsSelected")));
+        }
 
-		ComplexExportForm exportRequest = form.get();
-		Map<String, String[]> parameters = request.body().asFormUrlEncoded();
-		List<Integer> traitIdList = buildTraitIdList(parameters == null ? null : parameters.get("traitIds[]"));
+        if (exportRequest.getRanks() == null || exportRequest.getRanks().length == 0) {
+            return badRequest(JsonResult.error(messages.at("TraitExportController.noRanksSelected")));
+        }
 
-		if (traitIdList.isEmpty())
-		{
-			return badRequest(JsonResult.error(messages.at("TraitExportController.noTraitsSelected")));
-		}
+        List<String> invalidTaxonNames = requestFactory.selectInvalidTaxonNames(exportRequest.getTaxonList());
+        if (!invalidTaxonNames.isEmpty()) {
+            // invalid names are returned separately so the UI can show them line by line for copy&fix
+            return badRequest(JsonResult.error(
+                messages.at("TraitExportController.invalidTaxa"),
+                Collections.singletonMap("invalidTaxa", String.join("\n", invalidTaxonNames))));
+        }
 
-		if (exportRequest.ranks == null || exportRequest.ranks.length == 0)
-		{
-			return badRequest(JsonResult.error(messages.at("TraitExportController.noRanksSelected")));
-		}
+        try {
+            TraitExportRequest exportDetails = requestFactory.create(exportRequest, traitIdList);
+            User currentUser = SessionUtils.getCurrentUser(request.session());
+            requestFactory.verifyUserAllowedToExport(currentUser, messages, exportDetails.traitList);
+            logComplexExport(request.session());
 
-		List<String> invalidTaxonNames = selectInvalidTaxonNames(exportRequest.taxonList);
-		if (!invalidTaxonNames.isEmpty())
-		{
-			// invalid names are returned separately so the UI can show them line by line for copy&fix
-			return badRequest(JsonResult.error(
-					messages.at("TraitExportController.invalidTaxa"),
-					Collections.singletonMap("invalidTaxa", String.join("\n", invalidTaxonNames))));
-		}
+            return toResult(buildComplexExport(messages, currentUser, exportDetails));
+        } catch (NotEligibleException e) {
+            return forbidden(JsonResult.error(e.getMessage()));
+        } catch (Exception e) {
+            logger.error("Failure during trait export", e);
+            return internalServerError(JsonResult.error(messages.at("TraitExportController.exportFailed")));
+        }
+    }
 
-		Session session = request.session();
-		try
-		{
-			TraitExportRequest exportDetails = getComplexDetailsFromRequest(exportRequest, traitIdList);
-			verifyUserAllowedToExport(session, exportDetails.traitList);
-			logComplexExport(session);
-			TraitExportResponse traitDetails = buildComplexExport(session, exportDetails);
-			return toResult(traitDetails);
-		}
-		catch (NotEligibleException e)
-		{
-			return forbidden(JsonResult.error(e.getMessage()));
-		}
-		catch (Exception e)
-		{
-			logger.error("Failure during trait export", e);
-			return internalServerError(JsonResult.error(messages.at("TraitExportController.exportFailed")));
-		}
-	}
+    @Security.Authenticated(Authorized.class)
+    public Result exportTrait(Request request, Integer traitId) throws Exception {
+        Messages messages = getMessages(request);
+        Trait trait = downloadService.findTrait(traitId);
+        if (trait == null) {
+            return badRequest("Trait not found");
+        }
+        if (!downloadService.isInheritanceTypeSupported(trait)) {
+            return badRequest("Trait type not supported");
+        }
 
-    	private void logComplexExport(Session session)
-    	{
-    		ActivityDetails details  = new ActivityDetails();
-    		details.description = String.format("Trait complex export");
-    		UserActivityService.recordActivity(session, UserActivity.ComplexTraitDownload, details);
-    	}
+        User user = SessionUtils.getCurrentUser(request.session());
+        if (!UserUtils.isElligibleForTraitDownload(user, trait)) {
+            return badRequest(messages.at("TraitsController.UserNotElligible"));
+        }
 
-    	public static class ComplexExportForm
-        	{
-        		private String  taxonList;
+        return toResult(downloadService.exportTrait(user, messages, trait));
+    }
+    @Security.Authenticated(Authorized.class)
+    public Result downloadTraitData(Request request, Integer traitId, String language) {
+        Messages messages = getMessages(request);
+        Trait trait = downloadService.findTrait(traitId);
+        User currentUser = SessionUtils.getCurrentUser(request.session());
 
-        		private String[]  ranks;
+        if (!UserUtils.isElligibleForTraitDownload(currentUser, trait)) {
+            return ok(JsonResult.error(messages.at("TraitsController.UserNotElligible")));
+        }
 
-        		private Integer[] entryTypes;
+        Locale lang = Locale.forLanguageTag(language);
+        return downloadOrReportError(request, trait, currentUser, messages, lang);
+    }
 
-        		private boolean suppressedExcluded;
+    //this method is intentionally NOT secured with authentication - as it is accessed from pladias.cz
+    public Result downloadTraitDataByFeature(Request request, int featureId, String language) {
+        Messages messages = getMessages(request);
+        Feature feature = downloadService.findFeature(featureId);
 
-        		public String getTaxonList() {
-        			return taxonList;
-        		}
-        		public void setTaxonList(String taxonList) {
-        			this.taxonList = taxonList;
-        		}
-        		public String[] getRanks() {
-        			return ranks;
-        		}
-        		public void setRanks(String[] ranks) {
-        			this.ranks = ranks;
-        		}
-        		public Integer[] getEntryTypes() {
-        			return entryTypes;
-        		}
-        		public void setEntryTypes(Integer[] entryTypes) {
-        			this.entryTypes = entryTypes;
-        		}
-                public boolean isSuppressedExcluded() {
-                    return suppressedExcluded;
-                }
-                public void setSuppressedExcluded(boolean suppressedExcluded) {
-                    this.suppressedExcluded = suppressedExcluded;
-                }
-        	}
+        if (feature == null) {
+            return ok(messages.at("TraitsController.InvalidFeature"));
+        }
 
-	private TraitExportRequest getComplexDetailsFromRequest(
-			ComplexExportForm exportRequest, List<Integer> traitIdList)
-	{
-		TraitExportRequest details = new TraitExportRequest();
-		details.taxonIdList = buildTaxonIdList(exportRequest);
-		details.entryTypes = buildEntryTypeSet(exportRequest.entryTypes);
-		details.rankIds = buildRankIdList(exportRequest.ranks);
-		details.traitList = getSortedTraitList(traitIdList);
-		return details;
-	}
+        Locale locale = new Locale.Builder().setLanguageTag(language).build();
+        Trait candidate = downloadService.findPublicTraitForFeature(featureId);
 
+        if (candidate == null) {
+            return ok(messages.at("TraitsController.NoSuitableTraitFound"));
+        }
 
-	private List<Trait> getSortedTraitList(List<Integer> traitIdList) {
-		//there is a limitation in Ebean that where().in(...) clause only works correctly with List used within the in(...) clause.
-		List<Trait> traitList = Trait.find().query().where().in("id", traitIdList).findList();
-		traitList.sort(TraitComparator.INSTANCE);
-		return traitList;
-	}
+        return downloadOrReportError(request, candidate, null, messages, locale);
+    }
 
+    @Security.Authenticated(Authorized.class)
+    public Result downloadAttachment(int traitId) {
+        try {
+            Trait trait = downloadService.findTrait(traitId);
+            TraitExportResponse attachment = downloadService.downloadAttachment(trait);
+            if (attachment == null) {
+                return ok();
+            }
 
-	private List<String> selectInvalidTaxonNames(String latinTaxonList) {
-		List<String> results = new ArrayList<String>();
-		List<String> names = splitTaxonNames(latinTaxonList);
-		if (names.isEmpty())
-		{
-			return results;
-		}
+            return toResult(attachment);
+        } catch (Exception e) {
+            logger.error("error during trait attachment export:", e);
+            return ok("export se nezdaril");
+        }
+    }
 
-		List<Taxon> taxonList = Taxon.find().all();
-		Set<String> taxonSet = new HashSet<String>();
-		for (Taxon t : taxonList)
-		{
-			taxonSet.add(t.getNameLat());
-		}
+    @Security.Authenticated(Authorized.class)
+    public Result downloadSnapshot(Request request, Integer id) {
+        Messages messages = getMessages(request);
 
-		for (String s : names)
-		{
-			if (!taxonSet.contains(s))
-			{
-				results.add(s);
-			}
-		}
-		return results;
-	}
+        if (!accessRightsService.IsActionAllowed(request.session(), AccessRights.TraitBackup)) {
+            return badRequest(messages.at("TraitsController.UserNotElligible"));
+        }
 
-	// handles LF as well as CRLF line endings and trims the individual names
-	private List<String> splitTaxonNames(String latinTaxonList) {
-		if (StringUtils.isBlank(latinTaxonList))
-		{
-			return new ArrayList<String>();
-		}
+        TraitExportSnapshot snapshot = backupService.getSnapshot(id);
+        if (snapshot == null) {
+            return notFound("trait export not found");
+        }
 
-		List<String> names = new ArrayList<String>();
-		for (String name : latinTaxonList.split("\\R"))
-		{
-			if (StringUtils.isNotBlank(name.trim()))
-			{
-				names.add(name.trim());
-			}
-		}
-		return names;
-	}
+        return toResult(snapshot.toExportResponse());
+    }
 
-		private void verifyUserAllowedToExport(Session session, List<Trait> traitList) throws NotEligibleException
-    	{
-    		Messages messages = getMessages(session);
-    		User currentUser = SessionUtils.getCurrentUser(session);
-    		for (Trait trait : traitList)
-    		{
-    			if (!UserUtils.isElligibleForTraitDownload(currentUser, trait))
-    			{
-    				String featureName = trait.getFeature().getNameCz() != null
-    									 ? trait.getFeature().getNameCz()
-    									 : trait.getFeature().getNameEn();
-    				String message = messages.at("TraitExportController.userNotElligibleToExportTrait", featureName);
-    				throw new NotEligibleException(message);
-    			}
-    		}
-    	}
+    private Result downloadOrReportError(Request request, Trait trait, User user, Messages messages, Locale locale) {
+        try {
+            return toResult(downloadService.downloadTraitData(request.session(), trait, user, messages, locale));
+        } catch (Exception e) {
+            logger.error("error during trait export:", e);
+            return ok("export se nezdaril");
+        }
+    }
 
+    private TraitExportResponse buildComplexExport(Messages messages, User currentUser, TraitExportRequest exportDetails) throws Exception {
+        return new TraitComplexExportService(messages).buildDetailedExport(currentUser, exportDetails);
+    }
 
-	private List<Integer> buildRankIdList(String[] ranks) {
-		if (ranks == null || ranks.length == 0)
-		{
-			return TaxonRanksUtils.getExportableRankIds();
-		}
-		List<Integer> rankIdList = TaxonRank.find().query().where().in("nameEng", Arrays.asList(ranks)).findIds();
-		return rankIdList;
-	}
+    private void logComplexExport(Session session) {
+        ActivityDetails details = new ActivityDetails();
+        details.description = String.format("Trait complex export");
+        UserActivityService.recordActivity(session, UserActivity.ComplexTraitDownload, details);
+    }
 
-	private List<Integer> buildTraitIdList(String[] traitIds) {
-		if (traitIds == null || traitIds.length == 0)
-		{
-			return Collections.emptyList();
-		}
-		return Arrays.stream(traitIds).map(Integer::parseInt).collect(Collectors.toList());
-	}
+    private Result toResult(TraitExportResponse traitDetails) {
+        String filename = String.format("attachment; filename=%s", traitDetails.getFilename());
 
-	private List<Integer> buildTaxonIdList(ComplexExportForm exportInfo) {
-		List<String> taxonNames = splitTaxonNames(exportInfo.taxonList);
-		if (taxonNames.isEmpty())
-		{
-			return taxonConfiguration.getTaxonIds(exportInfo.isSuppressedExcluded());
-		}
-		return taxonConfiguration.getTaxonIds(taxonNames, exportInfo.isSuppressedExcluded());
-	}
-
-		private Set<TraitDetailsEntryType> buildEntryTypeSet(Integer[] entryTypes) {
-    		if (entryTypes == null || entryTypes.length == 0)
-    		{
-    			return new HashSet<TraitDetailsEntryType>(
-    					Arrays.asList(
-    							TraitDetailsEntryType.Original,
-    							TraitDetailsEntryType.Inherited,
-    							TraitDetailsEntryType.Aggregated)
-    			);
-    		}
-
-    		Set<TraitDetailsEntryType> resultSet = new HashSet<TraitDetailsEntryType>();
-    		for (int e : entryTypes)
-    		{
-    			resultSet.add(TraitDetailsEntryType.make(e));
-    		}
-    		return resultSet;
-    	}
+        return ok(traitDetails.getBytes())
+            .withHeader("Content-disposition", filename)
+            .as("application/x-download");
+    }
 }

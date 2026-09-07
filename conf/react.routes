@@ -131,6 +131,7 @@ POST   /taxon/moveBeforeSibling         controllers.taxon.TaxonManagerController
 GET   /downloads                        controllers.common.DownloadsController.getAll(request: Request)
 GET   /tempfiles/:fileId                controllers.common.TemporaryFilesProviderController.download(request: Request, fileId: Integer)
 
+# Measurements - data of the measurement module
 GET   /measurement/datatypes                 controllers.measurement.MeasurementController.getDatatypes()
 GET   /measurement/aggregation-types         controllers.measurement.MeasurementController.getAggregationTypes()
 GET   /measurement/feature-groups            controllers.measurement.MeasurementController.getFeatureGroups()
@@ -139,19 +140,21 @@ GET   /measurement/features/:id              controllers.measurement.Measurement
 GET   /measurement/enumerate-values/:id      controllers.measurement.MeasurementController.getEnumerateValues(id: Integer)
 GET   /measurement/visibility-status         controllers.measurement.MeasurementController.getVisibilityStatus()
 GET   /measurement/traits-of-feature/:id     controllers.measurement.MeasurementController.getTraitsOfFeature(request: Request, id: Integer)
-GET   /measurement/backups                   controllers.measurement.MeasurementController.getTraitExportSnapshots()
-GET   /measurement/backup/:id                controllers.measurement.MeasurementController.downloadSnapshot(request: Request,id: Integer)
-POST  /measurement/backup                    controllers.measurement.MeasurementController.backupResult(request: Request)
-POST  /measurement/complexExport             controllers.measurement.TraitExportController.complexExportResult(request: Request)
-
 GET   /measurement/trait-entry-type          controllers.measurement.MeasurementController.getTraitDetailsEntryType()
 
-GET   /measurement/trait/download/:traitId/lang/:language  controllers.measurement.TraitsController.downloadTraitData(request: Request, traitId: Integer, language: String)
-GET   /measurement/trait/downloadAttachment/:traitId  controllers.measurement.TraitsController.downloadAttachment(traitId: Integer)
-GET   /measurement/trait/export/:traitId         controllers.measurement.TraitExportController.exportTrait(request: Request, traitId: Integer)
-DELETE /measurement/trait/:traitId              controllers.measurement.TraitsController.delete(request: Request, traitId: Integer)
-PUT    /measurement/trait/:traitId/default      controllers.measurement.TraitsController.setDefault(request: Request, traitId: Integer)
-POST   /measurement/trait       controllers.measurement.TraitsController.importResult(request: Request)
+GET   /measurement/backups                   controllers.measurement.MeasurementController.getTraitExportSnapshots()
+POST  /measurement/backup                    controllers.measurement.MeasurementController.backupResult(request: Request)
+
+POST   /measurement/trait                    controllers.measurement.MeasurementController.importResult(request: Request)
+DELETE /measurement/trait/:traitId           controllers.measurement.MeasurementController.delete(request: Request, traitId: Integer)
+PUT    /measurement/trait/:traitId/default   controllers.measurement.MeasurementController.setDefault(request: Request, traitId: Integer)
+
+# Measurements - downloads of measurement data
+POST  /measurement/complexExport               controllers.measurement.TraitExportController.complexExportResult(request: Request)
+GET   /measurement/backup/:id                  controllers.measurement.TraitExportController.downloadSnapshot(request: Request, id: Integer)
+GET   /measurement/trait/export/:traitId       controllers.measurement.TraitExportController.exportTrait(request: Request, traitId: Integer)
+GET   /measurement/trait/download/:traitId/lang/:language controllers.measurement.TraitExportController.downloadTraitData(request: Request, traitId: Integer, language: String)
+GET   /measurement/trait/downloadAttachment/:traitId controllers.measurement.TraitExportController.downloadAttachment(traitId: Integer)
 
 
 GET   /bibliography/journals                 controllers.bibliography.BibliographyController.getJournals()

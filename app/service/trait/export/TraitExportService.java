@@ -59,10 +59,10 @@ public class TraitExportService {
         }
 
         List<? extends Model> entities = entitiesProviderService.getAllData(trait);
-        logger.info(String.format("Exporting trait %s", trait.getDescriptionEn()));
+//         logger.info(String.format("Exporting trait %s", trait.getDescriptionEn()));
 
         BaseExportAccumulator accumulator = populateAccumulator(entities, trait);
-        logger.info(String.format("Populated records at accumulator. Time: %d secs", stopWatch.getTime(TimeUnit.SECONDS)));
+//         logger.info(String.format("Populated records at accumulator. Time: %d secs", stopWatch.getTime(TimeUnit.SECONDS)));
 
         return new TraitExportResponse(
             convertAccumulatorToBytes(accumulator, exportBuilder),

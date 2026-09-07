@@ -40,7 +40,7 @@ ExcelTableValidationService:
     incorrectNearestTown: Souřadnice odpovídají obci "{0}", KÚ "{1}", ZSJ "{2}", okres "{3}".
     incorrectNearestTownWithoutBasicMunicipalUnit: Souřadnice odpovídají obci "{0}", KÚ "{1}", okres "{2}".
     mapSquareMustBePresentInAbsenceOfGpsCoords: Při absenci souřadnic je vyžadován mapový čtverec / kvadrant.
-    phytochorionMustBePresentInAbsenceOfGpsCoords: Při absenci souřadnic je vyžadován fytochorion. 
+    phytochorionMustBePresentInAbsenceOfGpsCoords: Při absenci souřadnic je vyžadován fytochorion.
     quadrantComputedFromGpsCoords: Kvadrant "{0}" byl dopočítán ze souřadnic.
     phytochorionComputedFromGpsCoords: Fytochorion "{0}" byl dopočítán ze souřadnic.
     noMatchingPhytochorionFoundForGpsCoords: Souřadnice neodpovídají žádnému fytochorionu.
@@ -52,11 +52,11 @@ ExcelTableValidationService:
     gpsCoordsMissing: Chybí GPS souřadnice.
 
 Application:
-    invalidUserNameOrPassword: Špatné uživatelské jméno nebo heslo. 
+    invalidUserNameOrPassword: Špatné uživatelské jméno nebo heslo.
     userIsDeleted: Uživatelský účet není aktivní.
     inactivityLogout: Z důvodu delší nečinnosti jste byli automaticky odhlášeni.
     userHasLoggedOut: Uživatel byl odhlášen.
-    
+
 Atlas:
     taxonNotFound: Neznámý taxon "{0}".
     invalidTaxon: Neznámý taxon.
@@ -89,7 +89,7 @@ UploadExcel:
     importCsvFileEmailSubject: Výsledek importu souboru {0}
     importCsvFileEmailContentsSuccess: Soubor {0} byl úspěšně importován pod batch ID {1}.
     importCsvFileEmailContentsFailure: Soubor {0} se nepodařilo importovat. Detail chyby "{1}".
-        
+
 
 UploadPdfMapPreview:
     invalidPublicationStatusForMapPreviewUpload: Není možné nahrát preview. Je třeba změnit Stav mapy na "Příprava náhledu".
@@ -150,7 +150,7 @@ TaxonMapSettingsController:
 
 TraitExportController:
     userNotElligibleToExportTrait: Nemáte práva pro export traitu "{0}".
-    traitBackupInProgress: Export traitů probíhá v pozadí...
+    traitBackupInProgress: Export traitů probíhá na pozadí...
 
 MapStatusUpdateService:
     invalidStatus: Neplatny stav.
@@ -169,7 +169,7 @@ PublicationUpdateService:
     mapUploadedMailContents: |
                              {0}
                              Vážení autoři,
-                             v této zprávě Vám zasíláme odkaz na právě vygenerovanou mapu. Ta je (1) vytvořená v tom schématu (typu) mapy, který jste si zvolili v mapovací aplikaci, (2) podle záznamů v databázi, které jste zkontrolovali, roztřídili, proznačili a schválili, a (3) upravená podle případných dodatečných instrukcí a upozornění v Poznámce autora mapy. 
+                             v této zprávě Vám zasíláme odkaz na právě vygenerovanou mapu. Ta je (1) vytvořená v tom schématu (typu) mapy, který jste si zvolili v mapovací aplikaci, (2) podle záznamů v databázi, které jste zkontrolovali, roztřídili, proznačili a schválili, a (3) upravená podle případných dodatečných instrukcí a upozornění v Poznámce autora mapy.
                              Mapu prosím pečlivě zkontrolujte, porovnejte ji s náhledem v mapovací aplikaci, a ujistěte se, že ve všech kvadrantech máte ten znak, který tam chcete mít. Nezapomeňte zkontrolovat především veškeré nestandardní případy a jestli byly správně zapracovány Vaše požadavky z pole "Poznámka pro tisk mapy" (např. pokud rozlišujete recentní vs. zaniklý výskyt a v nějakém kvadrantu druh prokazatelně vyhynul až po roce 2000, čili je potřeba udělat manuální úpravu symbolu).
                              Toto je poslední možná kontrola Vašich map před odesláním článku do redakce časopisu Preslia. Pokud objevíte nějaký problém, informujte prosím obratem Z. Kaplana (kaplan@ibot.cas.cz). Pokud nepřijde žádná odezva ve lhůtě stanovené pro příslušnou sadu map (obvykle 2–3 dny), bude mapa považována za definitivní.
 
@@ -188,7 +188,7 @@ RecordEditController:
     gpsCoordsEnteredInPladias: Zadáno v Pladias.
     unableToUpdateCoords: Nepodařilo se změnit souřadnice.
     originalIdNotEditable: Originální ID není možné editovat mimo vybrané projekty.
-    newVersionRecordExists: V databází existuje novější verze záznamu. Prosím refreshněte si aktuální obrazovku a akci zopakujte.  
+    newVersionRecordExists: V databází existuje novější verze záznamu. Prosím refreshněte si aktuální obrazovku a akci zopakujte.
     unableToUpdateField: Nepodařilo se updatovat pole "{0}".
     finderAlreadyRegistered: Nálezce "{0}" již v seznamu nálezců je.
     herbariumAlreadyRegistered: Herbář "{0}" již u záznamu přiřazen je.
@@ -206,7 +206,7 @@ ModifiedRecordsExcelBuilder:
     Taxon: Taxon
     CreationTimestamp: Čas vytvoření
     OriginalName: Původní jméno
-    Locality: Lokalita 
+    Locality: Lokalita
     NearestTown: Nejbližší město
     District: Okres
     Altitude: Nadmořská výška
@@ -219,10 +219,10 @@ ModifiedRecordsExcelBuilder:
     Phytochorion: Fytochorion
     QuadrantOrSquare: Kvadrant/Čtverec
     Comment: Komentář
-                
+
 
 ImportsManager:
-    batchDeletionEmail: | 
+    batchDeletionEmail: |
                         Dobrý den,
                         administrátor portálu {0} označil vaši dávku
                         {1} ze dne {2} pro smazání. Pro dokončení operace prosím klikněte na následující odkaz: {3}
@@ -241,7 +241,7 @@ TraitsController:
     traitDeleted: Datová řada byla smazána.
     ValidationFailed: Validace skončila chybou. Stáhněte si <a href="{0}">soubor</a> s vyznačením problematických řádků. Zkontolujte si také prosím pořadí sloupců dle vzoru.
     ImportFailed: Import se nezdařil. Stáhněte si <a href="{0}">soubor</a> s vyznačením problematických řádků. Zkontolujte si také prosím pořadí sloupců dle vzoru.
-    ImportSucceeded: Soubor dat s {0} záznamy byl importován. 
+    ImportSucceeded: Soubor dat s {0} záznamy byl importován.
     ValidationSucceeded: Soubor dat je validní, můžete jej importovat.
     AttachmentTooBig: Přiloha je příliš velká
     FormContainsErrors: Formulář obsahuje chyby
@@ -278,7 +278,7 @@ RevisionUpdateService:
     insufficientRights: Nemáte dostatečná práva pro provedení akce.
     taxonStatusChangeRevisorsMailContents: |
                                            Taxon "{0}" je nyni ve stavu "{1}".
-                                           Komentování a doplňování mapy floristy bylo ukončeno. Projděte a zpracujte všechny dosud nepřečtené a nevyřízené komentáře, přidělte příznaky nově doplněným záznamům, dokončete mapu a po kontrole jejího náhledu ji kliknutím na tlačítko "Zapracoval jsem všechny podněty kontrolorů" předejte editorům k přípravě pro tisk.    
+                                           Komentování a doplňování mapy floristy bylo ukončeno. Projděte a zpracujte všechny dosud nepřečtené a nevyřízené komentáře, přidělte příznaky nově doplněným záznamům, dokončete mapu a po kontrole jejího náhledu ji kliknutím na tlačítko "Zapracoval jsem všechny podněty kontrolorů" předejte editorům k přípravě pro tisk.
 
 AbstractDatatype:
     InvalidTaxon: Neplatný taxon
@@ -342,7 +342,7 @@ SyntaxonSerializer:
 
 SyntaxonDeserializer:
     duplicateKey: Duplicitní kombinace <taxon, syntaxon>.
-    
+
 SynonymManager:
     created: Synonymum vytvořeno.
     updated: Synonymum aktualizováno.
@@ -405,7 +405,7 @@ AbstractDatatypeDeserializer:
 PercentageConverter:
     OutOfRange0_1: Hodnota je mimo rozsah <0,1>.
     OutOfRange0_100: Hodnota je mimo celočíselný rozsah <0,100>.
-    InvalidValue: Neplatná hodnota. 
+    InvalidValue: Neplatná hodnota.
 
 CrossTaxonDeserializer:
     InvalidTaxonRelation: Neplatná relace <taxon, taxon>.
@@ -432,7 +432,7 @@ TraitRebuildTask:
     RebuildCompletedEmailContents: |
                                    Dobrý den,
                                    Hodnoty pro {0} traitů byly přepočítány. Výpočet trval {1}.
-                                   Seznam chyb: 
+                                   Seznam chyb:
                                    {2}
 
 Search:

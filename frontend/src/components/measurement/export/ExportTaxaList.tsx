@@ -12,7 +12,7 @@ export default function ExportTaxaList() {
                     name="taxonList"
                     rows={12}
                     placeholder={t(
-                        "exportTaxa.placeholder",
+                        "trait.export.placeholder",
                         "Zde vkopírujte seznam požadovaných taxonů v podobě latinských jmen na jednotlivých řádcích."
                     )}
                 />
@@ -23,13 +23,13 @@ export default function ExportTaxaList() {
                     type="checkbox"
                     id="suppressedExcluded"
                     name="suppressedExcluded"
-                    label={t("exportTaxa.suppressed")}
+                    label={t("trait.export.suppressed")}
                     defaultChecked
                 />
             </div>
 
             <Button type="submit" variant="primary" size="sm" className="btn-block">
-                {t("exportTaxa.submit")}
+                {t("trait.export.submit")}
             </Button>
         </>
     );

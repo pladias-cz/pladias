@@ -9,7 +9,7 @@ export default function Export() {
     const {t} = useTranslation();
     usePageTitle(t("trait.export.title"));
     return (
-        <form method="post" action="/traits/exportResult" className="form-horizontal">
+        <form method="post" action="/api/react/measurement/complexExport" className="form-horizontal">
             <h3>{t("trait.export.title")}</h3>
             <Row>
                 <Col>

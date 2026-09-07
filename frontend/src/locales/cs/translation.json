@@ -981,7 +981,12 @@
       "immeasurability": "neměřitelnost"
     },
     "export": {
-      "title": "Komplexní export vlastností druhů"
+      "title": "Komplexní export vlastností druhů",
+      "valueTypes": "typy hodnot",
+      "taxaRanks": "taxo ranky",
+      "placeholder": "Zde vkopírujte seznam požadovaných taxonů v podobě latinských jmen na jednotlivých řádcích.",
+      "submit": "Exportovat",
+      "suppressed": "Zahrnout potlačené"
     },
     "featureDetail": {
       "title": "Detail vlastnosti"

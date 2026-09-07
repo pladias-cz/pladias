@@ -142,6 +142,7 @@ GET   /measurement/traits-of-feature/:id     controllers.measurement.Measurement
 GET   /measurement/backups                   controllers.measurement.MeasurementController.getTraitExportSnapshots()
 GET   /measurement/backup/:id                controllers.measurement.MeasurementController.downloadSnapshot(request: Request,id: Integer)
 POST  /measurement/backup                    controllers.measurement.MeasurementController.backupResult(request: Request)
+POST  /measurement/complexExport             controllers.measurement.TraitExportController.complexExportResult(request: Request)
 
 GET   /measurement/trait-entry-type          controllers.measurement.MeasurementController.getTraitDetailsEntryType()
 

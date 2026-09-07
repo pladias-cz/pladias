@@ -151,6 +151,11 @@ TaxonMapSettingsController:
 TraitExportController:
     userNotElligibleToExportTrait: Nemáte práva pro export traitu "{0}".
     traitBackupInProgress: Export traitů probíhá na pozadí...
+    invalidInput: Neplatný požadavek.
+    noTraitsSelected: Nebyla vybrána žádná datová řada. Vyberte alespoň jednu datovou řadu.
+    noRanksSelected: Nebyl vybrán žádný taxonomický rank. Vyberte alespoň jeden.
+    invalidTaxa: Následující názvy taxonů nebyly nalezeny. Opravte je prosím a opakujte export.
+    exportFailed: Export se nezdařil. Zkuste to prosím znovu, nebo kontaktujte administrátora.
 
 MapStatusUpdateService:
     invalidStatus: Neplatny stav.

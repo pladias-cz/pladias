@@ -3,6 +3,7 @@ package controllers.measurement;
 import controllers.ControllerBase;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -107,40 +108,57 @@ public class TraitExportController extends TraitBaseController
 				inheritanceType == InheritanceType.Distribution;
 	}
 
-		public Result complexExportResult(Http.Request request) throws Exception
-    	{
-    	     Form<ComplexExportForm> form = formFactory.form(ComplexExportForm.class).bindFromRequest(request);
-    	     if (form.hasErrors())
-             {
-                 return badRequest("Invalid input");
-             }
-    	     TraitExportRequest exportDetails = getComplexDetailsFromRequest(form.get(), request);
-    		 List<String> invalidTaxonNames = selectInvalidTaxonNames(form.get().taxonList);
+	public Result complexExportResult(Http.Request request) throws Exception
+	{
+		Messages messages = getMessages(request);
+		Form<ComplexExportForm> form = formFactory.form(ComplexExportForm.class).bindFromRequest(request);
+		if (form.hasErrors())
+		{
+			return badRequest(JsonResult.error(messages.at("TraitExportController.invalidInput")));
+		}
 
-    		 User currentUser = SessionUtils.getCurrentUser(request.session());
+		ComplexExportForm exportRequest = form.get();
+		Map<String, String[]> parameters = request.body().asFormUrlEncoded();
+		List<Integer> traitIdList = buildTraitIdList(parameters == null ? null : parameters.get("traitIds[]"));
 
-    		 if (!invalidTaxonNames.isEmpty())
-    		 {
-    			 Messages messages = getMessages(request);
-    			 List<Taxon> validTaxons = Taxon.find().query().where().in("id", exportDetails.taxonIdList).orderBy("name_lat").findList();
-    			 //TODO return valid and nonvalid taxa names and handle in UI  JsonResult.buildError(validTaxons, invalidTaxonNames, messages));
-    			 return badRequest();
-    		 }
+		if (traitIdList.isEmpty())
+		{
+			return badRequest(JsonResult.error(messages.at("TraitExportController.noTraitsSelected")));
+		}
 
-    		 try
-    		 {
-    			 Session session = request.session();
-    			 verifyUserAllowedToExport(session, exportDetails.traitList);
-    			 logComplexExport(session);
-    			 TraitExportResponse traitDetails = buildComplexExport(session, exportDetails);
-    			 return toResult(traitDetails);
-    		 }
-    		 catch (Exception e)
-    		 {
-    		     logger.error("Failure during trait export", e);
-    			 return badRequest("Error during trait export");
-    		 }
-    	}
+		if (exportRequest.ranks == null || exportRequest.ranks.length == 0)
+		{
+			return badRequest(JsonResult.error(messages.at("TraitExportController.noRanksSelected")));
+		}
+
+		List<String> invalidTaxonNames = selectInvalidTaxonNames(exportRequest.taxonList);
+		if (!invalidTaxonNames.isEmpty())
+		{
+			// invalid names are returned separately so the UI can show them line by line for copy&fix
+			return badRequest(JsonResult.error(
+					messages.at("TraitExportController.invalidTaxa"),
+					Collections.singletonMap("invalidTaxa", String.join("\n", invalidTaxonNames))));
+		}
+
+		Session session = request.session();
+		try
+		{
+			TraitExportRequest exportDetails = getComplexDetailsFromRequest(exportRequest, traitIdList);
+			verifyUserAllowedToExport(session, exportDetails.traitList);
+			logComplexExport(session);
+			TraitExportResponse traitDetails = buildComplexExport(session, exportDetails);
+			return toResult(traitDetails);
+		}
+		catch (NotEligibleException e)
+		{
+			return forbidden(JsonResult.error(e.getMessage()));
+		}
+		catch (Exception e)
+		{
+			logger.error("Failure during trait export", e);
+			return internalServerError(JsonResult.error(messages.at("TraitExportController.exportFailed")));
+		}
+	}
 
     	private void logComplexExport(Session session)
     	{
@@ -185,19 +203,16 @@ public class TraitExportController extends TraitBaseController
                 }
         	}
 
-        		private TraitExportRequest getComplexDetailsFromRequest(
-            	            ComplexExportForm exportRequest, Http.Request request)
-            	{
-                    Map<String,String[]> map = request.body().asFormUrlEncoded();
-                    String[] traitIds =  map.get("traitIds[]");
-
-                    TraitExportRequest details = new TraitExportRequest();
-                    details.taxonIdList = buildTaxonIdList(exportRequest);
-                    details.entryTypes = buildEntryTypeSet(exportRequest.entryTypes);
-                    details.rankIds = buildRankIdList(exportRequest.ranks);
-                    details.traitList = getSortedTraitList(buildTraitIdList(traitIds));
-                    return details;
-            	}
+	private TraitExportRequest getComplexDetailsFromRequest(
+			ComplexExportForm exportRequest, List<Integer> traitIdList)
+	{
+		TraitExportRequest details = new TraitExportRequest();
+		details.taxonIdList = buildTaxonIdList(exportRequest);
+		details.entryTypes = buildEntryTypeSet(exportRequest.entryTypes);
+		details.rankIds = buildRankIdList(exportRequest.ranks);
+		details.traitList = getSortedTraitList(traitIdList);
+		return details;
+	}
 
 
 	private List<Trait> getSortedTraitList(List<Integer> traitIdList) {
@@ -208,12 +223,14 @@ public class TraitExportController extends TraitBaseController
 	}
 
 
-    private List<String> selectInvalidTaxonNames(String latinTaxonList) {
+	private List<String> selectInvalidTaxonNames(String latinTaxonList) {
 		List<String> results = new ArrayList<String>();
-		if (StringUtils.isBlank(latinTaxonList))
+		List<String> names = splitTaxonNames(latinTaxonList);
+		if (names.isEmpty())
 		{
 			return results;
 		}
+
 		List<Taxon> taxonList = Taxon.find().all();
 		Set<String> taxonSet = new HashSet<String>();
 		for (Taxon t : taxonList)
@@ -221,13 +238,32 @@ public class TraitExportController extends TraitBaseController
 			taxonSet.add(t.getNameLat());
 		}
 
-		String[] splittedTaxonNames = latinTaxonList.trim().split("\\r\\n");
-		for (String s : splittedTaxonNames)
+		for (String s : names)
 		{
 			if (!taxonSet.contains(s))
+			{
 				results.add(s);
+			}
 		}
 		return results;
+	}
+
+	// handles LF as well as CRLF line endings and trims the individual names
+	private List<String> splitTaxonNames(String latinTaxonList) {
+		if (StringUtils.isBlank(latinTaxonList))
+		{
+			return new ArrayList<String>();
+		}
+
+		List<String> names = new ArrayList<String>();
+		for (String name : latinTaxonList.split("\\R"))
+		{
+			if (StringUtils.isNotBlank(name.trim()))
+			{
+				names.add(name.trim());
+			}
+		}
+		return names;
 	}
 
 		private void verifyUserAllowedToExport(Session session, List<Trait> traitList) throws NotEligibleException
@@ -258,22 +294,20 @@ public class TraitExportController extends TraitBaseController
 	}
 
 	private List<Integer> buildTraitIdList(String[] traitIds) {
-		return Arrays.asList(traitIds).stream().map(Integer::parseInt).collect(Collectors.toList());
+		if (traitIds == null || traitIds.length == 0)
+		{
+			return Collections.emptyList();
+		}
+		return Arrays.stream(traitIds).map(Integer::parseInt).collect(Collectors.toList());
 	}
 
 	private List<Integer> buildTaxonIdList(ComplexExportForm exportInfo) {
-
-        String latinTaxonList = exportInfo.taxonList;
-
-	    if (StringUtils.isBlank(latinTaxonList))
+		List<String> taxonNames = splitTaxonNames(exportInfo.taxonList);
+		if (taxonNames.isEmpty())
 		{
-			return  taxonConfiguration.getTaxonIds(exportInfo.isSuppressedExcluded());
+			return taxonConfiguration.getTaxonIds(exportInfo.isSuppressedExcluded());
 		}
-
-		String[] splittedTaxonNames = latinTaxonList.trim().split("\\r\\n");
-	    return taxonConfiguration.getTaxonIds(
-	            Arrays.asList(splittedTaxonNames),
-	            exportInfo.isSuppressedExcluded());
+		return taxonConfiguration.getTaxonIds(taxonNames, exportInfo.isSuppressedExcluded());
 	}
 
 		private Set<TraitDetailsEntryType> buildEntryTypeSet(Integer[] entryTypes) {

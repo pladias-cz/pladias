@@ -986,7 +986,8 @@
       "taxaRanks": "taxo ranky",
       "placeholder": "Zde vkopírujte seznam požadovaných taxonů v podobě latinských jmen na jednotlivých řádcích.",
       "submit": "Exportovat",
-      "suppressed": "Zahrnout potlačené"
+      "suppressed": "Zahrnout potlačené",
+      "failed": "Export se nezdařil. Zkuste to prosím znovu."
     },
     "featureDetail": {
       "title": "Detail vlastnosti"

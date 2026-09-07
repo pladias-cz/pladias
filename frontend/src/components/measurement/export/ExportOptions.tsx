@@ -36,7 +36,7 @@ export default function ExportOptions() {
                 <label>
                     <input
                         type="checkbox"
-                        name="entryTypes[]"
+                        name="entryTypes"
                         value={entryType.index}
                     />
                     {" "}{entryType.name}
@@ -50,7 +50,7 @@ export default function ExportOptions() {
                     <label>
                         <input
                             type="checkbox"
-                            name="ranks[]"
+                            name="ranks"
                             value={rank.nameEng}
                         />
                         {" "}{rank.nameEng}

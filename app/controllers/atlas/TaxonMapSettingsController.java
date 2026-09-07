@@ -560,7 +560,7 @@ public class TaxonMapSettingsController extends ControllerBase {
                  "WHERE t.id IN (" + taxonPlaceholders + ") " + whereClause  +
                 " ORDER BY t.name_lat ASC NULLS LAST " +
                 " LIMIT ? OFFSET ?";
-            logger.info(sql);
+//             logger.info(sql);
             SqlQuery sqlQuery = DB.sqlQuery(sql);
 
           for (Long taxonId : inheritedSupervisedTaxonIds) {

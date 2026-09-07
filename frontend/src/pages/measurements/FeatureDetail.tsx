@@ -2,7 +2,7 @@ import {Col, Row} from "react-bootstrap";
 import {usePageTitle} from "@/hooks/usePageTitle";
 import {NavLink, useParams} from "react-router-dom";
 import type {Feature} from "@/models/Feature.ts";
-import {useEffect, useState} from "react";
+import {useEffect, useState, type FormEvent} from "react";
 import {useTranslation} from "react-i18next";
 import TraitTable from "@/components/measurement/TraitTable.tsx";
 import FeatureDescription from "@/components/measurement/FeatureDescription.tsx";
@@ -15,6 +15,9 @@ export default function FeatureDetail() {
     const {featureId} = useParams<{ featureId: string }>();
     const [selectedFeature, setSelectedFeature] = useState<Feature | null>(null);
     const [flash, setFlash] = useState<Flash | null>(null);
+    const [submitting, setSubmitting] = useState(false);
+    // po úspěšném importu je třeba znovu načíst tabulku datových řad
+    const [traitsRefreshKey, setTraitsRefreshKey] = useState(0);
 
     useEffect(() => {
         const f = (window as any).__FLASH__;
@@ -43,6 +46,47 @@ export default function FeatureDetail() {
         if (!isNaN(id)) loadFeature(id);
     }, [featureId]);
 
+    async function uploadTrait(event: FormEvent<HTMLFormElement>) {
+        event.preventDefault();
+
+        const form = event.currentTarget;
+        const formData = new FormData(form);
+        const isImport = formData.get("operation") === "import";
+
+        setSubmitting(true);
+        setFlash(null);
+
+        try {
+            const res = await fetch("/api/react/measurement/trait", {
+                method: "POST",
+                body: formData
+            });
+
+            // při úspěchu vrací backend samotný JSON řetězec s hlášením, při chybě JsonResult
+            const json = await res.json().catch(() => null);
+            const message: string | null = typeof json === "string" ? json : json?.message ?? null;
+
+            if (!res.ok) {
+                setFlash({type: "danger", message: message || "Operace se nezdařila"});
+                return;
+            }
+
+            setFlash({
+                type: "success",
+                message: message || (isImport ? "Datová řada byla importována" : "Soubor je validní")
+            });
+
+            if (isImport) {
+                form.reset();
+                setTraitsRefreshKey(key => key + 1);
+            }
+        } catch {
+            setFlash({type: "danger", message: "Chyba komunikace se serverem"});
+        } finally {
+            setSubmitting(false);
+        }
+    }
+
     if (!selectedFeature) {
         return (
             <Row>
@@ -61,20 +105,22 @@ export default function FeatureDetail() {
                     <h3>
                         <NavLink to="/measurements/data">{selectedFeature.section}</NavLink> → {selectedFeature.name}
                     </h3>
-                    <TraitTable feature={selectedFeature}/>
+                    <TraitTable feature={selectedFeature} refreshKey={traitsRefreshKey}/>
                 </Col>
             </Row>
 
             <Row>
                 <Col>
                     {flash && (
-                        <div className={`alert alert-${flash.type}`} role="alert">
-                            {flash.message}
-                        </div>
+                        /* hlášení z importu/validace obsahuje odkaz na sešit s vyznačenými chybnými řádky */
+                        <div
+                            className={`alert alert-${flash.type}`}
+                            role="alert"
+                            dangerouslySetInnerHTML={{__html: flash.message}}
+                        />
                     )}
-                    <form method="post" action="/measurement/trait" encType="multipart/form-data"
-                          className="form-horizontal">
-                        <TraitUpload feature={selectedFeature}/>
+                    <form onSubmit={uploadTrait} className="form-horizontal">
+                        <TraitUpload feature={selectedFeature} submitting={submitting}/>
                     </form>
 
                 </Col>

@@ -9,9 +9,19 @@ import models.traitsExport.TraitDetailsEntryType;
 import models.traitsExport.TraitExportSnapshot;
 import play.mvc.*;
 import play.mvc.Security;
+import play.i18n.Messages;
 import utils.JsonResult;
 import utils.SessionUtils;
+import service.accessrights.AccessRights;
+import service.accessrights.IAccessRightsService;
+import service.trait.export.TraitExportRequest;
+import service.trait.export.TraitExportResponse;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+
+import javax.inject.Inject;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -20,6 +30,11 @@ import java.util.stream.Collectors;
 
 @Security.Authenticated(Authorized.class)
 public class MeasurementController extends ControllerBase {
+
+    @Inject
+    private IAccessRightsService accessRightsService;
+
+	private final Logger logger = LoggerFactory.getLogger(MeasurementController.class);
 
     public Result getAggregationTypes() {
         List<TraitAggregationTypeDto> dtos = InheritanceType.find().query()
@@ -105,6 +120,23 @@ public class MeasurementController extends ControllerBase {
         return ok(JsonResult.buildSuccess(dtos));
 
     }
+
+     public Result downloadSnapshot(Http.Request request, int snapshotId)
+        {
+            Messages messages = getMessages(request);
+            if (!accessRightsService.IsActionAllowed(request.session(), AccessRights.TraitBackup))
+            {
+                return badRequest(messages.at("TraitsController.UserNotElligible"));
+            }
+
+            TraitExportSnapshot snapshot = TraitExportSnapshot.find().byId(snapshotId);
+            if (snapshot == null)
+            {
+                return notFound("trait export not found");
+            }
+
+            return toResult(snapshot.toExportResponse());
+        }
 
     public Result getTraitsOfFeature(Http.Request request, Integer id) {
         User currentUser = SessionUtils.getCurrentUser(request.session());
@@ -239,4 +271,20 @@ public class MeasurementController extends ControllerBase {
         return ok(JsonResult.buildSuccess(values));
     }
 
+  protected Result toResult(TraitExportResponse traitDetails)
+    {
+        try
+        {
+            String filename = String.format("attachment; filename=%s", traitDetails.getFilename());
+
+            return ok(traitDetails.getBytes())
+                .withHeader("Content-disposition", filename)
+                .as("application/x-download");
+        }
+        catch (Exception e)
+        {
+            logger.error("Failure during trait export", e);
+            return ok("Error during trait export");
+        }
+    }
 }

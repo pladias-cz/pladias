@@ -24,6 +24,15 @@ return ok(JsonResult.buildSuccess(data));
 return ok(data);
 ```
 
+Known exceptions (do not copy, frontend has to tolerate them):
+- `TraitsController.delete` and `TraitsController.importResult` return a bare JSON **string**
+  (`ok(Json.toJson(message))`) with HTTP 200 on success instead of `JsonResult`; errors use
+  `notFound(JsonResult.error(...))`. Frontend code therefore checks `res.ok` and reads either
+  a string or `json.message`.
+- Import/validation error messages (`TraitsController.ImportFailed` / `ValidationFailed`)
+  contain an HTML `<a>` link to the workbook with highlighted error rows, so `FeatureDetail`
+  renders them with `dangerouslySetInnerHTML`.
+
 
 ---
 

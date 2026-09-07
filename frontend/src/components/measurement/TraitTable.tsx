@@ -6,6 +6,8 @@ import type {Flash} from "@/models/Flash";
 
 interface Props {
     feature: Feature;
+    /** změnou hodnoty se tabulka datových řad znovu načte (např. po importu) */
+    refreshKey?: number;
 }
 
 /**
@@ -21,7 +23,7 @@ function extractMessage(body: unknown): string | null {
     return null;
 }
 
-export default function TraitTable({feature}: Props) {
+export default function TraitTable({feature, refreshKey}: Props) {
     const [traits, setTraits] = useState<Trait[]>([]);
     const [defaultTraitId, setDefaultTraitId] = useState<number | null>(null);
     const [flash, setFlash] = useState<Flash | null>(null);
@@ -54,7 +56,7 @@ export default function TraitTable({feature}: Props) {
     useEffect(() => {
         if (!feature?.id) return;
         loadTraits();
-    }, [feature?.id, loadTraits]);
+    }, [feature?.id, loadTraits, refreshKey]);
 
     async function deleteTrait(traitId: number) {
         if (!window.confirm("Opravdu chcete smazat tuto datovou řadu?")) return;

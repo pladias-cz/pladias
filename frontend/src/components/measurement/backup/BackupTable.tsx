@@ -68,7 +68,7 @@ export default function BackupTable() {
                     <td>{formatDate(b.createdAt)}</td>
                     <td className="text-center">
                         <a
-                            href={`/traits/snapshot/${b.id}`}
+                            href={`/api/react/measurement/backup/${b.id}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="btn btn-sm btn-primary"

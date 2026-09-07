@@ -140,6 +140,7 @@ GET   /measurement/enumerate-values/:id      controllers.measurement.Measurement
 GET   /measurement/visibility-status         controllers.measurement.MeasurementController.getVisibilityStatus()
 GET   /measurement/traits-of-feature/:id     controllers.measurement.MeasurementController.getTraitsOfFeature(request: Request, id: Integer)
 GET   /measurement/backups                   controllers.measurement.MeasurementController.getTraitExportSnapshots()
+GET   /measurement/backup/:id                controllers.measurement.MeasurementController.downloadSnapshot(request: Request,id: Integer)
 GET   /measurement/trait-entry-type          controllers.measurement.MeasurementController.getTraitDetailsEntryType()
 
 GET   /measurement/trait/download/:traitId/lang/:language  controllers.measurement.TraitsController.downloadTraitData(request: Request, traitId: Integer, language: String)

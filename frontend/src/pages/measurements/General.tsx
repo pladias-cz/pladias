@@ -17,7 +17,7 @@ export default function General() {
                     operace mohou provádět osoby s oprávněním „traitadmin“ získané na základě souhlasu Řídící rady
                     databáze Pladias. Všichni držitelé tohoto oprávnění jsou povinni se řídit „Pravidly správy a použití
                     databáze Pladias“ uveřejněnými na <a
-                    href="https://pladias.ibot.cas.cz/download/features">https://pladias.ibot.cas.cz/download/features</a> a
+                    href="https://pladias.cz/homepage/rules ">https://pladias.cz/homepage/rules </a> a
                     data používat výhradně pro účel, který uvedli v žádosti o oprávnění přístupu do databáze. V případě
                     použití dat o vlastnostech druhů v publikaci je autor publikace povinen předem informovat vlastníka
                     a administrátora dat a získat jejich souhlas s použitím těchto dat.

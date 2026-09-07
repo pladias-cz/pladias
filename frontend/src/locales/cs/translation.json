@@ -947,7 +947,16 @@
       "description": "popis"
     },
     "backup": {
-      "title": "Záloha traitů"
+      "title": "Záloha traitů",
+      "error": "Chyba",
+      "description": "popis",
+      "createdAt": "vytvořeno",
+      "download": "stáhnout",
+      "started": "započato",
+      "note": "poznámka",
+      "notePlaceholder": "sem vložte text poznámky",
+      "submitting": "odesílání",
+      "submit": "Odeslat"
     },
     "feature": {
       "name": "název",

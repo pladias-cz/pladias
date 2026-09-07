@@ -29,11 +29,11 @@ export default function BackupForm() {
             }
 
             // úspěch
-            setFlash(t("backup.started"));
+            setFlash(t("trait.backup.started"));
             setNote("");            // vyčistí input
         } catch (err) {
             const msg = err instanceof Error ? err.message : "Unknown error";
-            setFlash(`${t("backup.error")}: ${msg}`);
+            setFlash(`${t("trait.backup.error")}: ${msg}`);
         } finally {
             setLoading(false);       // odblok inputu
         }
@@ -50,22 +50,22 @@ export default function BackupForm() {
             <Form onSubmit={handleSubmit}>
                 <Form.Group className="mb-3">
                     <Form.Label>
-                        {t("backup.note")}
+                        {t("trait.backup.note")}
                     </Form.Label>
 
                     <Form.Control
                         type="text"
                         value={note}
                         onChange={(e) => setNote(e.target.value)}
-                        placeholder={t("backup.notePlaceholder")}
+                        placeholder={t("trait.backup.notePlaceholder")}
                         disabled={loading}
                     />
                 </Form.Group>
 
                 <Button type="submit" variant="primary" disabled={loading}>
                     {loading
-                        ? t("backup.submitting")
-                        : t("backup.submit")}
+                        ? t("trait.backup.submitting")
+                        : t("trait.backup.submit")}
                 </Button>
             </Form>
         </>

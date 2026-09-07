@@ -5,6 +5,7 @@
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import axios from 'axios';
 import type {ServerSideDataResponse, CustomDataFetcher, HttpMethod} from '../types.ts';
+import {buildTableParams} from '../utils/tableParams.ts';
 
 export interface UseTableDataOptions<T> {
     endpoint: string;
@@ -123,22 +124,7 @@ export function useTableData<T>(options: UseTableDataOptions<T>) {
                 };
             } else {
                 // GET request (default behavior)
-                const params: Record<string, string> = {
-                    page: String(page),
-                    pageSize: String(pageSize),
-                    ...additionalParams,
-                };
-
-                if (sorting && sorting.length > 0) {
-                    const s = sorting[0];
-                    params.sortBy = s.id;
-                    params.sortOrder = s.desc ? 'desc' : 'asc';
-                }
-
-                columnFilters.forEach(filter => {
-                    const paramName = `${filter.id.charAt(0).toUpperCase() + filter.id.slice(1)}Filter`;
-                    params[paramName] = filter.value;
-                });
+                const params = buildTableParams({page, pageSize, sorting, columnFilters, additionalParams});
 
                 const response = await axios.get<ServerSideDataResponse<T>>(endpoint, {
                     params,

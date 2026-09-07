@@ -18,6 +18,7 @@ import {
     DataRowCount,
     DataTableBody,
 } from './components';
+import {ExcelExportButtons} from './export';
 import type {DataTableConfig, DataTableColumnDef} from './types.ts';
 import {canSort} from './utils';
 import styles from './DataTable.module.css';
@@ -31,6 +32,7 @@ export function DataTable<T extends object>(config: DataTableConfig<T>) {
         additionalParams,
         className,
         showPagination = true,
+        hasExcelExport = false,
         method = 'GET',
         fetchData: customFetcher,
         transformRequest,
@@ -253,21 +255,31 @@ export function DataTable<T extends object>(config: DataTableConfig<T>) {
                     />
                 )}
 
-                <div className="d-flex align-items-center justify-content-between mb-3">
+                <div className="d-flex align-items-center justify-content-between gap-2 flex-wrap mb-3">
                     <DataRowCount
                         fromIndex={(page - 1) * pageSize + 1}
                         toIndex={Math.min(page * pageSize, filteredCount > 0 ? filteredCount : totalCount)}
                         total={filteredCount > 0 ? filteredCount : totalCount}
                         loading={loading}
                     />
-                    {hasActiveFilters && (
-                        <button
-                            className="btn btn-sm btn-outline-secondary"
-                            onClick={clearFilters}
-                        >
-                            {t("common.table.clearFilters")}
-                        </button>
-                    )}
+                    <div className="d-flex align-items-center gap-2 flex-wrap">
+                        {hasExcelExport && (
+                            <ExcelExportButtons
+                                endpoint={endpoint}
+                                sorting={sorting}
+                                columnFilters={columnFilters}
+                                additionalParams={resolvedAdditionalParams}
+                            />
+                        )}
+                        {hasActiveFilters && (
+                            <button
+                                className="btn btn-sm btn-outline-secondary"
+                                onClick={clearFilters}
+                            >
+                                {t("common.table.clearFilters")}
+                            </button>
+                        )}
+                    </div>
                 </div>
 
                 <Table striped bordered hover responsive size="sm" className={styles.tableStable}>

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers.ControllerBase;
 import controllers.security.Authorized;
+import dto.ExcelBatchDto;
 import global.ServerConstants;
 import io.ebean.DB;
 import io.ebean.SqlUpdate;
@@ -25,6 +26,7 @@ import play.libs.Json;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.mvc.Security;
+import service.export.table.TableExportWriter;
 import service.record.serialization.ModifiedRecordsExportService;
 import utils.ExcelUtils;
 import utils.JsonResult;
@@ -52,7 +54,12 @@ public class MapAdminImportController extends ControllerBase {
     private MailService _mailService;
 
     /**
-     * Get imports data for React datatable with pagination, sorting, and filtering
+     * Get imports data for React datatable with pagination, sorting, and filtering.
+     *
+     * <p>The table data and the export of the very same rows are answered by this endpoint: the
+     * client asks for the XLSX variant by sending the XLSX media type in the {@code Accept}
+     * header. Pagination is applied only when both {@code page} and {@code pageSize} are
+     * present, so an export request (which sends neither) receives all filtered rows.</p>
      */
     public Result getImports(Http.Request request) {
         try {
@@ -64,111 +71,29 @@ public class MapAdminImportController extends ControllerBase {
                 return unauthorized(Json.toJson(errorResponse));
             }
 
-            // Get pagination parameters
-            int page = request.getQueryString("page") != null
-                ? Integer.parseInt(request.getQueryString("page")) : 1;
-            int pageSize = request.getQueryString("pageSize") != null
-                ? Integer.parseInt(request.getQueryString("pageSize")) : 20;
+            // Get pagination parameters - without them the whole filtered list is returned
+            boolean paginated = request.getQueryString("page") != null
+                && request.getQueryString("pageSize") != null;
+            int page = paginated ? Integer.parseInt(request.getQueryString("page")) : 1;
+            int pageSize = paginated ? Integer.parseInt(request.getQueryString("pageSize")) : 0;
 
-            // Get sorting parameters
-            String sortBy = request.getQueryString("sortBy");
-            String sortOrder = request.getQueryString("sortOrder");
+            // Build and execute main query
+            io.ebean.Query<models.Excel> query = buildImportsQuery(request);
+            if (paginated) {
+                query.setFirstRow((page - 1) * pageSize).setMaxRows(pageSize);
+            }
+            List<ExcelBatchDto> imports = ExcelBatchDto.fromExcelList(query.findList());
 
-            // Get filter parameters
-            String committerNameFilter = request.getQueryString("CommitterNameFilter");
-
-            String importTimestampFromFilter = request.getQueryString("ImportTimestamp:fromFilter");
-            String importTimestampToFilter = request.getQueryString("ImportTimestamp:toFilter");
-
-            // Build base query with joins
-            io.ebean.Query<models.Excel> query = models.Excel.find().query();
-            query.fetch("batch").fetch("batch.committer");
-            query.where().eq("batch.imported", true);
-
-            // Apply filters
-            if (committerNameFilter != null && !committerNameFilter.isEmpty()) {
-                query.where().or()
-                    .ilike("batch.committer.name", "%" + committerNameFilter + "%")
-                    .ilike("batch.committer.surname", "%" + committerNameFilter + "%");
+            if (TableExportWriter.acceptsXlsx(request)) {
+                byte[] workbook = TableExportWriter.write(
+                    "imports", ExcelBatchDto.exportColumns(), imports, getMessages(request));
+                String filename = String.format("attachment; filename=%s",
+                    "imports_" + LocalDate.now() + ".xlsx");
+                return ok(workbook).withHeader("Content-disposition", filename).as("application/x-download");
             }
 
-            if (importTimestampFromFilter != null && !importTimestampFromFilter.isEmpty()) {
-                try {
-// 			 if (1==1) {return internalServerError(Json.toJson(request.queryString()).toPrettyString());}
-                    LocalDate fromDateTime = LocalDate.parse(importTimestampFromFilter);
-                    Timestamp fromTs = Timestamp.valueOf(fromDateTime.atStartOfDay());
-                    query.where().ge("batch.createTimestamp", fromTs);
-                } catch (Exception e) {
-                    // Ignore invalid date format
-                }
-            }
-            if (importTimestampToFilter != null && !importTimestampToFilter.isEmpty()) {
-                try {
-                    LocalDate toDateTime = LocalDate.parse(importTimestampToFilter);
-                    Timestamp toTs = Timestamp.valueOf(toDateTime.atTime(23, 59, 59));
-                    query.where().le("batch.createTimestamp", toTs);
-                } catch (Exception e) {
-                    // Ignore invalid date format
-                }
-            }
-
-            // Apply sorting
-            if (sortBy != null && !sortBy.isEmpty()) {
-                String sortExpr = switch (sortBy) {
-                    case "committerName" -> "batch.committer.name";
-                    case "importTimestamp" -> "batch.createTimestamp";
-                    case "batchId" -> "batch.id";
-                    case "filename" -> "filename";
-                    case "recordsCount" -> "records";
-                    default -> sortBy;
-                };
-                if ("desc".equalsIgnoreCase(sortOrder)) {
-                    sortExpr += " desc";
-                }
-                query.orderBy(sortExpr);
-            } else {
-                query.orderBy("batch.createTimestamp desc");
-            }
-
-            // Apply pagination
-            int offset = (page - 1) * pageSize;
-            query.setFirstRow(offset).setMaxRows(pageSize);
-
-            // Execute main query
-            List<models.Excel> excels = query.findList();
-
-            // Get filtered count
-            io.ebean.Query<models.Excel> countQuery = models.Excel.find().query();
-            countQuery.where().eq("batch.imported", true);
-            if (committerNameFilter != null && !committerNameFilter.isEmpty()) {
-                countQuery.fetch("batch").fetch("batch.committer");
-                countQuery.where().or()
-                    .ilike("batch.committer.name", "%" + committerNameFilter + "%")
-                    .ilike("batch.committer.surname", "%" + committerNameFilter + "%");
-            }
-            if (importTimestampFromFilter != null && !importTimestampFromFilter.isEmpty()) {
-                try {
-                    LocalDate fromDateTime = LocalDate.parse(importTimestampFromFilter);
-                    Timestamp fromTs = Timestamp.valueOf(fromDateTime.atStartOfDay());
-                    countQuery.fetch("batch");
-                    countQuery.where().ge("batch.createTimestamp", fromTs);
-                } catch (Exception e) {
-                    // Ignore invalid date format
-                }
-            }
-            if (importTimestampToFilter != null && !importTimestampToFilter.isEmpty()) {
-                try {
-                    LocalDate toDateTime = LocalDate.parse(importTimestampToFilter);
-                    Timestamp toTs = Timestamp.valueOf(toDateTime.atTime(23, 59, 59));
-                    countQuery.fetch("batch");
-                    countQuery.where().le("batch.createTimestamp", toTs);
-                } catch (Exception e) {
-                    // Ignore invalid date format
-                }
-            }
-            int filteredCount = countQuery.findCount();
-
-            // Get total count
+            // Get number of rows matching the filters and total number of imported files
+            int filteredCount = countFilteredImports(request);
             int totalCount = models.Excel.find().query()
                 .where().eq("batch.imported", true)
                 .findCount();
@@ -177,33 +102,30 @@ public class MapAdminImportController extends ControllerBase {
             ObjectMapper mapper = new ObjectMapper();
             ArrayNode dataArray = mapper.createArrayNode();
 
-            for (models.Excel excel : excels) {
+            for (ExcelBatchDto importDto : imports) {
                 ObjectNode node = mapper.createObjectNode();
-                node.put("id", excel.getId());
-                node.put("filename", excel.getFilename() != null ? excel.getFilename() : "");
-                node.put("warningsCount", excel.getWarnings());
-                node.put("errorsCount", excel.getErrors());
-                node.put("infosCount", excel.getInfos());
-                node.put("recordsCount", excel.getRecords());
+                node.put("id", importDto.id());
+                node.put("filename", importDto.filename() != null ? importDto.filename() : "");
+                node.put("warningsCount", importDto.warningsCount());
+                node.put("errorsCount", importDto.errorsCount());
+                node.put("infosCount", importDto.infosCount());
+                node.put("recordsCount", importDto.recordsCount());
 
-                models.Batch batch = excel.getBatch();
-                if (batch != null) {
-                    node.put("batchId", batch.getId());
-                    node.put("imported", batch.getImported());
-                    node.put("importTimestamp", batch.getCreateTimestamp() != null
-                        ? batch.getCreateTimestamp().toString() : "");
+                if (importDto.batchId() != null) {
+                    node.put("batchId", importDto.batchId());
+                    node.put("imported", importDto.imported());
+                    node.put("importTimestamp", importDto.importTimestamp() != null
+                        ? importDto.importTimestamp().toString() : "");
 
-                    models.User committer = batch.getCommitter();
-                    if (committer != null) {
-                        node.put("committerId", committer.getId());
-                        node.put("committerName", committer.getFullname() != null
-                            ? committer.getFullname() : "");
-                        node.put("committerEmail", committer.getEmail() != null
-                            ? committer.getEmail() : "");
+                    if (importDto.committerId() != null) {
+                        node.put("committerId", importDto.committerId());
+                        node.put("committerName", importDto.committerName() != null
+                            ? importDto.committerName() : "");
+                        node.put("committerEmail", importDto.committerEmail() != null
+                            ? importDto.committerEmail() : "");
                     }
 
-                    String deletionCode = batch.getDeletionCode();
-                    node.put("hasDeletionCode", deletionCode != null && !deletionCode.isEmpty());
+                    node.put("hasDeletionCode", importDto.hasDeletionCode());
                 }
 
                 dataArray.add(node);
@@ -214,7 +136,7 @@ public class MapAdminImportController extends ControllerBase {
             response.put("filteredCount", filteredCount);
             response.put("totalCount", totalCount);
             response.put("page", page);
-            response.put("pageSize", pageSize);
+            response.put("pageSize", paginated ? pageSize : imports.size());
             response.put("success", true);
 
             return ok(response);
@@ -223,6 +145,84 @@ public class MapAdminImportController extends ControllerBase {
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("error", "Error: " + e.getMessage());
             return internalServerError(Json.toJson(errorResponse));
+        }
+    }
+
+    /**
+     * Query over imported excel files, filtered and sorted the way the React datatable requested them.
+     */
+    private io.ebean.Query<models.Excel> buildImportsQuery(Http.Request request) {
+        io.ebean.Query<models.Excel> query = models.Excel.find().query();
+        query.fetch("batch").fetch("batch.committer");
+        applyImportsFilters(query, request);
+        applyImportsSorting(query, request);
+        return query;
+    }
+
+    /**
+     * Number of rows the React datatable shows for the filters of the request.
+     */
+    private int countFilteredImports(Http.Request request) {
+        io.ebean.Query<models.Excel> countQuery = models.Excel.find().query();
+        applyImportsFilters(countQuery, request);
+        return countQuery.findCount();
+    }
+
+    private void applyImportsFilters(io.ebean.Query<models.Excel> query, Http.Request request) {
+        // Get filter parameters
+        String committerNameFilter = request.getQueryString("CommitterNameFilter");
+
+        String importTimestampFromFilter = request.getQueryString("ImportTimestamp:fromFilter");
+        String importTimestampToFilter = request.getQueryString("ImportTimestamp:toFilter");
+
+        query.where().eq("batch.imported", true);
+
+        if (committerNameFilter != null && !committerNameFilter.isEmpty()) {
+            query.where().or()
+                .ilike("batch.committer.name", "%" + committerNameFilter + "%")
+                .ilike("batch.committer.surname", "%" + committerNameFilter + "%");
+        }
+
+        if (importTimestampFromFilter != null && !importTimestampFromFilter.isEmpty()) {
+            try {
+                LocalDate fromDateTime = LocalDate.parse(importTimestampFromFilter);
+                Timestamp fromTs = Timestamp.valueOf(fromDateTime.atStartOfDay());
+                query.where().ge("batch.createTimestamp", fromTs);
+            } catch (Exception e) {
+                // Ignore invalid date format
+            }
+        }
+        if (importTimestampToFilter != null && !importTimestampToFilter.isEmpty()) {
+            try {
+                LocalDate toDateTime = LocalDate.parse(importTimestampToFilter);
+                Timestamp toTs = Timestamp.valueOf(toDateTime.atTime(23, 59, 59));
+                query.where().le("batch.createTimestamp", toTs);
+            } catch (Exception e) {
+                // Ignore invalid date format
+            }
+        }
+    }
+
+    private void applyImportsSorting(io.ebean.Query<models.Excel> query, Http.Request request) {
+        // Get sorting parameters
+        String sortBy = request.getQueryString("sortBy");
+        String sortOrder = request.getQueryString("sortOrder");
+
+        if (sortBy != null && !sortBy.isEmpty()) {
+            String sortExpr = switch (sortBy) {
+                case "committerName" -> "batch.committer.name";
+                case "importTimestamp" -> "batch.createTimestamp";
+                case "batchId" -> "batch.id";
+                case "filename" -> "filename";
+                case "recordsCount" -> "records";
+                default -> sortBy;
+            };
+            if ("desc".equalsIgnoreCase(sortOrder)) {
+                sortExpr += " desc";
+            }
+            query.orderBy(sortExpr);
+        } else {
+            query.orderBy("batch.createTimestamp desc");
         }
     }
 

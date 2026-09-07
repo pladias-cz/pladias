@@ -224,6 +224,8 @@ export interface DataTableConfig<T> {
     className?: string;
     /** Show pagination */
     showPagination?: boolean;
+    /** Show buttons exporting the table data as XLSX, served by the same endpoint */
+    hasExcelExport?: boolean;
     /** HTTP method for data fetching (default: 'GET') */
     method?: HttpMethod;
     /** Custom data fetcher function (overrides endpoint/method if provided) */

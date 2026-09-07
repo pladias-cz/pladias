@@ -172,6 +172,25 @@ public class TaxonController extends ControllerBase {
 - `@Authorized`: Session authentication decorator
 - `@TokenAuthenticated`: Token-based authentication decorator
 
+#### Tabular XLSX Export Of Datatables
+
+React tables export their rows through the very endpoint that serves their JSON:
+
+- The client asks for `Accept: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`
+  and omits `page`/`pageSize`. The controller detects it with
+  `TableExportWriter.acceptsXlsx(request)` and answers with the workbook
+  (`application/x-download` + `Content-disposition`); pagination is applied only when both
+  params are present, so an export request receives all filtered rows. Failures stay JSON.
+- Columns are declared by the DTO the endpoint serves, as `List<ExportColumn<Dto>>`
+  (`app/service/export/table/`): typed value extractors plus message-key headers, so the workbook
+  cannot drift away from the JSON response. `TableExportWriter` renders them with a bold header
+  row, native numbers and dates (`dd.MM.yyyy HH:mm`).
+- Frontend: `hasExcelExport` on `DataTable` renders the "XLSX all" / "XLSX filtered" buttons
+  (`frontend/src/core/dataTable/export/`). Both reuse `buildTableParams`; "all" only leaves out
+  the filters typed into the filter row.
+- Example: `ImportResultsController.importedReportByUser` and `MapAdminImportController.getImports`
+  together with `dto.ExcelBatchDto`.
+
 ### 5. Data Layer
 
 #### Ebean ORM Models

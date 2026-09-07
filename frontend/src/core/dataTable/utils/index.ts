@@ -20,3 +20,6 @@ export {
     canFilter,
     canSort,
 } from './columnHelpers.ts';
+
+export {buildTableParams} from './tableParams.ts';
+export type {TableParamsOptions} from './tableParams.ts';

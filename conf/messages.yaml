@@ -237,6 +237,20 @@ ImportsManager:
     incorrectPassword: Nesprávné heslo pro smazání dávky.
     batchNotExists: Dávka neexistuje.
 
+ExcelBatchDto:
+    committerName: Importoval
+    importTimestamp: Datum importu
+    batchId: Batch ID
+    recordsCount: Počet záznamů
+    warningsCount: Počet varování
+    errorsCount: Počet chyb
+    infosCount: Počet informací
+    filename: Soubor
+
+TableExport:
+    yes: Ano
+    no: Ne
+
 Taxon:
     isSuppressed: Taxon je označený jako potlačený, více info podá Jiří Danihelka.
 

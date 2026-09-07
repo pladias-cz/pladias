@@ -659,6 +659,9 @@
     "table": {
       "all": "Vše",
       "clearFilters": "Vymazat filtry",
+      "excelAll": "XLSX vše",
+      "excelFiltered": "XLSX filtrované",
+      "exportFailed": "Export se nezdařil.",
       "filter": {
         "all": "Filtrovat...",
         "date": "Datum",

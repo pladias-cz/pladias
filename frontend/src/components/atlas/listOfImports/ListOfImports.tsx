@@ -89,6 +89,7 @@ export default function ListOfImports() {
                 fetchData={fetchImports}
                 initialPageSize={20}
                 pageSizeOptions={[10, 20, 50, 100]}
+                hasExcelExport
             />
         </div>
     );

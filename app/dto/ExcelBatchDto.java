@@ -1,6 +1,10 @@
 package dto;
 
+import service.export.table.ExportColumn;
+
 import java.sql.Timestamp;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public record ExcelBatchDto(
     Long id,
@@ -64,6 +68,39 @@ public record ExcelBatchDto(
             committerName,
             committerEmail,
             hasDeletionCode
+        );
+    }
+
+    /**
+     * Maps a list of Excel models to a list of ExcelBatchDto.
+     */
+    public static List<ExcelBatchDto> fromExcelList(List<models.Excel> excels) {
+        return excels.stream().map(ExcelBatchDto::fromExcel).collect(Collectors.toList());
+    }
+
+    /**
+     * Import timestamp exposed for XLSX date cells; the importTimestamp component is the
+     * string the JSON clients consume.
+     */
+    public Timestamp importTimestampValue() {
+        return importTimestamp;
+    }
+
+    /**
+     * Columns of the XLSX export of the list of imports, in display order. The button columns
+     * (actions, deletion code) are not exported.
+     */
+    public static List<ExportColumn<ExcelBatchDto>> exportColumns() {
+        return List.of(
+            ExportColumn.text("ExcelBatchDto.committerName", ExcelBatchDto::committerName),
+            ExportColumn.date("ExcelBatchDto.importTimestamp", ExcelBatchDto::importTimestampValue),
+            ExportColumn.integer("ExcelBatchDto.batchId",
+                dto -> dto.batchId() != null ? dto.batchId().intValue() : null),
+            ExportColumn.integer("ExcelBatchDto.recordsCount", ExcelBatchDto::recordsCount),
+            ExportColumn.integer("ExcelBatchDto.warningsCount", ExcelBatchDto::warningsCount),
+            ExportColumn.integer("ExcelBatchDto.errorsCount", ExcelBatchDto::errorsCount),
+            ExportColumn.integer("ExcelBatchDto.infosCount", ExcelBatchDto::infosCount),
+            ExportColumn.text("ExcelBatchDto.filename", ExcelBatchDto::filename)
         );
     }
 }

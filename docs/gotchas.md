@@ -44,6 +44,10 @@ Known exceptions (do not copy, frontend has to tolerate them):
 - Taxon lists are submitted as urlencoded form data (`fetch` + `URLSearchParams` sends **LF**, while a
   native form submit sends CRLF). The backend therefore splits them on `\R` and trims each line -
   `split("\r\n")` would treat a pasted list as a single taxon name.
+- `MapAdminImportController.getImports` answers JSON **or** XLSX from the same route, decided by the
+  request `Accept` header, and paginates only when both `page` and `pageSize` are present (that is how
+  the XLSX export gets all filtered rows). `useExcelExport` reads the response as a blob, so it has to
+  check `content-type` before storing the file - failures still arrive as JSON (`message`/`error`).
 
 
 ---

@@ -142,9 +142,11 @@ GET   /measurement/traits-of-feature/:id     controllers.measurement.Measurement
 GET   /measurement/backups                   controllers.measurement.MeasurementController.getTraitExportSnapshots()
 GET   /measurement/trait-entry-type          controllers.measurement.MeasurementController.getTraitDetailsEntryType()
 
+GET   /measurement/trait/download/:traitId/lang/:language  controllers.measurement.TraitsController.downloadTraitData(request: Request, traitId: Integer, language: String)
 GET   /measurement/trait/downloadAttachment/:traitId  controllers.measurement.TraitsController.downloadAttachment(traitId: Integer)
 GET   /measurement/trait/export/:traitId         controllers.measurement.TraitExportController.exportTrait(request: Request, traitId: Integer)
 DELETE /measurement/trait/:traitId              controllers.measurement.TraitsController.delete(request: Request, traitId: Integer)
+PUT    /measurement/trait/:traitId/default      controllers.measurement.TraitsController.setDefault(request: Request, traitId: Integer)
 POST   /measurement/trait       controllers.measurement.TraitsController.importResult(request: Request)
 
 

@@ -1,70 +1,134 @@
-import {useEffect, useState} from "react";
+import {useCallback, useEffect, useState} from "react";
 import type {Feature} from "@/models/Feature";
 import type {Trait} from "@/models/Trait";
+import type {ApiResponse} from "@/models/ApiResponse";
+import type {Flash} from "@/models/Flash";
 
 interface Props {
     feature: Feature;
 }
 
+/**
+ * Server odpovídá přes JsonResult ({success, data, message}), ale některé akce
+ * (např. mazání) vrací jen samotný JSON řetězec s hlášením.
+ */
+function extractMessage(body: unknown): string | null {
+    if (typeof body === "string") return body;
+    if (body && typeof body === "object" && "message" in body) {
+        const message = (body as {message?: unknown}).message;
+        if (typeof message === "string" && message) return message;
+    }
+    return null;
+}
+
 export default function TraitTable({feature}: Props) {
     const [traits, setTraits] = useState<Trait[]>([]);
     const [defaultTraitId, setDefaultTraitId] = useState<number | null>(null);
-    const [flash, setFlash] = useState<{type: "success" | "danger"; message: string} | null>(null);
+    const [flash, setFlash] = useState<Flash | null>(null);
 
     const [loading, setLoading] = useState(true);
+    const [busyTraitId, setBusyTraitId] = useState<number | null>(null);
+
+    const loadTraits = useCallback(async () => {
+        try {
+            const res = await fetch(`/api/react/measurement/traits-of-feature/${feature.id}`);
+            if (!res.ok) {
+                throw new Error(`HTTP ${res.status}`);
+            }
+
+            const json = await res.json() as ApiResponse<Trait[]>;
+            const list = json.data ?? [];
+
+            setTraits(list);
+            setDefaultTraitId(list.find(t => t.isDefault)?.id ?? null);
+        } catch (e) {
+            setFlash({
+                type: "danger",
+                message: `Nepodařilo se načíst datové řady: ${e instanceof Error ? e.message : "neznámá chyba"}`
+            });
+        } finally {
+            setLoading(false);
+        }
+    }, [feature.id]);
 
     useEffect(() => {
         if (!feature?.id) return;
+        loadTraits();
+    }, [feature?.id, loadTraits]);
 
-        fetch(`/api/react/measurement/traits-of-feature/${feature.id}`)
-            .then(r => r.json())
-            .then(r => setTraits(r.data ?? r))
-            .finally(() => setLoading(false));
-    }, [feature?.id]);
+    async function deleteTrait(traitId: number) {
+        if (!window.confirm("Opravdu chcete smazat tuto datovou řadu?")) return;
 
-    useEffect(() => {
-        if (!traits.length) return;
+        setBusyTraitId(traitId);
 
-        if (defaultTraitId === null) {
-            const def = traits.find(t => t.isDefault);
-            if (def) {
-                setDefaultTraitId(def.id);
+        try {
+            const res = await fetch(`/api/react/measurement/trait/${traitId}`, {
+                method: "DELETE"
+            });
+
+            const message = extractMessage(await res.json().catch(() => null));
+
+            if (!res.ok) {
+                setFlash({
+                    type: "danger",
+                    message: message || "Nepodařilo se smazat datovou řadu"
+                });
+                return;
             }
-        }
-    }, [traits, defaultTraitId]);
 
+            setFlash({
+                type: "success",
+                message: message || "Datová řada byla smazána"
+            });
+            // mazání může přenastavit výchozí řadu, proto znovu načíst
+            await loadTraits();
+        } catch {
+            setFlash({
+                type: "danger",
+                message: "Chyba komunikace se serverem"
+            });
+        } finally {
+            setBusyTraitId(null);
+        }
+    }
 
     async function setDefaultTrait(traitId: number) {
         const previous = defaultTraitId;
 
         // optimistický update
         setDefaultTraitId(traitId);
+        setBusyTraitId(traitId);
 
         try {
-            const res = await fetch(`/traits/setDefault/${traitId}`, {
-                method: "GET"
+            const res = await fetch(`/api/react/measurement/trait/${traitId}/default`, {
+                method: "PUT"
             });
 
-            const json = await res.json();
+            const json = await res.json().catch(() => null);
+            const message = extractMessage(json);
 
-            if (!json.success) {
-                setDefaultTraitId(previous ?? null);
+            if (!res.ok || json?.success === false) {
+                setDefaultTraitId(previous);
                 setFlash({
                     type: "danger",
-                    message: json.message || "Nepodařilo se nastavit výchozí traitovou řadu"
+                    message: message || "Nepodařilo se nastavit výchozí datovou řadu"
                 });
-            } else {
-                setFlash({
-                    type: "success",
-                    message: "Výchozí triatová řada změněna"
-                });
+                return;
             }
-        } catch (e) {
-            setDefaultTraitId(previous ?? null);
+
+            setFlash({
+                type: "success",
+                message: "Výchozí datová řada změněna"
+            });
+            await loadTraits();
+        } catch {
+            setDefaultTraitId(previous);
             setFlash({
                 type: "danger",
                 message: "Chyba komunikace se serverem"
             });
+        } finally {
+            setBusyTraitId(null);
         }
     }
 
@@ -118,14 +182,14 @@ export default function TraitTable({feature}: Props) {
                     <td>
                         {t.canDownload ? (
                             <>
-                                <a href={`/traits/downloadTraitData/trait/${t.id}/lang/cs`}>
+                                <a href={`/api/react/measurement/trait/download/${t.id}/lang/cs`}>
                                     stáhnout data
                                 </a>
 
                                 {t.hasAttachment && (
                                     <>
                                         <br/>
-                                        <a href={`/measurement/trait/downloadAttachment/${t.id}`}>
+                                        <a href={`/api/react/measurement/trait/downloadAttachment/${t.id}`}>
                                             stáhnout přílohu
                                         </a>
                                     </>
@@ -134,7 +198,7 @@ export default function TraitTable({feature}: Props) {
                                 {t.canExport && (
                                     <>
                                         <br/>
-                                        <a href={`/measurement/trait/export/${t.id}`}>
+                                        <a href={`/api/react/measurement/trait/export/${t.id}`}>
                                             detailní export
                                         </a>
                                     </>
@@ -151,12 +215,14 @@ export default function TraitTable({feature}: Props) {
                     {/* delete */}
                     <td>
                         {t.canDelete ? (
-                            <a
-                                href={`/traits/delete/trait/${t.id}`}
-                                className="delete"
+                            <button
+                                type="button"
+                                className="btn btn-sm btn-link p-0 text-danger"
+                                disabled={busyTraitId === t.id}
+                                onClick={() => deleteTrait(t.id)}
                             >
                                 smazat
-                            </a>
+                            </button>
                         ) : (
                             <span
                                 className="fa fa-times-circle-o"
@@ -172,7 +238,7 @@ export default function TraitTable({feature}: Props) {
                             name="default_trait"
                             value={t.id}
                             checked={defaultTraitId === t.id}
-                            disabled={!t.canDelete}
+                            disabled={!t.canDelete || busyTraitId !== null}
                             onChange={() => setDefaultTrait(t.id)}
                         />
                     </td>

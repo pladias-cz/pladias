@@ -247,7 +247,7 @@ public class TaxonMapSettingsController extends ControllerBase {
             String commonThresholdFilter = request.getQueryString("commonThresholdFilter");
             String isProtectedFilter = request.getQueryString("isProtectedFilter");
             String presliaFilter = request.getQueryString("presliaFilter");
-            String revisorsFilter = request.getQueryString("revisorsFilter");
+//             String revisorsFilter = request.getQueryString("revisorsFilter");
             String revisionStatusFilter = request.getQueryString("revisionStatusFilter");
             String publicationStatusFilter = request.getQueryString("publicationStatusFilter");
 
@@ -283,10 +283,10 @@ public class TaxonMapSettingsController extends ControllerBase {
                 whereClause.append(" AND ms.preslia ILIKE ?");
                 params.add("%" + presliaFilter + "%");
             }
-            if (revisorsFilter != null && !revisorsFilter.isEmpty()) {
-                whereClause.append(" AND ms.revisors_comment ILIKE ?");
-                params.add("%" + revisorsFilter + "%");
-            }
+//             if (revisorsFilter != null && !revisorsFilter.isEmpty()) {
+//                 whereClause.append(" AND ms.revisors_comment ILIKE ?");
+//                 params.add("%" + revisorsFilter + "%");
+//             }
             if (revisionStatusFilter != null && !revisionStatusFilter.isEmpty()) {
                 whereClause.append(" AND ms.revision_status = ?");
                 params.add(Integer.parseInt(revisionStatusFilter));
@@ -494,7 +494,7 @@ public class TaxonMapSettingsController extends ControllerBase {
             String commonThresholdFilter = request.getQueryString("commonThresholdFilter");
             String isProtectedFilter = request.getQueryString("isProtectedFilter");
             String presliaFilter = request.getQueryString("presliaFilter");
-            String revisorsFilter = request.getQueryString("revisorsFilter");
+//             String revisorsFilter = request.getQueryString("revisorsFilter");
             String revisionStatusFilter = request.getQueryString("revisionStatusFilter");
             String publicationStatusFilter = request.getQueryString("publicationStatusFilter");
 
@@ -530,10 +530,10 @@ public class TaxonMapSettingsController extends ControllerBase {
                 whereClause.append(" AND ms.preslia ILIKE ?");
                 params.add("%" + presliaFilter + "%");
             }
-            if (revisorsFilter != null && !revisorsFilter.isEmpty()) {
-                whereClause.append(" AND ms.revisors_comment ILIKE ?");
-                params.add("%" + revisorsFilter + "%");
-            }
+//             if (revisorsFilter != null && !revisorsFilter.isEmpty()) {
+//                 whereClause.append(" AND ms.revisors_comment ILIKE ?");
+//                 params.add("%" + revisorsFilter + "%");
+//             }
             if (revisionStatusFilter != null && !revisionStatusFilter.isEmpty()) {
                 whereClause.append(" AND ms.revision_status = ?");
                 params.add(Integer.parseInt(revisionStatusFilter));

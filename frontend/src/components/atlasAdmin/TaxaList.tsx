@@ -187,7 +187,7 @@ export default function TaxaList() {
         }),
         createTextColumn<TaxonMapSettings>('revisors', t("atlas.admin.taxaList.revisors"), {
             enableSorting: true,
-            enableFiltering: true,
+            enableFiltering: false,
             filterPlaceholder: t("atlas.admin.taxaList.filterRevisors"),
             cellRenderer: (value) => value || '-',
         }),

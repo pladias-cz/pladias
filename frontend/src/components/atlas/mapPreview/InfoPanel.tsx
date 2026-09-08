@@ -22,8 +22,8 @@ export function InfoPanel({type = 1, taxonId, taxonName}: InfoPanelProps) {
 
     // Get translated map type content
     const translatedContent = {
-        title: t(`pages.atlas.mapPreview.typeContent.${type}.title`),
-        description: t(`pages.atlas.mapPreview.typeContent.${type}.description`),
+        title: t(`atlas.mapPreview.typeContent.${type}.title`),
+        description: t(`atlas.mapPreview.typeContent.${type}.description`),
         legend: {
             certainQuadrant: t("atlas.mapPreview.typeContent.1.legend.certainQuadrant"),
             uncertainQuadrant: t("atlas.mapPreview.typeContent.1.legend.uncertainQuadrant"),

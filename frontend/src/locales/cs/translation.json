@@ -195,8 +195,7 @@
       "year": "Rok"
     },
     "mapMain": {
-      "component": {
-        "infoPanel": {
+      "infoPanel": {
           "boundToQuadrant": "přivázaných ke kvadrantu, \n",
           "boundToSquare": "přivázaných k poli,\n",
           "hasComment": "záznamů má komentář zadaný v aplikaci Pladias",
@@ -222,8 +221,7 @@
           "recordCounts": "Počty záznamů",
           "records": "Záznamy:",
           "sourceProjects": "Zdrojové projekty a počty záznamů"
-        }
-      },
+  },
       "taxonId": "ID taxonu",
       "title": "Přehledová mapa"
     },

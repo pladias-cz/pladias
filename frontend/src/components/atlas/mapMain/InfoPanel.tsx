@@ -98,10 +98,10 @@ function InfoSection({eventKey, title, children}: SectionProps) {
 }
 
 const MAP_TYPES = [
-    {id: 1, key: 'components.atlas.mapMain.infoPanel.mapTypes.basic'},
-    {id: 2, key: 'components.atlas.mapMain.infoPanel.mapTypes.extinctVsRecent'},
-    {id: 3, key: 'components.atlas.mapMain.infoPanel.mapTypes.nativeVsNonNative'},
-    {id: 4, key: 'components.atlas.mapMain.infoPanel.mapTypes.herbariumVsNonHerbarium'},
+    {id: 1, key: 'atlas.mapMain.infoPanel.mapTypes.basic'},
+    {id: 2, key: 'atlas.mapMain.infoPanel.mapTypes.extinctVsRecent'},
+    {id: 3, key: 'atlas.mapMain.infoPanel.mapTypes.nativeVsNonNative'},
+    {id: 4, key: 'atlas.mapMain.infoPanel.mapTypes.herbariumVsNonHerbarium'},
 ];
 
 export function InfoPanel({taxonName, taxonId}: InfoPanelProps) {
@@ -134,7 +134,7 @@ export function InfoPanel({taxonName, taxonId}: InfoPanelProps) {
             })
             .catch(err => {
                 console.error('Failed to load taxon statistics:', err);
-                setError(t("atlas.mapMain.component.infoPanel.loadingStatistics"));
+                setError(t("atlas.mapMain.infoPanel.loadingStatistics"));
             });
 
         // Fetch taxon map settings to get currentUserIsRevisor and comments
@@ -205,12 +205,12 @@ export function InfoPanel({taxonName, taxonId}: InfoPanelProps) {
             </div>
             <div className="flex-grow-1 overflow-auto">
                 <Accordion defaultActiveKey="0" alwaysOpen>
-                    <InfoSection eventKey="0" title={t("atlas.mapMain.component.infoPanel.recordCounts")}>
-                        {loading && <p className="text-muted">{t("atlas.mapMain.component.infoPanel.loadingStatistics")}</p>}
+                    <InfoSection eventKey="0" title={t("atlas.mapMain.infoPanel.recordCounts")}>
+                        {loading && <p className="text-muted">{t("atlas.mapMain.infoPanel.loadingStatistics")}</p>}
                         {error && <p className="text-danger">{error}</p>}
                         {!loading && !error && statistics && (
                             <>
-                                <p><b>{t("atlas.mapMain.component.infoPanel.records")}</b>
+                                <p><b>{t("atlas.mapMain.infoPanel.records")}</b>
                                     <br/>
                                     (OK/inMap/declined/uncertain/not set/SUM)
                                     <br/>
@@ -221,7 +221,7 @@ export function InfoPanel({taxonName, taxonId}: InfoPanelProps) {
                                     <span className="text-unprocessed">{statistics.recordsUnprocessed}</span> /
                                     <span>{statistics.recordsTotal}</span>
                                 </p>
-                                <p><b>{t("atlas.mapMain.component.infoPanel.quadrantStatus")}</b><br/>(OK/declined/uncertain/not set/SUM)</p>
+                                <p><b>{t("atlas.mapMain.infoPanel.quadrantStatus")}</b><br/>(OK/declined/uncertain/not set/SUM)</p>
                                 <p>
                                     <span className="text-accepted">{statistics.quadrantsValidated}</span> /
                                     <span className="text-declined">{statistics.quadrantsDeclined}</span> /
@@ -229,18 +229,18 @@ export function InfoPanel({taxonName, taxonId}: InfoPanelProps) {
                                     <span className="text-unprocessed">{statistics.quadrantsUnprocessed}</span> /
                                     <span>{statistics.quadrantsValidated + statistics.quadrantsDeclined + statistics.quadrantsUncertain + statistics.quadrantsUnprocessed}</span>
                                 </p>
-                                <p><b>{t("atlas.mapMain.component.infoPanel.ofWhich")}</b></p>
+                                <p><b>{t("atlas.mapMain.infoPanel.ofWhich")}</b></p>
                                 <p>
-                                    {statistics.recordsBoundToQuadrants} {t("atlas.mapMain.component.infoPanel.boundToQuadrant")}<br/>
-                                    {statistics.recordsBoundToSquares} {t("atlas.mapMain.component.infoPanel.boundToSquare")}<br/>
-                                    {statistics.recordsBoundToCoords} {t("atlas.mapMain.component.infoPanel.hasCoordinates")}<br/>
-                                    {statistics.recordsNotBoundToCoords} {t("atlas.mapMain.component.infoPanel.noLocation")}<br/>
-                                    {statistics.recordsCommented} {t("atlas.mapMain.component.infoPanel.hasComment")}
+                                    {statistics.recordsBoundToQuadrants} {t("atlas.mapMain.infoPanel.boundToQuadrant")}<br/>
+                                    {statistics.recordsBoundToSquares} {t("atlas.mapMain.infoPanel.boundToSquare")}<br/>
+                                    {statistics.recordsBoundToCoords} {t("atlas.mapMain.infoPanel.hasCoordinates")}<br/>
+                                    {statistics.recordsNotBoundToCoords} {t("atlas.mapMain.infoPanel.noLocation")}<br/>
+                                    {statistics.recordsCommented} {t("atlas.mapMain.infoPanel.hasComment")}
                                 </p>
                             </>
                         )}
                     </InfoSection>
-                    <InfoSection eventKey="1" title={t("atlas.mapMain.component.infoPanel.mapAuthors")}>
+                    <InfoSection eventKey="1" title={t("atlas.mapMain.infoPanel.mapAuthors")}>
                         {!loading && !error && statistics?.supervisors && statistics.supervisors.length > 0 ? (
                             <p className="mb-0 fst-italic">
                                 {statistics.supervisors.map((supervisor, index) => (
@@ -250,10 +250,10 @@ export function InfoPanel({taxonName, taxonId}: InfoPanelProps) {
                                 ))}
                             </p>
                         ) : (
-                            <p>{t("atlas.mapMain.component.infoPanel.noSupervisors")}</p>
+                            <p>{t("atlas.mapMain.infoPanel.noSupervisors")}</p>
                         )}
                     </InfoSection>
-                    <InfoSection eventKey="2" title={t("atlas.mapMain.component.infoPanel.mapAuthorsNote")}>
+                    <InfoSection eventKey="2" title={t("atlas.mapMain.infoPanel.mapAuthorsNote")}>
                         {currentUserIsRevisor ? (
                             <textarea
                                 className="form-control"
@@ -265,7 +265,7 @@ export function InfoPanel({taxonName, taxonId}: InfoPanelProps) {
                             <p className="mb-0">{revisorsComment || t('components.atlas.mapMain.infoPanel.noComment')}</p>
                         )}
                     </InfoSection>
-                    <InfoSection eventKey="3" title={t("atlas.mapMain.component.infoPanel.printMapNote")}>
+                    <InfoSection eventKey="3" title={t("atlas.mapMain.infoPanel.printMapNote")}>
                         {currentUserIsRevisor ? (
                             <textarea
                                 className="form-control"
@@ -277,8 +277,8 @@ export function InfoPanel({taxonName, taxonId}: InfoPanelProps) {
                             <p className="mb-0">{revisorsPrintMapComment || t('components.atlas.mapMain.infoPanel.noComment')}</p>
                         )}
                     </InfoSection>
-                    <InfoSection eventKey="4" title={t("atlas.mapMain.component.infoPanel.mapTypeSelection")}>
-                        <p>{t("atlas.mapMain.component.infoPanel.mapTypeDescription")}</p>
+                    <InfoSection eventKey="4" title={t("atlas.mapMain.infoPanel.mapTypeSelection")}>
+                        <p>{t("atlas.mapMain.infoPanel.mapTypeDescription")}</p>
                         {taxonId && (
                             <div className="d-flex flex-column gap-2">
                                 {MAP_TYPES.map((mapTypeOption) => (
@@ -296,15 +296,15 @@ export function InfoPanel({taxonName, taxonId}: InfoPanelProps) {
                                             {t(mapTypeOption.key)}
                                         </label>
                                         <a href={`/atlas/mapPreview/${taxonId}/${mapTypeOption.id}`} className="ms-2 small">
-                                            {t("atlas.mapMain.component.infoPanel.preview")}
+                                            {t("atlas.mapMain.infoPanel.preview")}
                                         </a>
                                     </div>
                                 ))}
                             </div>
                         )}
                     </InfoSection>
-                    <InfoSection eventKey="5" title={t("atlas.mapMain.component.infoPanel.sourceProjects")}>
-                        {loading && <p className="text-muted">{t("atlas.mapMain.component.infoPanel.loadingStatistics")}</p>}
+                    <InfoSection eventKey="5" title={t("atlas.mapMain.infoPanel.sourceProjects")}>
+                        {loading && <p className="text-muted">{t("atlas.mapMain.infoPanel.loadingStatistics")}</p>}
                         {error && <p className="text-danger">{error}</p>}
                         {!loading && !error && statistics?.recordsByProject && statistics.recordsByProject.length > 0 ? (
                             <ul className="mb-0">
@@ -315,7 +315,7 @@ export function InfoPanel({taxonName, taxonId}: InfoPanelProps) {
                                 ))}
                             </ul>
                         ) : (
-                            <p>{t("atlas.mapMain.component.infoPanel.projectsLoading")}</p>
+                            <p>{t("atlas.mapMain.infoPanel.projectsLoading")}</p>
                         )}
                     </InfoSection>
                 </Accordion>

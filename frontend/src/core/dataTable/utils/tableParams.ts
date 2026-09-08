@@ -7,6 +7,8 @@ export interface TableParamsOptions {
     pageSize?: number;
     sorting?: Array<{id: string; desc: boolean}>;
     columnFilters?: Array<{id: string; value: string}>;
+    /** Builds the filter params of endpoints that do not use the "<Column>Filter" convention */
+    buildFilterParams?: (columnFilters: Array<{id: string; value: string}>) => Record<string, string>;
     additionalParams?: Record<string, string>;
 }
 
@@ -19,6 +21,7 @@ export function buildTableParams({
     pageSize,
     sorting,
     columnFilters,
+    buildFilterParams,
     additionalParams = {},
 }: TableParamsOptions): Record<string, string> {
     const params: Record<string, string> = {};
@@ -34,24 +37,28 @@ export function buildTableParams({
         params.sortOrder = sort.desc ? 'desc' : 'asc';
     }
 
-    columnFilters?.forEach(filter => {
-        // Empty inputs are not filters, sending them would only widen the query
-        if (!filter.value || filter.value.trim() === '') {
-            return;
-        }
-        // Date range columns are filtered by two params, "<column>:from" / "<column>:to", and, for
-        // pages that keep one control for the whole range, by a single "<column>" value "from|to"
-        const fromTo = filter.id.endsWith(':from') || filter.id.endsWith(':to')
-            ? filter.id
-            : (filter.value.includes('|') ? null : filter.id);
-        if (fromTo === null) {
-            const [from, to] = filter.value.split('|');
-            addFilter(params, `${filter.id}:from`, from);
-            addFilter(params, `${filter.id}:to`, to);
-            return;
-        }
-        addFilter(params, fromTo, filter.value);
-    });
+    if (buildFilterParams) {
+        Object.assign(params, buildFilterParams(columnFilters ?? []));
+    } else {
+        columnFilters?.forEach(filter => {
+            // Empty inputs are not filters, sending them would only widen the query
+            if (!filter.value || filter.value.trim() === '') {
+                return;
+            }
+            // Date range columns are filtered by two params, "<column>:from" / "<column>:to", and, for
+            // pages that keep one control for the whole range, by a single "<column>" value "from|to"
+            const fromTo = filter.id.endsWith(':from') || filter.id.endsWith(':to')
+                ? filter.id
+                : (filter.value.includes('|') ? null : filter.id);
+            if (fromTo === null) {
+                const [from, to] = filter.value.split('|');
+                addFilter(params, `${filter.id}:from`, from);
+                addFilter(params, `${filter.id}:to`, to);
+                return;
+            }
+            addFilter(params, fromTo, filter.value);
+        });
+    }
 
     return {...params, ...additionalParams};
 }

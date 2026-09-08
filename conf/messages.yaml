@@ -247,9 +247,21 @@ ExcelBatchDto:
     infosCount: Počet informací
     filename: Soubor
 
+TaxonMapSettingsDto:
+    taxonNameLat: Latinské jméno
+    taxonRankCz: Taxonomický rank
+    isMapped: Mapováno
+    commonThreshold: Práh rozšíření
+    isProtected: Chráněno
+    preslia: Preslia
+    revisors: Revizoři
+    revisionStatusDescription: Stav revize map
+    publicationStatusDescription: Stav publikace map
+
 TableExport:
-    yes: Ano
-    no: Ne
+    # The keys must be quoted, YAML would otherwise read them as boolean values
+    "yes": Ano
+    "no": Ne
 
 Taxon:
     isSuppressed: Taxon je označený jako potlačený, více info podá Jiří Danihelka.

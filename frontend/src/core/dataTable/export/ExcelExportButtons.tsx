@@ -10,6 +10,8 @@ interface ExcelExportButtonsProps {
     endpoint: string;
     sorting: Array<{id: string; desc: boolean}>;
     columnFilters: Array<{id: string; value: string}>;
+    /** Builds the filter params of endpoints that do not use the "<Column>Filter" convention */
+    buildFilterParams?: (columnFilters: Array<{id: string; value: string}>) => Record<string, string>;
     additionalParams?: Record<string, string>;
 }
 
@@ -17,6 +19,7 @@ export function ExcelExportButtons({
     endpoint,
     sorting,
     columnFilters,
+    buildFilterParams,
     additionalParams,
 }: ExcelExportButtonsProps) {
     const {t} = useTranslation();
@@ -24,6 +27,7 @@ export function ExcelExportButtons({
         endpoint,
         sorting,
         columnFilters,
+        buildFilterParams,
         additionalParams,
         errorMessage: t("common.table.exportFailed"),
     });

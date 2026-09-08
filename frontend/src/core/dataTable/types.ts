@@ -226,6 +226,11 @@ export interface DataTableConfig<T> {
     showPagination?: boolean;
     /** Show buttons exporting the table data as XLSX, served by the same endpoint */
     hasExcelExport?: boolean;
+    /**
+     * Builds the filter query params of the XLSX export from the filter row state, for endpoints
+     * that do not use the "<Column>Filter" convention of the table params
+     */
+    buildExportFilterParams?: (columnFilters: Array<{id: string; value: string}>) => Record<string, string>;
     /** HTTP method for data fetching (default: 'GET') */
     method?: HttpMethod;
     /** Custom data fetcher function (overrides endpoint/method if provided) */

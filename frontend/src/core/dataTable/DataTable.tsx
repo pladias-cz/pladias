@@ -32,6 +32,7 @@ export function DataTable<T extends object>(config: DataTableConfig<T>) {
         additionalParams,
         className,
         showPagination = true,
+        buildExportFilterParams,
         hasExcelExport = false,
         method = 'GET',
         fetchData: customFetcher,
@@ -268,6 +269,7 @@ export function DataTable<T extends object>(config: DataTableConfig<T>) {
                                 endpoint={endpoint}
                                 sorting={sorting}
                                 columnFilters={columnFilters}
+                                buildFilterParams={buildExportFilterParams}
                                 additionalParams={resolvedAdditionalParams}
                             />
                         )}

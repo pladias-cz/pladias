@@ -187,9 +187,11 @@ React tables export their rows through the very endpoint that serves their JSON:
   row, native numbers and dates (`dd.MM.yyyy HH:mm`).
 - Frontend: `hasExcelExport` on `DataTable` renders the "XLSX all" / "XLSX filtered" buttons
   (`frontend/src/core/dataTable/export/`). Both reuse `buildTableParams`; "all" only leaves out
-  the filters typed into the filter row.
+  the filters typed into the filter row. An endpoint that names its filter params differently
+  (`nameLatFilter` and friends) is given `buildExportFilterParams` to map the filter row onto them.
 - Example: `ImportResultsController.importedReportByUser` and `MapAdminImportController.getImports`
-  together with `dto.ExcelBatchDto`.
+  together with `dto.ExcelBatchDto`, `TaxonMapSettingsController.getTaxa` together with
+  `dto.TaxonMapSettingsDto`.
 
 ### 5. Data Layer
 

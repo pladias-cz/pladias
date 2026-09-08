@@ -10,6 +10,27 @@ export interface UseTaxaDataOptions {
     onSuccess?: (data: TaxonMapSettings[], totalCount: number, filteredCount: number) => void;
 }
 
+/**
+ * Query params of the taxa endpoint for the filters typed into the table filter row. Empty inputs
+ * are not filters, so they are left out. Shared by the paginated fetch and the XLSX export.
+ */
+export function extractTaxaFilters(columnFilters: Array<{id: string; value: string}>): Record<string, string> {
+    const valueOf = (columnId: string) => columnFilters.find(f => f.id === columnId)?.value || '';
+    const filters: Record<string, string> = {
+        nameLatFilter: valueOf('taxonNameLat'),
+        isMappedFilter: valueOf('isMapped'),
+        commonThresholdFilter: valueOf('commonThreshold'),
+        isProtectedFilter: valueOf('isProtected'),
+        presliaFilter: valueOf('preslia'),
+        revisorsFilter: valueOf('revisors'),
+        revisionStatusFilter: valueOf('revisionStatusId'),
+        publicationStatusFilter: valueOf('publicationStatusId'),
+    };
+    return Object.fromEntries(
+        Object.entries(filters).filter(([, value]) => value.trim() !== '')
+    );
+}
+
 export function useTaxaData(options?: UseTaxaDataOptions) {
     const {onSuccess} = options || {};
 
@@ -26,30 +47,9 @@ export function useTaxaData(options?: UseTaxaDataOptions) {
     }) => {
         const {page, pageSize, columnFilters, signal} = params;
 
-        // Extract filters
-        const nameLatFilter = columnFilters.find(f => f.id === 'taxonNameLat')?.value || '';
-        const isMappedFilter = columnFilters.find(f => f.id === 'isMapped')?.value || '';
-        const commonThresholdFilter = columnFilters.find(f => f.id === 'commonThreshold')?.value || '';
-        const isProtectedFilter = columnFilters.find(f => f.id === 'isProtected')?.value || '';
-        const presliaFilter = columnFilters.find(f => f.id === 'preslia')?.value || '';
-        const revisorsFilter = columnFilters.find(f => f.id === 'revisors')?.value || '';
-        const revisionStatusFilter = columnFilters.find(f => f.id === 'revisionStatusId')?.value || '';
-        const publicationStatusFilter = columnFilters.find(f => f.id === 'publicationStatusId')?.value || '';
-
         try {
             const response = await axios.get('/api/react/atlasadmin/taxa', {
-                params: {
-                    page,
-                    pageSize,
-                    nameLatFilter,
-                    isMappedFilter,
-                    commonThresholdFilter,
-                    isProtectedFilter,
-                    presliaFilter,
-                    revisorsFilter,
-                    revisionStatusFilter,
-                    publicationStatusFilter,
-                },
+                params: {page, pageSize, ...extractTaxaFilters(columnFilters)},
                 signal,
             });
 

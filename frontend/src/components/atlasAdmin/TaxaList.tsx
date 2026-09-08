@@ -11,6 +11,7 @@ import {DataTable, type DataTableColumnDef, createActionColumn, createCheckboxCo
 import {
     useTaxaData,
     useTaxonUpdates,
+    extractTaxaFilters,
 } from './taxaList/hooks';
 import {
     StatusSelect,
@@ -255,6 +256,8 @@ export default function TaxaList() {
                 fetchData={fetchTaxa}
                 initialPageSize={20}
                 pageSizeOptions={[10, 20, 50, 100]}
+                hasExcelExport
+                buildExportFilterParams={extractTaxaFilters}
             />
         </div>
     );

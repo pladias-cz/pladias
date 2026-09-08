@@ -15,6 +15,8 @@ export interface UseExcelExportOptions {
     endpoint: string;
     sorting: Array<{id: string; desc: boolean}>;
     columnFilters: Array<{id: string; value: string}>;
+    /** Builds the filter params of endpoints that do not use the "<Column>Filter" convention */
+    buildFilterParams?: (columnFilters: Array<{id: string; value: string}>) => Record<string, string>;
     additionalParams?: Record<string, string>;
     /** Used when the backend does not send a Content-disposition header */
     fallbackFilename?: string;
@@ -26,6 +28,7 @@ export function useExcelExport({
     endpoint,
     sorting,
     columnFilters,
+    buildFilterParams,
     additionalParams = {},
     fallbackFilename = 'export.xlsx',
     errorMessage = '',
@@ -52,6 +55,7 @@ export function useExcelExport({
                 params: buildTableParams({
                     sorting: state.sorting,
                     columnFilters: variant === 'filtered' ? state.columnFilters : [],
+                    buildFilterParams,
                     additionalParams: state.additionalParams,
                 }),
                 headers: {Accept: XlsxAcceptHeader},
@@ -72,7 +76,7 @@ export function useExcelExport({
         } finally {
             setExporting(current => (current === variant ? null : current));
         }
-    }, [endpoint, fallbackFilename, errorMessage]);
+    }, [endpoint, buildFilterParams, fallbackFilename, errorMessage]);
 
     return {exporting, error, exportExcel};
 }

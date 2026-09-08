@@ -21,6 +21,7 @@ import play.mvc.Http.Session;
 import play.mvc.Result;
 import play.mvc.Security;
 import service.config.IConfigService;
+import service.export.table.TableExportWriter;
 import service.map.publication.PublicationUpdateService;
 import service.map.revision.RevisionUpdateService;
 import service.taxon.ITaxonService;
@@ -36,6 +37,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 import javax.inject.Inject;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -230,8 +232,13 @@ public class TaxonMapSettingsController extends ControllerBase {
      * Get taxa with map settings for React datatable with filtering capabilities.
      * Only accessible by map admins.
      *
+     * <p>The table data and the export of the very same rows are answered by this endpoint: the
+     * client asks for the XLSX variant by sending the XLSX media type in the {@code Accept}
+     * header. Pagination is applied only when both {@code page} and {@code pageSize} are
+     * present, so an export request (which sends neither) receives all filtered rows.</p>
+     *
      * @param request HTTP request
-     * @return JSON response with taxa and their map settings
+     * @return JSON response with taxa and their map settings, or the XLSX workbook
      */
     public Result getTaxa(Http.Request request) {
         try {
@@ -255,9 +262,11 @@ public class TaxonMapSettingsController extends ControllerBase {
             String sortField = request.getQueryString("sortField");
             String sortDirection = request.getQueryString("sortDirection");
 
-            // Pagination parameters
-            int page = request.getQueryString("page") != null ? Integer.parseInt(request.getQueryString("page")) : 1;
-            int pageSize = request.getQueryString("pageSize") != null ? Integer.parseInt(request.getQueryString("pageSize")) : 20;
+            // Pagination parameters - without them the whole filtered list is returned
+            boolean paginated = request.getQueryString("page") != null
+                && request.getQueryString("pageSize") != null;
+            int page = paginated ? Integer.parseInt(request.getQueryString("page")) : 1;
+            int pageSize = paginated ? Integer.parseInt(request.getQueryString("pageSize")) : 0;
 
             // Build WHERE clause for filters using positional parameters
             StringBuilder whereClause = new StringBuilder();
@@ -296,9 +305,6 @@ public class TaxonMapSettingsController extends ControllerBase {
                 params.add(Integer.parseInt(publicationStatusFilter));
             }
 
-            // Calculate pagination
-            int offset = (page - 1) * pageSize;
-
             // Build the main SQL query with JOIN to taxons table for ordering
             String sql = "SELECT ms.taxon_id, ms.map_type, ms.revision_status, ms.publication_status, " +
                 "       ms.revisors_comment, ms.revisors_print_map_comment, ms.mapadmin_comment, " +
@@ -312,36 +318,23 @@ public class TaxonMapSettingsController extends ControllerBase {
                 "LEFT JOIN public.taxons_clear pt ON pms.taxon_id = pt.id " +
                 "WHERE  1=1 " + whereClause + " " +
                 "ORDER BY t.name_lat ASC NULLS LAST " +
-                "LIMIT ? OFFSET ?";
+                (paginated ? "LIMIT ? OFFSET ?" : "");
 
             SqlQuery sqlQuery = DB.sqlQuery(sql);
             // Bind filter parameters
             for (Object param : params) {
                 sqlQuery.setParameter(param);
             }
-            // Bind pagination parameters
-            sqlQuery.setParameter(pageSize);
-            sqlQuery.setParameter(offset);
+            // Bind pagination parameters - an export request omits them to get all filtered rows
+            if (paginated) {
+                sqlQuery.setParameter(pageSize);
+                sqlQuery.setParameter((page - 1) * pageSize);
+            }
 
             java.util.List<SqlRow> rows = sqlQuery.findList();
 
-            // Get filtered count
-            String countSql = "SELECT COUNT(*) FROM atlas.taxon_mapsettings ms " +
-                "JOIN public.taxons_clear t ON t.id = ms.taxon_id " +
-                "WHERE 1=1 " + whereClause;
-            SqlQuery countQuery = DB.sqlQuery(countSql);
-            // Bind filter parameters (same as main query, without pagination)
-            for (Object param : params) {
-                countQuery.setParameter(param);
-            }
-            long filteredCount = countQuery.findOne().getLong("count");
-
-            // Get total count of all taxa (without filters)
-            long totalCount = TaxonMapSettings.find().query().findCount();
-
-            // Convert to DTO format suitable for React datatable
-            com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
-            ArrayNode taxaArray = mapper.createArrayNode();
+            // Convert rows to DTO format suitable for React datatable and for the XLSX export
+            List<TaxonMapSettingsDto> taxa = new ArrayList<>();
 
             for (SqlRow row : rows) {
                 Long taxonId = row.getLong("taxon_id");
@@ -422,6 +415,33 @@ public class TaxonMapSettingsController extends ControllerBase {
                     currentUserIsRevisor,
                     mapType
                 );
+                taxa.add(dto);
+            }
+
+            if (TableExportWriter.acceptsXlsx(request)) {
+                byte[] workbook = TableExportWriter.write(
+                    "taxa", TaxonMapSettingsDto.exportColumns(), taxa, getMessages(request));
+                String filename = String.format("attachment; filename=%s",
+                    "taxa_" + LocalDate.now() + ".xlsx");
+                return ok(workbook).withHeader("Content-disposition", filename).as("application/x-download");
+            }
+
+            // Get number of rows matching the filters and total number of taxa
+            String countSql = "SELECT COUNT(*) FROM atlas.taxon_mapsettings ms " +
+                "JOIN public.taxons_clear t ON t.id = ms.taxon_id " +
+                "WHERE 1=1 " + whereClause;
+            SqlQuery countQuery = DB.sqlQuery(countSql);
+            // Bind filter parameters (same as main query, without pagination)
+            for (Object param : params) {
+                countQuery.setParameter(param);
+            }
+            long filteredCount = countQuery.findOne().getLong("count");
+            long totalCount = TaxonMapSettings.find().query().findCount();
+
+            // Build the JSON response of the table
+            com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+            ArrayNode taxaArray = mapper.createArrayNode();
+            for (TaxonMapSettingsDto dto : taxa) {
                 taxaArray.add(mapper.valueToTree(dto));
             }
 
@@ -430,7 +450,7 @@ public class TaxonMapSettingsController extends ControllerBase {
             response.put("filteredCount", filteredCount);
             response.put("totalCount", totalCount);
             response.put("page", page);
-            response.put("pageSize", pageSize);
+            response.put("pageSize", paginated ? pageSize : taxa.size());
             response.put("success", true);
 
             return ok(response);

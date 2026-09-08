@@ -30,11 +30,8 @@ import utils.JsonResult;
 import utils.SessionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.util.Set;
-import comparators.TaxonLatNameComparator;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Collections;
 
 import javax.inject.Inject;
 import java.time.LocalDate;
@@ -476,20 +473,12 @@ public class TaxonMapSettingsController extends ControllerBase {
                 return unauthorized(JsonResult.error("Unauthorized access - user not logged in"));
             }
 
-            Set<Taxon> taxons = currentUser.getSupervisedTaxons();
-            List<Taxon> inheritedSupervisedTaxonList = new ArrayList<Taxon>();
+            List<Taxon> inheritedSupervisedTaxonList = taxonService.getInheritedlyAssignedTaxa(currentUser);
 
-                 for (Taxon t : taxons)
-                 {
-                     inheritedSupervisedTaxonList.addAll(taxonService.getSubtree(t));
-                 }
-
-             Collections.sort(inheritedSupervisedTaxonList, new TaxonLatNameComparator());
-
-                List<Long> inheritedSupervisedTaxonIds = inheritedSupervisedTaxonList.stream()
-                    .map(Taxon::getId)
-                    .distinct()
-                    .collect(Collectors.toList());
+            List<Long> inheritedSupervisedTaxonIds = inheritedSupervisedTaxonList.stream()
+                .map(Taxon::getId)
+                .distinct()
+                .collect(Collectors.toList());
 
             String taxonPlaceholders = inheritedSupervisedTaxonIds.stream()
                 .map(id -> "?")

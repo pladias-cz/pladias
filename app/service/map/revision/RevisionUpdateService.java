@@ -26,6 +26,7 @@ public class RevisionUpdateService extends MapStatusUpdateService {
 
     @Override
     public void update(TaxonMapSettings settings, int newRevisionStatus) throws NotEligibleException {
+    //TODO když jde status 0->1 tj. přidělení, tak by se to mělo aplikovat i pro celý podstrom taxonů
         RevisionStatus newStatus = RevisionStatus.find().byId(newRevisionStatus);
         if (newStatus == null) {
             throw new IllegalArgumentException(messages.at("MapStatusUpdateService.invalidStatus"));

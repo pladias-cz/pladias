@@ -742,6 +742,8 @@ public class TaxonMapSettingsController extends ControllerBase {
                 return notFound(JsonResult.error("Taxon map settings not found for taxonId: " + taxonId));
             }
 
+            verifyRevisionStatus(request, currentUser, settings);
+
             Taxon taxon = DB.reference(Taxon.class, taxonId);
             Integer mapType = settings.getMapType();
             String revisors = taxonService.getInheritedRevisors(taxon).stream()
@@ -834,6 +836,20 @@ public class TaxonMapSettingsController extends ControllerBase {
             return ok(response);
         } catch (Exception e) {
             return internalServerError(JsonResult.error("An error occurred while retrieving taxon map settings: " + e.getMessage()));
+        }
+    }
+
+    /**
+     * Promotes the revision status of the taxon from 'assigned' to 'map in progress' once the
+     * threshold of touched records is reached. Called when the map of the taxon is displayed.
+     */
+    private void verifyRevisionStatus(Http.Request request, User currentUser, TaxonMapSettings settings) {
+        try {
+            RevisionUpdateService service = new RevisionUpdateService(
+                currentUser, taxonService, configService, getMessages(request));
+            service.updateRevisionIfTresholdMet(settings);
+        } catch (Exception e) {
+            logger.error(String.format("Unable to verify revision status of taxon %d", settings.getId()), e);
         }
     }
 

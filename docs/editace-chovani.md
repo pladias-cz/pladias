@@ -323,6 +323,20 @@ Tento dokument popisuje chování aplikace při editaci dat v databázi. Jsou zd
 
 ---
 
+### GET `/atlas/taxonMapSettings/:taxonId` – Nastavení mapy jednoho taxonu
+
+**Související akce:**
+- GET může zapsat do DB: při zobrazení mapy taxonu se `REVISIONSTATUS` automaticky přepne
+  ze stavu `StatusAssigned` (1) na `StatusMapInProgress` (2), a to pokud
+  `edit_count >= TaxonEditTreshold` (10) NEBO revizoři (dozorci) nahrali
+  `>= RecordsSupervisorUploadCount` (10) záznamů
+  (`TaxonMapSettingsController.verifyRevisionStatus` → `RevisionUpdateService.updateRevisionIfTresholdMet`)
+- `edit_count` navyšuje `RecordsService.updateTaxonEditCount()` při každé editaci pole záznamu
+- Zápis posune `edit_timestamp` (slouží i pro optimistic locking), proto se volá před
+  sestrojením DTO – klient dostane časové razítko, které odpovídá právě zapsanému stavu
+
+---
+
 ## Uživatelé
 
 ### POST `/user/changePassword` – Změna hesla

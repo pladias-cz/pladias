@@ -104,7 +104,7 @@ export function InfoPanel({type = 1, taxonId, taxonName}: InfoPanelProps) {
                             <b>{t("atlas.mapPreview.publicationStatus")} </b>{mapSettings.publicationStatusDescription}</p>
                         {mapSettings.commonThreshold !== null && (
                             <p><b>
-                                {t("atlas.mapPreview.commonThreshold")} {mapSettings.commonThreshold}</b></p>
+                                {t("atlas.mapPreview.commonThreshold", {threshold: mapSettings.commonThreshold})}</b></p>
                         )}
                     </>
                 )}

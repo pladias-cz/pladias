@@ -211,7 +211,8 @@
             "herbariumVsNonHerbarium": "Herbář versus neherbář",
             "nativeVsNonNative": "Původní versus nepůvodní"
           },
-          "noLocation": "je zcela bez uvedení polohy \n",
+          "noComment": "neobsahuje komentář",
+          "noLocation": "je zcela bez uvedení polohy",
           "noSupervisors": "Žádní supervizoři.",
           "ofWhich": "Z toho je:",
           "preview": "Náhled",
@@ -220,6 +221,14 @@
           "quadrantStatus": "Stav kvadrantů:",
           "recordCounts": "Počty záznamů",
           "records": "Záznamy:",
+          "revisionStatus": {
+            "submit": "Pokud považujete mapu za připravenou k rozšířenému komentování, upozorněte Zdeňka Kaplana:",
+            "submitButton": "Odevzdat",
+            "submited": " Díky za odvedenou práci! Mapa je odevzdána a čeká na kontroly rozšířeným okruhem spolupracovníků. Autoři mapy mají stále právo upravovat záznamy a jejich příznaky. V okamžiku, kdy bude dokončena fáze kontrol, budou o tom autoři mapy informováni e-mailem.",
+            "supervised": " Mapa je ve fázi kontrol rozšířeným okruhem spolupracovníků. Autoři mapy mají stále právo upravovat záznamy a jejich příznaky, spolupracovníci mohou záznamy komentovat. V okamžiku, kdy bude dokončena fáze kontrol, budou o tom všichni autoři mapy informováni e-mailem.",
+            "finishing": " Máte k dispozici komentáře k mapě &ndash; zřejmě formou komentářů k jednotlivým záznamů či jinak &ndash; prosím až projdete tyto poznámky, odevzdejte mapu do předtiskové přípravy:",
+            "feedbackProceeded": " Zapracoval(a) jsem podněty kontrolorů"
+          },
           "sourceProjects": "Zdrojové projekty a počty záznamů"
   },
       "taxonId": "ID taxonu",

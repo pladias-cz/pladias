@@ -380,6 +380,24 @@ export function useTaxonUpdates() {
         }
     }, [updateSetting]);
 
+    const updateRevisionStatusForTaxon = useCallback(async (
+        taxonId: number,
+        newValue: number,
+        timestamp: number
+    ): Promise<number> => {
+        setUpdatingTaxonId(taxonId);
+
+        try {
+            const newTimestamp = await updateSetting(taxonId, 'REVISIONSTATUS', newValue, timestamp);
+            return newTimestamp;
+        } catch (error) {
+            console.error('Failed to update revision status:', error);
+            throw error;
+        } finally {
+            setUpdatingTaxonId(null);
+        }
+    }, [updateSetting]);
+
     return {
         updatingTaxonId,
         updateIsMapped,
@@ -392,5 +410,6 @@ export function useTaxonUpdates() {
         updateRevisorsComment,
         updateRevisorsPrintMapComment,
         updateMapType,
+        updateRevisionStatusForTaxon,
     };
 }

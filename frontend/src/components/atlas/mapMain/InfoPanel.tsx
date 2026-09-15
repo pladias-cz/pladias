@@ -1,4 +1,4 @@
-import {Accordion} from 'react-bootstrap';
+import {Accordion, Button} from 'react-bootstrap';
 import {useEffect, useState} from 'react';
 import axios from 'axios';
 import {useTaxonUpdates} from '../../atlasAdmin/taxaList/hooks';
@@ -104,6 +104,12 @@ const MAP_TYPES = [
     {id: 4, key: 'atlas.mapMain.infoPanel.mapTypes.herbariumVsNonHerbarium'},
 ];
 
+// Revision status IDs, must match app/models/RevisionStatus.java
+const REVISION_STATUS_MAP_SUBMITTED = 3;
+const REVISION_STATUS_REVIEW = 4;
+const REVISION_STATUS_COMPLETING = 5;
+const REVISION_STATUS_CLOSED = 6;
+
 export function InfoPanel({taxonName, taxonId}: InfoPanelProps) {
     const { t } = useTranslation();
     const [statistics, setStatistics] = useState<TaxonStatisticsDto | null>(null);
@@ -112,10 +118,14 @@ export function InfoPanel({taxonName, taxonId}: InfoPanelProps) {
     const [revisorsPrintMapComment, setRevisorsPrintMapComment] = useState<string>('');
     const [mapType, setMapType] = useState<number>(1);
     const [lastEditTimestamp, setLastEditTimestamp] = useState<number>(0);
+    const [isMapped, setIsMapped] = useState<boolean>(false);
+    const [revisionStatusId, setRevisionStatusId] = useState<number>(0);
+    const [revisionUpdating, setRevisionUpdating] = useState<boolean>(false);
+    const [revisionStatusError, setRevisionStatusError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    const {updateRevisorsComment, updateRevisorsPrintMapComment, updateMapType} = useTaxonUpdates();
+    const {updateRevisorsComment, updateRevisorsPrintMapComment, updateMapType, updateRevisionStatusForTaxon} = useTaxonUpdates();
 
     useEffect(() => {
         if (!taxonId) {
@@ -146,6 +156,8 @@ export function InfoPanel({taxonName, taxonId}: InfoPanelProps) {
                     setRevisorsPrintMapComment(response.data.data.revisorsPrintComment ?? '');
                     setMapType(response.data.data.mapType ?? 1);
                     setLastEditTimestamp(response.data.data.lastEditTimestamp);
+                    setIsMapped(response.data.data.isMapped);
+                    setRevisionStatusId(response.data.data.revisionStatusId);
                 }
             })
             .catch(err => {
@@ -189,6 +201,24 @@ export function InfoPanel({taxonName, taxonId}: InfoPanelProps) {
             } catch (err) {
                 console.error('Failed to save MAPTYPE:', err);
             }
+        }
+    };
+
+    const handleRevisionStatusChange = async (newStatus: number) => {
+        if (!taxonId || !lastEditTimestamp) {
+            return;
+        }
+        setRevisionUpdating(true);
+        setRevisionStatusError(null);
+        try {
+            const newTimestamp = await updateRevisionStatusForTaxon(taxonId, newStatus, lastEditTimestamp);
+            setLastEditTimestamp(newTimestamp);
+            setRevisionStatusId(newStatus);
+        } catch (err) {
+            console.error('Failed to save REVISIONSTATUS:', err);
+            setRevisionStatusError(err instanceof Error ? err.message : 'Failed to update revision status');
+        } finally {
+            setRevisionUpdating(false);
         }
     };
 
@@ -262,7 +292,7 @@ export function InfoPanel({taxonName, taxonId}: InfoPanelProps) {
                                 onChange={(e) => handleRevisorsCommentChange(e.target.value)}
                             />
                         ) : (
-                            <p className="mb-0">{revisorsComment || t('components.atlas.mapMain.infoPanel.noComment')}</p>
+                            <p className="mb-0">{revisorsComment || t('atlas.mapMain.infoPanel.noComment')}</p>
                         )}
                     </InfoSection>
                     <InfoSection eventKey="3" title={t("atlas.mapMain.infoPanel.printMapNote")}>
@@ -274,10 +304,49 @@ export function InfoPanel({taxonName, taxonId}: InfoPanelProps) {
                                 onChange={(e) => handleRevisorsPrintMapCommentChange(e.target.value)}
                             />
                         ) : (
-                            <p className="mb-0">{revisorsPrintMapComment || t('components.atlas.mapMain.infoPanel.noComment')}</p>
+                            <p className="mb-0">{revisorsPrintMapComment || t('atlas.mapMain.infoPanel.noComment')}</p>
                         )}
                     </InfoSection>
                     <InfoSection eventKey="4" title={t("atlas.mapMain.infoPanel.mapTypeSelection")}>
+                        <p id="revision-status" className="mb-3">
+                            {currentUserIsRevisor && isMapped && revisionStatusId < REVISION_STATUS_MAP_SUBMITTED && (
+                                <>
+                                    <span dangerouslySetInnerHTML={{__html: t("atlas.mapMain.infoPanel.revisionStatus.submit")}}/>
+                                    {' '}
+                                    <Button
+                                        variant="warning"
+                                        size="sm"
+                                        id="submit-revision"
+                                        disabled={revisionUpdating}
+                                        onClick={() => handleRevisionStatusChange(REVISION_STATUS_MAP_SUBMITTED)}
+                                    >
+                                        {t("atlas.mapMain.infoPanel.revisionStatus.submitButton")}
+                                    </Button>
+                                </>
+                            )}
+                            {currentUserIsRevisor && revisionStatusId === REVISION_STATUS_MAP_SUBMITTED && (
+                                <span dangerouslySetInnerHTML={{__html: t("atlas.mapMain.infoPanel.revisionStatus.submited")}}/>
+                            )}
+                            {currentUserIsRevisor && revisionStatusId === REVISION_STATUS_REVIEW && (
+                                <span dangerouslySetInnerHTML={{__html: t("atlas.mapMain.infoPanel.revisionStatus.supervised")}}/>
+                            )}
+                            {currentUserIsRevisor && revisionStatusId === REVISION_STATUS_COMPLETING && (
+                                <>
+                                    <span dangerouslySetInnerHTML={{__html: t("atlas.mapMain.infoPanel.revisionStatus.finishing")}}/>
+                                    {' '}
+                                    <Button
+                                        variant="warning"
+                                        size="sm"
+                                        id="lock-revision"
+                                        disabled={revisionUpdating}
+                                        onClick={() => handleRevisionStatusChange(REVISION_STATUS_CLOSED)}
+                                    >
+                                        {t("atlas.mapMain.infoPanel.revisionStatus.feedbackProceeded")}
+                                    </Button>
+                                </>
+                            )}
+                            {revisionStatusError && <span className="text-danger d-block">{revisionStatusError}</span>}
+                        </p>
                         <p>{t("atlas.mapMain.infoPanel.mapTypeDescription")}</p>
                         {taxonId && (
                             <div className="d-flex flex-column gap-2">

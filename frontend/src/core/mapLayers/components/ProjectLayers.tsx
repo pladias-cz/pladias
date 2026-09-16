@@ -1,6 +1,6 @@
 /**
  * ProjectLayers Component
- * 
+ *
  * Dynamically renders WMS layers for each project that has records for the current taxon.
  * Fetches project data from the API and creates WMS layers with appropriate parameters.
  * Integrates with the layer management system for visibility control.
@@ -11,6 +11,7 @@ import { WMSTileLayer } from 'react-leaflet';
 import type { WMSParams } from 'leaflet';
 import axios from 'axios';
 import { useLayerState } from '../store/layerStore';
+import { PROJECT_LAYER_TEMPLATE } from '../registry/groups/projectLayers';
 
 interface TaxonStatisticsResponse {
     data: TaxonStatisticsDto;
@@ -133,6 +134,7 @@ function ProjectLayer({
             url={url}
             params={params}
             opacity={visible ? 1 : 0}
+            zIndex={PROJECT_LAYER_TEMPLATE.zIndex}
             attribution="PLADIAS contributors"
         />
     );

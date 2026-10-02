@@ -49,6 +49,8 @@ export interface TextColumnDef<T> extends BaseColumnDef<T> {
     accessor: keyof T;
     /** Placeholder for filter input */
     filterPlaceholder?: string;
+    /** Options for select filter - when set, a select is rendered instead of text input */
+    filterOptions?: Array<{value: string; label: string}>;
     /** Custom cell renderer */
     cellRenderer?: (value: any, row: T) => React.ReactNode;
 }

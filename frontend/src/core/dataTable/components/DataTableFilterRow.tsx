@@ -68,6 +68,18 @@ export function DataTableFilterRow<T>(props: DataTableFilterRowProps<T>) {
                                 <option value="true">{t("common.table.filter.yes")}</option>
                                 <option value="false">{t("common.table.filter.no")}</option>
                             </Form.Select>
+                        ) : column.type === 'text' && column.filterOptions ? (
+                            <Form.Select
+                                size="sm"
+                                value={getFilterValue(String(column.id))}
+                                onChange={(e) => onFilterChange(String(column.id), e.target.value)}
+                                style={{width: '100%'}}
+                            >
+                                <option value="">{t("common.table.filter.all")}</option>
+                                {column.filterOptions.map(option => (
+                                    <option key={option.value} value={option.value}>{option.label}</option>
+                                ))}
+                            </Form.Select>
                         ) : column.type === 'number' ? (
                             <Form.Control
                                 size="sm"

@@ -195,7 +195,7 @@ export default function TaxaList() {
         createTextColumn<TaxonMapSettings>('revisionStatusId', t("atlas.admin.taxaList.revisionStatus"), {
             enableSorting: true,
             enableFiltering: true,
-            filterPlaceholder: t("atlas.admin.taxaList.filterRevisionStatus"),
+            filterOptions: revisionStatusOptions.map(o => ({value: String(o.id), label: `${o.description} [${o.id}]`})),
             cellRenderer: (_value, row) => (
                 <StatusSelect
                     value={row.revisionStatusId}
@@ -208,7 +208,7 @@ export default function TaxaList() {
         createTextColumn<TaxonMapSettings>('publicationStatusId', t("atlas.admin.taxaList.publicationStatus"), {
             enableSorting: true,
             enableFiltering: true,
-            filterPlaceholder: t("atlas.admin.taxaList.filterPublicationStatus"),
+            filterOptions: publicationStatusOptions.map(o => ({value: String(o.id), label: `${o.description} [${o.id}]`})),
             cellRenderer: (_value, row) => (
                 <StatusSelect
                     value={row.publicationStatusId}

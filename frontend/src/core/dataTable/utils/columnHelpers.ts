@@ -14,6 +14,7 @@ export function createTextColumn<T extends object>(
         enableSorting?: boolean;
         enableFiltering?: boolean;
         filterPlaceholder?: string;
+        filterOptions?: Array<{value: string; label: string}>;
         width?: string | number;
         minWidth?: string | number;
         cellRenderer?: (value: any, row: T) => React.ReactNode;
@@ -27,6 +28,7 @@ export function createTextColumn<T extends object>(
         enableSorting: options?.enableSorting ?? true,
         enableFiltering: options?.enableFiltering ?? true,
         filterPlaceholder: options?.filterPlaceholder,
+        filterOptions: options?.filterOptions,
         width: options?.width,
         minWidth: options?.minWidth,
         cellRenderer: options?.cellRenderer,

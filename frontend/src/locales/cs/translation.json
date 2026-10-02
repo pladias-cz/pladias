@@ -1032,6 +1032,8 @@
     },
     "changePassword": {
       "confirmNewPassword": "Nové heslo pro kontrolu",
+      "createToken": "Vytvořit token",
+      "creatingToken": "Vytvářím token...",
       "description": "Zadejte aktuální heslo a nové heslo.",
       "error": "Při změně hesla došlo k chybě.",
       "networkError": "Chyba připojení k serveru.",
@@ -1040,7 +1042,9 @@
       "submit": "Změnit heslo",
       "submitting": "Měním heslo...",
       "success": "Heslo bylo úspěšně změněno.",
-      "title": "Změna hesla"
+      "title": "Změna hesla",
+      "tokenCreated": "Token (zkopírujte si ho, nebude více dostupný):",
+      "tokenError": "Při vytváření tokenu došlo k chybě."
     },
     "settings": {
       "applicationLanguage": "Jazyk aplikace",

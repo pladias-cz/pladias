@@ -17,6 +17,31 @@ export default function ChangePassword() {
     const [message, setMessage] = useState(null);
     const [error, setError] = useState(null);
 
+    const [token, setToken] = useState(null);
+    const [tokenLoading, setTokenLoading] = useState(false);
+
+    const handleCreateToken = async () => {
+        setTokenLoading(true);
+        setError(null);
+        setMessage(null);
+        setToken(null);
+
+        try {
+            const response = await fetch("/api/react/user/createToken", {method: "POST"});
+            const data = await response.json();
+
+            if (response.ok && data.success) {
+                setToken(data.token);
+            } else {
+                setError(data.error || data.message || t("user.changePassword.tokenError"));
+            }
+        } catch (err) {
+            setError(t("user.changePassword.networkError"));
+        } finally {
+            setTokenLoading(false);
+        }
+    };
+
     const handleChange = (e) => {
         const {name, value} = e.target;
         setFormData(prev => ({
@@ -68,6 +93,12 @@ export default function ChangePassword() {
 
                 {error && <Alert variant="danger">{error}</Alert>}
                 {message && <Alert variant="success">{message}</Alert>}
+                {token && (
+                    <Alert variant="info" dismissible onClose={() => setToken(null)}>
+                        {t("user.changePassword.tokenCreated")}
+                        <div className="mt-2"><code className="user-select-all text-break">{token}</code></div>
+                    </Alert>
+                )}
 
                 <Form onSubmit={handleSubmit}>
                     <Form.Group className="mb-3" controlId="originalPassword">
@@ -109,6 +140,15 @@ export default function ChangePassword() {
                         disabled={loading}
                     >
                         {loading ? t("user.changePassword.submitting") : t("user.changePassword.submit")}
+                    </Button>
+                    <Button
+                        variant="secondary"
+                        className="ms-2"
+                        type="button"
+                        onClick={handleCreateToken}
+                        disabled={tokenLoading}
+                    >
+                        {tokenLoading ? t("user.changePassword.creatingToken") : t("user.changePassword.createToken")}
                     </Button>
                 </Form>
             </Col>

@@ -17,6 +17,7 @@ import play.libs.Json;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.mvc.Security;
+import service.accessrights.TokenAuthService;
 import service.config.IConfigService;
 import service.password.IHashService;
 import utils.JsonResult;
@@ -117,6 +118,16 @@ public class UserController extends ControllerBase {
             errorResponse.put("error", "An error occurred while changing password");
             return internalServerError(Json.toJson(errorResponse));
         }
+    }
+
+    public Result createToken(Http.Request request) {
+        User user = SessionUtils.getCurrentUser(request.session());
+        if (user == null) {
+            return unauthorized(JsonResult.error("User not authenticated"));
+        }
+
+        String token = TokenAuthService.createToken(user);
+        return ok(JsonResult.buildSuccess(Map.of("token", token)));
     }
 
     public Result changeEmail(Http.Request request) {

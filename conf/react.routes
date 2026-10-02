@@ -77,6 +77,7 @@ GET   /infoGlobal                        controllers.common.ConfigController.inf
 
 POST /user/changePassword                controllers.common.UserController.changePassword(request: Request)
 POST /user/changeEmail                   controllers.common.UserController.changeEmail(request: Request)
+POST /user/createToken                   controllers.common.UserController.createToken(request: Request)
 
 # User Settings API
 GET  /user/settings/:key                 controllers.common.UserController.getUserSetting(request: Request, key: String)

@@ -293,15 +293,12 @@ public class PageSearchService implements IPageSearchService {
                 collate = "";
                 break;
             default:
-                sortField = null;
+                sortField = "R.id";
+                collate = "";
                 break;
         }
 
-        if (StringUtils.isBlank(sortField)) {
-            return " ORDER BY T.name_lat COLLATE cs_cz_icu, R.datum, R.id ";
-        }
-
-        return " ORDER BY " + sortField + " " + collate + " " + direction + ", T.name_lat COLLATE cs_cz_icu, R.datum, R.id ";
+        return " ORDER BY " + sortField + " " + collate + " " + direction + " ";
     }
 
     private String buildFromClause(User currentUser, SearchController.SearchForm form, boolean withSortJoins) {

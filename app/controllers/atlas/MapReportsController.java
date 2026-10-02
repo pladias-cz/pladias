@@ -19,6 +19,8 @@ import service.config.IConfigService;
 import service.csv.CsvMapService;
 import service.revisors.IRevisorService;
 import service.taxon.SimpleMapRecordSelectionFilter;
+import service.taxon.ITaxonService;
+import service.map.revision.TaxaInPublicationProcessCSVGenerator;
 import utils.JsonResult;
 import utils.SessionUtils;
 
@@ -50,6 +52,8 @@ public class MapReportsController extends ControllerBase {
     @Inject
     private IConfigService configService;
 
+    @Inject
+    private ITaxonService taxonService;
 
     public Result downloadCsvMapDetails(Integer id) {
         CsvMapDetails csvDetails = CsvMapDetails.find().byId(id);
@@ -244,6 +248,27 @@ public class MapReportsController extends ControllerBase {
         return ok(JsonResult.buildSuccess());
 
     }
+
+	public Result taxaOverviewInPublicationProcessCSV(Http.Request request) throws IOException {
+		if (!isCurrentUserEligible(request.session())) {
+			return badRequest(JsonResult.buildError("not allowed"));
+		}
+
+		List<TaxonMapSettings> taxaList = TaxonMapSettings.find().query().fetch("taxon").where()
+				.in("publicationStatus.id",
+						PublicationStatus.ApprovedForProcessing,
+						PublicationStatus.StatusPreviewPreparation,
+                        PublicationStatus.StatusPreview)
+				.findList();
+		TaxaInPublicationProcessCSVGenerator generator = new TaxaInPublicationProcessCSVGenerator();
+		byte[] csvData = generator.convertToCsvData(taxaList, taxonService);
+		ByteArrayInputStream bis = new ByteArrayInputStream(csvData);
+		String isoDate = java.time.LocalDate.now().toString();
+		String filename = String.format("attachment; filename=taxa_publication_%s.csv", isoDate);
+		return ok(bis)
+				.withHeader("Content-disposition", filename)
+				.as("application/x-download");
+	}
 
     private boolean isCurrentUserEligible(Session session) {
         models.User currentUser = SessionUtils.getCurrentUser(session);

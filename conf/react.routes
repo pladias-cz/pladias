@@ -35,6 +35,7 @@ POST    /atlasadmin/assignUserTaxon      controllers.atlas.MapReportsController.
 DELETE  /atlasadmin/removeUserTaxon/user/:userId/taxon/:taxonId  controllers.atlas.MapReportsController.removeUserTaxon(request: Request, userId: Long, taxonId: Long)
 GET     /atlas/map-reports/download-csv/:id  controllers.atlas.MapReportsController.downloadCsvMapDetails(id: Integer)
 GET     /atlas/map-reports/download-csv-map/:id  controllers.atlas.MapReportsController.downloadCsvRenderMapDetails(id: Integer)
+GET     /atlas/map-reports/taxa-in-publication-process-csv  controllers.atlas.MapReportsController.taxaOverviewInPublicationProcessCSV(request: Request)
 
 GET     /atlas/common/phytochorions          controllers.atlas.CommonController.getPhytochorions()
 GET     /selectOptions/phytochorions              controllers.atlas.PhytochorionController.getAll()

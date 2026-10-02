@@ -8,6 +8,15 @@ export default function ListOfTaxa() {
     usePageTitle(t("atlas.admin.pages.listOfTaxa.title"));
     return (
         <Row>
+            <div className="mb-2">
+                <a
+                    href="/api/react/atlas/map-reports/taxa-in-publication-process-csv"
+                    className="text-decoration-none"
+                >
+                    <i className="bi bi-file-earmark-spreadsheet text-success me-1"></i>
+                    {t("atlas.admin.pages.listOfTaxa.downloadPublicationCsv")}
+                </a>
+            </div>
             <TaxaList />
         </Row>
     );

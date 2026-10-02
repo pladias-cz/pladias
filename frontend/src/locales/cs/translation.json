@@ -31,7 +31,8 @@
           "title": "Seznam všech importů"
         },
         "listOfTaxa": {
-          "title": "Správa taxonů"
+          "title": "Správa taxonů",
+          "downloadPublicationCsv": "Stáhnout CSV přehled pro generování PDF"
         },
         "listOfUsers": {
           "title": "Správa uživatelů map"

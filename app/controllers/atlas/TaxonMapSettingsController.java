@@ -21,14 +21,20 @@ import play.mvc.Http.Session;
 import play.mvc.Result;
 import play.mvc.Security;
 import service.config.IConfigService;
+import service.export.table.TableExportWriter;
 import service.map.publication.PublicationUpdateService;
 import service.map.revision.RevisionUpdateService;
 import service.taxon.ITaxonService;
 import service.taxonmapsettings.TaxonMapSettingsParentUpdateService;
 import utils.JsonResult;
 import utils.SessionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import java.util.List;
+import java.util.ArrayList;
 
 import javax.inject.Inject;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -60,6 +66,9 @@ public class TaxonMapSettingsController extends ControllerBase {
 
     @Inject
     private IConfigService configService;
+
+    private final Logger logger = LoggerFactory.getLogger(TaxonMapSettingsController.class);
+
 
     public Result updateMapSettings(Http.Request request) {
         try {
@@ -220,8 +229,13 @@ public class TaxonMapSettingsController extends ControllerBase {
      * Get taxa with map settings for React datatable with filtering capabilities.
      * Only accessible by map admins.
      *
+     * <p>The table data and the export of the very same rows are answered by this endpoint: the
+     * client asks for the XLSX variant by sending the XLSX media type in the {@code Accept}
+     * header. Pagination is applied only when both {@code page} and {@code pageSize} are
+     * present, so an export request (which sends neither) receives all filtered rows.</p>
+     *
      * @param request HTTP request
-     * @return JSON response with taxa and their map settings
+     * @return JSON response with taxa and their map settings, or the XLSX workbook
      */
     public Result getTaxa(Http.Request request) {
         try {
@@ -237,7 +251,7 @@ public class TaxonMapSettingsController extends ControllerBase {
             String commonThresholdFilter = request.getQueryString("commonThresholdFilter");
             String isProtectedFilter = request.getQueryString("isProtectedFilter");
             String presliaFilter = request.getQueryString("presliaFilter");
-            String revisorsFilter = request.getQueryString("revisorsFilter");
+//             String revisorsFilter = request.getQueryString("revisorsFilter");
             String revisionStatusFilter = request.getQueryString("revisionStatusFilter");
             String publicationStatusFilter = request.getQueryString("publicationStatusFilter");
 
@@ -245,9 +259,11 @@ public class TaxonMapSettingsController extends ControllerBase {
             String sortField = request.getQueryString("sortField");
             String sortDirection = request.getQueryString("sortDirection");
 
-            // Pagination parameters
-            int page = request.getQueryString("page") != null ? Integer.parseInt(request.getQueryString("page")) : 1;
-            int pageSize = request.getQueryString("pageSize") != null ? Integer.parseInt(request.getQueryString("pageSize")) : 20;
+            // Pagination parameters - without them the whole filtered list is returned
+            boolean paginated = request.getQueryString("page") != null
+                && request.getQueryString("pageSize") != null;
+            int page = paginated ? Integer.parseInt(request.getQueryString("page")) : 1;
+            int pageSize = paginated ? Integer.parseInt(request.getQueryString("pageSize")) : 0;
 
             // Build WHERE clause for filters using positional parameters
             StringBuilder whereClause = new StringBuilder();
@@ -273,10 +289,10 @@ public class TaxonMapSettingsController extends ControllerBase {
                 whereClause.append(" AND ms.preslia ILIKE ?");
                 params.add("%" + presliaFilter + "%");
             }
-            if (revisorsFilter != null && !revisorsFilter.isEmpty()) {
-                whereClause.append(" AND ms.revisors_comment ILIKE ?");
-                params.add("%" + revisorsFilter + "%");
-            }
+//             if (revisorsFilter != null && !revisorsFilter.isEmpty()) {
+//                 whereClause.append(" AND ms.revisors_comment ILIKE ?");
+//                 params.add("%" + revisorsFilter + "%");
+//             }
             if (revisionStatusFilter != null && !revisionStatusFilter.isEmpty()) {
                 whereClause.append(" AND ms.revision_status = ?");
                 params.add(Integer.parseInt(revisionStatusFilter));
@@ -285,9 +301,6 @@ public class TaxonMapSettingsController extends ControllerBase {
                 whereClause.append(" AND ms.publication_status = ?");
                 params.add(Integer.parseInt(publicationStatusFilter));
             }
-
-            // Calculate pagination
-            int offset = (page - 1) * pageSize;
 
             // Build the main SQL query with JOIN to taxons table for ordering
             String sql = "SELECT ms.taxon_id, ms.map_type, ms.revision_status, ms.publication_status, " +
@@ -300,38 +313,25 @@ public class TaxonMapSettingsController extends ControllerBase {
                 "JOIN public.taxons_clear t ON t.id = ms.taxon_id " +
                 "LEFT JOIN atlas.taxon_mapsettings pms ON ms.superior_taxon = pms.taxon_id " +
                 "LEFT JOIN public.taxons_clear pt ON pms.taxon_id = pt.id " +
-                "WHERE 1=1 " + whereClause + " " +
+                "WHERE  1=1 " + whereClause + " " +
                 "ORDER BY t.name_lat ASC NULLS LAST " +
-                "LIMIT ? OFFSET ?";
+                (paginated ? "LIMIT ? OFFSET ?" : "");
 
             SqlQuery sqlQuery = DB.sqlQuery(sql);
             // Bind filter parameters
             for (Object param : params) {
                 sqlQuery.setParameter(param);
             }
-            // Bind pagination parameters
-            sqlQuery.setParameter(pageSize);
-            sqlQuery.setParameter(offset);
+            // Bind pagination parameters - an export request omits them to get all filtered rows
+            if (paginated) {
+                sqlQuery.setParameter(pageSize);
+                sqlQuery.setParameter((page - 1) * pageSize);
+            }
 
             java.util.List<SqlRow> rows = sqlQuery.findList();
 
-            // Get filtered count
-            String countSql = "SELECT COUNT(*) FROM atlas.taxon_mapsettings ms " +
-                "JOIN public.taxons_clear t ON t.id = ms.taxon_id " +
-                "WHERE 1=1 " + whereClause;
-            SqlQuery countQuery = DB.sqlQuery(countSql);
-            // Bind filter parameters (same as main query, without pagination)
-            for (Object param : params) {
-                countQuery.setParameter(param);
-            }
-            long filteredCount = countQuery.findOne().getLong("count");
-
-            // Get total count of all taxa (without filters)
-            long totalCount = TaxonMapSettings.find().query().findCount();
-
-            // Convert to DTO format suitable for React datatable
-            com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
-            ArrayNode taxaArray = mapper.createArrayNode();
+            // Convert rows to DTO format suitable for React datatable and for the XLSX export
+            List<TaxonMapSettingsDto> taxa = new ArrayList<>();
 
             for (SqlRow row : rows) {
                 Long taxonId = row.getLong("taxon_id");
@@ -412,6 +412,33 @@ public class TaxonMapSettingsController extends ControllerBase {
                     currentUserIsRevisor,
                     mapType
                 );
+                taxa.add(dto);
+            }
+
+            if (TableExportWriter.acceptsXlsx(request)) {
+                byte[] workbook = TableExportWriter.write(
+                    "taxa", TaxonMapSettingsDto.exportColumns(), taxa, getMessages(request));
+                String filename = String.format("attachment; filename=%s",
+                    "taxa_" + LocalDate.now() + ".xlsx");
+                return ok(workbook).withHeader("Content-disposition", filename).as("application/x-download");
+            }
+
+            // Get number of rows matching the filters and total number of taxa
+            String countSql = "SELECT COUNT(*) FROM atlas.taxon_mapsettings ms " +
+                "JOIN public.taxons_clear t ON t.id = ms.taxon_id " +
+                "WHERE 1=1 " + whereClause;
+            SqlQuery countQuery = DB.sqlQuery(countSql);
+            // Bind filter parameters (same as main query, without pagination)
+            for (Object param : params) {
+                countQuery.setParameter(param);
+            }
+            long filteredCount = countQuery.findOne().getLong("count");
+            long totalCount = TaxonMapSettings.find().query().findCount();
+
+            // Build the JSON response of the table
+            com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+            ArrayNode taxaArray = mapper.createArrayNode();
+            for (TaxonMapSettingsDto dto : taxa) {
                 taxaArray.add(mapper.valueToTree(dto));
             }
 
@@ -420,7 +447,7 @@ public class TaxonMapSettingsController extends ControllerBase {
             response.put("filteredCount", filteredCount);
             response.put("totalCount", totalCount);
             response.put("page", page);
-            response.put("pageSize", pageSize);
+            response.put("pageSize", paginated ? pageSize : taxa.size());
             response.put("success", true);
 
             return ok(response);
@@ -437,11 +464,37 @@ public class TaxonMapSettingsController extends ControllerBase {
      * @return JSON response with taxa and their map settings
      */
     public Result getTaxaForUser(Http.Request request) {
+
+
         try {
             // Get current user
             User currentUser = SessionUtils.getCurrentUser(request.session());
             if (currentUser == null) {
                 return unauthorized(JsonResult.error("Unauthorized access - user not logged in"));
+            }
+
+            List<Taxon> inheritedSupervisedTaxonList = taxonService.getInheritedlyAssignedTaxa(currentUser);
+
+            List<Long> inheritedSupervisedTaxonIds = inheritedSupervisedTaxonList.stream()
+                .map(Taxon::getId)
+                .distinct()
+                .collect(Collectors.toList());
+
+            String taxonPlaceholders = inheritedSupervisedTaxonIds.stream()
+                .map(id -> "?")
+                .collect(Collectors.joining(", "));
+
+            if (inheritedSupervisedTaxonIds.isEmpty()) {
+                        com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+                   ObjectNode response = mapper.createObjectNode();
+                   response.set("taxa", mapper.createArrayNode());
+                   response.put("filteredCount", 0);
+                   response.put("totalCount", 0);
+                   response.put("page", 1);
+                   response.put("pageSize", 20);
+                   response.put("success", true);
+
+                   return ok(response);
             }
 
             // Get query parameters for filtering
@@ -450,7 +503,7 @@ public class TaxonMapSettingsController extends ControllerBase {
             String commonThresholdFilter = request.getQueryString("commonThresholdFilter");
             String isProtectedFilter = request.getQueryString("isProtectedFilter");
             String presliaFilter = request.getQueryString("presliaFilter");
-            String revisorsFilter = request.getQueryString("revisorsFilter");
+//             String revisorsFilter = request.getQueryString("revisorsFilter");
             String revisionStatusFilter = request.getQueryString("revisionStatusFilter");
             String publicationStatusFilter = request.getQueryString("publicationStatusFilter");
 
@@ -486,10 +539,10 @@ public class TaxonMapSettingsController extends ControllerBase {
                 whereClause.append(" AND ms.preslia ILIKE ?");
                 params.add("%" + presliaFilter + "%");
             }
-            if (revisorsFilter != null && !revisorsFilter.isEmpty()) {
-                whereClause.append(" AND ms.revisors_comment ILIKE ?");
-                params.add("%" + revisorsFilter + "%");
-            }
+//             if (revisorsFilter != null && !revisorsFilter.isEmpty()) {
+//                 whereClause.append(" AND ms.revisors_comment ILIKE ?");
+//                 params.add("%" + revisorsFilter + "%");
+//             }
             if (revisionStatusFilter != null && !revisionStatusFilter.isEmpty()) {
                 whereClause.append(" AND ms.revision_status = ?");
                 params.add(Integer.parseInt(revisionStatusFilter));
@@ -511,16 +564,17 @@ public class TaxonMapSettingsController extends ControllerBase {
                 "       pt.name_lat as parent_name_lat, pt.id as parent_taxon_id " +
                 "FROM atlas.taxon_mapsettings ms " +
                 "JOIN public.taxons_clear t ON t.id = ms.taxon_id " +
-                "JOIN atlas.taxons_users tu ON tu.taxons_id = t.id " +
                 "LEFT JOIN atlas.taxon_mapsettings pms ON ms.superior_taxon = pms.taxon_id " +
                 "LEFT JOIN public.taxons_clear pt ON pms.taxon_id = pt.id " +
-                "WHERE tu.users_id = ? " + whereClause + " " +
-                "ORDER BY t.name_lat ASC NULLS LAST " +
-                "LIMIT ? OFFSET ?";
-
+                 "WHERE t.id IN (" + taxonPlaceholders + ") " + whereClause  +
+                " ORDER BY t.name_lat ASC NULLS LAST " +
+                " LIMIT ? OFFSET ?";
+//             logger.info(sql);
             SqlQuery sqlQuery = DB.sqlQuery(sql);
-            // Bind user ID parameter first
-            sqlQuery.setParameter(currentUser.getId());
+
+          for (Long taxonId : inheritedSupervisedTaxonIds) {
+              sqlQuery.setParameter(taxonId);
+          }
             // Bind filter parameters
             for (Object param : params) {
                 sqlQuery.setParameter(param);
@@ -534,25 +588,26 @@ public class TaxonMapSettingsController extends ControllerBase {
             // Get filtered count
             String countSql = "SELECT COUNT(*) FROM atlas.taxon_mapsettings ms " +
                 "JOIN public.taxons_clear t ON t.id = ms.taxon_id " +
-                "JOIN atlas.taxons_users tu ON tu.taxons_id = t.id " +
-                "WHERE tu.users_id = ? " + whereClause;
+                 "WHERE t.id IN (" + taxonPlaceholders + ") " + whereClause;
             SqlQuery countQuery = DB.sqlQuery(countSql);
-            // Bind user ID parameter first
-            countQuery.setParameter(currentUser.getId());
+             for (Long taxonId : inheritedSupervisedTaxonIds) {
+                          countQuery.setParameter(taxonId);
+                      }
+
             // Bind filter parameters (same as main query, without pagination)
             for (Object param : params) {
                 countQuery.setParameter(param);
             }
             long filteredCount = countQuery.findOne().getLong("count");
 
-            // Get total count of all taxa for current user (without filters)
-            String totalCountSql = "SELECT COUNT(*) FROM atlas.taxon_mapsettings ms " +
-                "JOIN atlas.taxons_users tu ON tu.taxons_id = ms.taxon_id " +
-                "WHERE tu.users_id = ?";
-            long totalCount = DB.sqlQuery(totalCountSql)
-                .setParameter(currentUser.getId())
-                .findOne()
-                .getLong("count");
+                String totalCountSql =
+                "SELECT COUNT(*) " + "FROM atlas.taxon_mapsettings ms " +
+                "WHERE ms.taxon_id IN (" + taxonPlaceholders + ")";
+                SqlQuery totalCountQuery = DB.sqlQuery(totalCountSql);
+                 for (Long taxonId : inheritedSupervisedTaxonIds) {
+                 totalCountQuery.setParameter(taxonId);
+                 }
+                 long totalCount = totalCountQuery .findOne() .getLong("count");
 
             // Convert to DTO format suitable for React datatable
             com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
@@ -676,6 +731,8 @@ public class TaxonMapSettingsController extends ControllerBase {
                 return notFound(JsonResult.error("Taxon map settings not found for taxonId: " + taxonId));
             }
 
+            verifyRevisionStatus(request, currentUser, settings);
+
             Taxon taxon = DB.reference(Taxon.class, taxonId);
             Integer mapType = settings.getMapType();
             String revisors = taxonService.getInheritedRevisors(taxon).stream()
@@ -768,6 +825,20 @@ public class TaxonMapSettingsController extends ControllerBase {
             return ok(response);
         } catch (Exception e) {
             return internalServerError(JsonResult.error("An error occurred while retrieving taxon map settings: " + e.getMessage()));
+        }
+    }
+
+    /**
+     * Promotes the revision status of the taxon from 'assigned' to 'map in progress' once the
+     * threshold of touched records is reached. Called when the map of the taxon is displayed.
+     */
+    private void verifyRevisionStatus(Http.Request request, User currentUser, TaxonMapSettings settings) {
+        try {
+            RevisionUpdateService service = new RevisionUpdateService(
+                currentUser, taxonService, configService, getMessages(request));
+            service.updateRevisionIfTresholdMet(settings);
+        } catch (Exception e) {
+            logger.error(String.format("Unable to verify revision status of taxon %d", settings.getId()), e);
         }
     }
 

@@ -1,6 +1,6 @@
 /**
  * TaxaList - Taxon Map Settings Administration Component
- * 
+ *
  * Uses the enterprise DataTable component with custom data fetching
  * to efficiently load taxa and their map settings.
  */
@@ -11,6 +11,7 @@ import {DataTable, type DataTableColumnDef, createActionColumn, createCheckboxCo
 import {
     useTaxaData,
     useTaxonUpdates,
+    extractTaxaFilters,
 } from './taxaList/hooks';
 import {
     StatusSelect,
@@ -19,10 +20,11 @@ import {
     MappedCell,
 } from './taxaList/components';
 import type {TaxonMapSettings, StatusOption, TaxonOption} from './taxaList/types';
+import {Link} from "react-router-dom";
 
 export default function TaxaList() {
     const {t} = useTranslation();
-    
+
     const [error, setError] = useState<string | null>(null);
     const [revisionStatusOptions, setRevisionStatusOptions] = useState<StatusOption[]>([]);
     const [publicationStatusOptions, setPublicationStatusOptions] = useState<StatusOption[]>([]);
@@ -58,7 +60,7 @@ export default function TaxaList() {
             // Optional: handle successful data fetch
         }
     });
-    
+
     const {
         updatingTaxonId,
         updateIsMapped,
@@ -131,9 +133,7 @@ export default function TaxaList() {
             cellRenderer: (_value, row) => (
                 <>
                     <i>
-                        <a href={`/atlas/map?taxonId=${row.taxonId}`}>
-                            <i>{row.taxonNameLat}</i>
-                        </a>
+                        <Link to={`/atlas/mapMain/${row.taxonId}`} target="_blank" rel="noopener noreferrer">{row.taxonNameLat}</Link>
                     </i>
                     {row.taxonRankCz && (
                         <small className="text-muted"> ({row.taxonRankCz})</small>
@@ -188,7 +188,7 @@ export default function TaxaList() {
         }),
         createTextColumn<TaxonMapSettings>('revisors', t("atlas.admin.taxaList.revisors"), {
             enableSorting: true,
-            enableFiltering: true,
+            enableFiltering: false,
             filterPlaceholder: t("atlas.admin.taxaList.filterRevisors"),
             cellRenderer: (value) => value || '-',
         }),
@@ -249,13 +249,15 @@ export default function TaxaList() {
                     <button type="button" className="btn-close" onClick={() => setError(null)}></button>
                 </div>
             )}
-            
+
             <DataTable<TaxonMapSettings>
                 endpoint="/api/react/atlasadmin/taxa"
                 columns={columns}
                 fetchData={fetchTaxa}
                 initialPageSize={20}
                 pageSizeOptions={[10, 20, 50, 100]}
+                hasExcelExport
+                buildExportFilterParams={extractTaxaFilters}
             />
         </div>
     );

@@ -42,7 +42,7 @@ export default function BackupTable() {
     if (error) {
         return (
             <Alert variant="danger" className="my-3">
-                {t("traitBackups.error")}: {error}
+                {t("trait.backup.error")}: {error}
             </Alert>
         );
     }
@@ -54,10 +54,10 @@ export default function BackupTable() {
         <Table striped bordered hover responsive>
             <thead>
             <tr>
-                <th>{t("measurement.traitBackups.description")}</th>
-                <th>{t("measurement.traitBackups.createdAt")}</th>
+                <th>{t("trait.backup.description")}</th>
+                <th>{t("trait.backup.createdAt")}</th>
                 <th className="text-center">
-                    {t("measurement.traitBackups.download")}
+                    {t("trait.backup.download")}
                 </th>
             </tr>
             </thead>
@@ -68,12 +68,12 @@ export default function BackupTable() {
                     <td>{formatDate(b.createdAt)}</td>
                     <td className="text-center">
                         <a
-                            href={`/traits/snapshot/${b.id}`}
+                            href={`/api/react/measurement/backup/${b.id}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="btn btn-sm btn-primary"
                         >
-                            {t("measurement.traitBackups.download")}
+                            {t("trait.backup.download")}
                         </a>
                     </td>
                 </tr>

@@ -1,9 +1,9 @@
 /**
  * Preprint Layers
- * 
+ *
  * Occurrence data layers showing validated and nonvalidated records.
  * These layers display taxon occurrence points from the PLADIAS database.
- * 
+ *
  * Refactored with shared configuration to reduce duplication.
  */
 
@@ -164,6 +164,16 @@ export const PREPRINT_LAYERS: LayerDefinition[] = [
         fillOpacity: 1,
     }),
     createPreprintLayer({
+        id: 'preprint_common_nonherb',
+        title: 'Common Threshold Occurrences (non-herb style)',
+        typeName: 'public:preprint_common',
+        description: 'Common threshold quadrants from PLADIAS database, styled as non-herbarium',
+        zIndex: 6,
+        fillColor: '#eeee00',
+        strokeColor: '#111111',
+        fillOpacity: 1,
+    }),
+    createPreprintLayer({
         id: 'preprint_cultivated',
         title: 'Preprint cultivated',
         typeName: 'public:preprint_pestovany',
@@ -218,6 +228,26 @@ export const PREPRINT_LAYERS: LayerDefinition[] = [
         title: 'Preprint = historical',
         typeName: 'public:preprint_zanik',
         description: 'Historical occurrences',
+        zIndex: 6,
+        fillColor: '#aaaaaa',
+        strokeColor: '#0a0a0a',
+        fillOpacity: 1,
+    }),
+    createPreprintLayer({
+        id: 'preprint_common_recent',
+        title: 'Preprint = recent (common)',
+        typeName: 'public:preprint_common_recent',
+        description: 'Recent occurrence (common)',
+        zIndex: 10,
+        fillColor: '#111111',
+        strokeColor: '#111111',
+        fillOpacity: 1,
+    }),
+    createPreprintLayer({
+        id: 'preprint_common_historical',
+        title: 'Preprint = historical (common)',
+        typeName: 'public:preprint_common_zanik',
+        description: 'Historical occurrences (common)',
         zIndex: 6,
         fillColor: '#aaaaaa',
         strokeColor: '#0a0a0a',

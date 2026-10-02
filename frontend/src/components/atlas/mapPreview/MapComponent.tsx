@@ -19,7 +19,7 @@ interface TaxonMapSettingsResponse {
 /**
  * Layer configuration for each map preview type
  * Each type shows a different combination of layers
- * 
+ *
  * Note: commonThreshold from taxon settings may affect layer visibility
  * - When commonThreshold is set, it indicates the taxon has common/rare status
  * - This can be used to show/hide certain occurrence layers based on business logic
@@ -38,7 +38,9 @@ const MAP_TYPE_LAYERS: Record<MapPreviewType, string[]> = {
         'technical_quadrants',
         'interactive_squares',
         'preprint_recent',
+        'preprint_common_recent',
         'preprint_historical',
+        'preprint_common_historical',
         'preprint_nejisty'
     ],
     3: [
@@ -55,6 +57,7 @@ const MAP_TYPE_LAYERS: Record<MapPreviewType, string[]> = {
         'interactive_squares',
         'preprint_herb',
         'preprint_nonherb',
+        'preprint_common_nonherb',
         'preprint_nejisty'
 
     ],
@@ -64,7 +67,7 @@ const MAP_TYPE_LAYERS: Record<MapPreviewType, string[]> = {
  * Default visibility for each layer
  * Base layers always visible, occurrence layers depend on type
  */
-const LAYER_DEFAULTS: Record<string, boolean> = { 
+const LAYER_DEFAULTS: Record<string, boolean> = {
     osm: true,
     technical_quadrants: true,
     preprint_nejisty: true,
@@ -92,19 +95,29 @@ function getVisibilityOverrides(
     type: MapPreviewType
 ): Record<string, boolean> {
     const overrides: Record<string, boolean> = {};
-    
+
     // Type 1: Hide preprint_common for taxa without commonThreshold
     if (type === 1 && !commonThreshold) {
         overrides['preprint_common'] = false;
     }
-    
+
+    // Type 4: Hide preprint_common_nonherb for taxa without commonThreshold
+    if (type === 4 && !commonThreshold) {
+        overrides['preprint_common_nonherb'] = false;
+    }
+
+    if (type === 2 && !commonThreshold) {
+        overrides['preprint_common_historical'] = false;
+        overrides['preprint_common_recent'] = false;
+    }
+
     return overrides;
 }
 
 export function MapComponent({ type = 1, taxonId }: MapComponentProps) {
     const center: LatLngExpression = [49.8, 15.7];
     const initialZoom = 7.5;
-    
+
     const [mapSettings, setMapSettings] = useState<TaxonMapSettings | null>(null);
 
     // Fetch taxon map settings when taxonId changes
@@ -113,7 +126,7 @@ export function MapComponent({ type = 1, taxonId }: MapComponentProps) {
             setMapSettings(null);
             return;
         }
-        
+
         axios.get<TaxonMapSettingsResponse>(`/api/react/atlas/taxonMapSettings/${taxonId}`)
             .then(response => {
                 if (response.data?.data) {
@@ -128,7 +141,7 @@ export function MapComponent({ type = 1, taxonId }: MapComponentProps) {
 
     // Get base layers for map type
     const baseLayers = useMemo(() => getLayersForType(type), [type]);
-    
+
     // Get visibility overrides based on taxon settings
     const visibilityOverrides = useMemo(() => {
         if (!mapSettings) {
@@ -136,7 +149,7 @@ export function MapComponent({ type = 1, taxonId }: MapComponentProps) {
         }
         return getVisibilityOverrides(mapSettings.commonThreshold, type);
     }, [mapSettings, type]);
-    
+
     // Merge default visibility with overrides
     const layerVisibility = useMemo(() => {
         return {
@@ -144,7 +157,7 @@ export function MapComponent({ type = 1, taxonId }: MapComponentProps) {
             ...visibilityOverrides,
         };
     }, [visibilityOverrides]);
-    
+
     // CRITICAL FIX: Memoize layerParams to prevent WFS layer re-renders
     // Without this, a new object reference triggers WFS layer cleanup/re-fetch
     const layerParams = useMemo(

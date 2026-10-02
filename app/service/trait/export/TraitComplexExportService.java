@@ -65,7 +65,7 @@ public class TraitComplexExportService {
 
             BaseExportAccumulator accumulator = populateAccumulator(
                 currentUser, entities, trait, exportRequest.entryTypes);
-            logger.info(String.format("Populated records at accumulator. Time: %d secs", stopWatch.getTime(TimeUnit.SECONDS)));
+//             logger.info(String.format("Populated records at accumulator. Time: %d secs", stopWatch.getTime(TimeUnit.SECONDS)));
 
             populateComplexExportTransformer(accumulator, complexExportTransfomer);
         }

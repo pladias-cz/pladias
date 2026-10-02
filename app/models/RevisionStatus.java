@@ -13,7 +13,7 @@ public class RevisionStatus extends Model {
 
     public static final int StatusNotStarted = 0;
     public static final int StatusAssigned = 1;
-    public static final int StatusMapInProgress = 2; //at least 20 records has been touched
+    public static final int StatusMapInProgress = 2; //automatically processed via updateRevisionIfTresholdMet
     public static final int StatusMapSubmitted = 3;
     public static final int StatusReview = 4;
     public static final int StatusCompleting = 5;

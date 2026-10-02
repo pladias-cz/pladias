@@ -30,13 +30,13 @@ export default function ExportOptions() {
     }, []);
     return (
         <>
-            <h4>{t("measurements.export.valueTypes")}</h4>
+            <h4>{t("trait.export.valueTypes")}</h4>
             {entryTypes.map(entryType => (
             <div key={entryType.index}>
                 <label>
                     <input
                         type="checkbox"
-                        name="entryTypes[]"
+                        name="entryTypes"
                         value={entryType.index}
                     />
                     {" "}{entryType.name}
@@ -44,13 +44,13 @@ export default function ExportOptions() {
             </div>
             ))}
 
-            <h4>{t("measurements.export.taxaRanks")}</h4>
+            <h4>{t("trait.export.taxaRanks")}</h4>
             {ranks.map(rank => (
                 <div key={rank.nameEng}>
                     <label>
                         <input
                             type="checkbox"
-                            name="ranks[]"
+                            name="ranks"
                             value={rank.nameEng}
                         />
                         {" "}{rank.nameEng}

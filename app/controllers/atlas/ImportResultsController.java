@@ -13,6 +13,7 @@ import play.libs.Json;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.mvc.Security;
+import service.export.table.TableExportWriter;
 import utils.SessionUtils;
 
 import java.sql.Timestamp;
@@ -215,11 +216,11 @@ public class ImportResultsController extends ControllerBase {
                 return redirect("/login");
             }
 
-            // Get pagination parameters
-            int page = request.getQueryString("page") != null
-                ? Integer.parseInt(request.getQueryString("page")) : 1;
-            int pageSize = request.getQueryString("pageSize") != null
-                ? Integer.parseInt(request.getQueryString("pageSize")) : 20;
+            // Get pagination parameters - without them the whole filtered list is returned
+            boolean paginated = request.getQueryString("page") != null
+                && request.getQueryString("pageSize") != null;
+            int page = paginated ? Integer.parseInt(request.getQueryString("page")) : 1;
+            int pageSize = paginated ? Integer.parseInt(request.getQueryString("pageSize")) : 0;
 
             // Get sorting parameters
             String sortBy = request.getQueryString("sortBy");
@@ -276,11 +277,21 @@ public class ImportResultsController extends ControllerBase {
             }
 
             // Apply pagination
-            int offset = (page - 1) * pageSize;
-            query.setFirstRow(offset).setMaxRows(pageSize);
+            if (paginated) {
+                query.setFirstRow((page - 1) * pageSize).setMaxRows(pageSize);
+            }
 
             // Execute main query
-            List<Excel> entries = query.findList();
+            List<ExcelBatchDto> entries = ExcelBatchDto.fromExcelList(query.findList());
+
+            // The export of the very same rows is answered by this endpoint on request
+            if (TableExportWriter.acceptsXlsx(request)) {
+                byte[] workbook = TableExportWriter.write(
+                    "imported", ExcelBatchDto.exportColumns(), entries, getMessages(request));
+                String filename = String.format("attachment; filename=%s",
+                    "imported_" + LocalDate.now() + ".xlsx");
+                return ok(workbook).withHeader("Content-disposition", filename).as("application/x-download");
+            }
 
             // Get filtered count
             io.ebean.Query<Excel> countQuery = Excel.find().query();
@@ -322,8 +333,7 @@ public class ImportResultsController extends ControllerBase {
             ObjectMapper mapper = new ObjectMapper();
             ArrayNode dataArray = mapper.createArrayNode();
 
-            for (Excel excel : entries) {
-                ExcelBatchDto dto = ExcelBatchDto.fromExcel(excel);
+            for (ExcelBatchDto dto : entries) {
                 ObjectNode node = mapper.createObjectNode();
                 node.put("id", dto.id());
                 node.put("filename", dto.filename() != null ? dto.filename() : "");
@@ -347,7 +357,7 @@ public class ImportResultsController extends ControllerBase {
             response.put("filteredCount", filteredCount);
             response.put("totalCount", totalCount);
             response.put("page", page);
-            response.put("pageSize", pageSize);
+            response.put("pageSize", paginated ? pageSize : entries.size());
             response.put("success", true);
 
             return ok(response);

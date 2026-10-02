@@ -11,7 +11,8 @@ This document defines coding standards and patterns for both legacy MVC and mode
 ### Project Structure
 
 - **`app/models`**: Ebean ORM entities - represent database tables
-- **`app/controllers`**: Request handlers containing business logic
+- **`app/controllers`**: Thin request handlers - routing, parameter/form binding and mapping of
+  service results to `Result`; the processing itself belongs to `app/service`
   - `app/controllers/api/`: Token-authenticated public APIs
   - Other controllers: Legacy server-side rendering controllers
 - **`app/dto`**: Data Transfer Objects for API responses

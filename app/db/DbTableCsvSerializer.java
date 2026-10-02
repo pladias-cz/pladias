@@ -23,8 +23,7 @@ public class DbTableCsvSerializer implements AutoCloseable {
 
     public byte[] serialize(String table) {
         try {
-            DatabaseMetaData metaData = _connection.getMetaData();
-            PgConnection pgConnection = (PgConnection) metaData.getConnection();
+            PgConnection pgConnection = _connection.unwrap(PgConnection.class);
 
             CopyManager cm = new CopyManager(pgConnection);
             String query = "COPY (SELECT * FROM " + table + ") TO STDOUT WITH (FORMAT CSV, HEADER TRUE)";

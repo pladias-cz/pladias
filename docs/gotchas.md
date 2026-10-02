@@ -24,6 +24,31 @@ return ok(JsonResult.buildSuccess(data));
 return ok(data);
 ```
 
+Known exceptions (do not copy, frontend has to tolerate them):
+- `TraitsController.delete` and `TraitsController.importResult` return a bare JSON **string**
+  (`ok(Json.toJson(message))`) with HTTP 200 on success instead of `JsonResult`; errors use
+  `notFound(JsonResult.error(...))`. Frontend code therefore checks `res.ok` and reads either
+  a string or `json.message`.
+- Import/validation error messages (`TraitsController.ImportFailed` / `ValidationFailed`)
+  contain an HTML `<a>` link to the workbook with highlighted error rows, so `FeatureDetail`
+  renders them with `dangerouslySetInnerHTML`.
+
+### File Downloads vs JSON Errors
+- `TraitExportController.complexExportResult` answers with a **file stream**
+  (`application/x-download` + `Content-disposition`) on success and with `JsonResult.error(...)`
+  on failure, so `Export.tsx` has to branch on `res.ok` **and** on `content-type` before reading
+  the body (`TraitBaseController.toResult()` still answers `ok("Error during trait export")` as
+  plain text when building the file fails).
+- Invalid taxon names are returned in the extra `invalidTaxa` field of the error JSON, one name per
+  line, and `Export.tsx` renders them in a `<pre>` block so they can be selected, fixed and resubmitted.
+- Taxon lists are submitted as urlencoded form data (`fetch` + `URLSearchParams` sends **LF**, while a
+  native form submit sends CRLF). The backend therefore splits them on `\R` and trims each line -
+  `split("\r\n")` would treat a pasted list as a single taxon name.
+- `MapAdminImportController.getImports` answers JSON **or** XLSX from the same route, decided by the
+  request `Accept` header, and paginates only when both `page` and `pageSize` are present (that is how
+  the XLSX export gets all filtered rows). `useExcelExport` reads the response as a blob, so it has to
+  check `content-type` before storing the file - failures still arrive as JSON (`message`/`error`).
+
 
 ---
 

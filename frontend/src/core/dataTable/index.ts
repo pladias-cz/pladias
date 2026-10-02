@@ -40,6 +40,11 @@ export {
     DataTableBody,
 } from './components';
 
+// XLSX export exports
+export {ExcelExportButtons, XlsxAcceptHeader} from './export';
+export {buildTableParams} from './utils/tableParams.ts';
+export type {TableParamsOptions} from './utils/tableParams.ts';
+
 // Column factory exports
 export {
     createTextColumn,

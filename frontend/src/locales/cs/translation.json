@@ -124,7 +124,7 @@
         "importAnother": "Nahrát další dávku",
         "noErrors": "Soubor je OK",
         "pleaseWait": "Mějte proto prosím trpělivost a vyčkejte na odpověď systému.",
-        "proceedToImport": "Teprve pak zvolte akci ",
+        "proceedToImport": "Pokračujte k importu",
         "proceedToImportLink": "„Importovat dávku do databáze“",
         "processing": "Probíhá kontrola dat. Výpočet může trvat i několik desítek sekund.",
         "projectSelect": "- - - vyberte projekt - - -",
@@ -196,8 +196,7 @@
       "year": "Rok"
     },
     "mapMain": {
-      "component": {
-        "infoPanel": {
+      "infoPanel": {
           "boundToQuadrant": "přivázaných ke kvadrantu, \n",
           "boundToSquare": "přivázaných k poli,\n",
           "hasComment": "záznamů má komentář zadaný v aplikaci Pladias",
@@ -213,7 +212,8 @@
             "herbariumVsNonHerbarium": "Herbář versus neherbář",
             "nativeVsNonNative": "Původní versus nepůvodní"
           },
-          "noLocation": "je zcela bez uvedení polohy \n",
+          "noComment": "neobsahuje komentář",
+          "noLocation": "je zcela bez uvedení polohy",
           "noSupervisors": "Žádní supervizoři.",
           "ofWhich": "Z toho je:",
           "preview": "Náhled",
@@ -222,9 +222,16 @@
           "quadrantStatus": "Stav kvadrantů:",
           "recordCounts": "Počty záznamů",
           "records": "Záznamy:",
+          "revisionStatus": {
+            "submit": "Pokud považujete mapu za připravenou k rozšířenému komentování, upozorněte Zdeňka Kaplana:",
+            "submitButton": "Odevzdat",
+            "submited": " Díky za odvedenou práci! Mapa je odevzdána a čeká na kontroly rozšířeným okruhem spolupracovníků. Autoři mapy mají stále právo upravovat záznamy a jejich příznaky. V okamžiku, kdy bude dokončena fáze kontrol, budou o tom autoři mapy informováni e-mailem.",
+            "supervised": " Mapa je ve fázi kontrol rozšířeným okruhem spolupracovníků. Autoři mapy mají stále právo upravovat záznamy a jejich příznaky, spolupracovníci mohou záznamy komentovat. V okamžiku, kdy bude dokončena fáze kontrol, budou o tom všichni autoři mapy informováni e-mailem.",
+            "finishing": " Máte k dispozici komentáře k mapě &ndash; zřejmě formou komentářů k jednotlivým záznamů či jinak &ndash; prosím až projdete tyto poznámky, odevzdejte mapu do předtiskové přípravy:",
+            "feedbackProceeded": " Zapracoval(a) jsem podněty kontrolorů"
+          },
           "sourceProjects": "Zdrojové projekty a počty záznamů"
-        }
-      },
+  },
       "taxonId": "ID taxonu",
       "title": "Přehledová mapa"
     },
@@ -660,6 +667,9 @@
     "table": {
       "all": "Vše",
       "clearFilters": "Vymazat filtry",
+      "excelAll": "XLSX vše",
+      "excelFiltered": "XLSX filtrované",
+      "exportFailed": "Export se nezdařil.",
       "filter": {
         "all": "Filtrovat...",
         "date": "Datum",
@@ -948,7 +958,16 @@
       "description": "popis"
     },
     "backup": {
-      "title": "Záloha traitů"
+      "title": "Záloha traitů",
+      "error": "Chyba",
+      "description": "popis",
+      "createdAt": "vytvořeno",
+      "download": "stáhnout",
+      "started": "započato",
+      "note": "poznámka",
+      "notePlaceholder": "sem vložte text poznámky",
+      "submitting": "odesílání",
+      "submit": "Odeslat"
     },
     "feature": {
       "name": "název",
@@ -973,7 +992,13 @@
       "immeasurability": "neměřitelnost"
     },
     "export": {
-      "title": "Komplexní export vlastností druhů"
+      "title": "Komplexní export vlastností druhů",
+      "valueTypes": "typy hodnot",
+      "taxaRanks": "taxo ranky",
+      "placeholder": "Zde vkopírujte seznam požadovaných taxonů v podobě latinských jmen na jednotlivých řádcích.",
+      "submit": "Exportovat",
+      "suppressed": "Zahrnout potlačené",
+      "failed": "Export se nezdařil. Zkuste to prosím znovu."
     },
     "featureDetail": {
       "title": "Detail vlastnosti"

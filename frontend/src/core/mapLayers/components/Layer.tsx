@@ -492,15 +492,27 @@ function WfsLayer({
                     return radius;
                 };
                 
+                // Create a dedicated pane so layer stacking follows definition.zIndex
+                // (Leaflet vector layers have no zIndex option; within the default
+                // overlayPane they stack by DOM insertion order, which is fetch-order)
+                const paneName = `wfs-${definition.id}`;
+                if (!map.getPane(paneName)) {
+                    const pane = map.createPane(paneName);
+                    // 400 = default overlayPane z-index; offset by layer zIndex
+                    pane.style.zIndex = String(400 + (definition.zIndex ?? 0));
+                }
+
                 // Create GeoJSON layer with zoom-based radius
                 const geoJsonLayer = L.geoJSON(undefined, {
+                    pane: paneName,
                     pointToLayer: (_feature: any, latlng: any) => {
                         const currentZoom = map.getZoom();
                         const radius = getRadiusForZoom(currentZoom);
-                        
+
                         return L.circleMarker(latlng, {
                             ...defaultPointStyle,
                             ...styleOptions?.pointStyle,
+                            pane: paneName,
                             radius, // Override radius with zoom-based value
                         });
                     },

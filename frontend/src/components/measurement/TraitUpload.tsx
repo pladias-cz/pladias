@@ -1,4 +1,5 @@
 import {useEffect, useState} from "react";
+import {Spinner} from "react-bootstrap";
 import {type Feature} from "@/models/Feature";
 import type {TraitVisibilityStatus} from "@/models/TraitVisibilityStatus";
 import type {UserId} from "@/models/UserId";
@@ -8,15 +9,17 @@ import {useTranslation} from "react-i18next";
 
 interface Props {
     feature: Feature;
+    submitting?: boolean;
 }
 
-export default function TraitUpload({feature}: Props) {
+export default function TraitUpload({feature, submitting = false}: Props) {
     const user = useUser();
     const {t} = useTranslation();
 
     const [datatype, setDatatype] = useState<TraitDatatype | null>(null);
     const [users, setUsers] = useState<UserId[]>([]);
     const [visibility, setVisibility] = useState<TraitVisibilityStatus[]>([]);
+    const [operation, setOperation] = useState("validation");
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -58,6 +61,7 @@ export default function TraitUpload({feature}: Props) {
                         id="data"
                         name="data"
                         className="form-control"
+                        required
                         accept="application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                     />
                     {datatype && (
@@ -138,7 +142,13 @@ export default function TraitUpload({feature}: Props) {
                     {t("trait.upload.visibility")}
                 </label>
                 <div className="col-sm-7">
-                    <select className="form-control" id="visibility" name="visibility">
+                    {/* dostupnost je povinná jen pro import, validace ji nepožaduje */}
+                    <select
+                        className="form-control"
+                        id="visibility"
+                        name="visibility"
+                        required={operation === "import"}
+                    >
                         <option value="">{t("trait.upload.selectVisibility")}</option>
                         {visibility.map(v => (
                             <option key={v.id} value={v.id}>
@@ -165,13 +175,27 @@ export default function TraitUpload({feature}: Props) {
                 <div className="col-sm-9">
                     <div className="radio">
                         <label>
-                            <input type="radio" name="operation" value="validation" defaultChecked/>
+                            <input
+                                type="radio"
+                                name="operation"
+                                value="validation"
+                                checked={operation === "validation"}
+                                disabled={submitting}
+                                onChange={() => setOperation("validation")}
+                            />
                             {t("trait.upload.validate")}
                         </label>
                     </div>
                     <div className="radio">
                         <label>
-                            <input type="radio" name="operation" value="import"/>
+                            <input
+                                type="radio"
+                                name="operation"
+                                value="import"
+                                checked={operation === "import"}
+                                disabled={submitting}
+                                onChange={() => setOperation("import")}
+                            />
                             {t("trait.upload.import")}
                         </label>
                     </div>
@@ -179,7 +203,15 @@ export default function TraitUpload({feature}: Props) {
             </div>
 
             <div>
-                <button type="submit" className="btn btn-primary">{t("trait.upload.submit")}</button>
+                <button type="submit" className="btn btn-primary" disabled={submitting}>
+                    {submitting && (
+                        <>
+                            <Spinner as="span" size="sm" animation="border" className="me-2"/>
+                            {t("common.submitting")}
+                        </>
+                    )}
+                    {!submitting && t("trait.upload.submit")}
+                </button>
             </div>
         </>
     );

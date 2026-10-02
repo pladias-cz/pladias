@@ -1,7 +1,11 @@
 import { useTranslation } from "react-i18next";
-import { Form, Button } from "react-bootstrap";
+import { Form, Button, Spinner } from "react-bootstrap";
 
-export default function ExportTaxaList() {
+interface ExportTaxaListProps {
+    submitting: boolean;
+}
+
+export default function ExportTaxaList({ submitting }: ExportTaxaListProps) {
     const { t } = useTranslation();
 
     return (
@@ -11,8 +15,9 @@ export default function ExportTaxaList() {
                     as="textarea"
                     name="taxonList"
                     rows={12}
+                    disabled={submitting}
                     placeholder={t(
-                        "exportTaxa.placeholder",
+                        "trait.export.placeholder",
                         "Zde vkopírujte seznam požadovaných taxonů v podobě latinských jmen na jednotlivých řádcích."
                     )}
                 />
@@ -23,13 +28,20 @@ export default function ExportTaxaList() {
                     type="checkbox"
                     id="suppressedExcluded"
                     name="suppressedExcluded"
-                    label={t("exportTaxa.suppressed")}
+                    label={t("trait.export.suppressed")}
                     defaultChecked
                 />
             </div>
 
-            <Button type="submit" variant="primary" size="sm" className="btn-block">
-                {t("exportTaxa.submit")}
+            <Button type="submit" variant="primary" size="sm" className="btn-block" disabled={submitting}>
+                {submitting ? (
+                    <>
+                        <Spinner as="span" size="sm" animation="border" className="me-2"/>
+                        {t("common.submitting")}
+                    </>
+                ) : (
+                    t("trait.export.submit")
+                )}
             </Button>
         </>
     );

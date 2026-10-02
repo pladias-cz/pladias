@@ -11,12 +11,14 @@
  * - Hover: highlight border red + show popup
  * - Click: show popup with square info (name, WGS coords, DMS coords)
  * - Double-click: trigger callback with square ID for navigation
+ * - Right-click: show popup with link to the square detail page (same target as double-click)
  * - Visibility control via opacity (layer stays mounted)
  */
 
 import { useMap } from 'react-leaflet';
 import * as L from 'leaflet';
 import { useEffect, useRef, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import type { LatLngExpression, Popup } from 'leaflet';
 
 interface SquaresOverlayProps {
@@ -80,8 +82,9 @@ function getPolygonCentroid(coordinates: number[][][]): LatLngExpression {
     return [latSum / count, lngSum / count];
 }
 
-export function SquaresOverlay({ visible, minZoom = 8, onSquareDoubleClick }: SquaresOverlayProps) {
+export function SquaresOverlay({ visible, minZoom = 8, params, onSquareDoubleClick }: SquaresOverlayProps) {
     const map = useMap();
+    const navigate = useNavigate();
     const geoJsonLayerRef = useRef<L.GeoJSON | null>(null);
     const currentPopupRef = useRef<Popup | null>(null);
     const currentLabelRef = useRef<L.Marker | null>(null);
@@ -148,6 +151,68 @@ export function SquaresOverlay({ visible, minZoom = 8, onSquareDoubleClick }: Sq
             onSquareDoubleClick(squareId);
         }
     }, [onSquareDoubleClick]);
+
+    /**
+     * Handle right-click (contextmenu) on a square feature - show popup with link to detail page.
+     * Navigates to the same location as double-click, for users who can't double-click fast enough.
+     */
+    const handleContextMenu = useCallback((e: L.LeafletEvent) => {
+        // Suppress the browser's native context menu
+        (e as L.LeafletMouseEvent).originalEvent.preventDefault();
+
+        const layer = e.target as L.Path;
+        const feature = (layer as any).feature as SquareFeature;
+        if (!feature) return;
+
+        const squareId = feature.properties.name;
+        if (!squareId) return;
+
+        // Cancel any pending single-click popup (defensive - browsers don't fire 'click' for right button)
+        if (clickTimeoutRef.current) {
+            clearTimeout(clickTimeoutRef.current);
+            clickTimeoutRef.current = null;
+        }
+
+        // Close existing popup if any
+        if (currentPopupRef.current) {
+            map.closePopup(currentPopupRef.current);
+            currentPopupRef.current = null;
+        }
+
+        const taxonId = params?.taxonId;
+        const latlng = (e as L.LeafletMouseEvent).latlng;
+
+        // Without a taxon there is no detail page to link to - show square name only
+        if (!taxonId) {
+            currentPopupRef.current = L.popup({ closeOnClick: false })
+                .setLatLng(latlng)
+                .setContent(`<div style="font-size: 13px; padding: 5px;"><b>${squareId}</b></div>`)
+                .openOn(map);
+            return;
+        }
+
+        const detailUrl = `/atlas/mapDetail/${taxonId}/${squareId}`;
+
+        // Create and open popup with link at right-click location
+        const popup = L.popup({ closeOnClick: false })
+            .setLatLng(latlng)
+            .setContent(`
+                <div style="font-size: 13px; padding: 5px;">
+                    <b>${squareId}</b><br/>
+                    <a href="${detailUrl}" style="color: #1976d2; text-decoration: underline; cursor: pointer;">Open square detail &rarr;</a>
+                </div>
+            `)
+            .openOn(map);
+        currentPopupRef.current = popup;
+
+        // Intercept link click for SPA navigation (href stays as fallback for middle-click / open in new tab)
+        const link = popup.getElement()?.querySelector('a');
+        link?.addEventListener('click', (ev) => {
+            ev.preventDefault();
+            map.closePopup(popup);
+            navigate(detailUrl);
+        });
+    }, [map, params?.taxonId, navigate]);
 
     /**
      * Handle mouseover on a square feature - highlight + show label (from zoom 10+)
@@ -344,6 +409,7 @@ export function SquaresOverlay({ visible, minZoom = 8, onSquareDoubleClick }: Sq
                             pathLayer.on('mouseout', handleMouseOut);
                             pathLayer.on('click', handleFeatureClick, { bubblingMouseEvents: false });
                             pathLayer.on('dblclick', handleDoubleClick, { bubblingMouseEvents: false });
+                            pathLayer.on('contextmenu', handleContextMenu, { bubblingMouseEvents: false });
 
                             // Store cleanup function on the layer
                             (pathLayer as any)._squaresCleanup = () => {
@@ -351,6 +417,7 @@ export function SquaresOverlay({ visible, minZoom = 8, onSquareDoubleClick }: Sq
                                 pathLayer.off('mouseout', handleMouseOut);
                                 pathLayer.off('click', handleFeatureClick);
                                 pathLayer.off('dblclick', handleDoubleClick);
+                                pathLayer.off('contextmenu', handleContextMenu);
                             };
                         });
                     },
@@ -419,7 +486,7 @@ export function SquaresOverlay({ visible, minZoom = 8, onSquareDoubleClick }: Sq
                 geoJsonLayerRef.current = null;
             }
         };
-    }, [map, buildWfsUrl, minZoom, handleMouseOver, handleMouseOut, handleFeatureClick, handleDoubleClick, handleMapBackgroundClick, createPopupContent]);
+    }, [map, buildWfsUrl, minZoom, handleMouseOver, handleMouseOut, handleFeatureClick, handleDoubleClick, handleContextMenu, handleMapBackgroundClick, createPopupContent]);
 
     /**
      * Update visibility when prop changes

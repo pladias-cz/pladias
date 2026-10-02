@@ -26,6 +26,7 @@ public class RevisionUpdateService extends MapStatusUpdateService {
 
     @Override
     public void update(TaxonMapSettings settings, int newRevisionStatus) throws NotEligibleException {
+    //TODO když jde status 0->1 tj. přidělení, tak by se to mělo aplikovat i pro celý podstrom taxonů
         RevisionStatus newStatus = RevisionStatus.find().byId(newRevisionStatus);
         if (newStatus == null) {
             throw new IllegalArgumentException(messages.at("MapStatusUpdateService.invalidStatus"));
@@ -82,7 +83,8 @@ public class RevisionUpdateService extends MapStatusUpdateService {
     }
 
     public void updateRevisionIfTresholdMet(TaxonMapSettings settings) {
-        if (settings.getRevisionStatus().getId() != RevisionStatus.StatusAssigned) {
+        if (settings.getRevisionStatus() == null ||
+            settings.getRevisionStatus().getId() != RevisionStatus.StatusAssigned) {
             return;
         }
 
@@ -93,7 +95,10 @@ public class RevisionUpdateService extends MapStatusUpdateService {
             supervisorIds.add(u.getId());
         }
 
-        int recordsUploadedBySupervisor = Record.find().query().where().in("batch.author.id", supervisorIds).eq("taxon.id", taxon.getId()).findCount();
+        int recordsUploadedBySupervisor = 0;
+        if (!supervisorIds.isEmpty()) {
+            recordsUploadedBySupervisor = Record.find().query().where().in("batch.author.id", supervisorIds).eq("taxon.id", taxon.getId()).findCount();
+        }
         RevisionStatus revisionStatus = settings.getRevisionStatus();
 
         _logger.info(String.format("Taxon: %d-%s, revision status: %d-%s, records imported by supervisors: %s, edit count: %s",

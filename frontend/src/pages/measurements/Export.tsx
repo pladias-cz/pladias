@@ -58,7 +58,7 @@ export default function Export() {
 
         try {
             const body = new URLSearchParams();
-            // backend čte formulář jako urlencoded (traitIds[], ranks, entryTypes, …)
+            // backend čte formulář jako urlencoded (traitIds[], ranks[], entryTypes[], …)
             new FormData(form).forEach((value, key) => body.append(key, String(value)));
 
             const res = await fetch(EXPORT_URL, {

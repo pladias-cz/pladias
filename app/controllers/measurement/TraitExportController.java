@@ -80,10 +80,6 @@ public class TraitExportController extends ControllerBase {
             return badRequest(JsonResult.error(messages.at("TraitExportController.noTraitsSelected")));
         }
 
-        if (exportRequest.getRanks() == null || exportRequest.getRanks().length == 0) {
-            return badRequest(JsonResult.error(messages.at("TraitExportController.noRanksSelected")));
-        }
-
         List<String> invalidTaxonNames = requestFactory.selectInvalidTaxonNames(exportRequest.getTaxonList());
         if (!invalidTaxonNames.isEmpty()) {
             // invalid names are returned separately so the UI can show them line by line for copy&fix

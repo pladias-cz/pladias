@@ -1,7 +1,8 @@
-# Chování aplikace při editacích
+# Chování JAVA backendu aplikace při editacích
 
 **prompt:**
-    připrav uživatelsky srozumitelné shrnutí chování této aplikace při editacích. Vytvoř markdown dokument, ve kterém bude popsáno chování aplikace při editaci jakéhokoli pole v databázi. Začni u seznamu endpointů v conf/react.routes, vyber všechny post+put+delete+patch endpointy a ty zpracuj - kdo smí akci provést, zda to vyvolává nějaké související akce. Některé routy jsou velmi komplexní (jako POST /import/upload ), tak u těch stačí jen kdo je smí zavolat.
+    připrav uživatelsky srozumitelné shrnutí chování backendu této aplikace při editacích. Vytvoř/aktualizuj tento markdown dokument, ve kterém bude popsáno chování JAVA backendu aplikace při editaci jakéhokoli pole v databázi. Začni u seznamu endpointů v conf/react.routes, vyber všechny post+put+delete+patch endpointy a ty zpracuj - kdo smí akci provést, zda to vyvolává nějaké související akce. Některé routy jsou velmi komplexní (jako POST /import/upload ), tak u těch stačí uvést jen kdo je smí zavolat.
+    Zdůrazni pokud by někde byla editace možná bez kontroly oprávnění či by se ti zdál nesoulad mezi jendotlivými endpointy pracující se stejnými entitami.
 
 ---
 

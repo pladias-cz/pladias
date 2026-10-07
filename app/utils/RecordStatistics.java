@@ -89,7 +89,7 @@ public class RecordStatistics {
 
     /**
      * Returns set of Quadrants that contain at least one record with specified statusId
-     *
+     * @deprecated
      */
     // TODO
     // WITH sub AS (

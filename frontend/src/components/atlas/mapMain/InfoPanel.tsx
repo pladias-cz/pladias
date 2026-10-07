@@ -251,18 +251,20 @@ export function InfoPanel({taxonName, taxonId}: InfoPanelProps) {
                                     <span className="text-unprocessed">{statistics.recordsUnprocessed}</span> /
                                     <span>{statistics.recordsTotal}</span>
                                 </p>
-                                <p><b>{t("atlas.mapMain.infoPanel.quadrantStatus")}</b><br/>(OK/declined/uncertain/not set/SUM)</p>
-                                <p>
-                                    <span className="text-accepted">{statistics.quadrantsValidated}</span> /
-                                    <span className="text-declined">{statistics.quadrantsDeclined}</span> /
-                                    <span className="text-uncertain">{statistics.quadrantsUncertain}</span> /
-                                    <span className="text-unprocessed">{statistics.quadrantsUnprocessed}</span> /
-                                    <span>{statistics.quadrantsValidated + statistics.quadrantsDeclined + statistics.quadrantsUncertain + statistics.quadrantsUnprocessed}</span>
-                                </p>
+                                {/*TODO deprecated*/}
+                                {/*<p><b>{t("atlas.mapMain.infoPanel.quadrantStatus")}</b><br/>(OK/declined/uncertain/not set/SUM)</p>*/}
+                                {/*<p>*/}
+                                {/*    <span className="text-accepted">{statistics.quadrantsValidated}</span> /*/}
+                                {/*    <span className="text-declined">{statistics.quadrantsDeclined}</span> /*/}
+                                {/*    <span className="text-uncertain">{statistics.quadrantsUncertain}</span> /*/}
+                                {/*    <span className="text-unprocessed">{statistics.quadrantsUnprocessed}</span> /*/}
+                                {/*    <span>{statistics.quadrantsValidated + statistics.quadrantsDeclined + statistics.quadrantsUncertain + statistics.quadrantsUnprocessed}</span>*/}
+                                {/*</p>*/}
                                 <p><b>{t("atlas.mapMain.infoPanel.ofWhich")}</b></p>
                                 <p>
-                                    {statistics.recordsBoundToQuadrants} {t("atlas.mapMain.infoPanel.boundToQuadrant")}<br/>
-                                    {statistics.recordsBoundToSquares} {t("atlas.mapMain.infoPanel.boundToSquare")}<br/>
+                                    {/*TODO deprecated*/}
+                                    {/*{statistics.recordsBoundToQuadrants} {t("atlas.mapMain.infoPanel.boundToQuadrant")}<br/>*/}
+                                    {/*{statistics.recordsBoundToSquares} {t("atlas.mapMain.infoPanel.boundToSquare")}<br/>*/}
                                     {statistics.recordsBoundToCoords} {t("atlas.mapMain.infoPanel.hasCoordinates")}<br/>
                                     {statistics.recordsNotBoundToCoords} {t("atlas.mapMain.infoPanel.noLocation")}<br/>
                                     {statistics.recordsCommented} {t("atlas.mapMain.infoPanel.hasComment")}

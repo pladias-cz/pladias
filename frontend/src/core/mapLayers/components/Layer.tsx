@@ -4,8 +4,11 @@
  * Renders a map layer as a React-leaflet component based on layer definition from registry.
  * This preserves the factory encapsulation while using react-leaflet's native components.
  * 
- * IMPORTANT: Layers are kept mounted even when invisible (using opacity) to prevent
- * tile request cancellations when toggling visibility.
+ * IMPORTANT: Layers use a lazy-mount strategy to avoid loading invisible layers:
+ * - A layer is only mounted when it becomes visible for the FIRST time, so layers
+ *   that are never enabled never issue tile/WFS requests to the backend.
+ * - Once mounted, a layer stays mounted even when invisible (using opacity) to
+ *   prevent tile request cancellations when toggling visibility.
  */
 
 import { TileLayer, WMSTileLayer, useMap } from 'react-leaflet';
@@ -28,6 +31,19 @@ export interface LayerProps {
  * Always keeps the layer mounted to prevent tile cancellations
  */
 export function Layer({ layerId, params = {}, visible = true, onSquareDoubleClick }: LayerProps) {
+    // Lazy mount: create the layer only once it has been visible for the first time.
+    // Hidden layers therefore never load tiles/data from the backend. After the first
+    // activation the layer stays mounted (hidden via opacity) so toggling visibility
+    // back and forth never cancels or re-issues tile requests.
+    const [mounted, setMounted] = useState(visible);
+    useEffect(() => {
+        if (visible) setMounted(true);
+    }, [visible]);
+
+    if (!mounted) {
+        return null;
+    }
+
     const definition = getLayerDefinition(layerId);
     
     if (!definition || !definition.service) {

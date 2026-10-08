@@ -112,7 +112,9 @@ export function ProjectLayers({ taxonId, mapName }: ProjectLayersProps) {
 }
 
 /**
- * Individual project layer component that subscribes to visibility state
+ * Individual project layer component that subscribes to visibility state.
+ * Uses lazy mounting: the WMS layer is only created once it has been enabled,
+ * so disabled project layers never request tiles from GeoServer.
  */
 function ProjectLayer({
     layerId,
@@ -125,8 +127,22 @@ function ProjectLayer({
     params: GeoServerWMSParams;
     mapName: string;
 }) {
+    // Default to false while the layer has not been registered in the store yet
+    // (registration in useProjectLayers applies the saved visibility).
     const layerState = useLayerState(mapName, layerId);
-    const visible = layerState?.visible ?? true;
+    const visible = layerState?.visible ?? false;
+
+    // Lazy mount: create the layer only after it is enabled for the first time.
+    // Once mounted it stays mounted and is hidden via opacity, so toggling
+    // visibility does not cancel or re-issue tile requests.
+    const [mounted, setMounted] = useState(visible);
+    useEffect(() => {
+        if (visible) setMounted(true);
+    }, [visible]);
+
+    if (!mounted) {
+        return null;
+    }
 
     return (
         <WMSTileLayer

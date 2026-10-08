@@ -9,7 +9,7 @@
 import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { useLayerStore, getVisibilityStorageKey } from '../store/layerStore';
 import { useUserSettings } from '@/hooks/useUserSettings';
-import { getLayerGroup, layerGroups } from '../registry/layerRegistry';
+import { getLayerGroup, getLayerDefinition, layerGroups } from '../registry/layerRegistry';
 import type { LayerParams } from '../types';
 
 export interface LayerManagerReturn {
@@ -77,9 +77,13 @@ export function useLayerManager(
 
         // 1. Register each layer with its per-component default visibility and initial params
         managedLayers.forEach(layerId => {
-            const visible = defaultVisibility?.[layerId];
-            addLayer(mapName, layerId, { 
-                visible: visible !== undefined ? visible : true, // Default to true if not specified
+            // Component override takes precedence, then the registry's defaultVisible,
+            // otherwise hidden.
+            const visible = defaultVisibility?.[layerId]
+                ?? getLayerDefinition(layerId)?.defaultVisible
+                ?? false;
+            addLayer(mapName, layerId, {
+                visible,
                 params: initialParams,
             });
         });
@@ -115,7 +119,7 @@ export function useLayerManager(
                         }
                     });
                 }
-                
+
                 // 3. Ensure mutually exclusive groups have exactly one layer visible
                 await ensureMutuallyExclusiveConstraints();
             } catch (error) {
@@ -129,7 +133,7 @@ export function useLayerManager(
             // Wait a tick for state to settle
             setTimeout(() => {
                 const groupsToCheck = new Set<string>();
-                
+
                 // Find all mutually exclusive groups among managed layers
                 managedLayers.forEach(layerId => {
                     const groupId = findLayerGroup(layerId);
@@ -148,7 +152,7 @@ export function useLayerManager(
                         .map(layer => layer.id)
                         .filter(id => managedLayers.includes(id));
 
-                    const visibleInGroup = layersInGroup.filter(layerId => 
+                    const visibleInGroup = layersInGroup.filter(layerId =>
                         getLayerState(mapName, layerId)?.visible
                     );
 
@@ -176,24 +180,24 @@ export function useLayerManager(
 
         const groupId = findLayerGroup(layerId);
         const group = groupId ? getLayerGroup(groupId) : null;
-        
+
         if (group?.mutuallyExclusive) {
             const currentlyVisible = getLayerState(mapName, layerId)?.visible ?? false;
-            
+
             if (currentlyVisible) {
                 // Don't allow turning off the last visible layer in a mutually exclusive group
                 const layersInGroup = (group.children || [])
                     .map(layer => layer.id)
                     .filter(id => managedLayers.includes(id));
-                const visibleInGroup = layersInGroup.filter(id => 
+                const visibleInGroup = layersInGroup.filter(id =>
                     getLayerState(mapName, id)?.visible
                 );
-                
+
                 if (visibleInGroup.length <= 1) {
                     return;
                 }
             }
-            
+
             if (!currentlyVisible) {
                 // Turn off all other layers in the group first
                 const layersInGroup = (group.children || [])
@@ -204,7 +208,7 @@ export function useLayerManager(
                 });
             }
         }
-        
+
         toggleLayerVisibility(mapName, layerId);
     }, [mapName, managedLayers, toggleLayerVisibility, setLayerVisibility, getLayerState]);
 

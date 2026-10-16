@@ -7,6 +7,7 @@ import io.ebean.DB;
 import io.ebean.SqlUpdate;
 import models.*;
 import models.Record;
+import play.i18n.Messages;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.mvc.Security;
@@ -45,6 +46,7 @@ public class RecordCommentController extends ControllerBase {
      * Body: { "recordId": number, "message": string }
      */
     public Result createComment(Http.Request request) {
+        Messages messages = getMessages(request);
         try {
             var body = request.body().asJson();
             if (body == null) {

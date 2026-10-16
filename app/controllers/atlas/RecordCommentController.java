@@ -63,6 +63,10 @@ public class RecordCommentController extends ControllerBase {
                 return unauthorized(JsonResult.error("Authentication required"));
             }
 
+            if (currentUser.getContributionProjects().isEmpty()) {
+                return ok(JsonResult.error(messages.at("Search.UserNotAssignedToAnyProject")));
+            }
+
             Record record = Record.find().byId(recordId);
             if (record == null) {
                 return notFound(JsonResult.error("Record not found"));

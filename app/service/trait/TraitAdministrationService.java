@@ -67,7 +67,7 @@ public class TraitAdministrationService {
             return TraitActionResult.failure(messages.at("TraitsController.TraitDoesNotExits"));
         }
 
-        if (!user.isTraitAdmin() && user.equals(trait.getFeature().getAdmin())) {
+        if (!user.isTraitAdmin() || user.equals(trait.getFeature().getAdmin())) {
             return TraitActionResult.failure(messages.at("TraitsController.UserNotElligible"));
         }
 

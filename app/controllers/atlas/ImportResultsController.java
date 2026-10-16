@@ -14,6 +14,7 @@ import play.mvc.Http;
 import play.mvc.Result;
 import play.mvc.Security;
 import service.export.table.TableExportWriter;
+import utils.JsonResult;
 import utils.SessionUtils;
 
 import java.sql.Timestamp;
@@ -31,16 +32,24 @@ public class ImportResultsController extends ControllerBase {
         if (user == null) {
             return redirect("/login"); //routes.Application.login();
         }
-        deleteExcel(id, user);
-        return ok();
-//         return redirect(routes.ExcelReports.validatedReportByUser());
+        try {
+            if (!deleteExcel(id, user)) {
+                return badRequest(JsonResult.error(
+                    getMessages(request).at("ImportResultsController.deleteFailed")));
+            }
+            return ok();
+//             return redirect(routes.ExcelReports.validatedReportByUser());
+        } catch (Exception e) {
+            return internalServerError(JsonResult.error(
+                getMessages(request).at("ImportResultsController.deleteFailed")));
+        }
     }
 
-    private void deleteExcel(long id, User currentUser) {
+    private boolean deleteExcel(long id, User currentUser) {
         Excel excel = Excel.find().byId(id);
 
         if (currentUser == null || excel == null)
-            return;
+            return false;
 
         Batch batch = excel.getBatch();
 
@@ -48,8 +57,10 @@ public class ImportResultsController extends ControllerBase {
             User author = batch.getAuthor();
             if (currentUser.equals(author)) {
                 excel.delete();
+                return true;
             }
         }
+        return false;
     }
 
 

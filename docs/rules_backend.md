@@ -2,7 +2,7 @@
 
 **prompt:**
     připrav uživatelsky srozumitelné shrnutí chování backendu této aplikace při editacích. Vytvoř/aktualizuj tento markdown dokument, ve kterém bude popsáno chování JAVA backendu aplikace při editaci jakéhokoli pole v databázi. Začni u seznamu endpointů v conf/react.routes, vyber všechny post+put+delete+patch endpointy a ty zpracuj - kdo smí akci provést, zda to vyvolává nějaké související akce. Některé routy jsou velmi komplexní (jako POST /import/upload ), tak u těch stačí uvést jen kdo je smí zavolat.
-    Zdůrazni pokud by někde byla editace možná bez kontroly oprávnění či by se ti zdál nesoulad mezi jendotlivými endpointy pracujícími se stejnými entitami.
+    Zdůrazni pokud by někde byla editace možná bez kontroly oprávnění či by se ti zdál nesoulad mezi jendotlivými endpointy pracujícími se stejnými entitami, vezmi ale v potaz záměrné odchylky uvedené v intentional_quirks.md
 
 ---
 
@@ -101,7 +101,7 @@ Všechny endpointy `RecordCommentController` – přihlášený uživatel (`@Sec
 ### POST `/atlas/record/comment` – Vytvoření komentáře (`createComment`)
 
 **Kdo smí provést:**
-- Libovolný přihlášený uživatel, ke **kterémukoli** záznamu (nekontroluje se vztah uživatele k záznamu/taxonu)
+- přihlášený uživatel který má přiřazen alespon jeden projekt (tedy lidé aktivně pracující na mapování), ke **kterémukoli** záznamu (nekontroluje se vztah uživatele k záznamu/taxonu)
 
 **Související akce:**
 - Vytvoření záznamu `Comment` a asociace `users_comments` (aktuální uživatel)
@@ -112,8 +112,7 @@ Všechny endpointy `RecordCommentController` – přihlášený uživatel (`@Sec
 ### PUT `/atlas/record/comment/:commentId` – Editace komentáře (`updateComment`)
 
 **Kdo smí provést:**
-- `record.isUserElligibleToEditEverything(currentUser)` – tj. mapAdmin, revizor taxonu (vč. nadřazených taxonů) nebo správce projektu
-- ⚠️ **Nikoliv autor komentáře** – ten může svůj komentář smazat, ale neupravit. Viz [problém č. 5](#5-komentáře--nekonzistentní-oprávnění-mezi-endpointy)
+- `record.isUserElligibleToEditEverything(currentUser)` – tj. mapAdmin, revizor taxonu (vč. nadřazených taxonů) nebo správce projektu, autor komentáře nikoliv
 
 **Související akce:**
 - Aktualizace textu komentáře, záznam do `RecordHistory`
@@ -185,7 +184,7 @@ Všechny endpointy `RecordCommentController` – přihlášený uživatel (`@Sec
 ### DELETE `/importResult/validated/:id` – Smazání výsledku validace (`ImportResultsController.deleteValidated`)
 
 **Kdo smí provést:**
-- Autor batche daného Excel souboru – mazání proběhne pouze pokud `batch.imported == false` **a** `currentUser == batch.author`; v ostatních případech se nic neprovede (tichý no-op), ale endpoint vrátí `200 OK`
+- Autor batche daného Excel souboru – mazání proběhne pouze pokud `batch.imported == false` **a** `currentUser == batch.author`
 
 **Související akce:**
 - Pouze smazání záznamu `Excel`; záznamy a batch zůstávají
@@ -227,7 +226,7 @@ Pozor – mazání importních dávek je implementováno přes **GET** routy, kt
 
 ## Taxony
 
-Všechny endpointy `TaxonManagerController` – třída je anotována `@Security.Authenticated(AuthorizedAsTaxonAdmin.class)`, tedy uživatel musí být `taxonAdmin`. 
+Všechny endpointy `TaxonManagerController` – třída je anotována `@Security.Authenticated(AuthorizedAsTaxonAdmin.class)`, tedy uživatel musí být `taxonAdmin`.
 Každá mutující akce navíc volá `canEdit()`, které zajistí globální zámek `TaxonEditorLock` – **editovat taxony smí v daný okamžik jen jeden taxonAdmin** (ostatní dostanou chybu `TaxonEditorLocked` se jménem uživatele, který zámek drží). Zámek se uvolňuje při uložení editačního formuláře a udržuje příznak „dirty“ (byly neuložené změny).
 
 ### PATCH `/taxon/:id` – Editace polí taxonu (`patch`)
@@ -323,7 +322,7 @@ Třída `SynonymController` je anotována `@Security.Authenticated(AuthorizedAsT
 ### PUT `/measurement/trait/:traitId/default` – Nastavení výchozí vlastnosti (`MeasurementController.setDefault`)
 
 **Kdo smí provést:**
-- `TraitAdministrationService.setDefaultTrait` – ⚠️ kontrola je **invertovaná**: `if (!user.isTraitAdmin() && user.equals(feature.getAdmin()))` → selže admin vlastnosti, který není traitAdmin, ale **projde běžný přihlášený uživatel**. Viz [problém č. 2](#2-put-measurementtraittraitiddefault--invertovaná-podmínka-oprávnění)
+- TraitAdmin nebo featureAdmin
 
 **Související akce:**
 - Všechny ostatní traity dané feature se odznačí jako výchozí, vybraný se nastaví jako výchozí
@@ -511,18 +510,6 @@ Důsledek: **autor importu dnes nemůže přes PATCH editovat ani běžná pole 
 
 Nesoulad potvrzuje i **POST `/atlas/record/moveCoordinates`**, který u téhož záznamu kontroluje pouze `isUserElligibleToEditCommonFields` – autor importu si tak může záznam přesunout na mapě, ale nemůže změnit např. lokalitu textově. `moveRecordCoords` také nekontroluje `record.isLocked()`.
 
-### 2. PUT `/measurement/trait/:traitId/default` – invertovaná podmínka oprávnění
-
-V `TraitAdministrationService.setDefaultTrait` je podmínka:
-
-```java
-if (!user.isTraitAdmin() && user.equals(trait.getFeature().getAdmin())) {
-    return TraitActionResult.failure(...);
-}
-```
-
-Podmínka má zjevně být `||` místo `&&`. Důsledkem je, že **admin vlastnosti (Feature), který není traitAdmin, je odmítnut**, zatímco **libovolný jiný přihlášený uživatel (který není ani traitAdmin, ani admin feature) kontrolou projde** a může nastavit výchozí trait libovolné vlastnosti.
-
 ### 3. POST `/atlasadmin/taxonMapSettings` – většina polí bez kontroly oprávnění
 
 Controller vyžaduje jen přihlášení; `verifyCurrentUserIsMapAdmin` se volá pouze u klíčů `ISMAPPED`, `SETCOMMONTHRESHOLD` a `PUBLICATIONSTATUS`. Klíče `MAPTYPE`, `REVISORSCOMMENT`, `REVISORSPRINTMAPCOMMENT`, `MAPADMINCOMMENT`, `PRESLIA`, `PROTECTED` a `PARENT_MAP` může měnit **libovolný přihlášený uživatel** (stačí znát aktuální timestamp). U `REVISIONSTATUS` se nekontroluje revizorská role – non-mapAdmin může posunout status o krok vpřed u libovolného taxonu.
@@ -530,17 +517,6 @@ Controller vyžaduje jen přihlášení; `verifyCurrentUserIsMapAdmin` se volá 
 ### 4. GET `/atlasadmin/prepareBatchDelete/:batchId` – žádná kontrola oprávnění
 
 `MapAdminImportController.prepareDeletion` nemá žádnou kontrolu role ani vztahu k dávce – **libovolný přihlášený uživatel** může u libovolné dávky vygenerovat deleční kód a spustit odeslání e-mailu (s přílohami obsahujícími data dávky) committerovi. Následný `GET /atlasadmin/deleteBatch/:batchId/password/:password` sice vyžaduje committera + kód, ale heslo se předává v URL (ukládá se do logů/proxy) a celá operace je technicky mutující GET request.
-
-### 5. Komentáře – nekonzistentní oprávnění mezi endpointy
-
-- **POST `/atlas/record/comment`**: libovolný přihlášený uživatel může komentovat libovolný záznam.
-- **PUT `/atlas/record/comment/:commentId`** (updateComment): vyžaduje `isUserElligibleToEditEverything` (mapAdmin/revizor/správce projektu) – **autor komentáře vlastní komentář upravit nemůže**.
-- **DELETE `/atlas/record/comment/:commentId`**: autor komentáře NEBO mapAdmin.
-- Tedy: kdo komentář vytvořil, může ho smazat, ale ne upravit – nesoulad mezi oběma endpointy nad stejnou entitou.
-
-### 6. DELETE `/importResult/validated/:id` – tichý no-op
-
-Endpoint vrací `200 OK` bez obsahu vždy; mazání proběhne jen když je volající autorem neimportované dávky. Volající se o neúspěchu (cizí dávka / už importováno) nedozví.
 
 ### 7. Změna e-mailu bez potvrzení
 

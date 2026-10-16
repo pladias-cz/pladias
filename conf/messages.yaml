@@ -90,6 +90,9 @@ UploadExcel:
     importCsvFileEmailContentsSuccess: Soubor {0} byl úspěšně importován pod batch ID {1}.
     importCsvFileEmailContentsFailure: Soubor {0} se nepodařilo importovat. Detail chyby "{1}".
 
+ImportResultsController:
+    deleteFailed: Výsledek validace se nepodařilo smazat. Smazat lze pouze vlastní neimportované výsledky validace.
+
 
 UploadPdfMapPreview:
     invalidPublicationStatusForMapPreviewUpload: Není možné nahrát preview. Je třeba změnit Stav mapy na "Příprava náhledu".

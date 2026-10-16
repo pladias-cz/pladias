@@ -2,7 +2,8 @@
 
 **prompt:**
     připrav uživatelsky srozumitelné shrnutí chování backendu této aplikace při editacích. Vytvoř/aktualizuj tento markdown dokument, ve kterém bude popsáno chování JAVA backendu aplikace při editaci jakéhokoli pole v databázi. Začni u seznamu endpointů v conf/react.routes, vyber všechny post+put+delete+patch endpointy a ty zpracuj - kdo smí akci provést, zda to vyvolává nějaké související akce. Některé routy jsou velmi komplexní (jako POST /import/upload ), tak u těch stačí uvést jen kdo je smí zavolat.
-    Zdůrazni pokud by někde byla editace možná bez kontroly oprávnění či by se ti zdál nesoulad mezi jendotlivými endpointy pracujícími se stejnými entitami, vezmi ale v potaz záměrné odchylky uvedené v intentional_quirks.md
+    Zahrň přehledovou tabulku změn záznamu které se zapisují do historie a které ne, uveď pokud se u některé editace záznamu nepoužívá concurrency control.
+    Zdůrazni pokud by někde byla editace možná bez kontroly oprávnění či by se ti zdál nesoulad mezi jednotlivými endpointy pracujícími se stejnými entitami, vezmi ale v potaz záměrné odchylky uvedené v intentional_quirks.md
 
 ---
 
@@ -14,18 +15,19 @@ Tento dokument popisuje chování aplikace při editaci dat v databázi. Jsou zd
 
 1. [Záznamy (Records)](#záznamy-records)
 2. [Komentáře k záznamům](#komentáře-k-záznamům)
-3. [Importy](#importy)
-4. [Vyhledávání a hromadné editace (Search)](#vyhledávání-a-hromadné-editace-search)
-5. [Taxony](#taxony)
-6. [Synonyma](#synonyma)
-7. [Měření a vlastnosti (Measurement / Traits)](#měření-a-vlastnosti-measurement--traits)
-8. [Nastavení map taxonů (TaxonMapSettings)](#nastavení-map-taxonů-taxonmapsettings)
-9. [Uživatelé](#uživatelé)
-10. [Map Reports](#map-reports)
-11. [PNG mapy](#png-mapy)
-12. [Přehled rolí](#přehled-rolí)
-13. [Zjištěné problémy s oprávněními a nesoulady](#zjištěné-problémy-s-oprávněními-a-nesoulady)
-14. [Poznámky](#poznámky)
+3. [Přehledová tabulka: historie změn a concurrency kontrola](#přehledová-tabulka-historie-změn-a-concurrency-kontrola)
+4. [Importy](#importy)
+5. [Vyhledávání a hromadné editace (Search)](#vyhledávání-a-hromadné-editace-search)
+6. [Taxony](#taxony)
+7. [Synonyma](#synonyma)
+8. [Měření a vlastnosti (Measurement / Traits)](#měření-a-vlastnosti-measurement--traits)
+9. [Nastavení map taxonů (TaxonMapSettings)](#nastavení-map-taxonů-taxonmapsettings)
+10. [Uživatelé](#uživatelé)
+11. [Map Reports](#map-reports)
+12. [PNG mapy](#png-mapy)
+13. [Přehled rolí](#přehled-rolí)
+14. [Zjištěné problémy s oprávněními a nesoulady](#zjištěné-problémy-s-oprávněními-a-nesoulady)
+15. [Poznámky](#poznámky)
 
 ---
 
@@ -48,8 +50,8 @@ Tento dokument popisuje chování aplikace při editaci dat v databázi. Jsou zd
 - Klient musí poslat aktuální `lastEditTimestamp` (ochrana proti concurrency, jinak 409 Conflict)
 
 **Související akce:**
-- Vytvoření záznamu v `RecordHistory` (audit každé změny)
-- Aktualizace `lastEditTimestamp` na záznamu
+- Vytvoření záznamu v `RecordHistory` (audit každé změny; pokud se hodnota oproti stávající nezmění, zápis se přeskočí)
+- Aktualizace `lastEditTimestamp` na záznamu (pole má anotaci `@Version` – Ebean optimistic locking, každé `update()` entitu automaticky verzuje)
 - Při změně souřadnic: přepočet fytochorionu a kvadrantů
 - Volání `updateTaxonEditCount()` pro sledování počtu editací taxonu
 
@@ -90,13 +92,15 @@ Tento dokument popisuje chování aplikace při editaci dat v databázi. Jsou zd
 
 **Související akce:**
 - Přepočet fytochorionu a kvadrantů po změně souřadnic
-- Záznam do `RecordHistory`
+- Záznam do `RecordHistory` (`gps`, `coords_precision`, `coords_source`, `phytochorion_id`, `phytochorion_computed`)
+- ⚠️ Při přesunu se z `remark_doubt` automaticky mažou systémové texty („okres dopočten automaticky“, nesoulad fytochorionu/kvadrantu atd.) – tato změna se do `RecordHistory` **nezapisuje** (viz [problém č. 3](#3-post-atlasrecordmovecoordinates--tichá-změna-remark_doubt-bez-zápisu-do-historie))
 
 ---
 
 ## Komentáře k záznamům
 
 Všechny endpointy `RecordCommentController` – přihlášený uživatel (`@Security.Authenticated(Authorized.class)`).
+⚠️ Žádný z komentářových endpointů nepoužívá concurrency kontrolu přes timestamp od klienta – ochranu proti souběžné editaci zajišťuje jen `@Version` na entitě `RecordComment` (viz [přehledová tabulka](#přehledová-tabulka-historie-změn-a-concurrency-kontrola) a [problém č. 4](#4-editace-komentářů-bez-explicitní-concurrency-kontroly)).
 
 ### POST `/atlas/record/comment` – Vytvoření komentáře (`createComment`)
 
@@ -105,7 +109,7 @@ Všechny endpointy `RecordCommentController` – přihlášený uživatel (`@Sec
 
 **Související akce:**
 - Vytvoření záznamu `Comment` a asociace `users_comments` (aktuální uživatel)
-- Záznam do `RecordHistory` (typ FLAG)
+- Záznam do `RecordHistory` (typ `COMMENT`, „comment added“)
 
 ---
 
@@ -135,7 +139,7 @@ Všechny endpointy `RecordCommentController` – přihlášený uživatel (`@Sec
 - `record.isUserElligibleToEditEverything(currentUser)` (mapAdmin / revizor / správce projektu)
 
 **Související akce:**
-- Nastavení příznaku vyřešení, notifikace, záznam do `RecordHistory`
+- Nastavení příznaku vyřešení, záznam do `RecordHistory` („comment resolved“; notifikace se **neodesílají**)
 
 ---
 
@@ -145,7 +149,39 @@ Všechny endpointy `RecordCommentController` – přihlášený uživatel (`@Sec
 - Master admin (`UserUtils.getMasterAdmin()`) **NEBO** uživatel sám (odstranění sebe z notifikací na komentář)
 
 **Související akce:**
-- Přímé mazání z `users_comments` (raw SQL)
+- Přímé mazání z `users_comments` (raw SQL, bez concurrency kontroly)
+- Záznam do `RecordHistory` („marked as read“)
+
+---
+
+## Přehledová tabulka: historie změn a concurrency kontrola
+
+Přehled všech mutujících endpointů z hlediska auditu změn a ochrany proti souběžným (konkurenčním) editacím. U záznamů je `lastEditTimestamp` pole s anotací `@Version` (Ebean optimistic locking) – každé `update()` verzi automaticky posune a editace zastaralé verze selže.
+
+### Záznamy (Record) a komentáře
+
+| Endpoint / akce | Mění záznam | Zápis do `RecordHistory` | Concurrency kontrola |
+|---|---|---|---|
+| PATCH `/atlas/record/:recordId` | ✅ | ✅ pro každé skutečně změněné pole (při shodě staré a nové hodnoty se zápis přeskočí) | ✅ `lastEditTimestampNum` v controlleru + `@Version` |
+| POST `/atlas/record/moveCoordinates` | ✅ | ✅ `gps`, `coords_precision`, `coords_source`, `phytochorion_id`, `phytochorion_computed` – ⚠️ mazání systémových textů v `remark_doubt` bez zápisu (problém č. 3) | ✅ timestamp v controlleru i service + `@Version` |
+| POST `/atlas/record/comment` | ❌ (přidává komentář) | ✅ „comment added“ | – (nový záznam) |
+| PUT `/atlas/record/comment/:commentId` | ❌ | ✅ „comment updated“ | ⚠️ jen `@Version` na `RecordComment` (problém č. 4) |
+| DELETE `/atlas/record/comment/:commentId` | ❌ (soft delete) | ✅ „comment deleted“ | ⚠️ jen `@Version` |
+| POST `/atlas/record/comment/:commentId/resolve` | ❌ | ✅ „comment resolved“ | ⚠️ jen `@Version` |
+| DELETE `/atlas/record/comment-assoc/:commentId/linked-user/:boundUserId` | ❌ (raw SQL `users_comments`) | ✅ „marked as read“ | ❌ žádná |
+| POST `/import/validate`, `/import/upload`, `/import/csv` | ✅ (vytvoření) | ⚠️ jen u předvalidovaných řádků (příznaky `validation_status`, `include_in_map`, `herbarium_quality`); vlastní hodnoty polí bez historie | ❌ |
+| GET `/atlasadmin/deleteBatch/:batchId/password/:password` | ✅ (smazání) | ❌ – `records_history` se maže spolu se záznamy | ❌ |
+
+### Ostatní entity
+
+| Endpoint | Entita | Audit / historie | Concurrency kontrola |
+|---|---|---|---|
+| PATCH `/taxon/:id`, POST `/taxon`, POST `/taxon/:id/move`, POST `/taxon/moveBeforeSibling`, DELETE `/taxon/:id`, `/synonyms/*` | Taxon / Synonym | ❌ | ⚠️ globální `TaxonEditorLock` (v daný okamžik edituje jen jeden taxonAdmin) |
+| POST `/atlasadmin/taxonMapSettings` | TaxonMapSettings | ❌ (pouze inkrement `editCount`) | ✅ `timestamp` |
+| `/users*`, `/user/*` (vč. settings, práv, hesel) | User / UserSetting | ❌ | ❌ |
+| `/measurement/*` (backup, trait, delete, setDefault) | Trait | ❌ | ❌ |
+| POST `/atlas/pngMap/taxon/:taxonId` | PdfMap | ❌ | ❌ |
+| POST `/atlasadmin/assignUserTaxon`, DELETE `/atlasadmin/removeUserTaxon/...` | User ↔ Taxon (supervisedTaxons) | ❌ | ❌ |
 
 ---
 
@@ -168,6 +204,7 @@ Všechny endpointy `RecordCommentController` – přihlášený uživatel (`@Sec
 
 **Související akce (komplexní route – jen shrnutí):**
 - Parsování a validace řádků, import záznamů (pouze pokud 0 chyb), nastavení `batch.imported = true`, Activity logging
+- Historie: u předvalidovaných řádků se do `RecordHistory` zapisují pouze příznaky (`validation_status`, `include_in_map`, `herbarium_quality`), vlastní hodnoty polí bez historie
 
 ---
 
@@ -514,7 +551,15 @@ Nesoulad potvrzuje i **POST `/atlas/record/moveCoordinates`**, který u téhož 
 
 Controller vyžaduje jen přihlášení; `verifyCurrentUserIsMapAdmin` se volá pouze u klíčů `ISMAPPED`, `SETCOMMONTHRESHOLD` a `PUBLICATIONSTATUS`. Klíče `MAPTYPE`, `REVISORSCOMMENT`, `REVISORSPRINTMAPCOMMENT`, `MAPADMINCOMMENT`, `PRESLIA`, `PROTECTED` a `PARENT_MAP` může měnit **libovolný přihlášený uživatel** (stačí znát aktuální timestamp). U `REVISIONSTATUS` se nekontroluje revizorská role – non-mapAdmin může posunout status o krok vpřed u libovolného taxonu.
 
-### 8. Ostatní drobnosti
+### 3. POST `/atlas/record/moveCoordinates` – tichá změna `remark_doubt` bez zápisu do historie
+
+Při přesunu záznamu service (`RecordsService.moveRecordCoords` → `updateRemarkDoubts`) maže z `remark_doubt` automaticky generované systémové texty („okres dopočten automaticky“, nesoulad fytochorionu/kvadrantu s okres atd.). Tato změna pole se ale do `RecordHistory` **nezapisuje** – v historii se objeví jen souřadnice, přesnost, zdroj souřadnic a fytochorion. Změna tak zůstane v datech, ale bez auditního záznamu o tom, kdo a kdy ji provedl.
+
+### 4. Editace komentářů bez explicitní concurrency kontroly
+
+Komentářové endpointy (PUT/DELETE/resolve) nekontrolují žádný `lastEditTimestamp` od klienta – klient verzi komentáře vůbec neposílá. Jedinou ochranu proti souběžné editaci je `@Version` na `RecordComment` (editace zastaralé verze selže DB výjimkou, kterou controller vrátí jako obecnou chybu). U `DELETE /atlas/record/comment-assoc/:commentId/linked-user/:boundUserId` se asociace maže raw SQL zcela bez jakékoliv kontroly verze.
+
+### 5. Ostatní drobnosti
 
 - `MapReportsController.assignUserTaxon` nese `// TODO - should be really for all users available?` - není jisté zda má být pracovní CSV ap. k dispozici všem uživatelům
 
@@ -523,13 +568,13 @@ Controller vyžaduje jen přihlášení; `verifyCurrentUserIsMapAdmin` se volá 
 ## Poznámky
 
 ### Concurrency kontrola
-Většina editací záznamů a nastavení map používá `lastEditTimestamp` (resp. `timestamp` u TaxonMapSettings) pro detekci souběžných změn. Pokud klient pošle starší timestamp, než je na serveru, vrátí se chyba 409 (Conflict), resp. „novější verze existuje“.
+Většina editací záznamů a nastavení map používá `lastEditTimestamp` (resp. `timestamp` u TaxonMapSettings) pro detekci souběžných změn. Pokud klient pošle starší timestamp, než je na serveru, vrátí se chyba 409 (Conflict), resp. „novější verze existuje“. `Record.lastEditTimestamp` a `RecordComment.lastEditTimestamp` jsou navíc pole `@Version` (Ebean optimistic locking). **Bez concurrency kontroly** zůstávají: editace/mazání komentářů a jejich asociací (viz [problém č. 4](#4-editace-komentářů-bez-explicitní-concurrency-kontroly)), editace uživatelů, taxonů a vlastností (měření).
+
+### Historie změn
+Editace polí záznamu (`RecordsService.editField`, `moveRecordCoords`) a operace s komentáři vytvářejí záznam v `RecordHistory` pro auditování změn (včetně kaskádových změn příznaků); u polí se shodnou starou a novou hodnotou se zápis přeskočí. **Bez zápisu do historie** jsou: importy záznamů (až na předvalidované příznaky), mazání dávky (maže historii spolu se záznamy), automatické promazání `remark_doubt` při přesunu souřadnic (viz [problém č. 3](#3-post-atlasrecordmovecoordinates--tichá-změna-remark_doubt-bez-zápisu-do-historie)) a všechny editace jiných entit (taxony, uživatelé, vlastnosti/měření, nastavení map – tam se ukládá jen `editCount`).
 
 ### Lockování záznamů
 Záznamy mohou být uzamčeny (`record.isLocked()`) nebo editace může být zakázána (`record.isEditationAllowed()` – zamknutý taxon kvůli generování mapových podkladů). Editace taxonů navíc používá globální `TaxonEditorLock` (vždy jen jeden taxonAdmin edituje).
-
-### Historie změn
-Většina editací záznamů a komentářů vytváří záznam v `RecordHistory` pro auditování změn (včetně kaskádových změn příznaků).
 
 ### Notifikace
 Některé akce (změna publication/revision status, přiřazení revizora, upload PNG mapy, příprava mazání dávky, reset hesla) spouští e-mailové notifikace příslušným uživatelům.

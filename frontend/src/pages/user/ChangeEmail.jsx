@@ -9,7 +9,8 @@ export default function ChangeEmail() {
     usePageTitle(t("user.changeEmail.title"));
     const [formData, setFormData] = useState({
         password: "",
-        newEmail: ""
+        newEmail: "",
+        confirmNewEmail: ""
     });
 
     const [loading, setLoading] = useState(false);
@@ -31,12 +32,20 @@ export default function ChangeEmail() {
         setMessage(null);
 
         try {
+            if (formData.newEmail !== formData.confirmNewEmail) {
+                setError(t("user.changeEmail.emailsDoNotMatch"));
+                return;
+            }
+
             const response = await fetch("/api/react/user/changeEmail", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
                 },
-                body: JSON.stringify(formData)
+                body: JSON.stringify({
+                    password: formData.password,
+                    newEmail: formData.newEmail
+                })
             });
 
             const data = await response.json();
@@ -46,7 +55,8 @@ export default function ChangeEmail() {
                 // Clear form
                 setFormData({
                     password: "",
-                    newEmail: ""
+                    newEmail: "",
+                    confirmNewEmail: ""
                 });
             } else {
                 setError(data.error || t("user.changeEmail.error"));
@@ -85,6 +95,17 @@ export default function ChangeEmail() {
                             type="email"
                             name="newEmail"
                             value={formData.newEmail}
+                            onChange={handleChange}
+                            required
+                        />
+                    </Form.Group>
+
+                    <Form.Group className="mb-3" controlId="confirmNewEmail">
+                        <Form.Label>{t("user.changeEmail.confirmNewEmail")}</Form.Label>
+                        <Form.Control
+                            type="email"
+                            name="confirmNewEmail"
+                            value={formData.confirmNewEmail}
                             onChange={handleChange}
                             required
                         />

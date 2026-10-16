@@ -486,6 +486,8 @@ UserController:
     passwordRequired: Je vyžadováno původní heslo.
     newPasswordRequired: Je vyžadováno nové heslo.
     confirmNewPasswordRequired: Je vyžadováno potvrzení nového hesla.
+    emailChangedNotificationSubject: Změna e-mailu v Pladias
+    emailChangedNotificationContents: Váš e-mail byl změněn z {0} na {1}. Pokud jste tuto změnu neprovedli vy, kontaktujte prosím administrátora systému.
 
 DateConverter:
     InvalidInput: Neplatné datum.

@@ -12,6 +12,7 @@ import io.ebean.DB;
 import mail.MailMessageBuilder;
 import mail.MailService;
 import models.*;
+import play.Logger;
 import play.i18n.Messages;
 import play.libs.Json;
 import play.mvc.Http;
@@ -160,9 +161,32 @@ public class UserController extends ControllerBase {
                 return badRequest(Json.toJson(Map.of("error", messages.at("UserController.passwordNotMatches"))));
             }
 
+            // Check that the new email is not already used by another account
+            boolean emailTaken = User.find().query().where()
+                .ieq("email", newEmail)
+                .ne("id", user.getId())
+                .findCount() > 0;
+            if (emailTaken) {
+                return status(409, Json.toJson(Map.of("error",
+                    messages.at("UserController.userWithEmailAlreadyExists", newEmail))));
+            }
+
+            String originalEmail = user.getEmail();
+
             // Update email
             user.setEmail(newEmail);
             DB.update(user);
+
+            // Notify the previous address so an unauthorized change cannot go unnoticed
+            try {
+                MailMessageBuilder builder = new MailMessageBuilder();
+                builder.setSubject(messages.at("UserController.emailChangedNotificationSubject"));
+                builder.setContents(messages.at("UserController.emailChangedNotificationContents", originalEmail, newEmail));
+                builder.addRecipient(originalEmail);
+                _mailService.sendMail(builder.build());
+            } catch (Exception mailEx) {
+                Logger.error(String.format("Failed to send email change notification to %s", originalEmail), mailEx);
+            }
 
             // Return success response
             Map<String, Object> response = new HashMap<>();

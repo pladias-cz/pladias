@@ -237,7 +237,7 @@ Celý modul `/measurements/*` je chráněn **pouze modulem instance – žádná
 
 ### Vlastní účet (`/user/changePassword`, `/user/changeEmail`, `/user/settings`)
 
-- `POST /api/react/user/changePassword` (vyžaduje staré heslo), `POST /api/react/user/createToken` (API token), `POST /api/react/user/changeEmail` (vyžaduje heslo; mění se okamžitě – viz backend problém č. 7), `PUT/DELETE /api/react/user/settings/...`.
+- `POST /api/react/user/changePassword` (vyžaduje staré heslo), `POST /api/react/user/createToken` (API token), `POST /api/react/user/changeEmail` (vyžaduje heslo; mění se okamžitě, ale s kontrolou unikátnosti 409 a notifikací na starou adresu), `PUT/DELETE /api/react/user/settings/...`.
 - Vše self-service, shodné s backendem; nastavení substitucí traitů se zobrazí jen `isTraitAdmin`, jazyk aplikace se ukládá přes klíč `application_language`.
 
 ---

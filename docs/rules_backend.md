@@ -389,7 +389,7 @@ Třída `SynonymController` je anotována `@Security.Authenticated(AuthorizedAsT
 
 **Kdo smí provést:** přihlášený uživatel pro sebe (vyžaduje ověření hesla)
 
-**Poznámka:** e-mail se změní **okamžitě** – neodesílá se žádný potvrzovací e-mail ani se nekontroluje duplicita. (Dříve dokumentovaný potvrzovací e-mail už neexistuje.)
+**Poznámka:** e-mail se změní **okamžitě** (bez potvrzovacího odkazu). Kontroluje se ale unikátnost nového e-mailu (jiný uživatel s tímto e-mailem → 409) a po změně se na **starou** adresu posílá notifikační e-mail; frontend navíc vyžaduje dvojité zadání nového e-mailu proti překlepu.
 
 ---
 
@@ -513,10 +513,6 @@ Nesoulad potvrzuje i **POST `/atlas/record/moveCoordinates`**, který u téhož 
 ### 3. POST `/atlasadmin/taxonMapSettings` – většina polí bez kontroly oprávnění
 
 Controller vyžaduje jen přihlášení; `verifyCurrentUserIsMapAdmin` se volá pouze u klíčů `ISMAPPED`, `SETCOMMONTHRESHOLD` a `PUBLICATIONSTATUS`. Klíče `MAPTYPE`, `REVISORSCOMMENT`, `REVISORSPRINTMAPCOMMENT`, `MAPADMINCOMMENT`, `PRESLIA`, `PROTECTED` a `PARENT_MAP` může měnit **libovolný přihlášený uživatel** (stačí znát aktuální timestamp). U `REVISIONSTATUS` se nekontroluje revizorská role – non-mapAdmin může posunout status o krok vpřed u libovolného taxonu.
-
-### 7. Změna e-mailu bez potvrzení
-
-`POST /user/changeEmail` změní e-mail okamžitě po ověření hesla – bez potvrzovacího e-mailu a bez kontroly unikátnosti. Dříve zdokumentovaný potvrzovací e-mail již v kódu neexistuje.
 
 ### 8. Ostatní drobnosti
 

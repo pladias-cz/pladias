@@ -1045,7 +1045,9 @@
       "title": "Nový uživatel"
     },
     "changeEmail": {
+      "confirmNewEmail": "Nový email pro kontrolu",
       "description": "Zadejte heslo a novou emailovou adresu (tj. změní se i váš login).",
+      "emailsDoNotMatch": "Nové e-maily se neshodují.",
       "error": "Při změně emailu došlo k chybě.",
       "networkError": "Chyba připojení k serveru.",
       "newEmail": "Nový email",

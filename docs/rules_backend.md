@@ -196,7 +196,7 @@ Všechny endpointy `RecordCommentController` – přihlášený uživatel (`@Sec
 Pozor – mazání importních dávek je implementováno přes **GET** routy, které mění databázi:
 
 - **GET `/atlasadmin/prepareBatchDelete/:batchId`** (`prepareDeletion`)
-  - Committer dané dávky nebo mapAdmin – vygeneruje deleční kód, uloží ho k dávce a pošle e-mail s přílohami committerovi dávky. Viz [problém č. 4](#4-get-atlasadminpreparebatchdeletebatchid--vyřešeno-autorizace-doplněna)
+  - Committer dané dávky nebo mapAdmin – vygeneruje deleční kód, uloží ho k dávce a pošle e-mail s přílohami committerovi dávky.
 - **GET `/atlasadmin/deleteBatch/:batchId/password/:password`** (`completeDeletion`)
   - Committer dávky + správný deleční kód (zaslaný e-mailem); heslo je předáváno v URL
   - Hromadné mazání raw SQL (records, comments, users_comments, records_history, excel, batch)
@@ -373,7 +373,7 @@ Třída `SynonymController` je anotována `@Security.Authenticated(AuthorizedAsT
 - Změna `REVISIONSTATUS` na `Submitted`/`Completing`/`Closed` odesílá e-maily adminům/revizorům
 - Aktualizace `lastEditTimestamp` a `editCount` v nastavení taxonu
 
-⚠️ Chybějící kontroly u většiny klíčů popisuje [problém č. 3](#3-post-atlasadmintaxonmapsettings--většina-polí-bez-kontroly-oprávnění)
+⚠️ Chybějící kontroly u většiny klíčů popisuje [problém č. 2](#2-post-atlasadmintaxonmapsettings--většina-polí-bez-kontroly-oprávnění)
 
 ---
 
@@ -510,7 +510,7 @@ Důsledek: **autor importu dnes nemůže přes PATCH editovat ani běžná pole 
 
 Nesoulad potvrzuje i **POST `/atlas/record/moveCoordinates`**, který u téhož záznamu kontroluje pouze `isUserElligibleToEditCommonFields` – autor importu si tak může záznam přesunout na mapě, ale nemůže změnit např. lokalitu textově. `moveRecordCoords` také nekontroluje `record.isLocked()`.
 
-### 3. POST `/atlasadmin/taxonMapSettings` – většina polí bez kontroly oprávnění
+### 2. POST `/atlasadmin/taxonMapSettings` – většina polí bez kontroly oprávnění
 
 Controller vyžaduje jen přihlášení; `verifyCurrentUserIsMapAdmin` se volá pouze u klíčů `ISMAPPED`, `SETCOMMONTHRESHOLD` a `PUBLICATIONSTATUS`. Klíče `MAPTYPE`, `REVISORSCOMMENT`, `REVISORSPRINTMAPCOMMENT`, `MAPADMINCOMMENT`, `PRESLIA`, `PROTECTED` a `PARENT_MAP` může měnit **libovolný přihlášený uživatel** (stačí znát aktuální timestamp). U `REVISIONSTATUS` se nekontroluje revizorská role – non-mapAdmin může posunout status o krok vpřed u libovolného taxonu.
 

@@ -185,7 +185,7 @@ Celý prefix `/atlasAdmin/*` je chráněn rolí `isMapAdmin` (a modulem atlas).
 
 - Tlačítko smazat u dávky nevolá DELETE, ale **mutující GET** `GET /api/react/atlasadmin/prepareBatchDelete/:batchId` – připraví smazání a pošle deleční kód e-mailem committerovi dávky.
 - Vlastní smazání (`deleteBatch/:batchId/password/:password`) se děje **mimo SPA** (odkaz v e-mailu), takže deleční kód frontend nikdy nezadává.
-- Backend kontrolu role u `prepareBatchDelete` nemá – viz [rules_backend.md](./rules_backend.md), problém č. 4; frontend to částečně mírní tím, že UI zpřístupňuje jen mapAdminům (endpoint ale zůstává volatelný přímo).
+- Backend u `prepareBatchDelete` kontroluje, že volající je committer dávky nebo mapAdmin (viz [rules_backend.md](./rules_backend.md), problém č. 4).
 
 ### ListOfUsers / MapUsers – správa práv uživatelů k mapám
 

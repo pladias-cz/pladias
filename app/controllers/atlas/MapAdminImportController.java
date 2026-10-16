@@ -318,11 +318,27 @@ public class MapAdminImportController extends ControllerBase {
     }
 
     public Result prepareDeletion(Http.Request request, Long batchId) {
+        Messages messages = getMessages(request);
+        User currentUser = SessionUtils.getCurrentUser(request.session());
+        if (currentUser == null) {
+            return unauthorized(JsonResult.error(messages.at("ImportsManager.notAuthorizedToDeleteBatch")));
+        }
+
+        Batch batch = Batch.find().byId(batchId);
+        if (batch == null) {
+            return notFound(JsonResult.error(messages.at("ImportsManager.batchNotExists")));
+        }
+
+        boolean isCommitter = batch.getCommitter() != null
+            && batch.getCommitter().getId().equals(currentUser.getId());
+        if (!isCommitter && !currentUser.isMapAdmin()) {
+            return forbidden(JsonResult.error(messages.at("ImportsManager.notAuthorizedToDeleteBatch")));
+        }
+
         try {
-            Messages messages = getMessages(request);
             Workbook digestWorkBook = modifiedRecordsExportService.serializeModifiedBatchEntries(batchId, messages);
 
-            Batch batch = populateBatchWithDeletionCode(batchId);
+            batch = populateBatchWithDeletionCode(batchId);
             Excel importedExcel = Excel.find().query().where().eq("batch.id", batchId).findOne();
 
             MailMessageBuilder builder = new MailMessageBuilder();

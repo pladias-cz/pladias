@@ -45,7 +45,6 @@ export interface BatchDetail {
     committerName: string | null;
     createTimestamp: string | null;
     imported: boolean | null;
-    deletionCode: string | null;
 }
 
 /**

@@ -293,7 +293,7 @@ public record RecordPladiasFullDto(
                 batch.getAuthor() != null ? batch.getAuthor().getFullname() : null,
                 batch.getCommitter() != null ? batch.getCommitter().getId() : null,
                 batch.getCommitter() != null ? batch.getCommitter().getFullname() : null,
-                batch.getCreateTimestamp(), batch.getImported(), batch.getDeletionCode());
+                batch.getCreateTimestamp(), batch.getImported());
         }
 
         BibliographyDto biblioDto = null;
@@ -465,8 +465,7 @@ public record RecordPladiasFullDto(
         Long committerId,
         String committerName,
         Timestamp createTimestamp,
-        Boolean imported,
-        String deletionCode
+        Boolean imported
     ) {
     }
 

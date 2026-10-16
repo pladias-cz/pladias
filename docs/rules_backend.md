@@ -196,7 +196,7 @@ Všechny endpointy `RecordCommentController` – přihlášený uživatel (`@Sec
 Pozor – mazání importních dávek je implementováno přes **GET** routy, které mění databázi:
 
 - **GET `/atlasadmin/prepareBatchDelete/:batchId`** (`prepareDeletion`)
-  - ⚠️ **Žádná kontrola oprávnění** – libovolný přihlášený uživatel může vygenerovat deleční kód a spustit odeslání e-mailu s přílohami committerovi dávky. Viz [problém č. 4](#4-get-atlasadminpreparebatchdeletebatchid--žádná-kontrola-oprávnění)
+  - Committer dané dávky nebo mapAdmin – vygeneruje deleční kód, uloží ho k dávce a pošle e-mail s přílohami committerovi dávky. Viz [problém č. 4](#4-get-atlasadminpreparebatchdeletebatchid--vyřešeno-autorizace-doplněna)
 - **GET `/atlasadmin/deleteBatch/:batchId/password/:password`** (`completeDeletion`)
   - Committer dávky + správný deleční kód (zaslaný e-mailem); heslo je předáváno v URL
   - Hromadné mazání raw SQL (records, comments, users_comments, records_history, excel, batch)
@@ -513,10 +513,6 @@ Nesoulad potvrzuje i **POST `/atlas/record/moveCoordinates`**, který u téhož 
 ### 3. POST `/atlasadmin/taxonMapSettings` – většina polí bez kontroly oprávnění
 
 Controller vyžaduje jen přihlášení; `verifyCurrentUserIsMapAdmin` se volá pouze u klíčů `ISMAPPED`, `SETCOMMONTHRESHOLD` a `PUBLICATIONSTATUS`. Klíče `MAPTYPE`, `REVISORSCOMMENT`, `REVISORSPRINTMAPCOMMENT`, `MAPADMINCOMMENT`, `PRESLIA`, `PROTECTED` a `PARENT_MAP` může měnit **libovolný přihlášený uživatel** (stačí znát aktuální timestamp). U `REVISIONSTATUS` se nekontroluje revizorská role – non-mapAdmin může posunout status o krok vpřed u libovolného taxonu.
-
-### 4. GET `/atlasadmin/prepareBatchDelete/:batchId` – žádná kontrola oprávnění
-
-`MapAdminImportController.prepareDeletion` nemá žádnou kontrolu role ani vztahu k dávce – **libovolný přihlášený uživatel** může u libovolné dávky vygenerovat deleční kód a spustit odeslání e-mailu (s přílohami obsahujícími data dávky) committerovi. Následný `GET /atlasadmin/deleteBatch/:batchId/password/:password` sice vyžaduje committera + kód, ale heslo se předává v URL (ukládá se do logů/proxy) a celá operace je technicky mutující GET request.
 
 ### 7. Změna e-mailu bez potvrzení
 

@@ -10,3 +10,7 @@ Uživatel nemůže svůj komentář editovat aby nedocházelo k nejasnostem s oh
 ## mutující GET při mazání dávky
 
 Zbytkové (akceptované) omezení: `GET /atlasadmin/deleteBatch/:batchId/password/:password` zůstává mutující GET s kódem v URL – odkaz z e-mailu totiž nelze spustit jinou metodou než GET; riziko je mírněno vazbou kódu na committera a konkrétní dávku.
+
+## mazání dávky
+
+ Mazání dávky (`completeDeletion`) maže i komentáře a historii záznamů od ostatních uživatelů (by design, ale bez dodatečných kontrol oprávnění nad komentáři).

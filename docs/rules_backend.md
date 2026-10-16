@@ -516,9 +516,7 @@ Controller vyžaduje jen přihlášení; `verifyCurrentUserIsMapAdmin` se volá 
 
 ### 8. Ostatní drobnosti
 
-- `MapReportsController.assignUserTaxon` nese `// TODO - should be really for all users available?`
-- `searchRecordEditTimestamps` je omezen na mapAdmin + bulk importera – korektní, ale je to jediný endpoint hromadné editace; samotné hromadné ukládání pak probíhá přes PATCH `/atlas/record/:recordId` per záznam (a naráží na problém č. 1).
-- Mazání dávky (`completeDeletion`) maže i komentáře a historii záznamů ostatních uživatelů (by design, ale bez dodatečných kontrol oprávnění nad komentáři).
+- `MapReportsController.assignUserTaxon` nese `// TODO - should be really for all users available?` - není jisté zda má být pracovní CSV ap. k dispozici všem uživatelům
 
 ---
 

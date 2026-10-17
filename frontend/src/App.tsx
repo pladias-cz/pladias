@@ -66,6 +66,7 @@ interface AppConfig {
     isTraitAdmin: boolean;
     isSysAdmin: boolean;
     isTaxonAdmin: boolean;
+    isAsyncImporter: boolean;
     userEmail: string;
     language: string;
     supervisedTaxonIds: number[];
@@ -104,6 +105,7 @@ export default function App() {
         isTraitAdmin: config.isTraitAdmin,
         isSysAdmin: config.isSysAdmin,
         isTaxonAdmin: config.isTaxonAdmin,
+        isAsyncImporter: config.isAsyncImporter,
         userEmail: config.userEmail,
         language: config.language,
         supervisedTaxonIds: config.supervisedTaxonIds || []

@@ -133,7 +133,7 @@ Komponenty `RecordComments` (detail záznamu) a `AddCommentModal` (mapDetail, se
 | **Editace textu** | – | **ve frontendu není vůbec implementována** | backend `PUT /atlas/record/comment/:id` existuje, ale autor nesmí |
 
 **Poznámky:**
-- Frontendová kontrola „vyřešit“ (`canResolveComment`) backendovou logiku **zrcadlí jen částečně** – viz [problém č. 6](#6-canresolvecomment-je-restriktivnější-než-backend).
+- Frontendová kontrola „vyřešit“ (`canResolveComment`) backendovou logiku **zrcadlí jen částečně** – viz [problém č. 5](#5-canresolvecomment-je-restriktivnější-než-backend).
 - `Record.tsx` renderuje `<RecordComments recordId={record.id} />` bez volitelného propu `recordTaxonId`, takže na detailu záznamu nemůže podmínka pro běžného revizora vyjít vůbec (jen mapAdmin).
 - Stránka `NewComments` umožňuje komentáře pouze číst a označovat jako přečtené.
 
@@ -149,8 +149,8 @@ Komponenty `RecordComments` (detail záznamu) a `AddCommentModal` (mapDetail, se
 
 ### ListOfControls (`/atlas/listOfControls`) – výsledky validací
 
-- Tabulka validovaných dávek **všech uživatelů**; u každého řádku tlačítko smazat → `DELETE /api/react/importResult/validated/:id`.
-- Backend dávku smaže jen pokud je volající autorem a dávka není importovaná; jinak **tichý no-op s 200 OK**. Frontend vždy zobrazí „úspěšně smazáno“ – viz [problém č. 5](#5-listofcontrols-mazání-validovaných-dávek-hlásí-úspěch-i-když-se-nic-nestane).
+- Tabulka **vlastních** validovaných (neimportovaných) dávek aktuálního uživatele – backend dotaz filtruje na `batch.author.id == currentUser` a `imported == false`; u každého řádku tlačítko smazat → `DELETE /api/react/importResult/validated/:id`.
+- Backend dávku smaže jen pokud je volající autorem a dávka není importovaná; v opačném případě vrací **400 s lokalizovanou chybou** (`JsonResult.error("ImportResultsController.deleteFailed")`). Frontend na neúspěch zobrazí error flash (axios vyhodí výjimku na 4xx/5xx) a po akci se tabulka znovu načte – změna stavu flash/deletingId vytvoří novou identitu `fetchControls`, na jejíž změnu `DataTable` refetchne.
 
 ### ListOfImports (`/atlas/listOfImports`) – importované dávky
 
@@ -278,21 +278,13 @@ Upload datové řady (`POST /measurement/trait`), záloha (`POST /measurement/ba
 
 Panel hromadné editace se zobrazí pro `isMapAdmin || isBulkEditor` a vstupní endpoint (`records-edit-timestamps`) backend pustí stejným uživatelům. Samotné ukládání ale probíhá per záznam přes `PATCH /atlas/record/:recordId`, kde backend (kvůli `//TODO fix`) kontroluje `isElligibleForRecordValidation` (mapAdmin/revizor taxonu) **i u běžných polí**. BulkEditor bez těchto rolí tak funkci vidí, ale každá změna končí chybou. (Podrobnosti v [rules_backend.md](./rules_backend.md), problém č. 1 – na frontendu se problém projeví jako série chybových hlášení v souhrnu BulkEditu.)
 
-### 5. ListOfControls mazání validovaných dávek hlásí úspěch, i když se nic nestane
-
-Tlačítko smazat se zobrazuje u všech validovaných dávek bez ohledu na autora; backend `DELETE /importResult/validated/:id` ale maže jen vlastní neimportované dávky a v ostatních případech vrací tichý no-op s 200 OK. Frontend (axios) kontroluje jen HTTP status a vždy zobrazí „smazáno úspěšně“ – tabulka se navíc sama nerefreshuje, takže uživatel vidí dávku dál. Viz [rules_backend.md](./rules_backend.md), problém č. 6.
-
-### 6. canResolveComment je restriktivnější než backend
+### 5. canResolveComment je restriktivnější než backend
 
 Frontend povolí tlačítko „vyřešit“ jen mapAdminovi nebo uživateli, jehož `supervisedTaxonIds` přímo obsahuje taxon záznamu. Backend `POST /comment/:id/resolve` pustí navíc revizory nadřazených taxonů a správce projektu záznamu (`isUserElligibleToEditEverything`). Jde o nesoulad v bezpečném směru (UI skrývá akci oprávněným uživatelům), ale je nekonzistentní. K tomu `Record.tsx` nepředává `recordTaxonId`, takže na detailu záznamu nemůže podmínka vyjít pro běžného revizora vůbec. Související mrtvý kód: `useRecordPermissions.canEditComments`/`canEditComment` nejsou reálně použity a jsou zavádějící (nic smysluplného nekontrolují).
 
-### 7. `isAsyncImporter` se do frontendu nikdy nedostane
+### 6. Ostatní drobnosti
 
-Model `User` i `ProtectedRoute` znají roli `isAsyncImporter`, ale `App.tsx` ji z `GET /api/react/config` nečte ani nepředává do `UserProvider` – `user.isAsyncImporter` je tak vždy `false`. Role zatím není u žádné routy použita, ale jakákoli budoucí gate na ni bude tiše nefunkční.
-
-### 8. Ostatní drobnosti
-
-- **Editace komentáře neexistuje ve frontendu** – backend `PUT /atlas/record/comment/:id` nemá v UI obdobu. Je to konzistentní s tím, že autor komentář upravit nesmí (backend problém č. 5), ale revize textu cizího komentáře tak v UI možná není vůbec (ani pro mapAdmina).
+- **Editace komentáře neexistuje ve frontendu** – backend `PUT /atlas/record/comment/:id` nemá v UI obdobu. Je to konzistentní s tím, že autor komentář upravit nesmí, ale revize textu cizího komentáře tak v UI možná není vůbec (ani pro mapAdmina).
 - `RecordLocation` má kontrolu `canEdit` zakomentovanou – v současnosti neškodí (komponenta jen zobrazuje navrženou pozici; samotný přesun se potvrzuje v `Record.tsx`), ale je to past pro budoucí rozšíření.
 - `MainMenu` používá pro odhlášení odkaz `href="/logout"` (legacy route) a ignoruje existující routu `/user/logout`.
 - Hooky `useImportsActions`/`useImportControlsActions` obsahují nepoužitou akci `POST /importResult/${action}/${id}` („reserved for future use“) – v `conf/react.routes` takový obecný POST endpoint neexistuje; po napojení by volání padala na 404.

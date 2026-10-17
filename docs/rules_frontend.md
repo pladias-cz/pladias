@@ -65,9 +65,9 @@ Nesplnění → přesměrování na `/unauthorized`.
 | `/user/logout`, `/user/changePassword`, `/user/changeEmail`, `/user/settings` | – | žádná role (přihlášený) |
 | `/user/usersAdministration` | – | `isSysAdmin` |
 | `/user/taxaAdministration/:taxonId?` | – | `isTaxonAdmin` |
-| `/user/addUser` | – | `isMapAdmin` **NEBO** `isTraitAdmin` |
+| `/user/addUser` | – | `isSysAdmin` |
 
-Hlavní menu (`MainMenu.tsx`) nabízí odkazy konzistentně s routami: správa uživatelů jen `isSysAdmin`, správa taxonů jen `isTaxonAdmin`, přidání uživatele `isMapAdmin || isTraitAdmin`; zbytek atlasového/biblio/measurement menu vidí všichni uživatelé s daným modulem.
+Hlavní menu (`MainMenu.tsx`) nabízí odkazy konzistentně s routami: správa uživatelů i přidání uživatele jen `isSysAdmin`, správa taxonů jen `isTaxonAdmin`; zbytek atlasového/biblio/measurement menu vidí všichni uživatelé s daným modulem.
 
 ---
 
@@ -230,10 +230,10 @@ Celý modul `/measurements/*` je chráněn **modulem instance**; u write operac�
 - `UsersTable` – tabulka všech uživatelů včetně e-mailů a rolí; přepínání checkboxů (`mapAdmin`, `traitAdmin`, `sysAdmin`, `biblioAdmin`, `taxonAdmin`, `deleted`) posílá `PUT /api/react/users/:id`.
 - Shodné s backendem (sysAdmin). Poznámka: frontendový model uživatele roli `biblioAdmin` nezná (nikde jinde se nepoužívá), checkbox je jen v této tabulce.
 
-### AddUser (`/user/addUser`) – role `isMapAdmin` NEBO `isTraitAdmin`
+### AddUser (`/user/addUser`) – role `isSysAdmin`
 
 - Vytvoření uživatele: `POST /api/react/users`; volitelně hned poté přiřazení projektu: `POST /api/react/users/rights/edit` (klíč `AddProject`).
-- ⚠️ **Zásadní nesoulad:** oba endpointy vyžadují na backendu **sysAdmina**, takže mapAdmin/traitAdmin sice formulář vidí a vyplní, ale obě volání skončí 401. Viz [problém č. 1](#1-adduser-je-ve-frontendu-pro-mapadmintraitadmin-ale-backend-vyžaduje-sysadmina).
+- Shodné s backendem (oba endpointy vyžadují sysAdmina).
 
 ### Vlastní účet (`/user/changePassword`, `/user/changeEmail`, `/user/settings`)
 
@@ -262,29 +262,25 @@ Poznámka: „public“ routy (`/downloads`, `/user/docs`, Home) jsou veřejné 
 
 ## Zjištěné problémy a nesoulady
 
-### 1. AddUser je ve frontendu pro mapAdmin/traitAdmin, ale backend vyžaduje sysAdmina
-
-Route `/user/addUser` i položka menu jsou gateované `isMapAdmin || isTraitAdmin`, ale `POST /api/react/users` (createUser) i `POST /api/react/users/rights/edit` (přiřazení projektu) mají na backendu `@Security.Authenticated(AuthorizedAsSysAdmin.class)` + vnitřní kontrolu `isSysAdmin()`. MapAdmin nebo traitAdmin tedy formulář vyplní a obě volání skončí 401 Unauthorized. Buď je frontendová role příliš široká, nebo backend příliš úzký – v každém případě UI slibuje funkci, kterou nemůže splnit.
-
-### 2. MapUsers přidělování projektů pro mapAdmina volá sysAdmin endpoint
+### 1. MapUsers přidělování projektů pro mapAdmina volá sysAdmin endpoint
 
 Stránka `/atlasAdmin/listOfUsers` (MapUsers) je určena mapAdminovi, ale přidání/odebrání projektu uživateli používá tentýž `POST /users/rights/edit`, který backend pustí jen sysAdminovi. Naopak přiřazení/odebrání revizora (`assignUserTaxon`/`removeUserTaxon`) je na backendu mapAdmin – jedna stránka tedy kombinuje endpoint se správnou rolí a endpoint s rolí špatnou.
 
-### 3. BulkEdit viditelný pro isBulkEditor, ale backend PATCH vyžaduje revizorská oprávnění
+### 2. BulkEdit viditelný pro isBulkEditor, ale backend PATCH vyžaduje revizorská oprávnění
 
 Panel hromadné editace se zobrazí pro `isMapAdmin || isBulkEditor` a vstupní endpoint (`records-edit-timestamps`) backend pustí stejným uživatelům. Samotné ukládání ale probíhá per záznam přes `PATCH /atlas/record/:recordId`, kde backend (kvůli `//TODO fix`) kontroluje `isElligibleForRecordValidation` (mapAdmin/revizor taxonu) **i u běžných polí**. BulkEditor bez těchto rolí tak funkci vidí, ale každá změna končí chybou. (Podrobnosti v [rules_backend.md](./rules_backend.md), problém č. 1 – na frontendu se problém projeví jako série chybových hlášení v souhrnu BulkEditu.)
 
-### 4. canResolveComment je restriktivnější než backend
+### 3. canResolveComment je restriktivnější než backend
 
 Frontend povolí tlačítko „vyřešit“ jen mapAdminovi nebo uživateli, jehož `supervisedTaxonIds` přímo obsahuje taxon záznamu. Backend `POST /comment/:id/resolve` pustí navíc revizory nadřazených taxonů a správce projektu záznamu (`isUserElligibleToEditEverything`). Jde o nesoulad v bezpečném směru (UI skrývá akci oprávněným uživatelům), ale je nekonzistentní. K tomu `Record.tsx` nepředává `recordTaxonId`, takže na detailu záznamu nemůže podmínka vyjít pro běžného revizora vůbec. Související mrtvý kód: `useRecordPermissions.canEditComments`/`canEditComment` nejsou reálně použity a jsou zavádějící (nic smysluplného nekontrolují).
 
-### 5. Ostatní drobnosti
+### 4. Ostatní drobnosti
 
 - **Editace komentáře neexistuje ve frontendu** – backend `PUT /atlas/record/comment/:id` nemá v UI obdobu. Je to konzistentní s tím, že autor komentář upravit nesmí, ale revize textu cizího komentáře tak v UI možná není vůbec (ani pro mapAdmina).
 - `RecordLocation` má kontrolu `canEdit` zakomentovanou – v současnosti neškodí (komponenta jen zobrazuje navrženou pozici; samotný přesun se potvrzuje v `Record.tsx`), ale je to past pro budoucí rozšíření.
 - `MainMenu` používá pro odhlášení odkaz `href="/logout"` (legacy route) a ignoruje existující routu `/user/logout`.
 - Hooky `useImportsActions`/`useImportControlsActions` obsahují nepoužitou akci `POST /importResult/${action}/${id}` („reserved for future use“) – v `conf/react.routes` takový obecný POST endpoint neexistuje; po napojení by volání padala na 404.
-- `TraitUpload` nabízí výběr vlastníka datové řady z `users-minimal` komukoli, kdo stránku vůbec vidí (viz problém č. 3) – výběr cizího vlastníka ale backend import nezastaví (vlastník je jen metadata).
+- `TraitUpload` nabízí výběr vlastníka datové řady z `users-minimal` komukoli, kdo stránku vůbec vidí (viz problém č. 2) – výběr cizího vlastníka ale backend import nezastaví (vlastník je jen metadata).
 
 ---
 
@@ -294,7 +290,7 @@ Frontend povolí tlačítko „vyřešit“ jen mapAdminovi nebo uživateli, jeh
 Rychlé editace záznamů (validace, originalita, herbarium, include-in-map) a nastavení map taxonů dělají optimistickou změnu stavu a při chybě ji vrací; po úspěchu si přebírají nový timestamp z odpovědi serveru. Detail záznamu si timestamp propaguje mezi kartami, aby souběžné editace různých polí jednoho záznamu na sobě nevyhazovaly konflikt 409.
 
 ### Kam se autorizace ve frontendu nezapisuje
-Frontend nemá žádnou centrální tabulku oprávnění – role se kontrolují na třech místech (ProtectedRoute, MainMenu, podmíněné renderování v komponentách) a k tomu přistupují serverové příznaky v datech (`canEdit` apod.). Při přidávání nové write operace je proto nutné zkontrolovat všechna tři místa; opomenutí vede k situacím typu problémů č. 1–3.
+Frontend nemá žádnou centrální tabulku oprávnění – role se kontrolují na třech místech (ProtectedRoute, MainMenu, podmíněné renderování v komponentách) a k tomu přistupují serverové příznaky v datech (`canEdit` apod.). Při přidávání nové write operace je proto nutné zkontrolovat všechna tři místa; opomenutí vede k situacím typu problémů č. 1–2.
 
 ### Srovnání s backendem
 Kde frontend a backend sedí (mazání komentářů, správa uživatelských rolí v UsersAdministration, `records-edit-timestamps`, `assignUserTaxon`), je to dáno tím, že FE gate kopíruje backend kontrolu. Většina nesouladů plyne z toho, že FE role je odvozená od „kdo by měl funkci vidět“, zatímco backend kontroluje konkrétní endpoint – viz [Zjištěné problémy](#zjištěné-problémy-a-nesoulady) a [rules_backend.md](./rules_backend.md).

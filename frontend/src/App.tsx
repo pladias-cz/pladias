@@ -271,7 +271,7 @@ export default function App() {
                                         </ProtectedRoute>
                                     }/>
                                     <Route path="addUser" element={
-                                        <ProtectedRoute requiredPermissions={["isMapAdmin", "isTraitAdmin"]}>
+                                        <ProtectedRoute requiredPermission="isSysAdmin">
                                             <AddUser/>
                                         </ProtectedRoute>
                                     }/>

@@ -189,10 +189,12 @@ Celý prefix `/atlasAdmin/*` je chráněn rolí `isMapAdmin` (a modulem atlas).
 
 ### ListOfUsers / MapUsers – správa práv uživatelů k mapám
 
-- **Přidání/odebrání projektu:** `POST /api/react/users/rights/edit` s klíči `AddProject`/`RemoveProject`.
+- **Seznam uživatelů:** `GET /api/react/atlasadmin/users` (backend: mapAdmin) – paginovaný, s filtry Name/Surname/Email; vrací jen `id`, `name`, `surname`, `email` (bez rolí) a vynechává smazané uživatele.
+- **Přidání projektu:** `POST /api/react/atlasadmin/users/:userId/projects` s body `projectId` (backend: mapAdmin; duplicitní přiřazení vrací chybu).
+- **Odebrání projektu:** `DELETE /api/react/atlasadmin/users/:userId/projects/:projectId` (backend: mapAdmin).
 - **Přidání revizora taxonu:** přes `useMapUsersTaxa` → `POST /api/react/atlasadmin/assignUserTaxon` (backend: mapAdmin).
 - **Odebrání revizora:** `DELETE /api/react/atlasadmin/removeUserTaxon/user/:userId/taxon/:taxonId` (backend: mapAdmin).
-- ⚠️ **Nesoulad:** `POST /users/rights/edit` vyžaduje na backendu **sysAdmina**, ale stránka je určena mapAdminovi – operace tak mapAdminovi, který není sysAdmin, končí chybou. Viz [problém č. 2](#2-mapusers-přidělování-projektů-pro-mapadmina-volá-sysadmin-endpoint).
+- Všechny operace stránky jsou na backendu pod mapAdminem.
 
 ### ListOfTaxa – nastavení map taxonů (TaxonMapSettings)
 
@@ -232,8 +234,8 @@ Celý modul `/measurements/*` je chráněn **modulem instance**; u write operac�
 
 ### AddUser (`/user/addUser`) – role `isSysAdmin`
 
-- Vytvoření uživatele: `POST /api/react/users`; volitelně hned poté přiřazení projektu: `POST /api/react/users/rights/edit` (klíč `AddProject`).
-- Shodné s backendem (oba endpointy vyžadují sysAdmina).
+- Vytvoření uživatele: `POST /api/react/users`; shodné s backendem (sysAdmin).
+- Přidělování projektů zde není – projekty přiděluje výhradně mapAdmin v MapUsers (`/api/react/atlasadmin/users/:userId/projects`).
 
 ### Vlastní účet (`/user/changePassword`, `/user/changeEmail`, `/user/settings`)
 
@@ -246,7 +248,8 @@ Celý modul `/measurements/*` je chráněn **modulem instance**; u write operac�
 
 | Data | Kde se ve frontendu získávají | Odpovídající gate |
 |---|---|---|
-| Seznam uživatelů s e-maily a rolemi (`GET /api/react/users`) | UsersAdministration, MapUsers | route `isSysAdmin`, resp. `isMapAdmin` |
+| Seznam uživatelů s e-maily a rolemi (`GET /api/react/users`) | UsersAdministration | route `isSysAdmin` |
+| Seznam uživatelů bez rolí (`GET /api/react/atlasadmin/users`) | MapUsers | route `isMapAdmin` |
 | Seznam uživatelů – jména (`GET /api/react/users-minimal`) | formulář uploadu traitů, hledání (nálezce/autoři) | **žádný** – každý přihlášený |
 | Data traitů (`/measurement/trait/download/...`) | odkazy v TraitTable | server flag `canDownload` |
 | Detailní export traitů | odkaz v TraitTable | server flag `canExport` |
@@ -262,19 +265,15 @@ Poznámka: „public“ routy (`/downloads`, `/user/docs`, Home) jsou veřejné 
 
 ## Zjištěné problémy a nesoulady
 
-### 1. MapUsers přidělování projektů pro mapAdmina volá sysAdmin endpoint
-
-Stránka `/atlasAdmin/listOfUsers` (MapUsers) je určena mapAdminovi, ale přidání/odebrání projektu uživateli používá tentýž `POST /users/rights/edit`, který backend pustí jen sysAdminovi. Naopak přiřazení/odebrání revizora (`assignUserTaxon`/`removeUserTaxon`) je na backendu mapAdmin – jedna stránka tedy kombinuje endpoint se správnou rolí a endpoint s rolí špatnou.
-
-### 2. BulkEdit viditelný pro isBulkEditor, ale backend PATCH vyžaduje revizorská oprávnění
+### 1. BulkEdit viditelný pro isBulkEditor, ale backend PATCH vyžaduje revizorská oprávnění
 
 Panel hromadné editace se zobrazí pro `isMapAdmin || isBulkEditor` a vstupní endpoint (`records-edit-timestamps`) backend pustí stejným uživatelům. Samotné ukládání ale probíhá per záznam přes `PATCH /atlas/record/:recordId`, kde backend (kvůli `//TODO fix`) kontroluje `isElligibleForRecordValidation` (mapAdmin/revizor taxonu) **i u běžných polí**. BulkEditor bez těchto rolí tak funkci vidí, ale každá změna končí chybou. (Podrobnosti v [rules_backend.md](./rules_backend.md), problém č. 1 – na frontendu se problém projeví jako série chybových hlášení v souhrnu BulkEditu.)
 
-### 3. canResolveComment je restriktivnější než backend
+### 2. canResolveComment je restriktivnější než backend
 
 Frontend povolí tlačítko „vyřešit“ jen mapAdminovi nebo uživateli, jehož `supervisedTaxonIds` přímo obsahuje taxon záznamu. Backend `POST /comment/:id/resolve` pustí navíc revizory nadřazených taxonů a správce projektu záznamu (`isUserElligibleToEditEverything`). Jde o nesoulad v bezpečném směru (UI skrývá akci oprávněným uživatelům), ale je nekonzistentní. K tomu `Record.tsx` nepředává `recordTaxonId`, takže na detailu záznamu nemůže podmínka vyjít pro běžného revizora vůbec. Související mrtvý kód: `useRecordPermissions.canEditComments`/`canEditComment` nejsou reálně použity a jsou zavádějící (nic smysluplného nekontrolují).
 
-### 4. Ostatní drobnosti
+### 3. Ostatní drobnosti
 
 - **Editace komentáře neexistuje ve frontendu** – backend `PUT /atlas/record/comment/:id` nemá v UI obdobu. Je to konzistentní s tím, že autor komentář upravit nesmí, ale revize textu cizího komentáře tak v UI možná není vůbec (ani pro mapAdmina).
 - `RecordLocation` má kontrolu `canEdit` zakomentovanou – v současnosti neškodí (komponenta jen zobrazuje navrženou pozici; samotný přesun se potvrzuje v `Record.tsx`), ale je to past pro budoucí rozšíření.
@@ -294,4 +293,3 @@ Frontend nemá žádnou centrální tabulku oprávnění – role se kontrolují
 
 ### Srovnání s backendem
 Kde frontend a backend sedí (mazání komentářů, správa uživatelských rolí v UsersAdministration, `records-edit-timestamps`, `assignUserTaxon`), je to dáno tím, že FE gate kopíruje backend kontrolu. Většina nesouladů plyne z toho, že FE role je odvozená od „kdo by měl funkci vidět“, zatímco backend kontroluje konkrétní endpoint – viz [Zjištěné problémy](#zjištěné-problémy-a-nesoulady) a [rules_backend.md](./rules_backend.md).
-

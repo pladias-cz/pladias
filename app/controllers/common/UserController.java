@@ -46,8 +46,6 @@ public class UserController extends ControllerBase {
     private static final String MapAdminKey = "MapAdmin";
     private static final String TraitAdminKey = "TraitAdmin";
     private static final String SysAdminKey = "SysAdmin";
-    private static final String AddProjectKey = "AddProject";
-    private static final String RemoveProjectKey = "RemoveProject";
     private static final String BiblioAdminKey = "BiblioAdmin";
     private static final String TaxonAdminKey = "TaxonAdmin";
 
@@ -863,29 +861,6 @@ public class UserController extends ControllerBase {
                 break;
             case SysAdminKey:
                 user.setSysAdmin(Boolean.parseBoolean(value));
-                break;
-            case AddProjectKey:
-                /**
-                 * TODO - when assigning project already assigned, should return error
-                 */
-                Project toAdd = Project.find().byId(Integer.parseInt(value));
-                if (toAdd != null) {
-                    // We need to handle the many-to-many relationship properly
-                    // For now, we'll just add to the collection
-                    if (user.getContributionProjects() == null) {
-                        user.setContributionProjects(new java.util.HashSet<>());
-                    }
-                    user.getContributionProjects().add(toAdd);
-                }
-                returnedValue = toAdd != null ? toAdd.getName() : "";
-                break;
-            case RemoveProjectKey:
-                Project toRemove = Project.find().byId(Integer.parseInt(value));
-                if (toRemove != null) {
-                    if (user.getContributionProjects() != null) {
-                        user.getContributionProjects().remove(toRemove);
-                    }
-                }
                 break;
             case TaxonAdminKey:
                 user.setTaxonAdmin(Boolean.parseBoolean(value));

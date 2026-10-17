@@ -17,12 +17,6 @@ interface UsersApiResponse {
         name: string;
         surname: string;
         email: string;
-        mapAdmin: boolean;
-        traitAdmin: boolean;
-        sysAdmin: boolean;
-        biblioAdmin: boolean;
-        taxonAdmin: boolean;
-        deleted: boolean;
     }>;
     totalCount: number;
     filteredCount?: number;
@@ -57,66 +51,62 @@ export function useMapUsersData(options: UseMapUsersDataOptions = {}) {
         additionalParams?: Record<string, string>;
         signal?: AbortSignal;
     }) => {
-        try {
-            // Build sort params
-            const sortParams: Record<string, string> = {};
-            if (sorting && sorting.length > 0) {
-                const s = sorting[0];
-                sortParams.sortBy = s.id;
-                sortParams.sortOrder = s.desc ? "desc" : "asc";
-            }
-
-            // Extract filters
-            const filters: Record<string, string> = {};
-            columnFilters.forEach(filter => {
-                const paramName = `${filter.id.charAt(0).toUpperCase() + filter.id.slice(1)}Filter`;
-                filters[paramName] = filter.value;
-            });
-
-            // Fetch users
-            const usersResponse = await axios.get<UsersApiResponse>("/api/react/users", {
-                params: {
-                    page: String(page),
-                    pageSize: String(pageSize),
-                    ...additionalParams,
-                    ...filters,
-                    ...sortParams,
-                },
-                signal,
-            });
-
-            const usersData = usersResponse.data;
-            const users = usersData?.data || [];
-            const totalCount = usersData?.totalCount || 0;
-            const filteredCount = usersData?.filteredCount ?? totalCount;
-
-            if (users.length === 0) {
-                return {data: [], totalCount, filteredCount};
-            }
-
-            // Fetch rights for these users
-            const userIds = users.map(u => u.id);
-            
-            const rightsResponse = await axios.get<UserRightsApiResponse>("/api/react/atlasadmin/userrights", {
-                params: { userIds: userIds.join(",") },
-                signal,
-            });
-
-            const rightsData = rightsResponse.data?.data || {};
-
-            // Merge users with their rights
-            const mergedData: MapUserTableRow[] = users.map((user) => ({
-                ...user,
-                contributionProjects: rightsData[user.id]?.contributionProjects || [],
-                supervisedTaxa: rightsData[user.id]?.supervisedTaxa || [],
-            }));
-
-            onSuccess?.(mergedData, totalCount, filteredCount);
-
-            return {data: mergedData, totalCount, filteredCount};
-        } catch (error) {
-            throw error;
+        // Build sort params
+        const sortParams: Record<string, string> = {};
+        if (sorting && sorting.length > 0) {
+            const s = sorting[0];
+            sortParams.sortBy = s.id;
+            sortParams.sortOrder = s.desc ? "desc" : "asc";
         }
+
+        // Extract filters
+        const filters: Record<string, string> = {};
+        columnFilters.forEach(filter => {
+            const paramName = `${filter.id.charAt(0).toUpperCase() + filter.id.slice(1)}Filter`;
+            filters[paramName] = filter.value;
+        });
+
+        // Fetch users
+        const usersResponse = await axios.get<UsersApiResponse>("/api/react/atlasadmin/users", {
+            params: {
+                page: String(page),
+                pageSize: String(pageSize),
+                ...additionalParams,
+                ...filters,
+                ...sortParams,
+            },
+            signal,
+        });
+
+        const usersData = usersResponse.data;
+        const users = usersData?.data || [];
+        const totalCount = usersData?.totalCount || 0;
+        const filteredCount = usersData?.filteredCount ?? totalCount;
+
+        if (users.length === 0) {
+            return {data: [], totalCount, filteredCount};
+        }
+
+        // Fetch rights for these users
+        const userIds = users.map(u => u.id);
+
+        const rightsResponse = await axios.get<UserRightsApiResponse>("/api/react/atlasadmin/userrights", {
+            params: { userIds: userIds.join(",") },
+            signal,
+        });
+
+        const rightsData = rightsResponse.data?.data || {};
+
+        // Merge users with their rights
+        const mergedData: MapUserTableRow[] = users.map((user) => ({
+            ...user,
+            contributionProjects: rightsData[user.id]?.contributionProjects || [],
+            supervisedTaxa: rightsData[user.id]?.supervisedTaxa || [],
+        }));
+
+        onSuccess?.(mergedData, totalCount, filteredCount);
+
+        return {data: mergedData, totalCount, filteredCount};
     }, [onSuccess]);
 
     return {

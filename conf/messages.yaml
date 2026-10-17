@@ -489,6 +489,12 @@ UserController:
     emailChangedNotificationSubject: Změna e-mailu v Pladias
     emailChangedNotificationContents: Váš e-mail byl změněn z {0} na {1}. Pokud jste tuto změnu neprovedli vy, kontaktujte prosím administrátora systému.
 
+MapAdminUserRights:
+    invalidRequest: Neplatný požadavek.
+    userOrProjectNotFound: Uživatel nebo projekt nebyl nalezen.
+    projectAlreadyAssigned: Uživatel již má tento projekt přiřazen.
+    projectAssignmentFailed: Projekt se nepodařilo přiřadit.
+
 DateConverter:
     InvalidInput: Neplatné datum.
     InvalidInputLength: Špatný formát datumu.

@@ -182,6 +182,7 @@ Přehled všech mutujících endpointů z hlediska auditu změn a ochrany proti 
 | `/measurement/*` (backup, trait, delete, setDefault) | Trait | ❌ | ❌ |
 | POST `/atlas/pngMap/taxon/:taxonId` | PdfMap | ❌ | ❌ |
 | POST `/atlasadmin/assignUserTaxon`, DELETE `/atlasadmin/removeUserTaxon/...` | User ↔ Taxon (supervisedTaxons) | ❌ | ❌ |
+| POST `/atlasadmin/users/:userId/projects`, DELETE `/atlasadmin/users/:userId/projects/:projectId` | User ↔ Project (contributionProjects) | ❌ | ❌ |
 
 ---
 
@@ -478,7 +479,38 @@ Třída `SynonymController` je anotována `@Security.Authenticated(AuthorizedAsT
 
 **Související akce:**
 - Aktualizace rolí: `mapAdmin`, `traitAdmin`, `biblioAdmin`, `taxonAdmin`, `analyst`, `sysAdmin`
-- Přiřazení/odebrání projektů (`AddProject`, `RemoveProject`)
+
+> Klíče `AddProject`/`RemoveProject` byly z endpointu odebrány – přidělování projektů je výhradně doménou mapAdmina přes `/atlasadmin/users/:userId/projects` (viz níže). sysAdmin toto právo nemá; neznámé klíče končí chybou („Unknown field key“).
+
+---
+
+### GET `/atlasadmin/users` – Seznam uživatelů pro mapAdmina (`MapAdminUserRightsController.getUsers`)
+
+**Kdo smí provést:** `user.isMapAdmin() == true`
+
+**Související akce:**
+- Paginovaný seznam uživatelů s filtry `NameFilter`/`SurnameFilter`/`EmailFilter` a řazením (`sortBy` whitelist: `name`, `surname`, `email`)
+- Vrací pouze `id`, `name`, `surname`, `email` – **bez role příznaků** (ty jsou doménou sysAdminova `GET /users`), smazané uživatelé vynecháni
+
+---
+
+### POST `/atlasadmin/users/:userId/projects` – Přiřazení projektu uživateli (`MapAdminUserRightsController.assignProject`)
+
+**Kdo smí provést:** `user.isMapAdmin() == true`
+
+**Související akce:**
+- Body: `projectId`; přidá projekt do `contributionProjects` cílového uživatele
+- Duplicitní přiřazení vrací chybu (`MapAdminUserRights.projectAlreadyAssigned`)
+- mapAdmin smí přiřadit libovolný projekt libovolnému uživateli (symetricky s `assignUserTaxon`); `canContributeInto(project)` cílového uživatele při importu vynucuje `ImportController.verifyUserIsEligible`
+
+---
+
+### DELETE `/atlasadmin/users/:userId/projects/:projectId` – Odebrání projektu uživatele (`MapAdminUserRightsController.removeProject`)
+
+**Kdo smí provést:** `user.isMapAdmin() == true`
+
+**Související akce:**
+- Odebere projekt z `contributionProjects` uživatele
 
 ---
 

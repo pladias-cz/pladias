@@ -65,14 +65,10 @@ export function useMapUsersProjects(
         }
 
         try {
-            const response = await fetch("/api/react/users/rights/edit", {
+            const response = await fetch(`/api/react/atlasadmin/users/${selectedUserId}/projects`, {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({
-                    userId: selectedUserId,
-                    key: "AddProject",
-                    value: parseInt(selectedProjectId, 10)
-                })
+                body: JSON.stringify({projectId: parseInt(selectedProjectId, 10)})
             });
 
             const data = await response.json();
@@ -92,14 +88,8 @@ export function useMapUsersProjects(
 
     const handleRemoveProject = useCallback(async (userId: number, projectId: number) => {
         try {
-            const response = await fetch("/api/react/users/rights/edit", {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({
-                    userId,
-                    key: "RemoveProject",
-                    value: projectId
-                })
+            const response = await fetch(`/api/react/atlasadmin/users/${userId}/projects/${projectId}`, {
+                method: "DELETE"
             });
 
             const data = await response.json();

@@ -132,7 +132,7 @@ export default function MapUsers() {
             />
             
             <DataTable<MapUserTableRow>
-                endpoint="/api/react/users"
+                endpoint="/api/react/atlasadmin/users"
                 columns={columns}
                 fetchData={fetchUsersWithRights}
                 initialPageSize={20}

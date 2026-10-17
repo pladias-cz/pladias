@@ -50,6 +50,9 @@ POST    /atlasadmin/taxonMapSettings     controllers.atlas.TaxonMapSettingsContr
 
 GET /atlasadmin/userrights/:id           controllers.atlas.MapAdminUserRightsController.getRights(request: Request, id: Long)
 GET /atlasadmin/userrights               controllers.atlas.MapAdminUserRightsController.getRightsBatch(request: Request)
+GET /atlasadmin/users                    controllers.atlas.MapAdminUserRightsController.getUsers(request: Request)
+POST /atlasadmin/users/:userId/projects   controllers.atlas.MapAdminUserRightsController.assignProject(request: Request, userId: Long)
+DELETE /atlasadmin/users/:userId/projects/:projectId  controllers.atlas.MapAdminUserRightsController.removeProject(request: Request, userId: Long, projectId: Integer)
 
 # Taxa Map Settings - Taxa list for admin overview
 GET /atlasadmin/taxa                     controllers.atlas.TaxonMapSettingsController.getTaxa(request: Request)

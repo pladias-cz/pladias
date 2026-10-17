@@ -1001,7 +1001,8 @@
       "failed": "Export se nezdařil. Zkuste to prosím znovu."
     },
     "featureDetail": {
-      "title": "Detail vlastnosti"
+      "title": "Detail vlastnosti",
+      "uploadNotAllowed": "Importovat, mazat a spravovat datové řady může jen administrátor vlastnosti nebo administrátor vlastností (traitAdmin)."
     },
     "general": {
       "authors": "Milan Chytrý a Petr Pyšek",

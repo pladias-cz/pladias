@@ -206,20 +206,20 @@ Editační tabulka nastavení taxonů (`useTaxonUpdates`): `ISMAPPED`, `SETCOMMO
 
 ## Měření a vlastnosti (Measurements / Traits)
 
-Celý modul `/measurements/*` je chráněn **pouze modulem instance – žádná role**. Všechny následující formuláře tak vidí každý přihlášený uživatel; o oprávnění se stará až backend:
+Celý modul `/measurements/*` je chráněn **modulem instance**; u write operací navíc frontend kontroluje role (odpovídá backendovým kontrolám – server `MeasurementFeatureDto.canAdminister` = `user.supervises(feature)` = traitAdmin nebo admin vlastnosti):
 
-| Stránka | Write operace | Endpoint | Backend vyžaduje |
-|---|---|---|---|
-| `FeatureDetail` (upload) | upload/validace datové řady | `POST /api/react/measurement/trait` | traitAdmin nebo admin vlastnosti (Feature) |
-| `TraitTable` (na FeatureDetail) | smazání datové řady | `DELETE /api/react/measurement/trait/:traitId` | traitAdmin/admin feature; frontend navíc skrývá tlačítko, pokud server pošle `canDelete == false` |
-| `TraitTable` | nastavení výchozí datové řady | `PUT /api/react/measurement/trait/:traitId/default` | ⚠️ invertovaná podmínka na backendu – viz [rules_backend.md](./rules_backend.md), problém č. 2; FE radio skrývá dle `canDelete` |
-| `Backup` | vytvoření zálohy | `POST /api/react/measurement/backup` | traitAdmin |
-| `Export` | komplexní export | `POST /api/react/measurement/complexExport` | per-trait práva ke stažení (`isElligibleForTraitDownload`) |
-| `Settings` (uživatelské) | substituce traitů | `PUT /api/react/user/settings/:key` | přihlášený; sekce substitucí je ve FE zobrazena jen `isTraitAdmin` |
+| Stránka | Write operace | Endpoint | Backend vyžaduje | FE kontrola |
+|---|---|---|---|---|
+| `FeatureDetail` (upload) | upload/validace datové řady | `POST /api/react/measurement/trait` | traitAdmin nebo admin vlastnosti (Feature) | upload formulář (`TraitUpload`) jen při `feature.canAdminister`; jinak info hláška |
+| `TraitTable` (na FeatureDetail) | smazání datové řady | `DELETE /api/react/measurement/trait/:traitId` | traitAdmin/admin feature | tlačítko mazání jen při `feature.canAdminister` |
+| `TraitTable` | nastavení výchozí datové řady | `PUT /api/react/measurement/trait/:traitId/default` | traitAdmin/admin feature | radio jen při `feature.canAdminister` |
+| `Backup` | vytvoření zálohy | `POST /api/react/measurement/backup` | traitAdmin | route `requiredPermission="isTraitAdmin"` + položka menu jen pro `isTraitAdmin` |
+| `Export` | komplexní export | `POST /api/react/measurement/complexExport` | per-trait práva ke stažení (`isElligibleForTraitDownload`) | – (per-trait práva na serveru) |
+| `Settings` (uživatelské) | substituce traitů | `PUT /api/react/user/settings/:key` | přihlášený; sekce substitucí je ve FE zobrazena jen `isTraitAdmin` | `isTraitAdmin` |
 
 **Související akce:** po importu datové řady se tabulka řad reloadne; po smazání se znovu načte (mazání může změnit výchozí řadu); upload formulář nabízí výběr vlastníka (defaultně aktuální uživatel) ze seznamu `GET /api/react/users-minimal`.
 
-**Read autorizace:** odkazy „stáhnout data“ / „detailní export“ u datových řad se řídí příznaky `canDownload`/`canExport` od serveru; datové řady s omezenou viditelností tak uživatel bez práv vidí, ale nemůže stahovat. Viz [problém č. 3](#3-measurements-modul-nemá-ve-frontendu-žádnou-kontrolu-rolí).
+**Read autorizace:** odkazy „stáhnout data“ / „detailní export“ u datových řad se řídí příznaky `canDownload`/`canExport` od serveru; datové řady s omezenou viditelností tak uživatel bez práv vidí, ale nemůže stahovat. (Dříve problém č. 3 – chybějící FE kontrola rolí; opraveno pomocí `canAdminister` a gate na `isTraitAdmin`.)
 
 ---
 
@@ -270,19 +270,15 @@ Route `/user/addUser` i položka menu jsou gateované `isMapAdmin || isTraitAdmi
 
 Stránka `/atlasAdmin/listOfUsers` (MapUsers) je určena mapAdminovi, ale přidání/odebrání projektu uživateli používá tentýž `POST /users/rights/edit`, který backend pustí jen sysAdminovi. Naopak přiřazení/odebrání revizora (`assignUserTaxon`/`removeUserTaxon`) je na backendu mapAdmin – jedna stránka tedy kombinuje endpoint se správnou rolí a endpoint s rolí špatnou.
 
-### 3. Measurements modul nemá ve frontendu žádnou kontrolu rolí
-
-Upload datové řady (`POST /measurement/trait`), záloha (`POST /measurement/backup`) ani nastavení výchozí řady nejsou ve frontendu podmíněny rolí `isTraitAdmin` – formuláře vidí každý přihlášený uživatel instance s measurements modulem. Nejde o bezpečnostní díru (backend práva kontroluje), ale uživatel bez práv se o tom dozví až z chyby serveru po odeslání formuláře. Srovnej se stránkou Settings, kde se na `isTraitAdmin` podmínkuje alespoň zobrazení sekce substitucí – mezi komponentami téhož modulu panuje nekonzistentní přístup.
-
-### 4. BulkEdit viditelný pro isBulkEditor, ale backend PATCH vyžaduje revizorská oprávnění
+### 3. BulkEdit viditelný pro isBulkEditor, ale backend PATCH vyžaduje revizorská oprávnění
 
 Panel hromadné editace se zobrazí pro `isMapAdmin || isBulkEditor` a vstupní endpoint (`records-edit-timestamps`) backend pustí stejným uživatelům. Samotné ukládání ale probíhá per záznam přes `PATCH /atlas/record/:recordId`, kde backend (kvůli `//TODO fix`) kontroluje `isElligibleForRecordValidation` (mapAdmin/revizor taxonu) **i u běžných polí**. BulkEditor bez těchto rolí tak funkci vidí, ale každá změna končí chybou. (Podrobnosti v [rules_backend.md](./rules_backend.md), problém č. 1 – na frontendu se problém projeví jako série chybových hlášení v souhrnu BulkEditu.)
 
-### 5. canResolveComment je restriktivnější než backend
+### 4. canResolveComment je restriktivnější než backend
 
 Frontend povolí tlačítko „vyřešit“ jen mapAdminovi nebo uživateli, jehož `supervisedTaxonIds` přímo obsahuje taxon záznamu. Backend `POST /comment/:id/resolve` pustí navíc revizory nadřazených taxonů a správce projektu záznamu (`isUserElligibleToEditEverything`). Jde o nesoulad v bezpečném směru (UI skrývá akci oprávněným uživatelům), ale je nekonzistentní. K tomu `Record.tsx` nepředává `recordTaxonId`, takže na detailu záznamu nemůže podmínka vyjít pro běžného revizora vůbec. Související mrtvý kód: `useRecordPermissions.canEditComments`/`canEditComment` nejsou reálně použity a jsou zavádějící (nic smysluplného nekontrolují).
 
-### 6. Ostatní drobnosti
+### 5. Ostatní drobnosti
 
 - **Editace komentáře neexistuje ve frontendu** – backend `PUT /atlas/record/comment/:id` nemá v UI obdobu. Je to konzistentní s tím, že autor komentář upravit nesmí, ale revize textu cizího komentáře tak v UI možná není vůbec (ani pro mapAdmina).
 - `RecordLocation` má kontrolu `canEdit` zakomentovanou – v současnosti neškodí (komponenta jen zobrazuje navrženou pozici; samotný přesun se potvrzuje v `Record.tsx`), ale je to past pro budoucí rozšíření.

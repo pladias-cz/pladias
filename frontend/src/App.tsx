@@ -237,7 +237,7 @@ export default function App() {
                                         </ProtectedRoute>
                                     }/>
                                     <Route path="backup" element={
-                                        <ProtectedRoute requiredModule="measurements">
+                                        <ProtectedRoute requiredModule="measurements" requiredPermission="isTraitAdmin">
                                             <Backup/>
                                         </ProtectedRoute>
                                     }/>

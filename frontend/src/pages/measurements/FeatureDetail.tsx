@@ -119,9 +119,16 @@ export default function FeatureDetail() {
                             dangerouslySetInnerHTML={{__html: flash.message}}
                         />
                     )}
-                    <form onSubmit={uploadTrait} className="form-horizontal">
-                        <TraitUpload feature={selectedFeature} submitting={submitting}/>
-                    </form>
+                    {/* importovat/smazat datovou řadu smí jen traitAdmin nebo admin vlastnosti (BE: user.supervises(feature)) */}
+                    {selectedFeature.canAdminister ? (
+                        <form onSubmit={uploadTrait} className="form-horizontal">
+                            <TraitUpload feature={selectedFeature} submitting={submitting}/>
+                        </form>
+                    ) : (
+                        <div className="alert alert-info" role="alert">
+                            {t("trait.featureDetail.uploadNotAllowed")}
+                        </div>
+                    )}
 
                 </Col>
                 <Col>

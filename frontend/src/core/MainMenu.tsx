@@ -121,8 +121,10 @@ const MainMenu = React.forwardRef<HTMLDivElement, MainMenuProps>(function MainMe
                                                   to="/measurements/data">{t("menu.trait.data")}</NavDropdown.Item>
                                 <NavDropdown.Item as={NavLink}
                                                   to="/measurements/export">{t("menu.trait.export")}</NavDropdown.Item>
-                                <NavDropdown.Item as={NavLink}
-                                                  to="/measurements/backup">{t("menu.trait.backup")}</NavDropdown.Item>
+                                {isTraitAdmin && (
+                                    <NavDropdown.Item as={NavLink}
+                                                      to="/measurements/backup">{t("menu.trait.backup")}</NavDropdown.Item>
+                                )}
                             </ActiveDropdown>
                         )}
                         <Nav.Link as={NavLink} to="/downloads">{t("menu.downloads.dropdown")}</Nav.Link>

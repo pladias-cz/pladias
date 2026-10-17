@@ -83,7 +83,7 @@ public class MeasurementLookupService {
             .collect(Collectors.toList());
     }
 
-    public List<MeasurementFeatureDto> getFeaturesOfGroup(int groupId) {
+    public List<MeasurementFeatureDto> getFeaturesOfGroup(User currentUser, int groupId) {
         return Feature.find().query()
             .fetch("section")
             .where()
@@ -110,7 +110,8 @@ public class MeasurementLookupService {
                     : null,
                 t.getSection() != null
                     ? t.getSection().getNameCz()
-                    : ""
+                    : "",
+                currentUser.supervises(t)
             ))
             .toList();
     }
@@ -118,7 +119,7 @@ public class MeasurementLookupService {
     /**
      * @return feature data or null when there is no such feature
      */
-    public MeasurementFeatureDto getFeature(int featureId) {
+    public MeasurementFeatureDto getFeature(User currentUser, int featureId) {
         Feature t = Feature.find().byId(featureId);
         if (t == null) {
             return null;
@@ -143,7 +144,8 @@ public class MeasurementLookupService {
                 : null,
             t.getSection() != null
                 ? t.getSection().getNameCz()
-                : null
+                : null,
+            currentUser.supervises(t)
         );
     }
 

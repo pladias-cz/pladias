@@ -214,9 +214,9 @@ export default function TraitTable({feature, refreshKey}: Props) {
                         )}
                     </td>
 
-                    {/* delete */}
+                    {/* delete – oprávnění dává feature.canAdminister (traitAdmin / admin vlastnosti) */}
                     <td>
-                        {t.canDelete ? (
+                        {feature.canAdminister ? (
                             <button
                                 type="button"
                                 className="btn btn-sm btn-link p-0 text-danger"
@@ -234,13 +234,14 @@ export default function TraitTable({feature, refreshKey}: Props) {
                     </td>
 
                     {/* default */}
+                    {/* výchozí řadu smí nastavit jen traitAdmin / admin vlastnosti (feature.canAdminister) */}
                     <td>
                         <input
                             type="radio"
                             name="default_trait"
                             value={t.id}
                             checked={defaultTraitId === t.id}
-                            disabled={!t.canDelete || busyTraitId !== null}
+                            disabled={!feature.canAdminister || busyTraitId !== null}
                             onChange={() => setDefaultTrait(t.id)}
                         />
                     </td>

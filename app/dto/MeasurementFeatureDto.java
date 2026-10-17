@@ -13,6 +13,8 @@ public record MeasurementFeatureDto(
     Double minimum,
     Double maximum,
     String units,
-    String section
+    String section,
+    /** whether the current user is a traitAdmin or the administrator of this feature (user.supervises(feature)) */
+    Boolean canAdminister
 ) {
 }

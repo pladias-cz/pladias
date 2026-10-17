@@ -12,4 +12,6 @@ export interface Feature {
     maximum?: number;
     units?: string;
     section: string;
+    /** traitAdmin nebo administrátor této vlastnosti (server: user.supervises(feature)) – oprávnění k importu/mazání řad a nastavení výchozí řady */
+    canAdminister?: boolean;
 }

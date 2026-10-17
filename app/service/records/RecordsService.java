@@ -617,11 +617,11 @@ public class RecordsService {
         record.setGpsCoordSource(newCoordsSource);
         record.setDistrict(newDistrict);
 
-        // Update remark doubts (clear automatic messages)
-        updateRemarkDoubts(record, messages);
-
         // Build history entries
         List<RecordHistory> histories = new ArrayList<>();
+
+        // Update remark doubts (clear automatic messages)
+        updateRemarkDoubts(record, currentUser, histories, messages);
 
         // Update phytochorion history
         boolean phytochorionChanged = updatePhytochorionHistory(record, newCoords, histories, currentUser);
@@ -692,12 +692,13 @@ public class RecordsService {
         return true;
     }
 
-    private void updateRemarkDoubts(Record record, Messages messages) {
+    private void updateRemarkDoubts(Record record, User currentUser, List<RecordHistory> histories, Messages messages) {
         String doubts = record.getRemarkDoubt();
         if (doubts == null || doubts.trim().isEmpty()) {
             return;
         }
 
+        String oldDoubts = doubts;
         String[] texts = new String[]{
             messages.at("RecordEditController.districtComputedAutomatically"),
             messages.at("RecordEditController.incorrectLocalization"),
@@ -710,6 +711,13 @@ public class RecordsService {
             doubts = doubts.replace(message, "");
         }
         record.setRemarkDoubt(doubts.trim());
+
+        // Skip history if old and new values are equal (no actual change)
+        if (!StringUtils.equals(oldDoubts, record.getRemarkDoubt())) {
+            histories.add(RecordHistory.build(record.getId(), currentUser,
+                RecordChangeType.DESCRIPTION, "remark_doubt",
+                oldDoubts, record.getRemarkDoubt()));
+        }
     }
 
     private void saveRecordHistory(User currentUser, long recordId,

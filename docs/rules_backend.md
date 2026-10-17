@@ -93,7 +93,7 @@ Tento dokument popisuje chování aplikace při editaci dat v databázi. Jsou zd
 **Související akce:**
 - Přepočet fytochorionu a kvadrantů po změně souřadnic
 - Záznam do `RecordHistory` (`gps`, `coords_precision`, `coords_source`, `phytochorion_id`, `phytochorion_computed`)
-- ⚠️ Při přesunu se z `remark_doubt` automaticky mažou systémové texty („okres dopočten automaticky“, nesoulad fytochorionu/kvadrantu atd.) – tato změna se do `RecordHistory` **nezapisuje** (viz [problém č. 3](#3-post-atlasrecordmovecoordinates--tichá-změna-remark_doubt-bez-zápisu-do-historie))
+- Při přesunu se z `remark_doubt` automaticky mažou systémové texty („okres dopočten automaticky“, nesoulad fytochorionu/kvadrantu atd.) – tato změna se zapisuje do `RecordHistory` jako editace pole `remark_doubt` (při shodě staré a nové hodnoty se zápis přeskočí; známá omezení matchování viz [poznámku níže](#mazání-systémových-textů-z-remark_doubt-známé-omezení-vyřešit-později))
 
 ---
 
@@ -163,7 +163,7 @@ Přehled všech mutujících endpointů z hlediska auditu změn a ochrany proti 
 | Endpoint / akce | Mění záznam | Zápis do `RecordHistory` | Concurrency kontrola |
 |---|---|---|---|
 | PATCH `/atlas/record/:recordId` | ✅ | ✅ pro každé skutečně změněné pole (při shodě staré a nové hodnoty se zápis přeskočí) | ✅ `lastEditTimestampNum` v controlleru + `@Version` |
-| POST `/atlas/record/moveCoordinates` | ✅ | ✅ `gps`, `coords_precision`, `coords_source`, `phytochorion_id`, `phytochorion_computed` – ⚠️ mazání systémových textů v `remark_doubt` bez zápisu (problém č. 3) | ✅ timestamp v controlleru i service + `@Version` |
+| POST `/atlas/record/moveCoordinates` | ✅ | ✅ `gps`, `coords_precision`, `coords_source`, `phytochorion_id`, `phytochorion_computed`, `remark_doubt` (automatické promazání systémových textů) | ✅ timestamp v controlleru i service + `@Version` |
 | POST `/atlas/record/comment` | ❌ (přidává komentář) | ✅ „comment added“ | – (nový záznam) |
 | PUT `/atlas/record/comment/:commentId` | ❌ | ✅ „comment updated“ | ⚠️ jen `@Version` na `RecordComment` (problém č. 4) |
 | DELETE `/atlas/record/comment/:commentId` | ❌ (soft delete) | ✅ „comment deleted“ | ⚠️ jen `@Version` |
@@ -551,10 +551,6 @@ Nesoulad potvrzuje i **POST `/atlas/record/moveCoordinates`**, který u téhož 
 
 Controller vyžaduje jen přihlášení; `verifyCurrentUserIsMapAdmin` se volá pouze u klíčů `ISMAPPED`, `SETCOMMONTHRESHOLD` a `PUBLICATIONSTATUS`. Klíče `MAPTYPE`, `REVISORSCOMMENT`, `REVISORSPRINTMAPCOMMENT`, `MAPADMINCOMMENT`, `PRESLIA`, `PROTECTED` a `PARENT_MAP` může měnit **libovolný přihlášený uživatel** (stačí znát aktuální timestamp). U `REVISIONSTATUS` se nekontroluje revizorská role – non-mapAdmin může posunout status o krok vpřed u libovolného taxonu.
 
-### 3. POST `/atlas/record/moveCoordinates` – tichá změna `remark_doubt` bez zápisu do historie
-
-Při přesunu záznamu service (`RecordsService.moveRecordCoords` → `updateRemarkDoubts`) maže z `remark_doubt` automaticky generované systémové texty („okres dopočten automaticky“, nesoulad fytochorionu/kvadrantu s okres atd.). Tato změna pole se ale do `RecordHistory` **nezapisuje** – v historii se objeví jen souřadnice, přesnost, zdroj souřadnic a fytochorion. Změna tak zůstane v datech, ale bez auditního záznamu o tom, kdo a kdy ji provedl.
-
 ### 4. Editace komentářů bez explicitní concurrency kontroly
 
 Komentářové endpointy (PUT/DELETE/resolve) nekontrolují žádný `lastEditTimestamp` od klienta – klient verzi komentáře vůbec neposílá. Jedinou ochranu proti souběžné editaci je `@Version` na `RecordComment` (editace zastaralé verze selže DB výjimkou, kterou controller vrátí jako obecnou chybu). U `DELETE /atlas/record/comment-assoc/:commentId/linked-user/:boundUserId` se asociace maže raw SQL zcela bez jakékoliv kontroly verze.
@@ -571,7 +567,22 @@ Komentářové endpointy (PUT/DELETE/resolve) nekontrolují žádný `lastEditTi
 Většina editací záznamů a nastavení map používá `lastEditTimestamp` (resp. `timestamp` u TaxonMapSettings) pro detekci souběžných změn. Pokud klient pošle starší timestamp, než je na serveru, vrátí se chyba 409 (Conflict), resp. „novější verze existuje“. `Record.lastEditTimestamp` a `RecordComment.lastEditTimestamp` jsou navíc pole `@Version` (Ebean optimistic locking). **Bez concurrency kontroly** zůstávají: editace/mazání komentářů a jejich asociací (viz [problém č. 4](#4-editace-komentářů-bez-explicitní-concurrency-kontroly)), editace uživatelů, taxonů a vlastností (měření).
 
 ### Historie změn
-Editace polí záznamu (`RecordsService.editField`, `moveRecordCoords`) a operace s komentáři vytvářejí záznam v `RecordHistory` pro auditování změn (včetně kaskádových změn příznaků); u polí se shodnou starou a novou hodnotou se zápis přeskočí. **Bez zápisu do historie** jsou: importy záznamů (až na předvalidované příznaky), mazání dávky (maže historii spolu se záznamy), automatické promazání `remark_doubt` při přesunu souřadnic (viz [problém č. 3](#3-post-atlasrecordmovecoordinates--tichá-změna-remark_doubt-bez-zápisu-do-historie)) a všechny editace jiných entit (taxony, uživatelé, vlastnosti/měření, nastavení map – tam se ukládá jen `editCount`).
+Editace polí záznamu (`RecordsService.editField`, `moveRecordCoords`) a operace s komentáři vytvářejí záznam v `RecordHistory` pro auditování změn (včetně kaskádových změn příznaků); u polí se shodnou starou a novou hodnotou se zápis přeskočí. **Bez zápisu do historie** jsou: importy záznamů (až na předvalidované příznaky), mazání dávky (maže historii spolu se záznamy) a všechny editace jiných entit (taxony, uživatelé, vlastnosti/měření, nastavení map – tam se ukládá jen `editCount`).
+
+### Mazání systémových textů z `remark_doubt` (známé omezení, vyřešit později)
+`RecordsService.updateRemarkDoubts` (volané z `moveRecordCoords`) maže systémové texty z `remark_doubt` porovnáním stringů vůči `messages.at(...)` – tedy překladu podle **locale právě přihlášeného uživatele** (app je dvojjazyčná, `play.i18n.langs = ["cs", "en"]`; bundly `conf/messages.yaml` = výchozí/cs, `conf/messages.yaml.en` = en). Dvě rizika:
+
+1. **Locale varianta (latentní)** – `messages.yaml.en` tyto klíče zatím neobsahuje, takže `messages.at` vždy fallbackuje na český text. Po doplnění anglických překladů by ale uživatel s en locale hledal anglickou větu v českém uloženém textu → poznámka by se **tiše** neodstranila (žádná chyba, žádný zápis do historie). Nejde o znakové sady (UTF-8/UTF-16 je transparentní), jde o jazykovou variantu textu.
+2. **HTML entita `&#58;` (pravděpodobně aktivní)** – v `conf/messages.yaml` je klíč `RecordEditController.districtComputedAutomatically` zapsán jako `Okres doplněn automaticky&#58; možnost chyby.`; YAML loader (play-i18n/SnakeYAML) entity nerozkrývá, takže `messages.at` vrací **doslovné `&#58;`** místo dvojtečky. Pokud jsou v DB uložené texty s obyčejnou dvojtečkou, `replace` tohoto textu nikdy neshoduje (zbývající čtyři texty entitu nemají). `conf/_messages` (properties formát, plain dvojtečka) se nenačítá – play-i18n hledá soubory podle basename `messages`.
+
+Ověření v DB:
+```sql
+SELECT remark_doubt, count(*) FROM atlas.records
+WHERE remark_doubt ILIKE '%dopočten automaticky%' OR remark_doubt LIKE '%&#58;%'
+GROUP BY remark_doubt;
+```
+
+Možná oprava: nematchovat uložený text proti aktuálnímu překladu (matchovat všechny jazykové varianty, případně ukládat stabilní marker místo lidsky čitelného textu); entitu vyřešit quotováním hodnoty v YAML (`"text: …"`).
 
 ### Lockování záznamů
 Záznamy mohou být uzamčeny (`record.isLocked()`) nebo editace může být zakázána (`record.isEditationAllowed()` – zamknutý taxon kvůli generování mapových podkladů). Editace taxonů navíc používá globální `TaxonEditorLock` (vždy jen jeden taxonAdmin edituje).

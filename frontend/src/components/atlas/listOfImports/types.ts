@@ -17,8 +17,3 @@ export interface ImportRecord {
     committerEmail: string;
     hasDeletionCode: boolean;
 }
-
-export interface FlashMessage {
-    type: 'success' | 'danger';
-    message: string;
-}

@@ -17,7 +17,6 @@ import {
 } from "@/core/dataTable";
 import {
     useImportControlsData,
-    useImportControlsActions,
 } from './hooks';
 import {
     ImportControlsFlash,
@@ -47,9 +46,6 @@ export default function ListOfControls() {
             // Optional: handle successful data fetch
         }
     });
-    
-    // Actions hook - reserved for future use
-    useImportControlsActions(showFlash, t);
     
     // Delete handler with optimistic update
     const handleDelete = useCallback(async (id: number) => {

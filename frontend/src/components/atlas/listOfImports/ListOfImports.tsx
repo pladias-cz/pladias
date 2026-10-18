@@ -5,7 +5,7 @@
  * to efficiently load imported records with pagination, sorting, and filtering.
  */
 
-import {useState, useMemo, useCallback} from "react";
+import {useMemo} from "react";
 import {useTranslation} from "react-i18next";
 import {
     DataTable,
@@ -16,25 +16,14 @@ import {
 } from "@/core/dataTable";
 import {
     useImportsData,
-    useImportsActions,
 } from './hooks';
 import {
-    ImportsFlash,
     ImportsFilenameCell,
 } from './components';
-import type {ImportRecord, FlashMessage} from './types';
+import type {ImportRecord} from './types';
 
 export default function ListOfImports() {
     const {t} = useTranslation();
-    
-    // Flash message state
-    const [flash, setFlash] = useState<FlashMessage | null>(null);
-    
-    // Flash message handler
-    const showFlash = useCallback((type: 'success' | 'danger', message: string) => {
-        setFlash({type, message});
-        setTimeout(() => setFlash(null), 5000);
-    }, []);
     
     // Data fetching hook
     const {fetchImports} = useImportsData({
@@ -42,9 +31,6 @@ export default function ListOfImports() {
             // Optional: handle successful data fetch
         }
     });
-    
-    // Actions hook - reserved for future use
-    useImportsActions(showFlash, t);
     
     // Column definitions
     const columns = useMemo<DataTableColumnDef<ImportRecord>[]>(() => [
@@ -78,11 +64,6 @@ export default function ListOfImports() {
     
     return (
         <div className="container-fluid">
-            <ImportsFlash 
-                flash={flash} 
-                onDismiss={() => setFlash(null)} 
-            />
-            
             <DataTable<ImportRecord>
                 endpoint="/api/react/importResult/imported"
                 columns={columns}

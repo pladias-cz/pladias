@@ -576,11 +576,7 @@ Třída `SynonymController` je anotována `@Security.Authenticated(AuthorizedAsT
 
 Controller vyžaduje jen přihlášení; `verifyCurrentUserIsMapAdmin` se volá pouze u klíčů `ISMAPPED`, `SETCOMMONTHRESHOLD` a `PUBLICATIONSTATUS`. Klíče `MAPTYPE`, `REVISORSCOMMENT`, `REVISORSPRINTMAPCOMMENT`, `MAPADMINCOMMENT`, `PRESLIA`, `PROTECTED` a `PARENT_MAP` může měnit **libovolný přihlášený uživatel** (stačí znát aktuální timestamp). U `REVISIONSTATUS` se nekontroluje revizorská role – non-mapAdmin může posunout status o krok vpřed u libovolného taxonu.
 
-### 2. Ostatní drobnosti
-
-- `MapReportsController.assignUserTaxon` nese `// TODO - should be really for all users available?` - není jisté zda má být pracovní CSV ap. k dispozici všem uživatelům
-
-### 3. Flag `canEdit` v DTO – duplikovaná logika, drift a nesoulad s kontrolami endpointů
+### 2. Flag `canEdit` v DTO – duplikovaná logika, drift a nesoulad s kontrolami endpointů
 
 Editační UI frontendu se řídí výhradně příznakem `canEdit`, který server posílá v datech. Ten se ale počítá **třikrát nezávisle a pokaždé jinak** a žádná varianta nezrcadlí skutečné kontroly write endpointů (`editField`, `moveRecordCoords`):
 
@@ -611,6 +607,10 @@ Dopad na frontend popisuje [rules_frontend.md](./rules_frontend.md) (Zjištěné
 
 ## Poznámky
 
+### Dostupnost některých endpointů MapReportsController
+
+- `MapReportsController.assignUserTaxon` nese `// TODO - should be really for all users available?` - není jisté zda má být pracovní CSV ap. k dispozici všem uživatelům
+-
 ### Concurrency kontrola
 Většina editací záznamů a nastavení map používá `lastEditTimestamp` (resp. `timestamp` u TaxonMapSettings) pro detekci souběžných změn. Pokud klient pošle starší timestamp, než je na serveru, vrátí se chyba 409 (Conflict), resp. „novější verze existuje“. `Record.lastEditTimestamp` a `RecordComment.lastEditTimestamp` jsou navíc pole `@Version` (Ebean optimistic locking). **Bez concurrency kontroly** zůstávají: editace/mazání komentářů a jejich asociací, editace uživatelů, taxonů a vlastností (měření).
 

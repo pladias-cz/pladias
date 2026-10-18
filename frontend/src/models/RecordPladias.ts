@@ -89,8 +89,9 @@ export interface RecordPladias {
     // For editing - timestamp as number for conflict detection
     lastEditTimestampNum?: number;
     
-    // Edit permission
-    canEdit: boolean;
+    // Edit permissions (backend: RecordEditPermissions – single source of truth)
+    canEditCommonFields: boolean;
+    canEditValidationFields: boolean;
     // Comment resolve permission (computed by backend: isUserElligibleToEditEverything)
     canResolveComments: boolean | null;
 }

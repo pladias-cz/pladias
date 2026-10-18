@@ -60,7 +60,7 @@ const defaultIcon = new Icon({
 
 export default function RecordMap({record, onLocationSelectWithGeocode, hasProposedLocation}: RecordMapProps) {
     const {t} = useTranslation();
-    const {canEdit} = useRecordPermissions(record);
+    const {canEditCommonFields: canEdit} = useRecordPermissions(record);
 
     const [selectedLocation, setSelectedLocation] = useState<[number, number] | null>(null);
     const [clickDetected, setClickDetected] = useState(false);

@@ -13,7 +13,7 @@ export function OriginalityStatusIcons({ record, onRecordUpdated }: OriginalityS
     const [optimisticStatus, setOptimisticStatus] = useState<OriginalityStatusId | null>(null);
 
     const handleStatusChange = async (newStatus: OriginalityStatusId) => {
-        if (record.originalityStatusId !== newStatus && record.canEdit) {
+        if (record.originalityStatusId !== newStatus && record.canEditValidationFields) {
             // Optimistic update - show change immediately
             setOptimisticStatus(newStatus);
 
@@ -66,14 +66,14 @@ export function OriginalityStatusIcons({ record, onRecordUpdated }: OriginalityS
                         key={id}
                         type="button"
                         onClick={() => handleStatusChange(id)}
-                        disabled={!record.canEdit}
+                        disabled={!record.canEditValidationFields}
                         title={meta.i18nKey}
                         style={{
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            cursor: record.canEdit ? 'pointer' : 'default',
-                            opacity: record.canEdit ? 1 : 0.6,
+                            cursor: record.canEditValidationFields ? 'pointer' : 'default',
+                            opacity: record.canEditValidationFields ? 1 : 0.6,
                             padding: 0,
                             outline: 'none',
                             background: 'none',

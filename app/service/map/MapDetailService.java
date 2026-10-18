@@ -10,6 +10,7 @@ import io.ebean.SqlRow;
 import models.*;
 import models.Record;
 import play.i18n.Messages;
+import service.records.RecordEditPermissions;
 import utils.MapSquareUtils;
 
 import java.util.ArrayList;
@@ -116,7 +117,7 @@ public class MapDetailService {
             return MapDetailResult.error("Record not found");
         }
 
-        RecordPladiasFullDto dto = RecordPladiasFullDto.fromRecord(record, currentUser);
+        RecordPladiasFullDto dto = RecordPladiasFullDto.fromRecord(record, currentUser, RecordEditPermissions.forUser(currentUser));
         return MapDetailResult.success(dto);
     }
 
@@ -376,6 +377,9 @@ public class MapDetailService {
 
         List<RecordPladiasDto> dtos = new ArrayList<>();
 
+        // One permissions context per request (2 queries), then O(1) per record
+        RecordEditPermissions permissions = RecordEditPermissions.forUser(currentUser);
+
         for (Long id : ids) {
             Record record = records.get(id);
             if (record != null) {
@@ -385,7 +389,7 @@ public class MapDetailService {
                     computedSquareCode = computedQuadrantCode.substring(0, computedQuadrantCode.length() - 1);
                 }
                 Boolean hasHistory = historyByRecordId.get(id);
-                dtos.add(RecordPladiasDto.fromRecord(record, currentUser, computedQuadrantCode, computedSquareCode, false, hasHistory));
+                dtos.add(RecordPladiasDto.fromRecord(record, currentUser, permissions, computedQuadrantCode, computedSquareCode, false, hasHistory));
             }
         }
 

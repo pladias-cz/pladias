@@ -317,7 +317,7 @@ export function PladiasRecordsTable({
 
                                 </td>
                                 <td className="align-text-top">
-                                    {record.canEdit ? (
+                                    {record.canEditValidationFields ? (
                                         <ValidationStatusCheckboxes record={record} onRecordUpdated={onRecordUpdated}/>
                                     ) : (
                                         <div
@@ -466,7 +466,7 @@ export function PladiasRecordsTable({
                                             <><br/><small>{t("atlas.mapDetail.externalIdLabel")}: {record.originalId}</small></>
                                         )}
                                         {/* Include in Map - conditionally rendered based on validation status */}
-                                        {record.canEdit ? (
+                                        {record.canEditValidationFields ? (
                                             (() => {
                                                 const visibility = getVisibilityByStatus(record);
                                                 if (visibility.showIncludeInMap) {
@@ -485,7 +485,7 @@ export function PladiasRecordsTable({
 
                                          {/* Originality Status - conditionally rendered based on validation status */}
                                          <small>{t("atlas.mapDetail.originalOccurrenceLabel")}: </small>
-                                         {record.canEdit ? (
+                                         {record.canEditValidationFields ? (
                                              (() => {
                                                  const visibility = getVisibilityByStatus(record);
                                                  if (visibility.showOriginality) {

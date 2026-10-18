@@ -22,7 +22,8 @@ interface RecordMapFields {
     herbariumQuality: boolean;
     includedInMap: boolean;
     lastEditTimestampNum: number;
-    canEdit: boolean;
+    canEditCommonFields: boolean;
+    canEditValidationFields: boolean;
 }
 
 export function useRecordQuickUpdates() {

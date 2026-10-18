@@ -20,7 +20,7 @@ This is a **legacy MVC application** built on the **Java Play! Framework** that 
 |-------|----------------------------------------------|
 | UI framework | React 18 + TypeScript   (`/frontend`)        |
 | Build tool | Vite 7                                       |
-| Routing | React Router v7                              | 
+| Routing | React Router v7                              |
 | Styling | SCSS + Bootstrap 5                           |
 | Backend | Java Play! - including legacy code  (`/app`) |
 | Database | PostgreSQL with PostGIS extension            |
@@ -99,7 +99,7 @@ All API responses use a standardized wrapper pattern:
 // Success response
 ok(JsonResult.buildSuccess(data))
 
-// Error response  
+// Error response
 notFound(JsonResult.error("Taxon not found"))
 ```
 
@@ -201,10 +201,10 @@ React tables export their rows through the very endpoint that serves their JSON:
 public class Taxon extends Model {
     @Id
     public Long id;
-    
+
     @Column(name = "name_lat")
     public String nameLat;
-    
+
     // Relationships, queries, etc.
 }
 ```
@@ -228,8 +228,8 @@ npm run dev         # Hot module replacement
 ```
 
 #### Backend Build (SBT)
- 
-Do no not try to build, will be done by human,
+
+Do no not try to build, will be done by human (`JAVA_HOME=~/.jdks/temurin-21.0.11`)
 
 #### Asset Pipeline
 - **Vite Output**: `/public/react/` directory
@@ -241,4 +241,3 @@ Do no not try to build, will be done by human,
 ## See Also
 - [Conventions](./conventions.md) - Coding standards and patterns
 - [Gotchas](./gotchas.md) - Known pitfalls and lessons learned
- 

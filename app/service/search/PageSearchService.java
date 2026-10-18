@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import repositories.ISquareRepository;
 import service.config.IConfigService;
+import service.records.RecordEditPermissions;
 import utils.MapSquareResolver;
 import utils.SqlUtils;
 
@@ -146,13 +147,17 @@ public class PageSearchService implements IPageSearchService {
             .findList();
 
         Map<Long, RecordPladiasDto> recordsById = new HashMap<>();
+
+        // One permissions context per request (2 queries), then O(1) per record
+        RecordEditPermissions permissions = RecordEditPermissions.forUser(currentUser);
+
         for (Record record : foundRecords) {
             String computedQuadrantCode = computedQuadrantCodes.get(record.getId());
             String computedSquareCode = null;
             if (computedQuadrantCode != null && computedQuadrantCode.length() > 1) {
                 computedSquareCode = computedQuadrantCode.substring(0, computedQuadrantCode.length() - 1);
             }
-            RecordPladiasDto dto = RecordPladiasDto.fromRecord(record, currentUser, computedQuadrantCode, computedSquareCode, disableEditing);
+            RecordPladiasDto dto = RecordPladiasDto.fromRecord(record, currentUser, permissions, computedQuadrantCode, computedSquareCode, disableEditing);
             recordsById.put(record.getId(), dto);
         }
 

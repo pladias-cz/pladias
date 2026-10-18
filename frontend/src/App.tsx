@@ -60,12 +60,8 @@ interface AppConfig {
     hasAtlasModule: boolean;
     hasBiblioModule: boolean;
     hasMeasurementsModule: boolean;
-    isMapAdmin: boolean;
-    isBulkEditor: boolean;
-    isTraitAdmin: boolean;
-    isSysAdmin: boolean;
-    isTaxonAdmin: boolean;
-    isAsyncImporter: boolean;
+    /** User roles assigned by the backend (UserRole enum). */
+    roles: string[];
     userEmail: string;
     language: string;
     supervisedTaxonIds: number[];
@@ -99,12 +95,7 @@ export default function App() {
 
     const userData = {
         id: config.id || 0,
-        isMapAdmin: config.isMapAdmin,
-        isBulkEditor: config.isBulkEditor,
-        isTraitAdmin: config.isTraitAdmin,
-        isSysAdmin: config.isSysAdmin,
-        isTaxonAdmin: config.isTaxonAdmin,
-        isAsyncImporter: config.isAsyncImporter,
+        roles: config.roles || [],
         userEmail: config.userEmail,
         language: config.language,
         supervisedTaxonIds: config.supervisedTaxonIds || []
@@ -183,17 +174,17 @@ export default function App() {
                                 {/* AtlasAdmin routes - requires atlas module + map admin permission */}
                                 <Route path="atlasAdmin">
                                     <Route path="listOfImports" element={
-                                        <ProtectedRoute requiredModule="atlas" requiredPermission="isMapAdmin">
+                                        <ProtectedRoute requiredModule="atlas" requiredRole="mapAdmin">
                                             <AtlasAdminListOfImports/>
                                         </ProtectedRoute>
                                     }/>
                                     <Route path="listOfUsers" element={
-                                        <ProtectedRoute requiredModule="atlas" requiredPermission="isMapAdmin">
+                                        <ProtectedRoute requiredModule="atlas" requiredRole="mapAdmin">
                                             <ListOfUsers/>
                                         </ProtectedRoute>
                                     }/>
                                     <Route path="listOfTaxa" element={
-                                        <ProtectedRoute requiredModule="atlas" requiredPermission="isMapAdmin">
+                                        <ProtectedRoute requiredModule="atlas" requiredRole="mapAdmin">
                                             <AtlasAdminListOfTaxa/>
                                         </ProtectedRoute>
                                     }/>
@@ -236,7 +227,7 @@ export default function App() {
                                         </ProtectedRoute>
                                     }/>
                                     <Route path="backup" element={
-                                        <ProtectedRoute requiredModule="measurements" requiredPermission="isTraitAdmin">
+                                        <ProtectedRoute requiredModule="measurements" requiredRole="traitAdmin">
                                             <Backup/>
                                         </ProtectedRoute>
                                     }/>
@@ -262,17 +253,17 @@ export default function App() {
                                     <Route path="settings" element={<Settings/>}/>
 
                                     <Route path="usersAdministration" element={
-                                        <ProtectedRoute requiredPermission="isSysAdmin">
+                                        <ProtectedRoute requiredRole="sysAdmin">
                                             <UsersAdministration/>
                                         </ProtectedRoute>
                                     }/>
                                     <Route path="taxaAdministration/:taxonId?" element={
-                                        <ProtectedRoute requiredPermission="isTaxonAdmin">
+                                        <ProtectedRoute requiredRole="taxonAdmin">
                                             <TaxaAdministration/>
                                         </ProtectedRoute>
                                     }/>
                                     <Route path="addUser" element={
-                                        <ProtectedRoute requiredPermission="isSysAdmin">
+                                        <ProtectedRoute requiredRole="sysAdmin">
                                             <AddUser/>
                                         </ProtectedRoute>
                                     }/>

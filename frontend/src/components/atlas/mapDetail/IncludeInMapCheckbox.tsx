@@ -14,7 +14,7 @@ export function IncludeInMapCheckbox({ record, onRecordUpdated }: IncludeInMapCh
     const currentValue = optimisticValue !== null ? optimisticValue : (record.includedInMap ?? false);
 
     const handleChange = async (newVal: boolean) => {
-        if (currentValue !== newVal && record.canEdit) {
+        if (currentValue !== newVal && record.canEditValidationFields) {
             // Optimistic update - show change immediately
             setOptimisticValue(newVal);
 
@@ -44,8 +44,8 @@ export function IncludeInMapCheckbox({ record, onRecordUpdated }: IncludeInMapCh
                 display: 'flex',
                 alignItems: 'center',
                 gap: '6px',
-                cursor: record.canEdit ? 'pointer' : 'default',
-                opacity: record.canEdit ? 1 : 0.6,
+                cursor: record.canEditValidationFields ? 'pointer' : 'default',
+                opacity: record.canEditValidationFields ? 1 : 0.6,
                 fontSize: '85%',
             }}
             onClick={() => handleChange(!currentValue)}

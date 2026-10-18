@@ -64,7 +64,7 @@ function formatPhytochorions(
 
 export default function RecordLocation({record, proposedLocation}: RecordLocationProps) {
     const {t} = useTranslation();
-    // const {canEdit} = useRecordPermissions(record);
+    // const {canEditCommonFields: canEdit} = useRecordPermissions(record);
     // const {updateField} = useRecordUpdates();
 
     const proposedCoords = proposedLocation?.coordinates;

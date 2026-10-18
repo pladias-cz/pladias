@@ -79,7 +79,7 @@ export default function RecordFloristic({record, onFieldUpdated}: RecordFloristi
         }
     }, [record.id, record.lastEditTimestampNum]);
 
-    const {canEdit} = useRecordPermissions(localRecord);
+    const {canEditCommonFields: canEdit} = useRecordPermissions(localRecord);
 
     // Memoize currentValue to prevent unnecessary re-renders in MultiValueEdit
     const authorsOptions = useMemo(() => localRecord.recordAuthors.map((a): MultiValueOption => ({

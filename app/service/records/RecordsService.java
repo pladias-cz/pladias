@@ -19,7 +19,6 @@ import play.i18n.Messages;
 import service.config.IConfigService;
 import service.phytochorion.PhytochorionService;
 import utils.PhytoUtils;
-import utils.UserUtils;
 
 import javax.inject.Inject;
 import java.util.ArrayList;
@@ -40,7 +39,9 @@ public class RecordsService {
     // ==================== Field Update Operations ====================
 
     public void editField(User currentUser, Record record, String fieldKey, String newValue, Messages messages) throws Exception {
-        if (!record.isUserElligibleToEditCommonFields(currentUser)) {
+        RecordEditPermissions permissions = RecordEditPermissions.forUser(currentUser);
+        RecordEditPermissions.RecordView recordView = RecordEditPermissions.of(record);
+        if (!permissions.canEditCommonFields(recordView)) {
             throw new Exception("Not allowed to edit the record");
         }
 
@@ -121,7 +122,7 @@ public class RecordsService {
             case "REMARK_EXCERPTION":
             case "REMARK_OTHER":
             case "REMARK_DOUBT":
-                if (!isElligibleForRecordValidation(currentUser, record)) {
+                if (!permissions.canEditValidationFields(recordView)) {
                     throw new Exception(messages.at("RecordEditController.notEligibleForRecordValidation"));
                 }
                 switch (fieldKey) {
@@ -740,22 +741,12 @@ public class RecordsService {
         settings.update();
     }
 
-    //TODO - tyhle dvě metody by neměly být tady ale v nějaké třídě obecně dostupné..
-    private boolean isSupervised(models.Taxon t, User user) {
-        if (t == null || user == null) return false;
-        return user.getSupervisedTaxons().contains(t);
-    }
-
-    private boolean isElligibleForRecordValidation(User user, Record record) {
-        return user.isMapAdmin() || UserUtils.isBulkEditor(user) || isSupervised(record.getTaxon(), user);
-    }
-
     /**
      * Get record fields displayed in map detail view.
      * Returns all fields that can be edited from map detail and their current values.
-     * 
+     *
      * @param recordId the record ID
-     * @param currentUser the current user (for canEdit calculation)
+     * @param currentUser the current user (for permission calculation)
      * @return RecordMapFieldsDto with current field values
      */
     public RecordMapFieldsDto getMapFields(Long recordId, User currentUser) {
@@ -764,11 +755,9 @@ public class RecordsService {
             return null;
         }
 
-        // Calculate canEdit permission (same logic as in RecordPladiasDto)
-        boolean canEdit = false;
-        if (currentUser != null) {
-            canEdit = currentUser.isMapAdmin() || isSupervised(record.getTaxon(), currentUser);
-        }
+        // Permissions are computed by RecordEditPermissions (single source of truth)
+        RecordEditPermissions permissions = RecordEditPermissions.forUser(currentUser);
+        RecordEditPermissions.RecordView recordView = RecordEditPermissions.of(record);
 
         return new RecordMapFieldsDto(
             record.getId(),
@@ -777,7 +766,8 @@ public class RecordsService {
             record.isHerbariumQuality(),
             record.isIncludedInMap(),
             record.getLastEditTimestamp().getTime(),
-            canEdit
+            permissions.canEditCommonFields(recordView),
+            permissions.canEditValidationFields(recordView)
         );
     }
 

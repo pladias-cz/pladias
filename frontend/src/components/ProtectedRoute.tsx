@@ -1,41 +1,33 @@
 import { Navigate, useLocation } from "react-router-dom";
 import { useInstanceConfig } from "@/context/InstanceConfigContext";
 import { useUser } from "@/context/UserContext";
+import type { UserRole } from "@/models/User";
 
 interface ProtectedRouteProps {
     children: React.ReactNode;
     requiredModule?: string;
-    requiredPermission?: string;
-    requiredPermissions?: string[];
+    requiredRole?: string;
+    requiredRoles?: string[];
 }
 
-const permissionKeys = [
-    'isMapAdmin',
-    'isBulkEditor', 
-    'isTraitAdmin',
-    'isSysAdmin',
-    'isTaxonAdmin',
-    'isAsyncImporter'
-] as const;
-
-type PermissionKey = typeof permissionKeys[number];
-
 /**
- * ProtectedRoute - A component that restricts access to routes based on module availability and user permissions.
- * 
+ * ProtectedRoute - A component that restricts access to routes based on module availability and user roles.
+ *
+ * Roles are assigned by the backend (`/api/react/config` -> `roles: string[]`, source: backend UserRole enum).
+ *
  * @param {Object} props
  * @param {React.ReactNode} props.children - The child components to render if access is granted
  * @param {string} props.requiredModule - The required module ("atlas", "biblio", or "measurements")
- * @param {string} props.requiredPermission - The required user permission (e.g., "isMapAdmin", "isBulkEditor").
- *                                            Single permission - user must have this permission.
- * @param {string[]} props.requiredPermissions - Array of permissions where having ANY ONE grants access (OR logic).
- *                                              Cannot be used together with requiredPermission.
+ * @param {string} props.requiredRole - The required user role (e.g., "mapAdmin", "bulkEditor").
+ *                                    Single role - user must have this role.
+ * @param {string[]} props.requiredRoles - Array of roles where having ANY ONE grants access (OR logic).
+ *                                      Cannot be used together with requiredRole.
  */
-const ProtectedRoute = ({ 
-    children, 
+const ProtectedRoute = ({
+    children,
     requiredModule,
-    requiredPermission,
-    requiredPermissions
+    requiredRole,
+    requiredRoles
 }: ProtectedRouteProps) => {
     const { hasAtlasModule, hasBiblioModule, hasMeasurementsModule } = useInstanceConfig();
     const user = useUser();
@@ -52,28 +44,17 @@ const ProtectedRoute = ({
         return <Navigate to="/unauthorized" replace state={{ from: location }} />;
     }
 
-    // Check user permission(s)
-    const permissions: Record<PermissionKey, boolean> = {
-        isMapAdmin: user.isMapAdmin,
-        isBulkEditor: user.isBulkEditor,
-        isTraitAdmin: user.isTraitAdmin,
-        isSysAdmin: user.isSysAdmin,
-        isTaxonAdmin: user.isTaxonAdmin,
-        isAsyncImporter: user.isAsyncImporter
-    };
-
-    // Single permission check
-    if (requiredPermission) {
-        const key = requiredPermission as PermissionKey;
-        if (!permissions[key]) {
+    // Single role check
+    if (requiredRole) {
+        if (!user.hasRole(requiredRole as UserRole)) {
             return <Navigate to="/unauthorized" replace state={{ from: location }} />;
         }
     }
 
-    // Multiple permissions check (OR logic - any one grants access)
-    if (requiredPermissions && requiredPermissions.length > 0) {
-        const hasAnyPermission = requiredPermissions.some(perm => permissions[perm as PermissionKey]);
-        if (!hasAnyPermission) {
+    // Multiple roles check (OR logic - any one grants access)
+    if (requiredRoles && requiredRoles.length > 0) {
+        const hasAnyRole = requiredRoles.some(role => user.hasRole(role as UserRole));
+        if (!hasAnyRole) {
             return <Navigate to="/unauthorized" replace state={{ from: location }} />;
         }
     }

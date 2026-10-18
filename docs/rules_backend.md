@@ -576,33 +576,6 @@ Třída `SynonymController` je anotována `@Security.Authenticated(AuthorizedAsT
 
 Controller vyžaduje jen přihlášení; `verifyCurrentUserIsMapAdmin` se volá pouze u klíčů `ISMAPPED`, `SETCOMMONTHRESHOLD` a `PUBLICATIONSTATUS`. Klíče `MAPTYPE`, `REVISORSCOMMENT`, `REVISORSPRINTMAPCOMMENT`, `MAPADMINCOMMENT`, `PRESLIA`, `PROTECTED` a `PARENT_MAP` může měnit **libovolný přihlášený uživatel** (stačí znát aktuální timestamp). U `REVISIONSTATUS` se nekontroluje revizorská role – non-mapAdmin může posunout status o krok vpřed u libovolného taxonu.
 
-### 2. Flag `canEdit` v DTO – duplikovaná logika, drift a nesoulad s kontrolami endpointů
-
-Editační UI frontendu se řídí výhradně příznakem `canEdit`, který server posílá v datech. Ten se ale počítá **třikrát nezávisle a pokaždé jinak** a žádná varianta nezrcadlí skutečné kontroly write endpointů (`editField`, `moveRecordCoords`):
-
-| Místo výpočtu | Vzorec | Chybí oproti kontrolám endpointů |
-|---|---|---|
-| `RecordPladiasDto` (search / přehledy mapy) | `isMapAdmin() ∨ isBulkEditor() ∨ supervisedTaxons.contains(taxon)` | autoři/comitteři dávek u nezpracovaných záznamů, revizoři nadřazených taxonů, správci projektů, `isLocked()`, `isEditationAllowed()` |
-| `RecordPladiasFullDto` (detail záznamu) | stejný vzorec | totéž |
-| `RecordsService.getMapFields` (refresh mapDetail po kaskádní změně) | `isMapAdmin() ∨ isSupervised(taxon)` | navíc chybí i `isBulkEditor()` – duplikovaná logika již zdriftovala |
-
-Komentáře u obou DTO tvrdí, že výpočet „musí zrcadlit `isUserElligibleToEditCommonFields`“ (vč. bulk editora), ve skutečnosti ale flag odpovídá spíše `isElligibleForRecordValidation` (gate pro semaforová pole: validace, originalita, herbář, include-in-map). Přitom potřebné metody na `Record` existují (`isUserElligibleToEditCommonFields`, `isEditationAllowed`) a `locked` je ve full DTO serializováno zvlášť.
-
-**Důsledky:**
-
-1. **Podvydělení oprávněných uživatelů (UX, ne bezpečnost):** backend by editaci povolil, ale FE editační UI nezobrazí – postihuje autora/nahrávače dávky u nezpracovaného záznamu (typicky opravu vlastního čerstvého importu), revizora nadřazeného taxonu i správce projektu (endpointy je pouští přes `isUserElligibleToEditCommonFields`/`isUserElligibleToEditEverything`).
-2. **Vnitřní nekonzistence mapDetail:** bulkEditor v přehledech (z `RecordPladiasDto`) editační checkboxy vidí, ale refetch `GET /atlas/record/:id/mapFields` (po změně validace/originality) mu vrátí `canEdit = false`; odpověď se v `useRecordQuickUpdates` spreaduje do recordu a propaguje do tabulky, takže editační ovládání po kaskádním refreshi zmizí.
-3. **Ignorování zámků:** flag nezná `isLocked()` ani `isEditationAllowed()` – FE nabídne editaci u zamčeného záznamu a uložení skončí 403 (FE chybu zobrazí, ale flow je matoucí).
-4. **Horizontální riziko duplikace:** bez konsolidace logika dále driftuje (bod 2 je už reálný drift).
-
-**Možné opravy (od nejlevnějšího):**
-
-- **Konzolidace (doporučeno):** přestat logiku v DTO duplikovat – flag počítat voláním skutečných metod na `Record` (např. `record.isUserElligibleToEditCommonFields(user) && record.isEditationAllowed()`) a `getMapFields` sjednotit na tutéž metodu. Řeší body 1, 2 i 4; FE nemusí měnit nic.
-- **Flagy dle typu editace:** rozdělit na `canEditCommonFields` (floristika, poznámky, přesun souřadnic) a `canEditValidationFields` (mapDetail checkboxy, gate `isElligibleForRecordValidation`) – viditelnost UI pak bude 1:1 s každým endpointem. Nejvíc práce (API, FE typy i konzumenté).
-- **Status quo + dokumentace:** přijmout flag jako záměrné zjednodušení – schovává ale funkční problém s autory importů (bod 1).
-
-Dopad na frontend popisuje [rules_frontend.md](./rules_frontend.md) (Zjištěné problémy a nesoulady).
-
 ---
 
 ## Poznámky

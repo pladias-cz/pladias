@@ -4,6 +4,7 @@ import controllers.ControllerBase;
 import controllers.security.Authorized;
 import models.Maintenance;
 import models.User;
+import models.UserRole;
 import models.UserSettings;
 import play.libs.Json;
 import play.mvc.Http;
@@ -11,7 +12,6 @@ import play.mvc.Http.Session;
 import play.mvc.Result;
 import play.mvc.Security;
 import utils.SessionUtils;
-import utils.UserUtils;
 import views.utils.MaintenanceMessageUtils;
 
 import java.util.ArrayList;
@@ -35,12 +35,7 @@ public class ConfigController extends ControllerBase {
 
         // User-specific data (can change during session)
         config.put("id", currentUser.getId());
-        config.put("isMapAdmin", currentUser.isMapAdmin());
-        config.put("isSysAdmin", currentUser.isSysAdmin());
-        config.put("isTraitAdmin", currentUser.isTraitAdmin());
-        config.put("isTaxonAdmin", currentUser.isTaxonAdmin());
-        config.put("isBulkEditor", currentUser.isMapAdmin() || UserUtils.isBulkEditor(currentUser));
-        config.put("isAsyncImporter", UserUtils.isAsyncImporter(currentUser));
+        config.put("roles", UserRole.keysOf(currentUser));
         config.put("userEmail", currentUser.getEmail());
 
         // Add supervised taxon IDs for permission checks

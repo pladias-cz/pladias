@@ -8,7 +8,6 @@
 
 Tento dokument popisuje chování React frontendu (`frontend/src`) při write operacích – kdo jakou akci vidí a smí ji spustit, jaké související akce vyvolává a kde se kontroluje read autorizace. Autorizační pravidla backendu (kdo endpoint skutečně pustí) popisuje samostatný dokument [rules_backend.md](./rules_backend.md); zde je na něj odkazováno a je s ním porovnáváno, co frontend skutečně nabízí.
 
-> ⚠️ Shrnutí nejzávažnějších nálezů najdete v sekci [Zjištěné problémy a nesoulady](#zjištěné-problémy-a-nesoulady).
 
 ## Obsah
 
@@ -24,8 +23,7 @@ Tento dokument popisuje chování React frontendu (`frontend/src`) při write op
 10. [Měření a vlastnosti (Measurements / Traits)](#měření-a-vlastnosti-measurements--traits)
 11. [Uživatelé a vlastní účet](#uživatelé-a-vlastní-účet)
 12. [Read autorizace – kdo co vidí a stahuje](#read-autorizace--kdo-co-vidí-a-stahuje)
-13. [Zjištěné problémy a nesoulady](#zjištěné-problémy-a-nesoulady)
-14. [Poznámky](#poznámky)
+13. [Poznámky](#poznámky)
 
 ---
 
@@ -261,18 +259,10 @@ Poznámka: „public“ routy (`/downloads`, `/user/docs`, Home) jsou veřejné 
 
 ---
 
-## Zjištěné problémy a nesoulady
-
-- **`canEdit` je zjednodušení serverových kontrol** (systémový nesoulad; kompletní analýza v [rules_backend.md – problém č. 4](./rules_backend.md)): celé editační UI (karty detailu záznamu, mapDetail checkboxy, přesun souřadnic) se řídí flagem `record.canEdit`, který server počítá jako `mapAdmin ∨ bulkEditor ∨ přímý revizor taxonu`. Endpointy přitom navíc pouští autory/committery dávek u nezpracovaných záznamů, revizory nadřazených taxonů a správce projektů – těm FE editaci neukáže, ačkoliv by ji backend přijal. Flag navíc ignoruje `isLocked()`/`isEditationAllowed()` (u zamčeného záznamu UI editaci nabídne a uložení vrátí 403).
-- **Drift `canEdit` v refetchi mapDetail:** bulkEditor v přehledech mapy editační checkboxy vidí, ale refetch `GET /atlas/record/:id/mapFields` po kaskádní změně (validace/originalita) vrací `canEdit` bez bulkEditora; výsledek se v `useRecordQuickUpdates` spreaduje do recordu, takže se editační ovládání po refreshi skryje, ačkoliv ho uživatel předtím měl.
-- `RecordLocation` má kontrolu `canEdit` zakomentovanou – v současnosti neškodí (komponenta jen zobrazuje navrženou pozici; samotný přesun se potvrzuje v `Record.tsx`), ale je to past pro budoucí rozšíření: rozkomentovat až po opravě sémantiky flagu (viz předchozí body).
-
----
-
 ## Poznámky
 
 ### Optimistické UI
 Rychlé editace záznamů (validace, originalita, herbarium, include-in-map) a nastavení map taxonů dělají optimistickou změnu stavu a při chybě ji vrací; po úspěchu si přebírají nový timestamp z odpovědi serveru. Detail záznamu si timestamp propaguje mezi kartami, aby souběžné editace různých polí jednoho záznamu na sobě nevyhazovaly konflikt 409.
 
 ### Kam se autorizace ve frontendu nezapisuje
-Frontend nemá žádnou centrální tabulku oprávnění – role se kontrolují na třech místech (ProtectedRoute, MainMenu, podmíněné renderování v komponentách) a k tomu přistupují serverové příznaky v datech (`canEdit` apod.). Při přidávání nové write operace je proto nutné zkontrolovat všechna tři místa.
+Role i editační práva záznamů frontend přebírá z dat backendu (`roles: string[]` z `/api/react/config`; `canEditCommonFields`/`canEditValidationFields`/`canResolveComments` per záznam, zdroj `RecordEditPermissions` na BE). Vlastní logika zbývá jen v podmíněném renderování komponent (`user.isMapAdmin`, `hasRole(...)`) a v ochraně rout (`ProtectedRoute requiredRole/requiredRoles`). Při přidávání nové write operace je proto nutné: (1) gate na backend endpointu, (2) exponovat odpovídající flag/roli v datech, (3) konzumovat ho ve FE – nikdy právo neodvozovat lokálně.

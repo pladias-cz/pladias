@@ -52,6 +52,22 @@ Known exceptions (do not copy, frontend has to tolerate them):
 
 ---
 
+## Permissions
+
+### Record edit permissions are backend-owned
+- The `canEdit` boolean was removed from `RecordPladias*` DTOs. The backend computes
+  `canEditCommonFields` / `canEditValidationFields` (and `canResolveComments` in the full DTO)
+  in a single place - `app/service/records/RecordEditPermissions.java` - and the frontend only
+  mirrors these flags (`useRecordPermissions`). Never re-derive editing rights in FE code.
+- `RecordEditPermissions.forUser(user)` costs 2 queries (supervised taxa + managed projects) -
+  create it once per request and pass it into `RecordPladiasDto.fromRecord` /
+  `RecordPladiasFullDto.fromRecord` (the DTO signatures enforce this by taking `null = no edit`).
+- User roles arrive as `roles: string[]` from `GET /api/react/config` (backend enum
+  `models.UserRole`); the FE `User` model exposes `hasRole()` with `isMapAdmin`-style getters
+  as aliases.
+
+---
+
 ## See Also
 - [Architecture](./architecture.md) - Core architecture concepts
 - [Conventions](./conventions.md) - Coding standards and patterns

@@ -6,7 +6,7 @@ import geom.Coordinates;
 import models.*;
 import models.Record;
 import models.biblio.Bibliography;
-import utils.UserUtils;
+import service.records.RecordEditPermissions;
 
 import java.sql.Timestamp;
 import java.util.List;
@@ -131,8 +131,9 @@ public record RecordPladiasFullDto(
     Timestamp lastEditTimestamp,
     Timestamp createTimestamp,
 
-    // Edit permission
-    Boolean canEdit,
+    // Edit permissions (computed by RecordEditPermissions, single source of truth)
+    Boolean canEditCommonFields,
+    Boolean canEditValidationFields,
 
     // Comment resolve permission (mirrors Record.isUserElligibleToEditEverything, used by RecordCommentController.resolveComment)
     Boolean canResolveComments,
@@ -168,8 +169,10 @@ public record RecordPladiasFullDto(
      *
      * @param record      the record to convert
      * @param currentUser the current user (null if not authenticated)
+     * @param permissions edit permissions context of the current user
+     *                    ({@link RecordEditPermissions#forUser(User)}; null disables editing)
      */
-    public static RecordPladiasFullDto fromRecord(Record record, User currentUser) {
+    public static RecordPladiasFullDto fromRecord(Record record, User currentUser, RecordEditPermissions permissions) {
         Integer year = record.getDateSpecifier() != null ? record.getDateSpecifier().getYear() : null;
         String datePrecision = record.getDateSpecifier() != null ? record.getDateSpecifier().getDatePrecision() : null;
         String dateIso = record.getDateSpecifier() != null ? record.getDateSpecifier().toString() : null;
@@ -374,15 +377,13 @@ public record RecordPladiasFullDto(
             licenseDto = new LicenseDto(license.getId(), license.getKey(), license.getDescription());
         }
 
-        // Compute canEdit based on user permissions (must mirror Record.isUserElligibleToEditCommonFields, incl. bulk editor)
-        Boolean canEdit = false;
-        if (currentUser != null) {
-            canEdit = currentUser.isMapAdmin() || UserUtils.isBulkEditor(currentUser)
-                || (taxon != null && currentUser.getSupervisedTaxons().contains(taxon));
-        }
+        // Edit permissions – single source of truth: RecordEditPermissions (mirrors endpoint checks 1:1)
+        RecordEditPermissions.RecordView recordView = RecordEditPermissions.of(record);
+        Boolean canEditCommonFields = permissions != null && permissions.canEditCommonFields(recordView);
+        Boolean canEditValidationFields = permissions != null && permissions.canEditValidationFields(recordView);
 
         // Compute canResolveComments using the same check the resolve endpoint performs
-        Boolean canResolveComments = currentUser != null && record.isUserElligibleToEditEverything(currentUser);
+        Boolean canResolveComments = permissions != null && permissions.canResolveComments(recordView);
 
         return new RecordPladiasFullDto(
             record.getId(), record.getLatitude(), record.getLongitude(), gpsPrecision, gpsCoordsSource,
@@ -405,7 +406,7 @@ public record RecordPladiasFullDto(
             record.getSource(), record.getOriginalId(), licenseId, licenseName,
             projectId, projectName, institutionName, record.isLocked(), record.isIncludedInMap(),
             record.getLastEditTimestamp(), batch != null ? batch.getCreateTimestamp() : null,
-            canEdit, canResolveComments,
+            canEditCommonFields, canEditValidationFields, canResolveComments,
             taxonDto, recordAuthorsDto, batchDto, biblioDto, nearestTownLegacyDto,
             mapSquaresDto, quadrantsDto, licenseDto);
     }

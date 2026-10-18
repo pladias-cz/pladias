@@ -26,7 +26,7 @@ export function ValidationStatusCheckboxes({ record, onRecordUpdated }: Validati
     };
 
     const handleStatusChange = async (newStatus: ValidationStatusId) => {
-        if (!record.canEdit) {
+        if (!record.canEditValidationFields) {
             return;
         }
         
@@ -79,9 +79,9 @@ export function ValidationStatusCheckboxes({ record, onRecordUpdated }: Validati
                             display: 'flex',
                             alignItems: 'center',
                             gap: '6px',
-                            cursor: record.canEdit ? 'pointer' : 'default',
+                            cursor: record.canEditValidationFields ? 'pointer' : 'default',
                             padding: '2px 0',
-                            opacity: record.canEdit ? 1 : 0.6,
+                            opacity: record.canEditValidationFields ? 1 : 0.6,
                         }}
                         onClick={() => handleStatusChange(id)}
                     >

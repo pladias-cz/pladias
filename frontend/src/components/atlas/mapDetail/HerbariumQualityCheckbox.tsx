@@ -9,7 +9,7 @@ interface HerbariumQualityCheckboxProps {
 }
 
 export function HerbariumQualityCheckbox({record, onRecordUpdated}: HerbariumQualityCheckboxProps) {
-    const {canEdit} = useRecordPermissions(record);
+    const {canEditValidationFields: canEdit} = useRecordPermissions(record);
     const {updateHerbariumQuality} = useRecordQuickUpdates();
     const [isChecked, setIsChecked] = useState(record.herbariumQuality ?? false);
 

@@ -120,7 +120,8 @@ public class RecordUpdateController extends ControllerBase {
         result.put("herbariumQuality", fields.herbariumQuality());
         result.put("includedInMap", fields.includedInMap());
         result.put("lastEditTimestampNum", fields.lastEditTimestampNum());
-        result.put("canEdit", fields.canEdit());
+        result.put("canEditCommonFields", fields.canEditCommonFields());
+        result.put("canEditValidationFields", fields.canEditValidationFields());
 
         return ok(result);
     }

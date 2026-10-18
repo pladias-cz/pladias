@@ -48,7 +48,7 @@ export default function RecordRemarks({record, onFieldUpdated}: RecordRemarksPro
         window.scrollTo(0, scrollRef.current);
     }, [localRecord]);
 
-    const {canEdit} = useRecordPermissions(localRecord);
+    const {canEditCommonFields: canEdit} = useRecordPermissions(localRecord);
 
     const hasRemarks = [
         localRecord.remarkExcerption,

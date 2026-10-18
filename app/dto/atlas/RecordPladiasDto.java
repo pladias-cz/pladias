@@ -7,8 +7,8 @@ import models.RecordValidationStatus;
 import models.Taxon;
 import models.User;
 import models.nonvascular.NonVascularRecordExtension;
+import service.records.RecordEditPermissions;
 import utils.ConfigHelper;
-import utils.UserUtils;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -125,8 +125,9 @@ public record RecordPladiasDto(
     Timestamp lastEditTimestamp,
     Timestamp createTimestamp,
 
-    // Edit permission
-    Boolean canEdit
+    // Edit permissions (computed by RecordEditPermissions, single source of truth)
+    Boolean canEditCommonFields,
+    Boolean canEditValidationFields
 ) {
     /**
      * Create a comprehensive DTO from a Record entity with edit permission check.
@@ -134,9 +135,11 @@ public record RecordPladiasDto(
      *
      * @param record      the record to convert
      * @param currentUser the current user (null if not authenticated)
+     * @param permissions edit permissions context of the current user (create once per request via
+     *                     {@link RecordEditPermissions#forUser(User)}; null disables editing)
      */
-    public static RecordPladiasDto fromRecord(Record record, User currentUser, String computedQuadrantCode, String computedSquareCode, Boolean disableEditing) {
-        return fromRecord(record, currentUser, computedQuadrantCode, computedSquareCode, disableEditing, null);
+    public static RecordPladiasDto fromRecord(Record record, User currentUser, RecordEditPermissions permissions, String computedQuadrantCode, String computedSquareCode, Boolean disableEditing) {
+        return fromRecord(record, currentUser, permissions, computedQuadrantCode, computedSquareCode, disableEditing, null);
     }
 
     /**
@@ -145,12 +148,14 @@ public record RecordPladiasDto(
      *
      * @param record                the record to convert
      * @param currentUser           the current user (null if not authenticated)
+     * @param permissions           edit permissions context of the current user (create once per request via
+     *                              {@link RecordEditPermissions#forUser(User)}; null disables editing)
      * @param computedQuadrantCode  the computed quadrant code (can be null)
      * @param computedSquareCode    the computed square code (can be null)
      * @param disableEditing        whether to disable editing
      * @param precomputedHasHistory pre-computed hasHistory value to avoid N+1 queries (null to use record.hasHistory())
      */
-    public static RecordPladiasDto fromRecord(Record record, User currentUser, String computedQuadrantCode, String computedSquareCode, Boolean disableEditing, Boolean precomputedHasHistory) {
+    public static RecordPladiasDto fromRecord(Record record, User currentUser, RecordEditPermissions permissions, String computedQuadrantCode, String computedSquareCode, Boolean disableEditing, Boolean precomputedHasHistory) {
         // Get year from date specifier
         Integer year = record.getDateSpecifier() != null
             ? record.getDateSpecifier().getYear()
@@ -357,12 +362,11 @@ public record RecordPladiasDto(
         String quadrantsCodes = allSquaresAndQuadrants.isEmpty() ? null
             : allSquaresAndQuadrants.stream().collect(Collectors.joining(", "));
 
-        // Compute canEdit based on user permissions (must mirror Record.isUserElligibleToEditCommonFields, incl. bulk editor)
-        Boolean canEdit = false;
-        if (!disableEditing && currentUser != null) {
-            canEdit = currentUser.isMapAdmin() || UserUtils.isBulkEditor(currentUser)
-                || (taxon != null && currentUser.getSupervisedTaxons().contains(taxon));
-        }
+        // Edit permissions – single source of truth: RecordEditPermissions (mirrors endpoint checks 1:1)
+        boolean editingEnabled = !Boolean.TRUE.equals(disableEditing) && permissions != null;
+        RecordEditPermissions.RecordView recordView = RecordEditPermissions.of(record);
+        Boolean canEditCommonFields = editingEnabled && permissions.canEditCommonFields(recordView);
+        Boolean canEditValidationFields = editingEnabled && permissions.canEditValidationFields(recordView);
 
         // Get nonvascular extension only if the app is configured for nonvascular
         NonVascularRecordExtension extension = ConfigHelper.isNonVascular() ? record.getNonVascularExtension() : null;
@@ -466,8 +470,9 @@ public record RecordPladiasDto(
             record.getLastEditTimestamp(),
             record.getBatch() != null ? record.getBatch().getCreateTimestamp() : null,
 
-            // Edit permission
-            canEdit
+            // Edit permissions
+            canEditCommonFields,
+            canEditValidationFields
         );
     }
 

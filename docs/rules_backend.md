@@ -43,7 +43,9 @@ Tento dokument popisuje chování aplikace při editaci dat v databázi. Jsou zd
   - autor nebo committer batche, pokud je `validationStatus == Unprocessed`, **NEBO**
   - bulk editor (`UserUtils.isBulkEditor` – speciální uživatel `user.BulkImporter`; smí editovat všechna pole záznamů, ale nesdílí žádné další mapAdmin kompetence), **NEBO**
   - `isUserElligibleToEditEverything(currentUser)` vrátí `true` (mapAdmin, revizor taxonu nebo jeho nadřazených taxonů, správce projektu záznamu)
-- Pro validační pole (`VALIDATION_STATUS`, `ORIGINALITY_STATUS`, `HERBARIUM_QUALITY`, `INCLUDED_IN_MAP`, `ENVIRONMENT`, `DETREV`, `REMARK_EXCERPTION`, `REMARK_OTHER`, `REMARK_DOUBT`) se **v service** (`RecordsService.editField`) ještě jednou kontroluje `isElligibleForRecordValidation` – mapAdmin, bulk editor nebo revizor taxonu
+- Pro validační pole (`VALIDATION_STATUS`, `ORIGINALITY_STATUS`, `HERBARIUM_QUALITY`, `INCLUDED_IN_MAP`, `ENVIRONMENT`, `DETREV`, `REMARK_EXCERPTION`, `REMARK_OTHER`, `REMARK_DOUBT`) se **v service** (`RecordsService.editField`) ještě jednou kontroluje `canEditValidationFields` (historicky `isElligibleForRecordValidation`) – mapAdmin, bulk editor nebo **přímý** revizor taxonu
+
+> ☝️ Jednotným zdrojem všech tří pravidel editace záznamů je od refaktoru služba `RecordEditPermissions` (`app/service/records/RecordEditPermissions.java`) – metody `canEditCommonFields` / `canEditValidationFields` / `canResolveComments`. Tatáž služba počítá i flagy `canEditCommonFields`, `canEditValidationFields` a `canResolveComments` v GET odpovědích (`RecordPladiasDto`, `RecordPladiasFullDto`, `RecordMapFieldsDto`, výsledky vyhledávání), takže DTO flagy zrcadlí kontroly write endpointů 1:1.
 
 **Podmínky editace:**
 - Záznam nesmí být uzamčen: `record.isLocked() == false`
@@ -101,7 +103,7 @@ Tento dokument popisuje chování aplikace při editaci dat v databázi. Jsou zd
 ## Komentáře k záznamům
 
 Všechny endpointy `RecordCommentController` – přihlášený uživatel (`@Security.Authenticated(Authorized.class)`).
-⚠️ Žádný z komentářových endpointů nepoužívá concurrency kontrolu přes timestamp od klienta – ochranu proti souběžné editaci zajišťuje jen `@Version` na entitě `RecordComment` (viz [přehledová tabulka](#přehledová-tabulka-historie-změn-a-concurrency-kontrola) a [problém č. 4](#4-editace-komentářů-bez-explicitní-concurrency-kontroly)).
+⚠️ Žádný z komentářových endpointů nepoužívá concurrency kontrolu přes timestamp od klienta – ochranu proti souběžné editaci zajišťuje jen `@Version` na entitě `RecordComment` (viz [přehledová tabulka](#přehledová-tabulka-historie-změn-a-concurrency-kontrola)).
 
 ### POST `/atlas/record/comment` – Vytvoření komentáře (`createComment`)
 
@@ -166,7 +168,7 @@ Přehled všech mutujících endpointů z hlediska auditu změn a ochrany proti 
 | PATCH `/atlas/record/:recordId` | ✅ | ✅ pro každé skutečně změněné pole (při shodě staré a nové hodnoty se zápis přeskočí) | ✅ `lastEditTimestampNum` v controlleru + `@Version` |
 | POST `/atlas/record/moveCoordinates` | ✅ | ✅ `gps`, `coords_precision`, `coords_source`, `phytochorion_id`, `phytochorion_computed`, `remark_doubt` (automatické promazání systémových textů) | ✅ timestamp v controlleru i service + `@Version` |
 | POST `/atlas/record/comment` | ❌ (přidává komentář) | ✅ „comment added“ | – (nový záznam) |
-| PUT `/atlas/record/comment/:commentId` | ❌ | ✅ „comment updated“ | ⚠️ jen `@Version` na `RecordComment` (problém č. 4) |
+| PUT `/atlas/record/comment/:commentId` | ❌ | ✅ „comment updated“ | ⚠️ jen `@Version` na `RecordComment` |
 | DELETE `/atlas/record/comment/:commentId` | ❌ (soft delete) | ✅ „comment deleted“ | ⚠️ jen `@Version` |
 | POST `/atlas/record/comment/:commentId/resolve` | ❌ | ✅ „comment resolved“ | ⚠️ jen `@Version` |
 | DELETE `/atlas/record/comment-assoc/:commentId/linked-user/:boundUserId` | ❌ (raw SQL `users_comments`) | ✅ „marked as read“ | ❌ žádná |
@@ -479,7 +481,7 @@ Třída `SynonymController` je anotována `@Security.Authenticated(AuthorizedAsT
 **Kdo smí provést:** sysAdmin (anotace + vnitřní kontrola)
 
 **Související akce:**
-- Aktualizace rolí: `mapAdmin`, `traitAdmin`, `biblioAdmin`, `taxonAdmin`, `analyst`, `sysAdmin`
+- Aktualizace rolí (klíče `MapAdmin`, `BiblioAdmin`, `TraitAdmin`, `SysAdmin`, `TaxonAdmin`; role `bulkEditor`/`asyncImporter` se přímo nastavit nedají – bulkEditor je speciální uživatel `user.BulkImporter`, asyncImporter se konfiguruje přes `AsyncImportersEmail`)
 
 > Klíče `AddProject`/`RemoveProject` byly z endpointu odebrány – přidělování projektů je výhradně doménou mapAdmina přes `/atlasadmin/users/:userId/projects` (viz níže). sysAdmin toto právo nemá; neznámé klíče končí chybou („Unknown field key“).
 
@@ -564,6 +566,7 @@ Třída `SynonymController` je anotována `@Security.Authenticated(AuthorizedAsT
 | `isSysAdmin()` | Systémový administrátor | Správa uživatelů a jejich práv (přes `AuthorizedAsSysAdmin`) |
 | `isTraitAdmin()` | Administrátor vlastností | Záloha měření, import/mazání vlastností, exporty (též `supervises(feature)`) |
 | `isBiblioAdmin()` | Administrátor bibliografie | Správa bibliografických záznamů |
+| `asyncImporter` (role `asyncImporter`, konfigurace `AsyncImportersEmail`) | Asynchronní importér | Zobrazuje položku menu CSV importu (`/atlas/importCSV`); samotný endpoint `/import/csv` hlídá jen `canContributeInto(project)` |
 | `supervisedTaxons` | Revizor taxonů | Editace a validace záznamů přiřazených (a podřazených) taxonů |
 | `contributionProjects` | Přispěvatel projektu | Import dat do projektu, editace vlastních neimportovaných záznamů |
 | master admin / bulk importer | Speciální uživatelé | `UserUtils.getMasterAdmin()` (např. mazání asociací komentářů), `UserUtils.getBulkImporter()` (hromadné editace záznamů) |
@@ -575,6 +578,28 @@ Třída `SynonymController` je anotována `@Security.Authenticated(AuthorizedAsT
 ### 1. POST `/atlasadmin/taxonMapSettings` – většina polí bez kontroly oprávnění
 
 Controller vyžaduje jen přihlášení; `verifyCurrentUserIsMapAdmin` se volá pouze u klíčů `ISMAPPED`, `SETCOMMONTHRESHOLD` a `PUBLICATIONSTATUS`. Klíče `MAPTYPE`, `REVISORSCOMMENT`, `REVISORSPRINTMAPCOMMENT`, `MAPADMINCOMMENT`, `PRESLIA`, `PROTECTED` a `PARENT_MAP` může měnit **libovolný přihlášený uživatel** (stačí znát aktuální timestamp). U `REVISIONSTATUS` se nekontroluje revizorská role – non-mapAdmin může posunout status o krok vpřed u libovolného taxonu.
+
+### 2. `GET /tempfiles/download/:fileId` a `GET /api/react/tempfiles/:fileId` – stažení dočasného souboru bez přihlášení
+
+Existují **dva duplicitní controllery** – `controllers.TemporaryFilesProvider` (routa v `conf/routes`) i `controllers.common.TemporaryFilesProviderController` (routa v `conf/react.routes`) – a ani jeden nemá anotaci `@Security.Authenticated`. Endpoint je tedy **veřejný**: `fileId` je sekvenční integer, takže neautentizovaný návštěvník může enumerací stahovat cizí dočasné soubory (exporty apod.), které se navíc po stažení **smažou** (DoS – spolupráci uživatelům nelze soubor „vzít“ dřív).
+
+### 3. `GET /geoserver/*params` a `GET /geoserver2/*params` – veřejný proxy do interního GeoServeru
+
+`controllers.GeoServer` postrádá anotaci – v kódu je zakomentované `//@Security.Authenticated(Secured.class)`. Oba endpointy jsou tak přístupné **bez přihlášení** a předávají libovolné GET parametry internímu GeoServeru (WMS/WFS dotazy nad mapovými vrstvami); `/geoserver2` navíc zapisuje `UserActivity.GeoserverWfsQuery` pro neautentizované requesty.
+
+### 4. Statusové číselníky pod `/atlasadmin/*` a překlady `/playmessage/*` bez přihlášení
+
+- `controllers.atlas.MapStatusController` (`GET /atlasadmin/revision-statuses`, `GET /atlasadmin/publication-statuses`) a `controllers.atlas.RecordStatusController` (`GET /atlasadmin/record-originality-statuses`, `GET /atlasadmin/record-validation-statuses`) nemají žádnou anotaci – vrací obsah číselníků veřejně. Nízká závažnost (jen slovníky), ale nekonzistentní: u ostatních endpointů s prefixem `/atlasadmin` se čeká kontrola mapAdmin.
+- `controllers.common.PlayMessageController` (`GET /playmessage/*`) je rovněž veřejný – včetně `GET /playmessage/all/all-languages`, které dumpuje celou tabulku překladů.
+
+### 5. `GET /occurrence/imports/:id` – stažení cizího importního Excelu
+
+`controllers.atlas.UploadExcel.downloadDecorated` vyžaduje jen přihlášení (`Authorized`) a v kódu je přímo TODO: „chybí kontrola že daný uživatel ho smí stáhnout!“. Libovolný přihlášený uživatel tak může opsat `id` a stáhnout dekorovaný soubor cizí importní dávky.
+
+### 6. `TraitExportController` – nekonzistentní kontroly u stahování trait dat
+
+- `downloadTraitDataByFeature` je **záměrně bez autentizace** (komentář „intentionally NOT secured – as it is accessed from pladias.cz“), ale není vůbec **routnutý** (v `conf/routes` ani `conf/react.routes` chybí) – jde o mrtvý kód. Při případném zroutování by umožnil stahovat trait data podle `featureId` bez přihlášení.
+- `downloadAttachment` (`GET /measurement/trait/downloadAttachment/:traitId`) vyžaduje jen přihlášení – na rozdíl od `exportTrait` a `downloadTraitData` nekontroluje `UserUtils.isElligibleForTraitDownload(trait)`, takže přílohu vlastnosti stáhne libovolný přihlášený uživatel.
 
 ---
 
@@ -613,3 +638,7 @@ Některé akce (změna publication/revision status, přiřazení revizora, uploa
 
 ### Autentizace vs. autorizace
 Autentizaci zajišťuje `@Security.Authenticated` s třídami `Authorized` (přihlášený), `AuthorizedAsSysAdmin` (sysAdmin) a `AuthorizedAsTaxonAdmin` (taxonAdmin) – kombinace s `@With(Authorized.class)` na úrovni controlleru. Další kontroly (`isMapAdmin`, `supervises`, `canContributeInto`, `isUserElligibleToEditEverything` apod.) se provádějí ručně uvnitř action metod / services – v tom je i příčina výše popsaných nekonzistencí.
+
+Výjimkou z tohoto schématu jsou:
+- **Controllery bez jakékoli anotace** – `GeoServer`, `TemporaryFilesProvider`/`TemporaryFilesProviderController`, `PlayMessageController`, `MapStatusController`, `RecordStatusController` (viz problémy 2–4).
+- **`controllers.api.Map`** (`GET /api/pngMap/:taxonId`, `GET /api/csvMapDetails/:taxonId`, `GET /api/renderMap/...`) – používá samostatný mechanismus `@TokenAuthenticated` (`BearerAuthAction`): vyžaduje platný Bearer API token (vytváří se přes `POST /user/createToken`), ale žádné další kontroly rolí – stačí platný token libovolného uživatele.

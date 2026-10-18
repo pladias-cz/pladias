@@ -31,18 +31,18 @@ Tento dokument popisuje chování React frontendu (`frontend/src`) při write op
 
 **Přihlášení.** Celá React SPA je mountována přes `Application.index`, která je anotována `@Security.Authenticated(Authorized.class)` – nepřihlášený uživatel dostane přihlašovací stránku. Celý frontend je tedy dostupný pouze přihlášeným uživatelům; veškerá API volání nesou session cookie a spoléhají na backend kontrolu.
 
-**Data o uživateli.** Při startu aplikace (`App.tsx`) se zavolá `GET /api/react/config`, ze kterého se vytvoří `UserContext` (instance třídy `User` v `models/User.ts`). Ta obsahuje role `isMapAdmin`, `isBulkEditor`, `isTraitAdmin`, `isSysAdmin`, `isTaxonAdmin`, `isAsyncImporter`, dále `userEmail`, `language` a `supervisedTaxonIds` (seznam taxonů, které uživatel přímo revizuje).
+**Data o uživateli.** Při startu aplikace (`App.tsx`) se zavolá `GET /api/react/config`, ze kterého se vytvoří `UserContext` (instance třídy `User` v `models/User.ts`). Backend posílá role jako pole `roles: string[]` (zdroj: `UserRole.keysOf` na BE; mapAdmin v sobě zahrnuje i kompetence bulkEditora), frontend z nich odvozuje getry `isMapAdmin`, `isBulkEditor`, `isTraitAdmin`, `isSysAdmin`, `isTaxonAdmin`, `isAsyncImporter`, `isBiblioAdmin` a generickou metodu `hasRole(role)`. Dále `userEmail`, `language` a `supervisedTaxonIds` (seznam taxonů, které uživatel přímo revizuje).
 
 **Ochrana rout.** Komponenta `ProtectedRoute` kontroluje:
 - `requiredModule` – dostupnost modulu instance (`atlas`, `biblio`, `measurements`; jde o konfiguraci instance, nikoli oprávnění uživatele),
-- `requiredPermission` – jednu roli uživatele,
-- `requiredPermissions` – pole rolí s OR logikou (stačí jedna).
+- `requiredRole` – jednu roli uživatele,
+- `requiredRoles` – pole rolí s OR logikou (stačí jedna).
 
 Nesplnění → přesměrování na `/unauthorized`.
 
 **Ochrana na úrovni komponent.** Editační prvky se zobrazují podmíněně dvěma způsoby:
 - podle role z `useUser()` (např. `user.isMapAdmin || user.isBulkEditor` u BulkEditu),
-- podle **příznaků, které vypočítá server přímo v datech** – `record.canEdit`, `trait.canDelete`, `trait.canDownload`, `trait.canExport`, `comment.resolved` apod. Zvlášť u záznamů je to hlavní mechanismus, protože právo editovat záznam závisí na vztahu uživatele k batchi, taxonu i projektu (backend: `isUserElligibleToEditCommonFields` / `isUserElligibleToEditEverything`).
+- podle **příznaků, které vypočítá server přímo v datech** – u záznamů `record.canEditCommonFields`, `record.canEditValidationFields`, `record.canResolveComments` (a `record.locked`), u vlastností `feature.canAdminister`, `trait.canDownload`/`trait.canExport` apod. Zvlášť u záznamů je to hlavní mechanismus, protože právo editovat záznam závisí na vztahu uživatele k batchi, taxonu i projektu – flagy počítá backendová služba `RecordEditPermissions` (jediný zdroj pravidel), takže 1:1 zrcadlí kontroly write endpointů včetně zámků (`isLocked()`, `isEditationAllowed()`).
 
 **Důležité omezení.** Veškeré frontendové kontroly jsou pouze UX – vždy je provádí backend (viz [rules_backend.md](./rules_backend.md)). Skrytí tlačítka ve frontendu tedy neznamená, že by endpoint nešlo zavolat přímo.
 
@@ -65,24 +65,24 @@ Nesplnění → přesměrování na `/unauthorized`.
 | `/user/taxaAdministration/:taxonId?` | – | `isTaxonAdmin` |
 | `/user/addUser` | – | `isSysAdmin` |
 
-Hlavní menu (`MainMenu.tsx`) nabízí odkazy konzistentně s routami: správa uživatelů i přidání uživatele jen `isSysAdmin`, správa taxonů jen `isTaxonAdmin`; zbytek atlasového/biblio/measurement menu vidí všichni uživatelé s daným modulem.
+Hlavní menu (`MainMenu.tsx`) nabízí odkazy konzistentně s routami: správa uživatelů i přidání uživatele jen `isSysAdmin`, správa taxonů jen `isTaxonAdmin`; zbytek atlasového a biblio menu vidí všichni uživatelé s daným modulem. Výjimky: v atlas menu se CSV import (`/atlas/importCSV`) zobrazí jen pro `isAsyncImporter || isMapAdmin` – samotná routa ale žádnou roli nevyžaduje (jen modul atlas), autorizaci dělá až backend (`canContributeInto`); v measurements menu je záloha (`/measurements/backup`) jen pro `isTraitAdmin` (shodné s routou).
 
 ---
 
 ## Záznamy – detail záznamu
 
-Stránka `Record.tsx` načte záznam přes `GET /atlas/record/:recordId/full` (včetně `canEdit` a `lastEditTimestamp`) a její karty editují **pouze pokud `record.canEdit == true`** (hook `useRecordPermissions`). Pozor: `canEdit` je zjednodušení serverových kontrol – viz [Zjištěné problémy a nesoulady](#zjištěné-problémy-a-nesoulady).
+Stránka `Record.tsx` načte záznam přes `GET /atlas/record/:recordId/full` (včetně `canEditCommonFields`, `canEditValidationFields`, `canResolveComments`, `locked` a `lastEditTimestamp`) a její karty se řídí hookem `useRecordPermissions`. Flagy počítá backend ve službě `RecordEditPermissions` (jediný zdroj pravidel) a 1:1 zrcadlí kontroly endpointů – frontend si práva k záznamům neodvozuje lokálně.
 
 ### Editovatelná pole (RecordInlineField, SingleSelectEdit, MultiSelectEdit)
 
-- **Kdo smí editovat (podle flagu):** mapAdmin, bulk editor, **přímý** revizor taxonu. Endpoint by navíc pouštěl i revizory nadřazených taxonů, správce projektů a autory/committery dávek u nezpracovaných záznamů – těm ale flag editační UI skryje (nesoulad viz [Zjištěné problémy a nesoulady](#zjištěné-problémy-a-nesoulady), detail v [rules_backend.md](./rules_backend.md)).
+- **Kdo smí editovat (podle flagu `canEditCommonFields`):** bulk editor, autor/committer dávky u nezpracovaných záznamů, mapAdmin, revizor taxonu (vč. nadřazených taxonů) a správce projektu záznamu. Flag zrcadlí kontrolu endpointu 1:1 (zdroj: `RecordEditPermissions`), navíc zohledňuje zámky – u zamčeného záznamu ani taxonu editace nepůjde.
 - **Endpoint:** `PATCH /api/react/atlas/record/:recordId` s `key`, `value` a `lastEditTimestampNum`.
 - **Související akce:** po úspěchu se aktualizuje lokální timestamp (kvůli dalším editacím téhož záznamu) a propaguje se rodičovi; kaskádové změny na serveru (např. reset `included_in_map`) se v UI zobrazí po refetchi.
 - Používáno v `RecordRemarks` (zdroj, poznámky, prostředí, detrev), `RecordFloristic` (taxon, autoři, herbaria, substráty…) i jinde.
 
 ### Přesun souřadnic (moveCoordinates)
 
-- Kliknutí do mapy (`RecordMap`) je aktivní jen při `canEdit`; navržená pozice se potvrdí tlačítkem, které pošle `POST /api/react/atlas/record/moveCoordinates` s novými souřadnicemi, GPS přesností a timestampem.
+- Kliknutí do mapy (`RecordMap`) je aktivní jen při `canEditCommonFields`; navržená pozice se potvrdí tlačítkem, které pošle `POST /api/react/atlas/record/moveCoordinates` s novými souřadnicemi, GPS přesností a timestampem.
 - Backend kontroly viz [rules_backend.md](./rules_backend.md) (Záznamy).
 
 ---
@@ -93,12 +93,12 @@ Komponenty v `PladiasRecordsTable` (používané v mapDetail, mapMain i search):
 
 | Komponenta | Pole | Endpoint | Viditelnost |
 |---|---|---|---|
-| `ValidationStatusCheckboxes` | `VALIDATION_STATUS` | `PATCH /atlas/record/:recordId` | jen `record.canEdit`; status `UNPROCESSED` je v nabídce jen pro `isMapAdmin` |
-| `OriginalityStatusIcons` | `ORIGINALITY_STATUS` | dto. | jen `canEdit` a jen u statusu `Accepted` |
-| `IncludeInMapCheckbox` | `INCLUDED_IN_MAP` | dto. | jen `canEdit` a jen u statusů `Uncertain`/`Accepted` |
-| `HerbariumQualityCheckbox` | `HERBARIUM_QUALITY` | dto. | jen `canEdit`, jen projekt „excerpce herbářů“ (ID 14), statusy `Uncertain`/`Declined`/`Accepted` |
+| `ValidationStatusCheckboxes` | `VALIDATION_STATUS` | `PATCH /atlas/record/:recordId` | jen `record.canEditValidationFields`; status `UNPROCESSED` je v nabídce jen pro `isMapAdmin` |
+| `OriginalityStatusIcons` | `ORIGINALITY_STATUS` | dto. | jen `canEditValidationFields` a jen u statusu `Accepted` |
+| `IncludeInMapCheckbox` | `INCLUDED_IN_MAP` | dto. | jen `canEditValidationFields` a jen u statusů `Uncertain`/`Accepted` |
+| `HerbariumQualityCheckbox` | `HERBARIUM_QUALITY` | dto. | jen `canEditValidationFields`, jen projekt „excerpce herbářů“ (ID 14), statusy `Uncertain`/`Declined`/`Accepted` |
 
-Vše probíhá přes hook `useRecordQuickUpdates` – optimistická změna, PATCH s timestampem, po úspěchu převzetí nového timestampu a (u validace/originality) refetch `GET /atlas/record/:recordId/mapFields`, aby UI zachytilo kaskádové změny (např. vynulování `included_in_map`). Toto chování kopíruje kaskády definované na backendu. Pozn.: `canEdit` v odpovědi `mapFields` se počítá jinak než v `RecordPladiasDto` (bez bulkEditora) – viz [Zjištěné problémy a nesoulady](#zjištěné-problémy-a-nesoulady).
+Vše probíhá přes hook `useRecordQuickUpdates` – optimistická změna, PATCH s timestampem, po úspěchu převzetí nového timestampu a (u validace/originality) refetch `GET /atlas/record/:recordId/mapFields`, aby UI zachytilo kaskádové změny (např. vynulování `included_in_map`). Toto chování kopíruje kaskády definované na backendu. Odpověď `mapFields` nese `canEditCommonFields`/`canEditValidationFields` počítané stejnou službou `RecordEditPermissions` jako detail záznamu, takže se práva po refetchi nemění.
 
 ---
 
@@ -106,7 +106,7 @@ Vše probíhá přes hook `useRecordQuickUpdates` – optimistická změna, PATC
 
 ### Vyhledávání (`SearchForm.tsx`)
 
-- **Kdo smí:** každý přihlášený uživatel s atlas modulem; výsledky obsahují `canEdit` per záznam, podle kterého se (i zde) řídí viditelnost rychlých editací.
+- **Kdo smí:** každý přihlášený uživatel s atlas modulem; výsledky obsahují `canEditCommonFields`/`canEditValidationFields` per záznam, podle kterých se (i zde) řídí viditelnost rychlých editací.
 - **Excel export:** tlačítko vidí všichni; titulek se liší podle `isMapAdmin` (plná data vs. omezená). Samotné omezení dělá backend (mapAdmin dostává větší export, ostatní potřebují přiřazený příspěvkový projekt).
 
 ### BulkEdit
@@ -130,7 +130,7 @@ Komponenty `RecordComments` (detail záznamu) a `AddCommentModal` (mapDetail, se
 | Editace textu | `PUT /atlas/record/comment/:id` | server flag `record.canResolveComments` (mapAdmin, revizor vč. nadřazených taxonů, správce projektu; **autor NIKOLIV**) | `isUserElligibleToEditEverything` – **shodné s resolve** |
 
 **Poznámky:**
-- Tlačítko „vyřešit“ se řídí serverovým příznakem `record.canResolveComments` z `GET /atlas/record/:id/full` (backend počítá `Record.isUserElligibleToEditEverything`, tedy stejnou kontrolu jako endpoint resolve) – frontend logiku nekopíruje, jen flag zobrazuje. Stejný příznak používá i tlačítko „upravit“ (editace textu komentáře), protože backend u `PUT /atlas/record/comment/:id` kontroluje tutéž podmínku.
+- Tlačítko „vyřešit“ se řídí serverovým příznakem `record.canResolveComments` z `GET /atlas/record/:id/full` (backend ho počítá službou `RecordEditPermissions`, která zrcadlí `Record.isUserElligibleToEditEverything`, tedy stejnou kontrolu jako endpoint resolve) – frontend logiku nekopíruje, jen flag zobrazuje. Stejný příznak používá i tlačítko „upravit“ (editace textu komentáře), protože backend u `PUT /atlas/record/comment/:id` kontroluje tutéž podmínku.
 - Stránka `NewComments` umožňuje komentáře pouze číst a označovat jako přečtené.
 
 ---
@@ -139,7 +139,7 @@ Komponenty `RecordComments` (detail záznamu) a `AddCommentModal` (mapDetail, se
 
 ### Import / ImportCSV (`/atlas/import`, `/atlas/importCSV`)
 
-- **Kdo smí:** frontend **nekontroluje žádnou roli** – formulář vidí každý přihlášený uživatel s atlas modulem.
+- **Kdo smí:** frontend **nekontroluje žádnou roli** – stránka je dostupná každému přihlášenému uživateli s atlas modulem; u importu CSV navíc jeho položku menu vidí jen `isAsyncImporter || isMapAdmin` (viz MainMenu), zatímco Excel import je v menu pro všechny.
 - Operace „validace“ jde na `POST /api/react/import/validate` (kdokoli přihlášený), operace „import“ na `POST /api/react/import/upload`, resp. `POST /api/react/import/csv`.
 - Právo importovat do zvoleného projektu (`canContributeInto`) kontroluje až backend – neautorizovaný import selže na serveru, frontend zobrazí chybu.
 
@@ -169,7 +169,7 @@ Stránka `/user/taxaAdministration/:taxonId?` – chráněná rolí `isTaxonAdmi
 
 **Související akce:** po každé změně se taxon znovu načte z backendu (pesimistický reload přes `refreshSelectedTaxon`); po vytvoření/přesunu dochází k přesměrování na nové/nadřazené taxonId.
 
-⚠️ Pozor na dvojici vizuálně stejných komponent: `TaxonInlineField` (editace taxonu, gate via route `isTaxonAdmin`) vs. `RecordInlineField` (editace záznamu, gate `record.canEdit`) – obě posílají PATCH se stejným vzorem (klíč, hodnota, timestamp), ale jejich oprávnění se kontrolují zcela jinde. Kolize nemohou, ale změna jednoho z nich snadno rozbije druhý.
+⚠️ Pozor na dvojici vizuálně stejných komponent: `TaxonInlineField` (editace taxonu, gate via route `isTaxonAdmin`) vs. `RecordInlineField` (editace záznamu, gate `record.canEditCommonFields`) – obě posílají PATCH se stejným vzorem (klíč, hodnota, timestamp), ale jejich oprávnění se kontrolují zcela jinde. Kolize nemohou, ale změna jednoho z nich snadno rozbije druhý.
 
 ---
 
@@ -181,7 +181,7 @@ Celý prefix `/atlasAdmin/*` je chráněn rolí `isMapAdmin` (a modulem atlas).
 
 - Tlačítko smazat u dávky nevolá DELETE, ale **mutující GET** `GET /api/react/atlasadmin/prepareBatchDelete/:batchId` – připraví smazání a pošle deleční kód e-mailem committerovi dávky.
 - Vlastní smazání (`deleteBatch/:batchId/password/:password`) se děje **mimo SPA** (odkaz v e-mailu), takže deleční kód frontend nikdy nezadává.
-- Backend u `prepareBatchDelete` kontroluje, že volající je committer dávky nebo mapAdmin (viz [rules_backend.md](./rules_backend.md), problém č. 4).
+- Backend u `prepareBatchDelete` kontroluje, že volající je committer dávky nebo mapAdmin (viz [rules_backend.md](./rules_backend.md), sekce Importy). Stránka je ve frontendu stejně za rolí mapAdmin, takže committer bez ní z UI na akci nedosáhne.
 
 ### ListOfUsers / MapUsers – správa práv uživatelů k mapám
 
@@ -197,7 +197,7 @@ Celý prefix `/atlasAdmin/*` je chráněn rolí `isMapAdmin` (a modulem atlas).
 Editační tabulka nastavení taxonů (`useTaxonUpdates`): `ISMAPPED`, `SETCOMMONTHRESHOLD`, `PUBLICATIONSTATUS`, `REVISIONSTATUS`, `MAPTYPE`, `REVISORSCOMMENT`, `REVISORSPRINTMAPCOMMENT`, `MAPADMINCOMMENT`, `PRESLIA`, `PROTECTED`, `PARENT_MAP` – vše přes jediný `POST /api/react/atlasadmin/taxonMapSettings` s `taxonId`, `key`, `value` a `timestamp` (optimistická konkurence, po úspěchu se vrací nový timestamp).
 
 - **Kdo smí ve frontendu:** jen mapAdmin (route + menu).
-- ⚠️ Backend kontroluje roli jen u `ISMAPPED`, `SETCOMMONTHRESHOLD` a `PUBLICATIONSTATUS` – u ostatních klíčů by operaci provedl každý přihlášený (viz [rules_backend.md](./rules_backend.md), problém č. 3). Frontend tedy riziko v UI skrývá, ale neodstraňuje.
+- ⚠️ Backend kontroluje roli jen u `ISMAPPED`, `SETCOMMONTHRESHOLD` a `PUBLICATIONSTATUS` – u ostatních klíčů by operaci provedl každý přihlášený (viz [rules_backend.md](./rules_backend.md), problém č. 1). Frontend tedy riziko v UI skrývá, ale neodstraňuje.
 - Změny `PUBLICATIONSTATUS`/`REVISIONSTATUS` na backendu spouštějí přechody stavů a e-mailové notifikace – frontend po nich jen refetchuje data.
 
 ---
@@ -211,13 +211,13 @@ Celý modul `/measurements/*` je chráněn **modulem instance**; u write operac�
 | `FeatureDetail` (upload) | upload/validace datové řady | `POST /api/react/measurement/trait` | traitAdmin nebo admin vlastnosti (Feature) | upload formulář (`TraitUpload`) jen při `feature.canAdminister`; jinak info hláška |
 | `TraitTable` (na FeatureDetail) | smazání datové řady | `DELETE /api/react/measurement/trait/:traitId` | traitAdmin/admin feature | tlačítko mazání jen při `feature.canAdminister` |
 | `TraitTable` | nastavení výchozí datové řady | `PUT /api/react/measurement/trait/:traitId/default` | traitAdmin/admin feature | radio jen při `feature.canAdminister` |
-| `Backup` | vytvoření zálohy | `POST /api/react/measurement/backup` | traitAdmin | route `requiredPermission="isTraitAdmin"` + položka menu jen pro `isTraitAdmin` |
+| `Backup` | vytvoření zálohy | `POST /api/react/measurement/backup` | traitAdmin | route `requiredRole="traitAdmin"` + položka menu jen pro `isTraitAdmin` |
 | `Export` | komplexní export | `POST /api/react/measurement/complexExport` | per-trait práva ke stažení (`isElligibleForTraitDownload`) | – (per-trait práva na serveru) |
 | `Settings` (uživatelské) | substituce traitů | `PUT /api/react/user/settings/:key` | přihlášený; sekce substitucí je ve FE zobrazena jen `isTraitAdmin` | `isTraitAdmin` |
 
 **Související akce:** po importu datové řady se tabulka řad reloadne; po smazání se znovu načte (mazání může změnit výchozí řadu); upload formulář nabízí výběr vlastníka (defaultně aktuální uživatel) ze seznamu `GET /api/react/users-minimal` – záměrně bez validace, vlastník je jen metadata (viz [intentional_quirks.md](./intentional_quirks.md)).
 
-**Read autorizace:** odkazy „stáhnout data“ / „detailní export“ u datových řad se řídí příznaky `canDownload`/`canExport` od serveru; datové řady s omezenou viditelností tak uživatel bez práv vidí, ale nemůže stahovat. (Dříve problém č. 3 – chybějící FE kontrola rolí; opraveno pomocí `canAdminister` a gate na `isTraitAdmin`.)
+**Read autorizace:** odkazy „stáhnout data“ / „detailní export“ u datových řad se řídí příznaky `canDownload`/`canExport` od serveru; datové řady s omezenou viditelností tak uživatel bez práv vidí, ale nemůže stahovat. (Historicky chybějící FE kontrola rolí byla opravena příznakem `canAdminister` a gatem na `isTraitAdmin`.)
 
 ---
 
@@ -226,7 +226,7 @@ Celý modul `/measurements/*` je chráněn **modulem instance**; u write operac�
 ### UsersAdministration (`/user/usersAdministration`) – role `isSysAdmin`
 
 - `UsersTable` – tabulka všech uživatelů včetně e-mailů a rolí; přepínání checkboxů (`mapAdmin`, `traitAdmin`, `sysAdmin`, `biblioAdmin`, `taxonAdmin`, `deleted`) posílá `PUT /api/react/users/:id`.
-- Shodné s backendem (sysAdmin). Poznámka: frontendový model uživatele roli `biblioAdmin` nezná (nikde jinde se nepoužívá), checkbox je jen v této tabulce.
+- Shodné s backendem (sysAdmin). Poznámka: role `biblioAdmin` je součástí FE typu `UserRole` (a getru `isBiblioAdmin`), ale kromě této tabulky se nikde jinde nepoužívá.
 
 ### AddUser (`/user/addUser`) – role `isSysAdmin`
 
@@ -249,7 +249,7 @@ Celý modul `/measurements/*` je chráněn **modulem instance**; u write operac�
 | Seznam uživatelů – jména (`GET /api/react/users-minimal`) | formulář uploadu traitů, hledání (nálezce/autoři) | **žádný** – každý přihlášený |
 | Data traitů (`/measurement/trait/download/...`) | odkazy v TraitTable | server flag `canDownload` |
 | Detailní export traitů | odkaz v TraitTable | server flag `canExport` |
-| Výsledky vyhledávání záznamů | SearchForm | každý přihlášený; obsah (citlivá pole, `canEdit`) určuje backend per záznam |
+| Výsledky vyhledávání záznamů | SearchForm | každý přihlášený; obsah (citlivá pole, `canEditCommonFields`/`canEditValidationFields`) určuje backend per záznam |
 | Historie a komentáře záznamu | Record.tsx | každý přihlášený |
 | Přehledy map (mapMain, mapDetail, PNG) | atlas | každý přihlášený s atlas modulem |
 | Downloads (`/downloads`) | DownloadsIndex | bez role (přihlášený) |

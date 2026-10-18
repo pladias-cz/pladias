@@ -147,6 +147,9 @@ const MainMenu = React.forwardRef<HTMLDivElement, MainMenuProps>(function MainMe
                 </Navbar.Collapse>
                 <Nav>
                     <ActiveDropdown title={userEmail} prefixes={["/user"]} align="end">
+                        {/* Logout must be a full-page href to the backend route GET /logout
+                            (invalidates the server session, backs up taxon tree, redirects to /login).
+                            A SPA route cannot log the user out – do not replace with NavLink. */}
                         <NavDropdown.Item as="a" href="/logout">{t("menu.user.logout")}</NavDropdown.Item>
                         <NavDropdown.Item as={NavLink}
                                           to="/user/changePassword">{t("menu.user.changePassword")}</NavDropdown.Item>

@@ -45,7 +45,6 @@ const FeatureDetail = lazy(() => import("./pages/measurements/./FeatureDetail.ts
 const DownloadsIndex = lazy(() => import("./pages/downloads/Index.tsx"));
 
 // User
-const Logout = lazy(() => import("./pages/user/Logout.jsx"));
 const ChangePassword = lazy(() => import("./pages/user/ChangePassword.jsx"));
 const ChangeEmail = lazy(() => import("./pages/user/ChangeEmail.jsx"));
 const Settings = lazy(() => import("./pages/user/Settings.jsx"));
@@ -254,8 +253,10 @@ export default function App() {
                                 </Route>
 
                                 {/* User routes - public (logged in users) */}
+                                {/* Logout is intentionally NOT a SPA route – it is handled by the backend
+                                    route GET /logout (controllers.Application.logout), which invalidates
+                                    the session and redirects to /login. MainMenu links to it via href. */}
                                 <Route path="user">
-                                    <Route path="logout" element={<Logout/>}/>
                                     <Route path="changePassword" element={<ChangePassword/>}/>
                                     <Route path="changeEmail" element={<ChangeEmail/>}/>
                                     <Route path="settings" element={<Settings/>}/>

@@ -73,11 +73,11 @@ Hlavní menu (`MainMenu.tsx`) nabízí odkazy konzistentně s routami: správa u
 
 ## Záznamy – detail záznamu
 
-Stránka `Record.tsx` načte záznam přes `GET /atlas/record/:recordId/full` (včetně `canEdit` a `lastEditTimestamp`) a její karty editují **pouze pokud `record.canEdit == true`** (hook `useRecordPermissions`).
+Stránka `Record.tsx` načte záznam přes `GET /atlas/record/:recordId/full` (včetně `canEdit` a `lastEditTimestamp`) a její karty editují **pouze pokud `record.canEdit == true`** (hook `useRecordPermissions`). Pozor: `canEdit` je zjednodušení serverových kontrol – viz [Zjištěné problémy a nesoulady](#zjištěné-problémy-a-nesoulady).
 
 ### Editovatelná pole (RecordInlineField, SingleSelectEdit, MultiSelectEdit)
 
-- **Kdo smí editovat:** každý, komu server nastavil `canEdit` (mapAdmin, bulk editor, revizor taxonu vč. nadřazených, správce projektu, autor/committer batche u nezpracovaného záznamu – viz backend).
+- **Kdo smí editovat (podle flagu):** mapAdmin, bulk editor, **přímý** revizor taxonu. Endpoint by navíc pouštěl i revizory nadřazených taxonů, správce projektů a autory/committery dávek u nezpracovaných záznamů – těm ale flag editační UI skryje (nesoulad viz [Zjištěné problémy a nesoulady](#zjištěné-problémy-a-nesoulady), detail v [rules_backend.md](./rules_backend.md)).
 - **Endpoint:** `PATCH /api/react/atlas/record/:recordId` s `key`, `value` a `lastEditTimestampNum`.
 - **Související akce:** po úspěchu se aktualizuje lokální timestamp (kvůli dalším editacím téhož záznamu) a propaguje se rodičovi; kaskádové změny na serveru (např. reset `included_in_map`) se v UI zobrazí po refetchi.
 - Používáno v `RecordRemarks` (zdroj, poznámky, prostředí, detrev), `RecordFloristic` (taxon, autoři, herbaria, substráty…) i jinde.
@@ -100,7 +100,7 @@ Komponenty v `PladiasRecordsTable` (používané v mapDetail, mapMain i search):
 | `IncludeInMapCheckbox` | `INCLUDED_IN_MAP` | dto. | jen `canEdit` a jen u statusů `Uncertain`/`Accepted` |
 | `HerbariumQualityCheckbox` | `HERBARIUM_QUALITY` | dto. | jen `canEdit`, jen projekt „excerpce herbářů“ (ID 14), statusy `Uncertain`/`Declined`/`Accepted` |
 
-Vše probíhá přes hook `useRecordQuickUpdates` – optimistická změna, PATCH s timestampem, po úspěchu převzetí nového timestampu a (u validace/originality) refetch `GET /atlas/record/:recordId/mapFields`, aby UI zachytilo kaskádové změny (např. vynulování `included_in_map`). Toto chování kopíruje kaskády definované na backendu.
+Vše probíhá přes hook `useRecordQuickUpdates` – optimistická změna, PATCH s timestampem, po úspěchu převzetí nového timestampu a (u validace/originality) refetch `GET /atlas/record/:recordId/mapFields`, aby UI zachytilo kaskádové změny (např. vynulování `included_in_map`). Toto chování kopíruje kaskády definované na backendu. Pozn.: `canEdit` v odpovědi `mapFields` se počítá jinak než v `RecordPladiasDto` (bez bulkEditora) – viz [Zjištěné problémy a nesoulady](#zjištěné-problémy-a-nesoulady).
 
 ---
 
@@ -263,7 +263,9 @@ Poznámka: „public“ routy (`/downloads`, `/user/docs`, Home) jsou veřejné 
 
 ## Zjištěné problémy a nesoulady
 
-- `RecordLocation` má kontrolu `canEdit` zakomentovanou – v současnosti neškodí (komponenta jen zobrazuje navrženou pozici; samotný přesun se potvrzuje v `Record.tsx`), ale je to past pro budoucí rozšíření.
+- **`canEdit` je zjednodušení serverových kontrol** (systémový nesoulad; kompletní analýza v [rules_backend.md – problém č. 4](./rules_backend.md)): celé editační UI (karty detailu záznamu, mapDetail checkboxy, přesun souřadnic) se řídí flagem `record.canEdit`, který server počítá jako `mapAdmin ∨ bulkEditor ∨ přímý revizor taxonu`. Endpointy přitom navíc pouští autory/committery dávek u nezpracovaných záznamů, revizory nadřazených taxonů a správce projektů – těm FE editaci neukáže, ačkoliv by ji backend přijal. Flag navíc ignoruje `isLocked()`/`isEditationAllowed()` (u zamčeného záznamu UI editaci nabídne a uložení vrátí 403).
+- **Drift `canEdit` v refetchi mapDetail:** bulkEditor v přehledech mapy editační checkboxy vidí, ale refetch `GET /atlas/record/:id/mapFields` po kaskádní změně (validace/originalita) vrací `canEdit` bez bulkEditora; výsledek se v `useRecordQuickUpdates` spreaduje do recordu, takže se editační ovládání po refreshi skryje, ačkoliv ho uživatel předtím měl.
+- `RecordLocation` má kontrolu `canEdit` zakomentovanou – v současnosti neškodí (komponenta jen zobrazuje navrženou pozici; samotný přesun se potvrzuje v `Record.tsx`), ale je to past pro budoucí rozšíření: rozkomentovat až po opravě sémantiky flagu (viz předchozí body).
 - `MainMenu` používá pro odhlášení odkaz `href="/logout"` (legacy route) a ignoruje existující routu `/user/logout`.
 - Hooky `useImportsActions`/`useImportControlsActions` obsahují nepoužitou akci `POST /importResult/${action}/${id}` („reserved for future use“) – v `conf/react.routes` takový obecný POST endpoint neexistuje; po napojení by volání padala na 404.
 - `TraitUpload` nabízí výběr vlastníka datové řady z `users-minimal` komukoli, kdo stránku vůbec vidí – výběr cizího vlastníka ale backend import nezastaví (vlastník je jen metadata).

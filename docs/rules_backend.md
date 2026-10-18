@@ -2,8 +2,9 @@
 
 **prompt:**
     připrav uživatelsky srozumitelné shrnutí chování backendu této aplikace při editacích. Vytvoř/aktualizuj tento markdown dokument, ve kterém bude popsáno chování JAVA backendu aplikace při editaci jakéhokoli pole v databázi. Začni u seznamu endpointů v conf/react.routes, vyber všechny post+put+delete+patch endpointy a ty zpracuj - kdo smí akci provést, zda to vyvolává nějaké související akce. Některé routy jsou velmi komplexní (jako POST /import/upload ), tak u těch stačí uvést jen kdo je smí zavolat.
-    Zahrň přehledovou tabulku změn záznamu které se zapisují do historie a které ne, uveď pokud se u některé editace záznamu nepoužívá concurrency control.
-    Zdůrazni pokud by někde byla editace možná bez kontroly oprávnění či by se ti zdál nesoulad mezi jednotlivými endpointy pracujícími se stejnými entitami, vezmi ale v potaz záměrné odchylky uvedené v intentional_quirks.md
+    GET routy zkontroluj také, uveď přehled které jsou dostupné bez přihlášení nebo u které se ti visibility nezdá v pořádku s ostatní logikou aplikace.
+    Zkontroluj že se všechny změny záznamů zapisují do historie a uveď pokud se u některé editace záznamu nepoužívá concurrency control.
+    Zdůrazni pokud by někde byla editace možná bez kontroly oprávnění či by se ti zdál nesoulad mezi jednotlivými endpointy pracujícími se stejnými entitami, vezmi ale v potaz [záměrné odchylky](intentional_quirks.md)
 
 ---
 

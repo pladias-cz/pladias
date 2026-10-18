@@ -635,6 +635,7 @@
     "close": "Zavřít",
     "description": "Popis",
     "download": "stáhnout",
+    "edit": "Upravit",
     "false": "false",
     "inlineField": {
       "add": "Přidat",
@@ -825,6 +826,7 @@
     "dateIso": "Datum (ISO)",
     "detrev": "Revize určení",
     "district": "Okres",
+    "editComment": "Upravit komentář",
     "environment": "Environment",
     "fetchError": "Nepodařilo se načíst záznam",
     "herbariumAbbrev": "Zkratka",

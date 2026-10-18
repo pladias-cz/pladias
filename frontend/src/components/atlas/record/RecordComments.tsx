@@ -1,6 +1,6 @@
 import {Card, Table, Row, Col, Spinner, Button, Modal, Form} from "react-bootstrap";
 import {useTranslation} from "react-i18next";
-import {fetchRecordComments, createComment, resolveComment, deleteComment} from "./recordService";
+import {fetchRecordComments, createComment, updateComment, resolveComment, deleteComment} from "./recordService";
 import type { RecordComment } from '@/models/RecordComment';
 import {useState, useEffect} from "react";
 import {useUser} from "@/context/UserContext";
@@ -17,6 +17,7 @@ export default function RecordComments({recordId, canResolveComments}: RecordCom
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [showModal, setShowModal] = useState(false);
+    const [editingComment, setEditingComment] = useState<RecordComment | null>(null);
     const [newComment, setNewComment] = useState("");
     const [submitting, setSubmitting] = useState(false);
     const [actionError, setActionError] = useState<string | null>(null);
@@ -40,6 +41,11 @@ export default function RecordComments({recordId, canResolveComments}: RecordCom
 
     // Permission checks (matching backend logic)
     const canEditComments = !!user;
+
+    // Updating a comment's text requires the same permission as resolving it
+    // (backend RecordCommentController.updateComment checks record.isUserElligibleToEditEverything,
+    // i.e. mapAdmin / taxon supervisor incl. parent taxa / project manager - NOT the comment author)
+    const canUpdateComment = canResolveComments;
 
     const canDeleteComment = (comment: RecordComment): boolean => {
         if (!user) return false;
@@ -67,8 +73,13 @@ export default function RecordComments({recordId, canResolveComments}: RecordCom
         setActionError(null);
         
         try {
-            await createComment(recordId, newComment.trim());
+            if (editingComment) {
+                await updateComment(editingComment.id, newComment.trim());
+            } else {
+                await createComment(recordId, newComment.trim());
+            }
             setNewComment("");
+            setEditingComment(null);
             setShowModal(false);
             // Refresh comments
             const data = await fetchRecordComments(recordId);
@@ -78,6 +89,18 @@ export default function RecordComments({recordId, canResolveComments}: RecordCom
         } finally {
             setSubmitting(false);
         }
+    };
+
+    const handleEditComment = (comment: RecordComment) => {
+        setEditingComment(comment);
+        setNewComment(comment.message ?? "");
+        setActionError(null);
+        setShowModal(true);
+    };
+
+    const handleCloseModal = () => {
+        setShowModal(false);
+        setEditingComment(null);
     };
 
     const handleResolveComment = async (commentId: number) => {
@@ -149,7 +172,11 @@ export default function RecordComments({recordId, canResolveComments}: RecordCom
                             <Button 
                                 variant="primary" 
                                 size="sm"
-                                onClick={() => setShowModal(true)}
+                                onClick={() => {
+                                    setEditingComment(null);
+                                    setNewComment("");
+                                    setShowModal(true);
+                                }}
                             >
                                 {t("record.addComment")}
                             </Button>
@@ -200,6 +227,17 @@ export default function RecordComments({recordId, canResolveComments}: RecordCom
                                             </td>
                                             {canEditComments && (
                                                 <td>
+                                                    {/* Edit button: same permission as resolve (mapAdmin / supervisor incl. parent taxa / project manager), NOT the comment author */}
+                                                    {canUpdateComment && (
+                                                        <Button
+                                                            variant="outline-primary"
+                                                            size="sm"
+                                                            className="me-1"
+                                                            onClick={() => handleEditComment(comment)}
+                                                        >
+                                                            {t("common.edit")}
+                                                        </Button>
+                                                    )}
                                                     {/* Resolve button: server-computed permission (mapAdmin / supervisor incl. parent taxa / project manager) */}
                                                     {!comment.resolved && canResolveComments && (
                                                         <Button
@@ -232,10 +270,10 @@ export default function RecordComments({recordId, canResolveComments}: RecordCom
                 </Card>
             </Col>
 
-            {/* Add Comment Modal */}
-            <Modal show={showModal} onHide={() => setShowModal(false)}>
+            {/* Add / Edit Comment Modal */}
+            <Modal show={showModal} onHide={handleCloseModal}>
                 <Modal.Header closeButton>
-                    <Modal.Title>{t("record.addComment")}</Modal.Title>
+                    <Modal.Title>{editingComment ? t("record.editComment") : t("record.addComment")}</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     <Form>
@@ -255,7 +293,7 @@ export default function RecordComments({recordId, canResolveComments}: RecordCom
                     </Form>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button variant="secondary" onClick={() => setShowModal(false)}>
+                    <Button variant="secondary" onClick={handleCloseModal}>
                         {t("common.cancel")}
                     </Button>
                     <Button 

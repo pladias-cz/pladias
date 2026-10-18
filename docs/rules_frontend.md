@@ -1,8 +1,8 @@
 # Chování React frontendu aplikace při editacích
 
 **prompt:**
-    připrav uživatelsky srozumitelné shrnutí chování frontednu této aplikace, zejména při editacích. Vytvoř/aktualizuj tento markdown dokument, ve kterém bude popsáno chování React frontendu aplikace při jakékoli write operaci - kdo smí akci provést, zda to vyvolává nějaké související akce. V řadě případů je podstatná i read autorizace - kdo smí stahovat data traitů, kdo vidí seznam uživatelů atp.
-    Zdůrazni pokud by někde byla editace možná bez kontroly oprávnění či by se ti zdál nesoulad mezi jendotlivými komponentami pracující se stejnými entitami.
+    připrav uživatelsky srozumitelné shrnutí chování frontendu této aplikace, zejména při editacích. Vytvoř/aktualizuj tento markdown dokument, ve kterém bude popsáno chování React frontendu aplikace při jakékoli write operaci - kdo smí akci provést, zda to vyvolává nějaké související akce. V řadě případů je podstatná i read autorizace - kdo smí stahovat data traitů, kdo vidí seznam uživatelů atp.
+    Zdůrazni pokud by někde byla editace možná bez kontroly oprávnění či by se ti zdál nesoulad mezi jednotlivými komponentami pracující se stejnými entitami.
 
 ---
 
@@ -129,10 +129,10 @@ Komponenty `RecordComments` (detail záznamu) a `AddCommentModal` (mapDetail, se
 | Vyřešení | `POST /atlas/record/comment/:id/resolve` | server flag `record.canResolveComments` (mapAdmin, revizor vč. nadřazených taxonů, správce projektu) | `isUserElligibleToEditEverything` (mapAdmin, revizor vč. nadřazených taxonů, správce projektu) – **shodné** |
 | Smazání | `DELETE /atlas/record/comment/:id` | autor komentáře (`comment.authorId == user.id`) **nebo** mapAdmin | autor NEBO mapAdmin – **shodné** |
 | Označit jako přečtené | `DELETE /atlas/record/comment-assoc/:commentId/linked-user/:boundUserId` | uživatel sám (odhlásí se z notifikací) | master admin nebo daný uživatel |
-| **Editace textu** | – | **ve frontendu není vůbec implementována** | backend `PUT /atlas/record/comment/:id` existuje, ale autor nesmí |
+| Editace textu | `PUT /atlas/record/comment/:id` | server flag `record.canResolveComments` (mapAdmin, revizor vč. nadřazených taxonů, správce projektu; **autor NIKOLIV**) | `isUserElligibleToEditEverything` – **shodné s resolve** |
 
 **Poznámky:**
-- Tlačítko „vyřešit“ se řídí serverovým příznakem `record.canResolveComments` z `GET /atlas/record/:id/full` (backend počítá `Record.isUserElligibleToEditEverything`, tedy stejnou kontrolu jako endpoint resolve) – frontend logiku nekopíruje, jen flag zobrazuje.
+- Tlačítko „vyřešit“ se řídí serverovým příznakem `record.canResolveComments` z `GET /atlas/record/:id/full` (backend počítá `Record.isUserElligibleToEditEverything`, tedy stejnou kontrolu jako endpoint resolve) – frontend logiku nekopíruje, jen flag zobrazuje. Stejný příznak používá i tlačítko „upravit“ (editace textu komentáře), protože backend u `PUT /atlas/record/comment/:id` kontroluje tutéž podmínku.
 - Stránka `NewComments` umožňuje komentáře pouze číst a označovat jako přečtené.
 
 ---
@@ -263,7 +263,6 @@ Poznámka: „public“ routy (`/downloads`, `/user/docs`, Home) jsou veřejné 
 
 ## Zjištěné problémy a nesoulady
 
-- **Editace komentáře neexistuje ve frontendu** – backend `PUT /atlas/record/comment/:id` nemá v UI obdobu. Je to konzistentní s tím, že autor komentář upravit nesmí, ale revize textu cizího komentáře tak v UI možná není vůbec (ani pro mapAdmina).
 - `RecordLocation` má kontrolu `canEdit` zakomentovanou – v současnosti neškodí (komponenta jen zobrazuje navrženou pozici; samotný přesun se potvrzuje v `Record.tsx`), ale je to past pro budoucí rozšíření.
 - `MainMenu` používá pro odhlášení odkaz `href="/logout"` (legacy route) a ignoruje existující routu `/user/logout`.
 - Hooky `useImportsActions`/`useImportControlsActions` obsahují nepoužitou akci `POST /importResult/${action}/${id}` („reserved for future use“) – v `conf/react.routes` takový obecný POST endpoint neexistuje; po napojení by volání padala na 404.

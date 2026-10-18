@@ -144,6 +144,32 @@ export async function createComment(recordId: number, message: string): Promise<
 }
 
 /**
+ * Update an existing comment
+ * @param commentId - The comment ID to update
+ * @param message - The new comment message
+ * @returns Promise with the updated comment data
+ */
+export async function updateComment(commentId: number, message: string): Promise<void> {
+    const response = await fetch(`/api/react/atlas/record/comment/${commentId}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ message }),
+    });
+
+    if (!response.ok) {
+        const result = await response.json();
+        throw new Error(result.error || `Failed to update comment: ${response.statusText}`);
+    }
+
+    const result = await response.json();
+    if (!result.success) {
+        throw new Error(result.error || 'Failed to update comment');
+    }
+}
+
+/**
  * Resolve a comment
  * @param commentId - The comment ID to resolve
  * @returns Promise with the resolved comment data

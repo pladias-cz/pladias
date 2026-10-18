@@ -91,4 +91,6 @@ export interface RecordPladias {
     
     // Edit permission
     canEdit: boolean;
+    // Comment resolve permission (computed by backend: isUserElligibleToEditEverything)
+    canResolveComments: boolean | null;
 }

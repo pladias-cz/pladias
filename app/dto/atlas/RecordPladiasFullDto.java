@@ -134,6 +134,9 @@ public record RecordPladiasFullDto(
     // Edit permission
     Boolean canEdit,
 
+    // Comment resolve permission (mirrors Record.isUserElligibleToEditEverything, used by RecordCommentController.resolveComment)
+    Boolean canResolveComments,
+
     // === EXTENDED FIELDS ===
 
     // Taxon details
@@ -378,6 +381,9 @@ public record RecordPladiasFullDto(
                 || (taxon != null && currentUser.getSupervisedTaxons().contains(taxon));
         }
 
+        // Compute canResolveComments using the same check the resolve endpoint performs
+        Boolean canResolveComments = currentUser != null && record.isUserElligibleToEditEverything(currentUser);
+
         return new RecordPladiasFullDto(
             record.getId(), record.getLatitude(), record.getLongitude(), gpsPrecision, gpsCoordsSource,
             year, datePrecision, dateIso, taxonOriginal,
@@ -399,7 +405,7 @@ public record RecordPladiasFullDto(
             record.getSource(), record.getOriginalId(), licenseId, licenseName,
             projectId, projectName, institutionName, record.isLocked(), record.isIncludedInMap(),
             record.getLastEditTimestamp(), batch != null ? batch.getCreateTimestamp() : null,
-            canEdit,
+            canEdit, canResolveComments,
             taxonDto, recordAuthorsDto, batchDto, biblioDto, nearestTownLegacyDto,
             mapSquaresDto, quadrantsDto, licenseDto);
     }

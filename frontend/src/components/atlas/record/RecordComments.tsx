@@ -7,10 +7,10 @@ import {useUser} from "@/context/UserContext";
 
 interface RecordCommentsProps {
     recordId: number;
-    recordTaxonId?: number; // For permission checks
+    canResolveComments: boolean; // Server-computed flag (backend: Record.isUserElligibleToEditEverything)
 }
 
-export default function RecordComments({recordId, recordTaxonId}: RecordCommentsProps) {
+export default function RecordComments({recordId, canResolveComments}: RecordCommentsProps) {
     const {t} = useTranslation();
     const user = useUser();
     const [comments, setComments] = useState<RecordComment[]>([]);
@@ -40,20 +40,6 @@ export default function RecordComments({recordId, recordTaxonId}: RecordComments
 
     // Permission checks (matching backend logic)
     const canEditComments = !!user;
-    
-    const canResolveComment = (comment: RecordComment): boolean => {
-        if (!user) return false;
-        if (comment.resolved) return false;
-        if (!recordTaxonId) return false;
-        
-        // Match backend: isUserElligibleToEditEverything
-        // 1. MapAdmin can resolve anything
-        if (user.isMapAdmin) return true;
-        
-        // 2. User must be a supervisor of THIS specific taxon (not just any TaxonAdmin)
-        // Note: isTaxonAdmin alone is NOT enough - they must supervise this taxon
-        return user.supervisedTaxonIds.includes(recordTaxonId);
-    };
 
     const canDeleteComment = (comment: RecordComment): boolean => {
         if (!user) return false;
@@ -214,8 +200,8 @@ export default function RecordComments({recordId, recordTaxonId}: RecordComments
                                             </td>
                                             {canEditComments && (
                                                 <td>
-                                                    {/* Resolve button: only for users with elevated permissions (MapAdmin/TaxonAdmin/supervisor) */}
-                                                    {!comment.resolved && canResolveComment(comment) && (
+                                                    {/* Resolve button: server-computed permission (mapAdmin / supervisor incl. parent taxa / project manager) */}
+                                                    {!comment.resolved && canResolveComments && (
                                                         <Button
                                                             variant="success"
                                                             size="sm"

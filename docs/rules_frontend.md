@@ -126,14 +126,13 @@ Komponenty `RecordComments` (detail záznamu) a `AddCommentModal` (mapDetail, se
 | Akce | Endpoint | Kdo ji ve frontendu vidí | Backend |
 |---|---|---|---|
 | Vytvoření | `POST /atlas/record/comment` | každý přihlášený (modal jen testuje existenci `user`) | každý přihlášený ke každému záznamu |
-| Vyřešení | `POST /atlas/record/comment/:id/resolve` | mapAdmin, **nebo** uživatel, jehož `supervisedTaxonIds` obsahuje taxon záznamu | `isUserElligibleToEditEverything` (mapAdmin, revizor vč. nadřazených taxonů, správce projektu) |
+| Vyřešení | `POST /atlas/record/comment/:id/resolve` | server flag `record.canResolveComments` (mapAdmin, revizor vč. nadřazených taxonů, správce projektu) | `isUserElligibleToEditEverything` (mapAdmin, revizor vč. nadřazených taxonů, správce projektu) – **shodné** |
 | Smazání | `DELETE /atlas/record/comment/:id` | autor komentáře (`comment.authorId == user.id`) **nebo** mapAdmin | autor NEBO mapAdmin – **shodné** |
 | Označit jako přečtené | `DELETE /atlas/record/comment-assoc/:commentId/linked-user/:boundUserId` | uživatel sám (odhlásí se z notifikací) | master admin nebo daný uživatel |
 | **Editace textu** | – | **ve frontendu není vůbec implementována** | backend `PUT /atlas/record/comment/:id` existuje, ale autor nesmí |
 
 **Poznámky:**
-- Frontendová kontrola „vyřešit“ (`canResolveComment`) backendovou logiku **zrcadlí jen částečně** – viz [problém č. 5](#5-canresolvecomment-je-restriktivnější-než-backend).
-- `Record.tsx` renderuje `<RecordComments recordId={record.id} />` bez volitelného propu `recordTaxonId`, takže na detailu záznamu nemůže podmínka pro běžného revizora vyjít vůbec (jen mapAdmin).
+- Tlačítko „vyřešit“ se řídí serverovým příznakem `record.canResolveComments` z `GET /atlas/record/:id/full` (backend počítá `Record.isUserElligibleToEditEverything`, tedy stejnou kontrolu jako endpoint resolve) – frontend logiku nekopíruje, jen flag zobrazuje.
 - Stránka `NewComments` umožňuje komentáře pouze číst a označovat jako přečtené.
 
 ---
@@ -264,17 +263,11 @@ Poznámka: „public“ routy (`/downloads`, `/user/docs`, Home) jsou veřejné 
 
 ## Zjištěné problémy a nesoulady
 
-### 1. canResolveComment je restriktivnější než backend
-
-Frontend povolí tlačítko „vyřešit“ jen mapAdminovi nebo uživateli, jehož `supervisedTaxonIds` přímo obsahuje taxon záznamu. Backend `POST /comment/:id/resolve` pustí navíc revizory nadřazených taxonů a správce projektu záznamu (`isUserElligibleToEditEverything`). Jde o nesoulad v bezpečném směru (UI skrývá akci oprávněným uživatelům), ale je nekonzistentní. K tomu `Record.tsx` nepředává `recordTaxonId`, takže na detailu záznamu nemůže podmínka vyjít pro běžného revizora vůbec. Související mrtvý kód: `useRecordPermissions.canEditComments`/`canEditComment` nejsou reálně použity a jsou zavádějící (nic smysluplného nekontrolují).
-
-### 2. Ostatní drobnosti
-
 - **Editace komentáře neexistuje ve frontendu** – backend `PUT /atlas/record/comment/:id` nemá v UI obdobu. Je to konzistentní s tím, že autor komentář upravit nesmí, ale revize textu cizího komentáře tak v UI možná není vůbec (ani pro mapAdmina).
 - `RecordLocation` má kontrolu `canEdit` zakomentovanou – v současnosti neškodí (komponenta jen zobrazuje navrženou pozici; samotný přesun se potvrzuje v `Record.tsx`), ale je to past pro budoucí rozšíření.
 - `MainMenu` používá pro odhlášení odkaz `href="/logout"` (legacy route) a ignoruje existující routu `/user/logout`.
 - Hooky `useImportsActions`/`useImportControlsActions` obsahují nepoužitou akci `POST /importResult/${action}/${id}` („reserved for future use“) – v `conf/react.routes` takový obecný POST endpoint neexistuje; po napojení by volání padala na 404.
-- `TraitUpload` nabízí výběr vlastníka datové řady z `users-minimal` komukoli, kdo stránku vůbec vidí (viz problém č. 2) – výběr cizího vlastníka ale backend import nezastaví (vlastník je jen metadata).
+- `TraitUpload` nabízí výběr vlastníka datové řady z `users-minimal` komukoli, kdo stránku vůbec vidí – výběr cizího vlastníka ale backend import nezastaví (vlastník je jen metadata).
 
 ---
 

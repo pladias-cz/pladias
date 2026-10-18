@@ -232,7 +232,7 @@ export default function Record() {
                 </Col>
             </Row>
             <Row className="mb-4">
-                <RecordComments recordId={record.id}/>
+                <RecordComments recordId={record.id} canResolveComments={record.canResolveComments ?? false}/>
                 <RecordHistory recordId={record.id}/>
             </Row>
         </Container>

@@ -217,7 +217,7 @@ Celý modul `/measurements/*` je chráněn **modulem instance**; u write operac�
 | `Export` | komplexní export | `POST /api/react/measurement/complexExport` | per-trait práva ke stažení (`isElligibleForTraitDownload`) | – (per-trait práva na serveru) |
 | `Settings` (uživatelské) | substituce traitů | `PUT /api/react/user/settings/:key` | přihlášený; sekce substitucí je ve FE zobrazena jen `isTraitAdmin` | `isTraitAdmin` |
 
-**Související akce:** po importu datové řady se tabulka řad reloadne; po smazání se znovu načte (mazání může změnit výchozí řadu); upload formulář nabízí výběr vlastníka (defaultně aktuální uživatel) ze seznamu `GET /api/react/users-minimal`.
+**Související akce:** po importu datové řady se tabulka řad reloadne; po smazání se znovu načte (mazání může změnit výchozí řadu); upload formulář nabízí výběr vlastníka (defaultně aktuální uživatel) ze seznamu `GET /api/react/users-minimal` – záměrně bez validace, vlastník je jen metadata (viz [intentional_quirks.md](./intentional_quirks.md)).
 
 **Read autorizace:** odkazy „stáhnout data“ / „detailní export“ u datových řad se řídí příznaky `canDownload`/`canExport` od serveru; datové řady s omezenou viditelností tak uživatel bez práv vidí, ale nemůže stahovat. (Dříve problém č. 3 – chybějící FE kontrola rolí; opraveno pomocí `canAdminister` a gate na `isTraitAdmin`.)
 
@@ -266,7 +266,6 @@ Poznámka: „public“ routy (`/downloads`, `/user/docs`, Home) jsou veřejné 
 - **`canEdit` je zjednodušení serverových kontrol** (systémový nesoulad; kompletní analýza v [rules_backend.md – problém č. 4](./rules_backend.md)): celé editační UI (karty detailu záznamu, mapDetail checkboxy, přesun souřadnic) se řídí flagem `record.canEdit`, který server počítá jako `mapAdmin ∨ bulkEditor ∨ přímý revizor taxonu`. Endpointy přitom navíc pouští autory/committery dávek u nezpracovaných záznamů, revizory nadřazených taxonů a správce projektů – těm FE editaci neukáže, ačkoliv by ji backend přijal. Flag navíc ignoruje `isLocked()`/`isEditationAllowed()` (u zamčeného záznamu UI editaci nabídne a uložení vrátí 403).
 - **Drift `canEdit` v refetchi mapDetail:** bulkEditor v přehledech mapy editační checkboxy vidí, ale refetch `GET /atlas/record/:id/mapFields` po kaskádní změně (validace/originalita) vrací `canEdit` bez bulkEditora; výsledek se v `useRecordQuickUpdates` spreaduje do recordu, takže se editační ovládání po refreshi skryje, ačkoliv ho uživatel předtím měl.
 - `RecordLocation` má kontrolu `canEdit` zakomentovanou – v současnosti neškodí (komponenta jen zobrazuje navrženou pozici; samotný přesun se potvrzuje v `Record.tsx`), ale je to past pro budoucí rozšíření: rozkomentovat až po opravě sémantiky flagu (viz předchozí body).
-- `TraitUpload` nabízí výběr vlastníka datové řady z `users-minimal` komukoli, kdo stránku vůbec vidí – výběr cizího vlastníka ale backend import nezastaví (vlastník je jen metadata).
 
 ---
 

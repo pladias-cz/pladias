@@ -39,7 +39,7 @@ public class ConfigController extends ControllerBase {
         config.put("isSysAdmin", currentUser.isSysAdmin());
         config.put("isTraitAdmin", currentUser.isTraitAdmin());
         config.put("isTaxonAdmin", currentUser.isTaxonAdmin());
-        config.put("isBulkEditor", (currentUser.isMapAdmin() || UserUtils.getBulkImporter().getId() == currentUser.getId()));
+        config.put("isBulkEditor", currentUser.isMapAdmin() || UserUtils.isBulkEditor(currentUser));
         config.put("isAsyncImporter", UserUtils.isAsyncImporter(currentUser));
         config.put("userEmail", currentUser.getEmail());
 

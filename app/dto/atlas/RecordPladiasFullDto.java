@@ -6,6 +6,7 @@ import geom.Coordinates;
 import models.*;
 import models.Record;
 import models.biblio.Bibliography;
+import utils.UserUtils;
 
 import java.sql.Timestamp;
 import java.util.List;
@@ -370,10 +371,11 @@ public record RecordPladiasFullDto(
             licenseDto = new LicenseDto(license.getId(), license.getKey(), license.getDescription());
         }
 
-        // Compute canEdit based on user permissions (same logic as in RecordUpdateController.isElligibleForRecordValidation)
+        // Compute canEdit based on user permissions (must mirror Record.isUserElligibleToEditCommonFields, incl. bulk editor)
         Boolean canEdit = false;
         if (currentUser != null) {
-            canEdit = currentUser.isMapAdmin() || (taxon != null && currentUser.getSupervisedTaxons().contains(taxon));
+            canEdit = currentUser.isMapAdmin() || UserUtils.isBulkEditor(currentUser)
+                || (taxon != null && currentUser.getSupervisedTaxons().contains(taxon));
         }
 
         return new RecordPladiasFullDto(

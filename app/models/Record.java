@@ -9,6 +9,7 @@ import io.ebean.SqlRow;
 import jakarta.persistence.*;
 import models.biblio.Bibliography;
 import models.nonvascular.NonVascularRecordExtension;
+import utils.UserUtils;
 
 import java.sql.Timestamp;
 import java.util.*;
@@ -786,6 +787,13 @@ public class Record extends Model {
      * Uživatel smí záznam upravovat (nikoli semafor)
      */
     public boolean isUserElligibleToEditCommonFields(User user) {
+        if (user == null)
+            return false;
+
+        // Bulk editor may edit all editable fields of records (but shares no other mapAdmin competences)
+        if (UserUtils.isBulkEditor(user))
+            return true;
+
         if (getBatch().getAuthor() == null) {
             //we have seen that Batch was not always properly populated
             getBatch().refresh();

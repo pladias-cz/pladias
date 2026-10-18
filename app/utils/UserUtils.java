@@ -85,6 +85,18 @@ public class UserUtils {
         return User.find().byId(utils.ConfigHelper.getLong(ProjectConstants.BulkEditsUserKey));
     }
 
+    /**
+     * Bulk editor (special user configured via user.BulkImporter) may edit all editable fields of records,
+     * including validation (semaphore) fields, but shares none of the other mapAdmin competences
+     * (project assignment, taxon map settings, comment resolution, ...).
+     */
+    public static boolean isBulkEditor(User user) {
+        if (user == null || user.getId() == null || !ConfigHelper.hasKey(ProjectConstants.BulkEditsUserKey)) {
+            return false;
+        }
+        return user.getId() == ConfigHelper.getLong(ProjectConstants.BulkEditsUserKey);
+    }
+
     public static boolean isAsyncImporter(User user) {
         List<User> importers = getAsyncImporters();
         return importers.stream().anyMatch((candiate) -> candiate.getEmail().equals(user.getEmail()));

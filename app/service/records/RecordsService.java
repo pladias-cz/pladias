@@ -19,6 +19,7 @@ import play.i18n.Messages;
 import service.config.IConfigService;
 import service.phytochorion.PhytochorionService;
 import utils.PhytoUtils;
+import utils.UserUtils;
 
 import javax.inject.Inject;
 import java.util.ArrayList;
@@ -746,7 +747,7 @@ public class RecordsService {
     }
 
     private boolean isElligibleForRecordValidation(User user, Record record) {
-        return user.isMapAdmin() || isSupervised(record.getTaxon(), user);
+        return user.isMapAdmin() || UserUtils.isBulkEditor(user) || isSupervised(record.getTaxon(), user);
     }
 
     /**

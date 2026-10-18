@@ -101,9 +101,7 @@ public class SearchController extends ControllerBase {
         SearchForm form = searchForm.get();
         form.projects = retrieveProjectsFromRequest(request);
         User currentUser = SessionUtils.getCurrentUser(request.session());
-        User bulkImporter = UserUtils.getBulkImporter();
-        boolean isBulkEditUser = bulkImporter != null && Objects.equals(bulkImporter.getId(), currentUser.getId());
-        if (!currentUser.isMapAdmin() && !isBulkEditUser) {
+        if (!currentUser.isMapAdmin() && !UserUtils.isBulkEditor(currentUser)) {
             return forbidden(JsonResult.error("User not authorized to call searchRecordEditTimestamps"));
         }
 

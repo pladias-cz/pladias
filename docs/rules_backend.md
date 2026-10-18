@@ -38,11 +38,11 @@ Tento dokument popisuje chování aplikace při editaci dat v databázi. Jsou zd
 **Kdo smí provést:**
 - Uživatel musí být přihlášen (`@Security.Authenticated(Authorized.class)` na úrovni třídy)
 - Záznam musí existovat
-- **Poznámka:** kontrola `isElligibleForRecordValidation` (tj. `user.isMapAdmin()` nebo uživatel je revizorem daného taxonu) se v controlleru aplikuje na **všechna** pole včetně běžných (v kódu označeno `//TODO fix`) – viz [problém č. 1](#1-patch-atlasrecordrecordid--příliš-restriktivní-kontrola-oprávnění)
-- Následně musí platit `record.isUserElligibleToEditCommonFields(currentUser)`:
+- Musí platit `record.isUserElligibleToEditCommonFields(currentUser)`:
   - autor nebo committer batche, pokud je `validationStatus == Unprocessed`, **NEBO**
+  - bulk editor (`UserUtils.isBulkEditor` – speciální uživatel `user.BulkImporter`; smí editovat všechna pole záznamů, ale nesdílí žádné další mapAdmin kompetence), **NEBO**
   - `isUserElligibleToEditEverything(currentUser)` vrátí `true` (mapAdmin, revizor taxonu nebo jeho nadřazených taxonů, správce projektu záznamu)
-- Pro validační pole (`VALIDATION_STATUS`, `ORIGINALITY_STATUS`, `HERBARIUM_QUALITY`, `INCLUDED_IN_MAP`, `ENVIRONMENT`, `DETREV`, `REMARK_EXCERPTION`, `REMARK_OTHER`, `REMARK_DOUBT`) se **v service** (`RecordsService.editField`) ještě jednou kontroluje `isElligibleForRecordValidation` – mapAdmin nebo revizor taxonu
+- Pro validační pole (`VALIDATION_STATUS`, `ORIGINALITY_STATUS`, `HERBARIUM_QUALITY`, `INCLUDED_IN_MAP`, `ENVIRONMENT`, `DETREV`, `REMARK_EXCERPTION`, `REMARK_OTHER`, `REMARK_DOUBT`) se **v service** (`RecordsService.editField`) ještě jednou kontroluje `isElligibleForRecordValidation` – mapAdmin, bulk editor nebo revizor taxonu
 
 **Podmínky editace:**
 - Záznam nesmí být uzamčen: `record.isLocked() == false`
@@ -83,12 +83,12 @@ Tento dokument popisuje chování aplikace při editaci dat v databázi. Jsou zd
 
 **Kdo smí provést:**
 - Přihlášený uživatel, u kterého `record.isUserElligibleToEditCommonFields(currentUser)` vrátí `true`:
-  - autor/committer batche, pokud je záznam `Unprocessed`, **NEBO** mapAdmin / revizor / správce projektu
-- ⚠️ Na rozdíl od `editField` se zde **nekontroluje** `isElligibleForRecordValidation` ani `record.isLocked()` – viz [problém č. 1](#1-patch-atlasrecordrecordid--příliš-restriktivní-kontrola-oprávnění)
+  - autor/committer batche, pokud je záznam `Unprocessed`, **NEBO** bulk editor, **NEBO** mapAdmin / revizor / správce projektu
+- Přesun není na rozdíl od `editField` omezen `isElligibleForRecordValidation` (nejde o semaforová pole), ale `record.isLocked()` se kontroluje stejně jako u `editField`.
 
 **Podmínky editace:**
 - Klient musí poslat aktuální `lastEditTimestampNum` (jinak 409)
-- `record.isEditationAllowed() == true`
+- `record.isLocked() == false`, `record.isEditationAllowed() == true`
 
 **Související akce:**
 - Přepočet fytochorionu a kvadrantů po změně souřadnic
@@ -257,7 +257,7 @@ Pozor – mazání importních dávek je implementováno přes **GET** routy, kt
 ### POST `/atlas/search/records-edit-timestamps` – Edit-timestampy záznamů pro hromadnou editaci (`SearchController.searchRecordEditTimestamps`)
 
 **Kdo smí provést:**
-- `user.isMapAdmin()` **nebo** uživatel je tzv. bulk importer (`UserUtils.getBulkImporter()`)
+- `user.isMapAdmin()` **nebo** uživatel je tzv. bulk editor (`UserUtils.isBulkEditor(user)`, tj. speciální uživatel `user.BulkImporter`)
 - Slouží k přednačtení `edit_timestamp` záznamů před hromadnou editací (koncurenční kontrola); maximálně 1000 záznamů
 
 ---
@@ -571,23 +571,15 @@ Třída `SynonymController` je anotována `@Security.Authenticated(AuthorizedAsT
 
 ## Zjištěné problémy s oprávněními a nesoulady
 
-### 1. PATCH `/atlas/record/:recordId` – příliš restriktivní kontrola oprávnění
-
-V `RecordUpdateController.editField` se kontrola `isElligibleForRecordValidation` (mapAdmin / revizor taxonu) aplikuje na **všechny editované pole**, včetně běžných („common“) polí, a to **před** kontrolou `isUserElligibleToEditCommonFields`. V kódu je to označeno `//TODO fix` s komentářem, že by se mělo rozlišit, kdo smí editovat common pole vs. validační (semafor).
-
-Důsledek: **autor importu dnes nemůže přes PATCH editovat ani běžná pole vlastního záznamu ve stavu `Unprocessed`**, přestože `isUserElligibleToEditCommonFields` to explicitně umožňuje, a service (`RecordsService.editField`) si pro common pole žádnou revizorskou kontrolu nevyžaduje (kontrolu validace dělá jen pro validační pole).
-
-Nesoulad potvrzuje i **POST `/atlas/record/moveCoordinates`**, který u téhož záznamu kontroluje pouze `isUserElligibleToEditCommonFields` – autor importu si tak může záznam přesunout na mapě, ale nemůže změnit např. lokalitu textově. `moveRecordCoords` také nekontroluje `record.isLocked()`.
-
-### 2. POST `/atlasadmin/taxonMapSettings` – většina polí bez kontroly oprávnění
+### 1. POST `/atlasadmin/taxonMapSettings` – většina polí bez kontroly oprávnění
 
 Controller vyžaduje jen přihlášení; `verifyCurrentUserIsMapAdmin` se volá pouze u klíčů `ISMAPPED`, `SETCOMMONTHRESHOLD` a `PUBLICATIONSTATUS`. Klíče `MAPTYPE`, `REVISORSCOMMENT`, `REVISORSPRINTMAPCOMMENT`, `MAPADMINCOMMENT`, `PRESLIA`, `PROTECTED` a `PARENT_MAP` může měnit **libovolný přihlášený uživatel** (stačí znát aktuální timestamp). U `REVISIONSTATUS` se nekontroluje revizorská role – non-mapAdmin může posunout status o krok vpřed u libovolného taxonu.
 
-### 4. Editace komentářů bez explicitní concurrency kontroly
+### 2. Editace komentářů bez explicitní concurrency kontroly
 
 Komentářové endpointy (PUT/DELETE/resolve) nekontrolují žádný `lastEditTimestamp` od klienta – klient verzi komentáře vůbec neposílá. Jedinou ochranu proti souběžné editaci je `@Version` na `RecordComment` (editace zastaralé verze selže DB výjimkou, kterou controller vrátí jako obecnou chybu). U `DELETE /atlas/record/comment-assoc/:commentId/linked-user/:boundUserId` se asociace maže raw SQL zcela bez jakékoliv kontroly verze.
 
-### 5. Ostatní drobnosti
+### 3. Ostatní drobnosti
 
 - `MapReportsController.assignUserTaxon` nese `// TODO - should be really for all users available?` - není jisté zda má být pracovní CSV ap. k dispozici všem uživatelům
 

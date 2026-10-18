@@ -8,6 +8,7 @@ import models.Taxon;
 import models.User;
 import models.nonvascular.NonVascularRecordExtension;
 import utils.ConfigHelper;
+import utils.UserUtils;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -356,10 +357,11 @@ public record RecordPladiasDto(
         String quadrantsCodes = allSquaresAndQuadrants.isEmpty() ? null
             : allSquaresAndQuadrants.stream().collect(Collectors.joining(", "));
 
-        // Compute canEdit based on user permissions (same logic as in RecordUpdateController.isElligibleForRecordValidation)
+        // Compute canEdit based on user permissions (must mirror Record.isUserElligibleToEditCommonFields, incl. bulk editor)
         Boolean canEdit = false;
         if (!disableEditing && currentUser != null) {
-            canEdit = currentUser.isMapAdmin() || (taxon != null && currentUser.getSupervisedTaxons().contains(taxon));
+            canEdit = currentUser.isMapAdmin() || UserUtils.isBulkEditor(currentUser)
+                || (taxon != null && currentUser.getSupervisedTaxons().contains(taxon));
         }
 
         // Get nonvascular extension only if the app is configured for nonvascular

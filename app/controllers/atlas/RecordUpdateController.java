@@ -71,14 +71,8 @@ public class RecordUpdateController extends ControllerBase {
             return forbidden(JsonResult.error(messages.at("RecordEditController.taxonIsLockedDueToMapPreviewGeneration")));
         }
 
-
-        //TODO fix
-//        zde se potřebuje nějak rozlišit že ten kdo to miportoval ho může dokud je šedý editovat - to jsou ty common
-//        a naopak semafor atp mohou dělat jen admin + revizoři. Přijde mi že by to mělo být až v service,zatím ale nechám i tady a přes sebe
-        if (!isElligibleForRecordValidation(currentUser, record)) {
-            return forbidden(JsonResult.error(messages.at("Atlas.noRightsForRecordValidation")));
-        }
-
+        // Common fields are governed by isUserElligibleToEditCommonFields, validation (semaphore) fields
+        // are additionally checked by isElligibleForRecordValidation in RecordsService.editField.
         if (!record.isUserElligibleToEditCommonFields(currentUser)) {
             return forbidden(JsonResult.error(messages.at("RecordEditController.userNotAllowed")));
         }
@@ -170,12 +164,16 @@ public class RecordUpdateController extends ControllerBase {
         }
 
 
+        if (record.isLocked()) {
+            return forbidden(JsonResult.error(messages.at("RecordEditController.recordIsLocked")));
+        }
+
         if (!record.isUserElligibleToEditCommonFields(currentUser)) {
-            return ok(JsonResult.error(messages.at("RecordEditController.userNotAllowed")));
+            return forbidden(JsonResult.error(messages.at("RecordEditController.userNotAllowed")));
         }
 
         if (!record.isEditationAllowed()) {
-            return ok(JsonResult.error(messages.at("RecordEditController.taxonIsLockedDueToMapPreviewGeneration")));
+            return forbidden(JsonResult.error(messages.at("RecordEditController.taxonIsLockedDueToMapPreviewGeneration")));
         }
 
         var result = recordsService.moveRecordCoords(record, currentUser, latitude, longitude, gpsPrecision, lastEditTimestamp, messages);
@@ -192,12 +190,4 @@ public class RecordUpdateController extends ControllerBase {
         return ok(jsonResult).withHeader(CONTENT_LANGUAGE, "cs");
     }
 
-    private boolean isElligibleForRecordValidation(User user, Record record) {
-        return user.isMapAdmin() || isSupervised(record.getTaxon(), user);
-    }
-
-    private boolean isSupervised(models.Taxon t, User user) {
-        if (t == null || user == null) return false;
-        return user.getSupervisedTaxons().contains(t);
-    }
 }

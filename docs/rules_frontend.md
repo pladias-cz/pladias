@@ -77,7 +77,7 @@ Stránka `Record.tsx` načte záznam přes `GET /atlas/record/:recordId/full` (v
 
 ### Editovatelná pole (RecordInlineField, SingleSelectEdit, MultiSelectEdit)
 
-- **Kdo smí editovat:** každý, komu server nastavil `canEdit` (mapAdmin, revizor taxonu vč. nadřazených, správce projektu, autor/committer batche u nezpracovaného záznamu – viz backend).
+- **Kdo smí editovat:** každý, komu server nastavil `canEdit` (mapAdmin, bulk editor, revizor taxonu vč. nadřazených, správce projektu, autor/committer batche u nezpracovaného záznamu – viz backend).
 - **Endpoint:** `PATCH /api/react/atlas/record/:recordId` s `key`, `value` a `lastEditTimestampNum`.
 - **Související akce:** po úspěchu se aktualizuje lokální timestamp (kvůli dalším editacím téhož záznamu) a propaguje se rodičovi; kaskádové změny na serveru (např. reset `included_in_map`) se v UI zobrazí po refetchi.
 - Používáno v `RecordRemarks` (zdroj, poznámky, prostředí, detrev), `RecordFloristic` (taxon, autoři, herbaria, substráty…) i jinde.
@@ -113,10 +113,9 @@ Vše probíhá přes hook `useRecordQuickUpdates` – optimistická změna, PATC
 
 ### BulkEdit
 
-- **Kdo smí:** panel se zobrazí jen pro `user.isMapAdmin || user.isBulkEditor` (shodné s backendovým `POST /atlas/search/records-edit-timestamps`).
+- **Kdo smí:** panel se zobrazí jen pro `user.isMapAdmin || user.isBulkEditor` (shodné s backendovým `POST /atlas/search/records-edit-timestamps`). BulkEditor má na backendu právo upravit **všechna editovatelná pole záznamu** (běžná i validační), narozdíl od mapAdmina ale nesdílí žádné jeho další kompetence (přiřazování projektů uživatelům, taxonMapSettings, řešení komentářů…).
 - **Průběh:** nejdřív `POST /atlas/search/records-edit-timestamps` (načtení verzí vyfiltrovaných záznamů, max. 1000 záznamů), poté se změny aplikují **po jednom záznamu** přes `PATCH /atlas/record/:recordId` (přesnost souřadnic, datum, fytochorion, lokalita, nejbližší město, zdroj, poznámka, nálezce, taxon, validační status) nebo hromadný přesun přes `POST /atlas/record/moveCoordinates`.
 - **Související akce:** průběh + souhrn úspěchů/chyb per záznam; po dokončení refresh výsledků vyhledávání.
-- ⚠️ Viz [problém č. 4](#4-bulkedit-viditelný-pro-isbulkeditor-ale-backend-patch-vyžaduje-revizorská-oprávnění).
 
 ---
 
@@ -265,15 +264,11 @@ Poznámka: „public“ routy (`/downloads`, `/user/docs`, Home) jsou veřejné 
 
 ## Zjištěné problémy a nesoulady
 
-### 1. BulkEdit viditelný pro isBulkEditor, ale backend PATCH vyžaduje revizorská oprávnění
-
-Panel hromadné editace se zobrazí pro `isMapAdmin || isBulkEditor` a vstupní endpoint (`records-edit-timestamps`) backend pustí stejným uživatelům. Samotné ukládání ale probíhá per záznam přes `PATCH /atlas/record/:recordId`, kde backend (kvůli `//TODO fix`) kontroluje `isElligibleForRecordValidation` (mapAdmin/revizor taxonu) **i u běžných polí**. BulkEditor bez těchto rolí tak funkci vidí, ale každá změna končí chybou. (Podrobnosti v [rules_backend.md](./rules_backend.md), problém č. 1 – na frontendu se problém projeví jako série chybových hlášení v souhrnu BulkEditu.)
-
-### 2. canResolveComment je restriktivnější než backend
+### 1. canResolveComment je restriktivnější než backend
 
 Frontend povolí tlačítko „vyřešit“ jen mapAdminovi nebo uživateli, jehož `supervisedTaxonIds` přímo obsahuje taxon záznamu. Backend `POST /comment/:id/resolve` pustí navíc revizory nadřazených taxonů a správce projektu záznamu (`isUserElligibleToEditEverything`). Jde o nesoulad v bezpečném směru (UI skrývá akci oprávněným uživatelům), ale je nekonzistentní. K tomu `Record.tsx` nepředává `recordTaxonId`, takže na detailu záznamu nemůže podmínka vyjít pro běžného revizora vůbec. Související mrtvý kód: `useRecordPermissions.canEditComments`/`canEditComment` nejsou reálně použity a jsou zavádějící (nic smysluplného nekontrolují).
 
-### 3. Ostatní drobnosti
+### 2. Ostatní drobnosti
 
 - **Editace komentáře neexistuje ve frontendu** – backend `PUT /atlas/record/comment/:id` nemá v UI obdobu. Je to konzistentní s tím, že autor komentář upravit nesmí, ale revize textu cizího komentáře tak v UI možná není vůbec (ani pro mapAdmina).
 - `RecordLocation` má kontrolu `canEdit` zakomentovanou – v současnosti neškodí (komponenta jen zobrazuje navrženou pozici; samotný přesun se potvrzuje v `Record.tsx`), ale je to past pro budoucí rozšíření.
@@ -289,7 +284,7 @@ Frontend povolí tlačítko „vyřešit“ jen mapAdminovi nebo uživateli, jeh
 Rychlé editace záznamů (validace, originalita, herbarium, include-in-map) a nastavení map taxonů dělají optimistickou změnu stavu a při chybě ji vrací; po úspěchu si přebírají nový timestamp z odpovědi serveru. Detail záznamu si timestamp propaguje mezi kartami, aby souběžné editace různých polí jednoho záznamu na sobě nevyhazovaly konflikt 409.
 
 ### Kam se autorizace ve frontendu nezapisuje
-Frontend nemá žádnou centrální tabulku oprávnění – role se kontrolují na třech místech (ProtectedRoute, MainMenu, podmíněné renderování v komponentách) a k tomu přistupují serverové příznaky v datech (`canEdit` apod.). Při přidávání nové write operace je proto nutné zkontrolovat všechna tři místa; opomenutí vede k situacím typu problémů č. 1–2.
+Frontend nemá žádnou centrální tabulku oprávnění – role se kontrolují na třech místech (ProtectedRoute, MainMenu, podmíněné renderování v komponentách) a k tomu přistupují serverové příznaky v datech (`canEdit` apod.). Při přidávání nové write operace je proto nutné zkontrolovat všechna tři místa.
 
 ### Srovnání s backendem
 Kde frontend a backend sedí (mazání komentářů, správa uživatelských rolí v UsersAdministration, `records-edit-timestamps`, `assignUserTaxon`), je to dáno tím, že FE gate kopíruje backend kontrolu. Většina nesouladů plyne z toho, že FE role je odvozená od „kdo by měl funkci vidět“, zatímco backend kontroluje konkrétní endpoint – viz [Zjištěné problémy](#zjištěné-problémy-a-nesoulady) a [rules_backend.md](./rules_backend.md).

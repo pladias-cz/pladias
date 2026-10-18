@@ -276,6 +276,3 @@ Rychlé editace záznamů (validace, originalita, herbarium, include-in-map) a n
 
 ### Kam se autorizace ve frontendu nezapisuje
 Frontend nemá žádnou centrální tabulku oprávnění – role se kontrolují na třech místech (ProtectedRoute, MainMenu, podmíněné renderování v komponentách) a k tomu přistupují serverové příznaky v datech (`canEdit` apod.). Při přidávání nové write operace je proto nutné zkontrolovat všechna tři místa.
-
-### Srovnání s backendem
-Kde frontend a backend sedí (mazání komentářů, správa uživatelských rolí v UsersAdministration, `records-edit-timestamps`, `assignUserTaxon`), je to dáno tím, že FE gate kopíruje backend kontrolu. Většina nesouladů plyne z toho, že FE role je odvozená od „kdo by měl funkci vidět“, zatímco backend kontroluje konkrétní endpoint – viz [Zjištěné problémy](#zjištěné-problémy-a-nesoulady) a [rules_backend.md](./rules_backend.md).

@@ -3,9 +3,11 @@ package controllers.atlas;
 import app.dto.atlas.RecordOriginalityStatusDto;
 import app.dto.atlas.RecordValidationStatusDto;
 import controllers.ControllerBase;
+import controllers.security.Authorized;
 import models.RecordOriginalityStatus;
 import models.RecordValidationStatus;
 import play.mvc.Result;
+import play.mvc.Security;
 import utils.JsonResult;
 
 import java.util.Comparator;
@@ -15,6 +17,7 @@ import java.util.stream.Collectors;
 /**
  * Controller for providing record status information.
  */
+@Security.Authenticated(Authorized.class)
 public class RecordStatusController extends ControllerBase {
 
     /**

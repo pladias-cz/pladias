@@ -2,6 +2,7 @@ package controllers.common;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import controllers.ControllerBase;
+import controllers.security.Authorized;
 import controllers.security.AuthorizedAsSysAdmin;
 import dto.PlayMessageDto;
 import models.PlayMessage;
@@ -15,6 +16,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@Security.Authenticated(Authorized.class)
 public class PlayMessageController extends ControllerBase {
 
     /**

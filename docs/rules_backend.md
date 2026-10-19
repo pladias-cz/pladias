@@ -637,11 +637,6 @@ Existují **dva duplicitní controllery** – `controllers.TemporaryFilesProvide
 
 `controllers.GeoServer` postrádá anotaci – v kódu je zakomentované `//@Security.Authenticated(Secured.class)`. Oba endpointy jsou tak přístupné **bez přihlášení** a předávají libovolné GET parametry internímu GeoServeru (WMS/WFS dotazy nad mapovými vrstvami); `/geoserver2` navíc zapisuje `UserActivity.GeoserverWfsQuery` pro neautentizované requesty.
 
-### 4. Statusové číselníky pod `/atlasadmin/*` a překlady `/playmessage/*` bez přihlášení
-
-- `controllers.atlas.MapStatusController` (`GET /atlasadmin/revision-statuses`, `GET /atlasadmin/publication-statuses`) a `controllers.atlas.RecordStatusController` (`GET /atlasadmin/record-originality-statuses`, `GET /atlasadmin/record-validation-statuses`) nemají žádnou anotaci – vrací obsah číselníků veřejně. Nízká závažnost (jen slovníky), ale nekonzistentní: u ostatních endpointů s prefixem `/atlasadmin` se čeká kontrola mapAdmin.
-- `controllers.common.PlayMessageController` (`GET /playmessage/*`) je rovněž veřejný – včetně `GET /playmessage/all/all-languages`, které dumpuje celou tabulku překladů.
-
 ---
 
 ## Poznámky
@@ -681,5 +676,5 @@ Některé akce (změna publication/revision status, přiřazení revizora, uploa
 Autentizaci zajišťuje `@Security.Authenticated` s třídami `Authorized` (přihlášený), `AuthorizedAsSysAdmin` (sysAdmin) a `AuthorizedAsTaxonAdmin` (taxonAdmin) – kombinace s `@With(Authorized.class)` na úrovni controlleru. Další kontroly (`isMapAdmin`, `supervises`, `canContributeInto`, `isUserElligibleToEditEverything` apod.) se provádějí ručně uvnitř action metod / services – v tom je i příčina výše popsaných nekonzistencí.
 
 Výjimkou z tohoto schématu jsou:
-- **Controllery bez jakékoli anotace** – `GeoServer`, `TemporaryFilesProvider`/`TemporaryFilesProviderController`, `PlayMessageController`, `MapStatusController`, `RecordStatusController` (viz problémy 2–4).
+- **Controllery bez jakékoli anotace** – `GeoServer`, `TemporaryFilesProvider`/`TemporaryFilesProviderController` (viz problémy 2–3); dříve i `PlayMessageController`, `MapStatusController`, `RecordStatusController` (problém 4 – nyní za `Authorized`).
 - **`controllers.api.Map`** (`GET /api/pngMap/:taxonId`, `GET /api/csvMapDetails/:taxonId`, `GET /api/renderMap/...`) – používá samostatný mechanismus `@TokenAuthenticated` (`BearerAuthAction`): vyžaduje platný Bearer API token (vytváří se přes `POST /user/createToken`), ale žádné další kontroly rolí – stačí platný token libovolného uživatele.

@@ -3,9 +3,11 @@ package controllers.atlas;
 import app.dto.atlas.PublicationStatusDto;
 import app.dto.atlas.RevisionStatusDto;
 import controllers.ControllerBase;
+import controllers.security.Authorized;
 import models.PublicationStatus;
 import models.RevisionStatus;
 import play.mvc.Result;
+import play.mvc.Security;
 import utils.JsonResult;
 
 import java.util.Comparator;
@@ -15,6 +17,7 @@ import java.util.stream.Collectors;
 /**
  * Controller for providing map status information (revision and publication statuses).
  */
+@Security.Authenticated(Authorized.class)
 public class MapStatusController extends ControllerBase {
 
     /**

@@ -69,7 +69,7 @@ GET /atlasadmin/publication-statuses          controllers.atlas.MapStatusControl
 GET /occurrence/projects                      controllers.atlas.ProjectsController.getAll(request: Request)
 
 GET   /atlasadmin/imports                controllers.atlas.MapAdminImportController.getImports(request: Request)
-GET   /occurrence/imports/:id                 controllers.atlas.UploadExcel.downloadDecorated(id: Long)
+GET   /occurrence/imports/:id                 controllers.atlas.UploadExcel.downloadDecorated(request: Request, id: Long)
 GET   /atlasadmin/downloadBatchModified/:batchId    controllers.atlas.MapAdminImportController.downloadBatchModified(request: Request, batchId: Long)
 GET   /atlasadmin/prepareBatchDelete/:batchId       controllers.atlas.MapAdminImportController.prepareDeletion(request: Request, batchId: Long)
 GET   /atlasadmin/deleteBatch/:batchId/password/:password  controllers.atlas.MapAdminImportController.completeDeletion(request: Request, batchId: Long, password: String)

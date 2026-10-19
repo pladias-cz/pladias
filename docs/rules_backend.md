@@ -232,6 +232,18 @@ Přehled všech mutujících endpointů z hlediska auditu změn a ochrany proti 
 
 ---
 
+### GET `/occurrence/imports/:id` – Stažení dekorovaného importního Excelu (`UploadExcel.downloadDecorated`)
+
+**Kdo smí provést:**
+- Autor dávky (`batch.author`, resp. `batch.committer` – u novějších dávek se obě pole plní uploadujícím uživatelem, u legacy dat se `author` doplňuje `batch.refresh()`) nebo mapAdmin
+
+**Chování:**
+- Neexistující `id` → `404`; neoprávněný uživatel → `403` (`UploadExcel.notAuthorized`)
+- Návratová hodnota: binární soubor (`application/x-download`), filename dle stavu dávky (`imported` vs. dekorovaná verze)
+
+---
+
+
 ### ➕ Mutující GET endpointy u importů (`MapAdminImportController`)
 
 Pozor – mazání importních dávek je implementováno přes **GET** routy, které mění databázi:
@@ -629,10 +641,6 @@ Existují **dva duplicitní controllery** – `controllers.TemporaryFilesProvide
 
 - `controllers.atlas.MapStatusController` (`GET /atlasadmin/revision-statuses`, `GET /atlasadmin/publication-statuses`) a `controllers.atlas.RecordStatusController` (`GET /atlasadmin/record-originality-statuses`, `GET /atlasadmin/record-validation-statuses`) nemají žádnou anotaci – vrací obsah číselníků veřejně. Nízká závažnost (jen slovníky), ale nekonzistentní: u ostatních endpointů s prefixem `/atlasadmin` se čeká kontrola mapAdmin.
 - `controllers.common.PlayMessageController` (`GET /playmessage/*`) je rovněž veřejný – včetně `GET /playmessage/all/all-languages`, které dumpuje celou tabulku překladů.
-
-### 5. `GET /occurrence/imports/:id` – stažení cizího importního Excelu
-
-`controllers.atlas.UploadExcel.downloadDecorated` vyžaduje jen přihlášení (`Authorized`) a v kódu je přímo TODO: „chybí kontrola že daný uživatel ho smí stáhnout!“. Libovolný přihlášený uživatel tak může opsat `id` a stáhnout dekorovaný soubor cizí importní dávky.
 
 ---
 

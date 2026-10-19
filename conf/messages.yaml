@@ -88,6 +88,7 @@ UploadExcel:
     validatesCsvFileEmailSubject: Výsledek validace importního souboru {0}
     importCsvFileEmailSubject: Výsledek importu souboru {0}
     importCsvFileEmailContentsSuccess: Soubor {0} byl úspěšně importován pod batch ID {1}.
+    notAuthorized: Nemáte oprávnění stáhnout tento soubor.
     importCsvFileEmailContentsFailure: Soubor {0} se nepodařilo importovat. Detail chyby "{1}".
 
 ImportResultsController:

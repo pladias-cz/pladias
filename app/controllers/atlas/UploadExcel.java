@@ -2,11 +2,15 @@ package controllers.atlas;
 
 import controllers.ControllerBase;
 import controllers.security.Authorized;
+import models.Batch;
 import models.Excel;
+import models.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import play.mvc.Http;
 import play.mvc.Result;
 import play.mvc.Security;
+import utils.SessionUtils;
 
 @Security.Authenticated(Authorized.class)
 public class UploadExcel extends ControllerBase {
@@ -15,19 +19,32 @@ public class UploadExcel extends ControllerBase {
     final Logger logger = LoggerFactory.getLogger(UploadExcel.class);
 
 
-    public Result downloadDecorated(Long id) {
-        /**
-         * TODO chybí kontrola že daný uživatel ho smí stáhnout!
-         */
+    public Result downloadDecorated(Http.Request request, Long id) {
         Excel excel = Excel.find().byId(id);
-        if (excel != null) {
-            excel.refresh();
-            String filename = excel.getBatch().getImported() ? excel.getImportedFilename() : excel.getVersionDecoratedFilename();
-            return ok(excel.getProcessedFileInputStream())
-                .withHeader("Content-disposition", "attachment; filename=" + filename)
-                .as("application/x-download");
+        if (excel == null) {
+            return notFound();
         }
-        return ok("Unable to retrieve excel #" + id);
+
+        Batch batch = excel.getBatch();
+        if (batch != null && batch.getAuthor() == null) {
+            //legacy data - Batch was not always properly populated (see RecordEditPermissions)
+            batch.refresh();
+        }
+
+        User currentUser = SessionUtils.getCurrentUser(request.session());
+        boolean isAuthor = batch != null && batch.getAuthor() != null
+            && batch.getAuthor().getId().equals(currentUser.getId());
+        boolean isCommitter = batch != null && batch.getCommitter() != null
+            && batch.getCommitter().getId().equals(currentUser.getId());
+        if (!isAuthor && !isCommitter && !currentUser.isMapAdmin()) {
+            return forbidden(getMessages(request).at("UploadExcel.notAuthorized"));
+        }
+
+        excel.refresh();
+        String filename = excel.getBatch().getImported() ? excel.getImportedFilename() : excel.getVersionDecoratedFilename();
+        return ok(excel.getProcessedFileInputStream())
+            .withHeader("Content-disposition", "attachment; filename=" + filename)
+            .as("application/x-download");
     }
 
 

@@ -746,6 +746,7 @@
       "changePassword": "Změna hesla",
       "docs": "Dokumentace",
       "logout": "Odhlásit se",
+      "playMessages": "Editace textů aplikace",
       "settings": "Nastavení aplikace",
       "taxaAdministration": "Správa taxonů",
       "usersAdministration": "Správa uživatelů"
@@ -1075,6 +1076,20 @@
       "title": "Změna hesla",
       "tokenCreated": "Token (zkopírujte si ho, nebude více dostupný):",
       "tokenError": "Při vytváření tokenu došlo k chybě."
+    },
+    "playMessages": {
+      "error": "Při ukládání textů došlo k chybě.",
+      "language": "Jazyk",
+      "language_cs": "česky",
+      "language_en": "anglicky",
+      "language_pl": "polsky",
+      "language_sk": "slovensky",
+      "loading": "Načítám texty...",
+      "networkError": "Chyba připojení k serveru.",
+      "submit": "Uložit",
+      "submitting": "Ukládám...",
+      "success": "Texty byly úspěšně uloženy.",
+      "title": "Editace textů aplikace"
     },
     "settings": {
       "applicationLanguage": "Jazyk aplikace",

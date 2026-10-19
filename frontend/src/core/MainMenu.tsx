@@ -170,6 +170,8 @@ const MainMenu = React.forwardRef<HTMLDivElement, MainMenuProps>(function MainMe
                                                   to="/user/usersAdministration">{t("menu.user.usersAdministration")}</NavDropdown.Item>
                                 <NavDropdown.Item as={NavLink}
                                                   to="/user/addUser">{t("menu.user.addUser")}</NavDropdown.Item>
+                                <NavDropdown.Item as={NavLink}
+                                                  to="/user/playMessages">{t("menu.user.playMessages")}</NavDropdown.Item>
                             </>
                         )}
                         <NavDropdown.Divider/>

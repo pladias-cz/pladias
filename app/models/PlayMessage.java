@@ -5,6 +5,11 @@ import io.ebean.Model;
 import jakarta.persistence.*;
 import models.types.LanguageCode;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Table(name = PlayMessage.QualifiedTableName)
 public class PlayMessage extends Model {
@@ -35,6 +40,27 @@ public class PlayMessage extends Model {
             .eq("key", key)
             .raw("language = ?::language_code", language)
             .findOne();
+    }
+
+    /**
+     * Klíče všech konstant zpráv (statická pole String končící na "_KEY").
+     * Jediný zdroj pravdy pro sysAdmin editor textů – nově přidaná konstanta se v něm objeví automaticky.
+     */
+    public static List<String> getConstantKeys() {
+        List<String> keys = new ArrayList<>();
+        for (Field field : PlayMessage.class.getDeclaredFields()) {
+            if (field.getType() == String.class
+                && field.getName().endsWith("_KEY")
+                && Modifier.isStatic(field.getModifiers())
+                && Modifier.isFinal(field.getModifiers())) {
+                try {
+                    keys.add((String) field.get(null));
+                } catch (IllegalAccessException ignored) {
+                    // unreachable for public fields
+                }
+            }
+        }
+        return keys;
     }
 
     public long getId() {

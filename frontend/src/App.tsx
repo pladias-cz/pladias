@@ -51,6 +51,7 @@ const Settings = lazy(() => import("./pages/user/Settings.jsx"));
 const UsersAdministration = lazy(() => import("./pages/user/UsersAdministration.jsx"));
 const TaxaAdministration = lazy(() => import("./pages/user/TaxaAdministration.jsx"));
 const AddUser = lazy(() => import("./pages/user/AddUser.jsx"));
+const PlayMessages = lazy(() => import("./pages/user/PlayMessages"));
 const Docs = lazy(() => import("./pages/user/Docs.jsx"));
 
 
@@ -265,6 +266,11 @@ export default function App() {
                                     <Route path="addUser" element={
                                         <ProtectedRoute requiredRole="sysAdmin">
                                             <AddUser/>
+                                        </ProtectedRoute>
+                                    }/>
+                                    <Route path="playMessages" element={
+                                        <ProtectedRoute requiredRole="sysAdmin">
+                                            <PlayMessages/>
                                         </ProtectedRoute>
                                     }/>
                                     <Route path="docs" element={<Docs/>}/>

@@ -14,8 +14,6 @@ GET     /login                      controllers.Application.login(request: Reque
 GET     /logout                     controllers.Application.logout(request: Request)
 POST    /login                      controllers.Application.authenticate(request: Request)
 
-GET     /tempfiles/download/:fileId   controllers.TemporaryFilesProvider.download(request: Request, fileId: Integer)
-
 # React UI
 ->    /api/react            react.Routes
 GET   /                     controllers.Application.index(request: Request, path = "")

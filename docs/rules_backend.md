@@ -629,9 +629,14 @@ Třída `SynonymController` je anotována `@Security.Authenticated(AuthorizedAsT
 
 Controller vyžaduje jen přihlášení; `verifyCurrentUserIsMapAdmin` se volá pouze u klíčů `ISMAPPED`, `SETCOMMONTHRESHOLD` a `PUBLICATIONSTATUS`. Klíče `MAPTYPE`, `REVISORSCOMMENT`, `REVISORSPRINTMAPCOMMENT`, `MAPADMINCOMMENT`, `PRESLIA`, `PROTECTED` a `PARENT_MAP` může měnit **libovolný přihlášený uživatel** (stačí znát aktuální timestamp). U `REVISIONSTATUS` se nekontroluje revizorská role – non-mapAdmin může posunout status o krok vpřed u libovolného taxonu.
 
-### 2. `GET /tempfiles/download/:fileId` a `GET /api/react/tempfiles/:fileId` – stažení dočasného souboru bez přihlášení
+### 2. `GET /api/react/tempfiles/:fileId` – dočasné soubory bez kontroly vlastníka (částečně vyřešeno)
 
-Existují **dva duplicitní controllery** – `controllers.TemporaryFilesProvider` (routa v `conf/routes`) i `controllers.common.TemporaryFilesProviderController` (routa v `conf/react.routes`) – a ani jeden nemá anotaci `@Security.Authenticated`. Endpoint je tedy **veřejný**: `fileId` je sekvenční integer, takže neautentizovaný návštěvník může enumerací stahovat cizí dočasné soubory (exporty apod.), které se navíc po stažení **smažou** (DoS – spolupráci uživatelům nelze soubor „vzít“ dřív).
+  Chybí kontrola vlastníka – `fileId` je sekvenční integer bez vazby na uživatele, takže si **libovolný přihlášený uživatel** může enumerací stáhnout cizí dočasné soubory (jediné místo vzniku je `TraitUploadService.serializeWorkbook` – anotovaný workbook po neúspěšné validaci/importu vlastností, jehož download URL dostává uživatel ve zprávě `TraitsController.ValidationFailed`/`ImportFailed`). Soubor se po stažení smaže, takže ho útočník „vzetím“ zničí dřív, než si ho stáhne oprávněný uživatel (DoS).
+
+Budoucí dořešení (odloženo – vyžaduje změnu DB, evoluce jsou v `conf/common.conf` vypnuté a DDL se provádí ručně): přidat do `public.temporary_files` sloupec `owner bigint` (odkaz na `public.users`), ukládat do něj v `TraitUploadService.serializeWorkbook` aktuálního uživatele a v downloadu vracet soubor jen vlastníkovi (cizí i neexistující soubory by měly odpovídat stejnou zprávou, aby existence cizích id nic neprozrazovala):
+```sql
+ALTER TABLE public.temporary_files ADD COLUMN owner bigint;
+```
 
 ---
 
@@ -672,5 +677,4 @@ Některé akce (změna publication/revision status, přiřazení revizora, uploa
 Autentizaci zajišťuje `@Security.Authenticated` s třídami `Authorized` (přihlášený), `AuthorizedAsSysAdmin` (sysAdmin) a `AuthorizedAsTaxonAdmin` (taxonAdmin) – kombinace s `@With(Authorized.class)` na úrovni controlleru. Další kontroly (`isMapAdmin`, `supervises`, `canContributeInto`, `isUserElligibleToEditEverything` apod.) se provádějí ručně uvnitř action metod / services – v tom je i příčina výše popsaných nekonzistencí.
 
 Výjimkou z tohoto schématu jsou:
-- **Controllery bez jakékoli anotace** – `TemporaryFilesProvider`/`TemporaryFilesProviderController` (viz problém 2); dříve i `GeoServer`, `PlayMessageController`, `MapStatusController`, `RecordStatusController` (problémy 3–4 – nyní za `Authorized`).
 - **`controllers.api.Map`** (`GET /api/pngMap/:taxonId`, `GET /api/csvMapDetails/:taxonId`, `GET /api/renderMap/...`) – používá samostatný mechanismus `@TokenAuthenticated` (`BearerAuthAction`): vyžaduje platný Bearer API token (vytváří se přes `POST /user/createToken`), ale žádné další kontroly rolí – stačí platný token libovolného uživatele.

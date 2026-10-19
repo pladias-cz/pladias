@@ -1177,5 +1177,11 @@
       "traitAdmin": "Trait Admin",
       "waitToClose": "Počkejte na zavření..."
     }
+  },
+  "unauthorized":
+  {
+    "title": "Nemáte přístup",
+    "message": "K této části aplikace nemáte přístup.",
+    "goBack": "Zpět na předchozí stránku"
   }
 }

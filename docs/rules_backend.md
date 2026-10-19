@@ -380,6 +380,44 @@ Třída `SynonymController` je anotována `@Security.Authenticated(AuthorizedAsT
 
 ---
 
+### GET `/measurement/trait/download/:traitId/lang/:language` – Stažení Excelu vlastnosti (`TraitExportController.downloadTraitData`)
+
+**Kdo smí provést:**
+- Přihlášení + `UserUtils.isElligibleForTraitDownload(user, trait)` – traitAdmin, trait Public/Registered, nebo admin feature
+
+---
+
+### GET `/measurement/trait/downloadByFeature/:featureId/lang/:language` – Veřejné stažení trait dat (`TraitExportController.downloadTraitDataByFeature`)
+
+**Kdo smí provést:**
+- **Bez přihlášení** (endpoint pro pladias.cz); omezeno na **public traity** – `TraitDownloadService.findPublicTraitForFeature` vrací jen nesmazaný trait s `VisibilityStatus` Public (preferuje výchozí datovou řadu), stejnou podmínku kontroluje i controller (defense in depth)
+
+**Související akce:**
+- Neautentizovaný download se nezapisuje do `UserActivity`
+
+---
+
+### GET `/measurement/trait/downloadAttachment/:traitId` – Stažení přílohy vlastnosti (`TraitExportController.downloadAttachment`)
+
+**Kdo smí provést:**
+- Přihlášení + `UserUtils.isElligibleForTraitDownload(user, trait)` – gateováno stejně jako `downloadTraitData`
+
+---
+
+### GET `/measurement/trait/export/:traitId` – Detailní export vlastnosti (`TraitExportController.exportTrait`)
+
+**Kdo smí provést:**
+- Přihlášení + `UserUtils.isElligibleForTraitDownload(user, trait)`
+
+---
+
+### GET `/measurement/backup/:id` – Stažení záložního snapshotu (`TraitExportController.downloadSnapshot`)
+
+**Kdo smí provést:**
+- `AccessRightsService` pro `AccessRights.TraitBackup` – tj. `user.isTraitAdmin()`
+
+---
+
 ## Nastavení map taxonů (TaxonMapSettings)
 
 ### POST `/atlasadmin/taxonMapSettings` – Editace polí nastavení mapy taxonu (`TaxonMapSettingsController.updateMapSettings`)
@@ -595,11 +633,6 @@ Existují **dva duplicitní controllery** – `controllers.TemporaryFilesProvide
 ### 5. `GET /occurrence/imports/:id` – stažení cizího importního Excelu
 
 `controllers.atlas.UploadExcel.downloadDecorated` vyžaduje jen přihlášení (`Authorized`) a v kódu je přímo TODO: „chybí kontrola že daný uživatel ho smí stáhnout!“. Libovolný přihlášený uživatel tak může opsat `id` a stáhnout dekorovaný soubor cizí importní dávky.
-
-### 6. `TraitExportController` – nekonzistentní kontroly u stahování trait dat
-
-- `downloadTraitDataByFeature` je **záměrně bez autentizace** (komentář „intentionally NOT secured – as it is accessed from pladias.cz“), ale není vůbec **routnutý** (v `conf/routes` ani `conf/react.routes` chybí) – jde o mrtvý kód. Při případném zroutování by umožnil stahovat trait data podle `featureId` bez přihlášení.
-- `downloadAttachment` (`GET /measurement/trait/downloadAttachment/:traitId`) vyžaduje jen přihlášení – na rozdíl od `exportTrait` a `downloadTraitData` nekontroluje `UserUtils.isElligibleForTraitDownload(trait)`, takže přílohu vlastnosti stáhne libovolný přihlášený uživatel.
 
 ---
 

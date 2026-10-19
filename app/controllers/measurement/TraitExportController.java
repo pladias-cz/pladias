@@ -7,6 +7,7 @@ import models.User;
 import models.UserActivity;
 import models.traits.Feature;
 import models.traits.Trait;
+import models.traits.VisibilityStatus;
 import models.traitsExport.TraitExportSnapshot;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -136,6 +137,8 @@ public class TraitExportController extends ControllerBase {
     }
 
     //this method is intentionally NOT secured with authentication - as it is accessed from pladias.cz
+    //public access is limited to public traits - downloadService.findPublicTraitForFeature only ever returns
+    //a non-deleted trait with VisibilityStatus PublicAccessId (preferably the default one)
     public Result downloadTraitDataByFeature(Request request, int featureId, String language) {
         Messages messages = getMessages(request);
         Feature feature = downloadService.findFeature(featureId);
@@ -151,13 +154,29 @@ public class TraitExportController extends ControllerBase {
             return ok(messages.at("TraitsController.NoSuitableTraitFound"));
         }
 
+        if (candidate.getVisibilityStatus().getId() != VisibilityStatus.PublicAccessId) {
+            //defense in depth - findPublicTraitForFeature should never return anything else
+            return ok(messages.at("TraitsController.NoSuitableTraitFound"));
+        }
+
         return downloadOrReportError(request, candidate, null, messages, locale);
     }
 
     @Security.Authenticated(Authorized.class)
-    public Result downloadAttachment(int traitId) {
+    public Result downloadAttachment(Request request, int traitId) {
+        Messages messages = getMessages(request);
+        Trait trait = downloadService.findTrait(traitId);
+
+        if (trait == null) {
+            return notFound();
+        }
+
+        User currentUser = SessionUtils.getCurrentUser(request.session());
+        if (!UserUtils.isElligibleForTraitDownload(currentUser, trait)) {
+            return badRequest(messages.at("TraitsController.UserNotElligible"));
+        }
+
         try {
-            Trait trait = downloadService.findTrait(traitId);
             TraitExportResponse attachment = downloadService.downloadAttachment(trait);
             if (attachment == null) {
                 return ok();

@@ -161,7 +161,8 @@ POST  /measurement/complexExport               controllers.measurement.TraitExpo
 GET   /measurement/backup/:id                  controllers.measurement.TraitExportController.downloadSnapshot(request: Request, id: Integer)
 GET   /measurement/trait/export/:traitId       controllers.measurement.TraitExportController.exportTrait(request: Request, traitId: Integer)
 GET   /measurement/trait/download/:traitId/lang/:language controllers.measurement.TraitExportController.downloadTraitData(request: Request, traitId: Integer, language: String)
-GET   /measurement/trait/downloadAttachment/:traitId controllers.measurement.TraitExportController.downloadAttachment(traitId: Integer)
+GET   /measurement/trait/downloadByFeature/:featureId/lang/:language controllers.measurement.TraitExportController.downloadTraitDataByFeature(request: Request, featureId: Integer, language: String)
+GET   /measurement/trait/downloadAttachment/:traitId controllers.measurement.TraitExportController.downloadAttachment(request: Request, traitId: Integer)
 
 
 GET   /bibliography/journals                 controllers.bibliography.BibliographyController.getJournals()

@@ -137,3 +137,36 @@ export async function saveTaxonSynonym(synonym: TaxonSynonym): Promise<void> {
 export async function deleteTaxonSynonym(id: number): Promise<void> {
     requireEnvelope(await apiDelete(`/api/react/synonyms/${id}`), "Smazání synonyma selhalo.");
 }
+
+/**
+ * GET /api/react/taxa/queryAll?prefix= – taxony podle prefixu názvu
+ * (autocomplete, TaxonAutocompleteDto = {id, nameLat, nameHtml}).
+ */
+export async function searchTaxaByPrefix(prefix: string, signal?: AbortSignal): Promise<TaxonId[]> {
+    return requireData<TaxonId[]>(
+        await apiGet("/api/react/taxa/queryAll", {params: {prefix}, signal}),
+        "Vyhledávání taxonů selhalo.",
+    );
+}
+
+/**
+ * GET /api/react/taxa/importable?prefix= – taxony s rankem povoleným k importu
+ * hodnot (autocomplete).
+ */
+export async function searchImportableTaxa(prefix: string, signal?: AbortSignal): Promise<TaxonId[]> {
+    return requireData<TaxonId[]>(
+        await apiGet("/api/react/taxa/importable", {params: {prefix}, signal}),
+        "Vyhledávání taxonů selhalo.",
+    );
+}
+
+/**
+ * GET /api/react/taxon/{id}/possibleParents?prefix= – kandidáti na nového
+ * rodiče (autocomplete; sám taxon a jeho podstrom backend vynechává).
+ */
+export async function searchPossibleTaxonParents(taxonId: number, prefix: string, signal?: AbortSignal): Promise<TaxonId[]> {
+    return requireData<TaxonId[]>(
+        await apiGet(`/api/react/taxon/${taxonId}/possibleParents`, {params: {prefix}, signal}),
+        "Vyhledávání rodičů taxonu selhalo.",
+    );
+}

@@ -9,6 +9,9 @@ import {
     moveTaxon,
     moveTaxonBeforeSibling,
     saveTaxonSynonym,
+    searchImportableTaxa,
+    searchPossibleTaxonParents,
+    searchTaxaByPrefix,
     updateTaxonField,
 } from "./taxonApi";
 
@@ -269,6 +272,54 @@ describe("deleteTaxonSynonym", () => {
         expect(fetchMock).toHaveBeenCalledWith(
             "/api/react/synonyms/77",
             expect.objectContaining({method: "DELETE"}),
+        );
+    });
+});
+
+describe("searchTaxaByPrefix", () => {
+    it("searches by prefix query param and unwraps the envelope", async () => {
+        fetchMock.mockResolvedValue(jsonResponse({success: true, data: [{id: 5, nameLat: "Acer campestre", nameHtml: "<i>Acer</i>"}]}));
+
+        await expect(searchTaxaByPrefix("Acer")).resolves.toEqual([
+            {id: 5, nameLat: "Acer campestre", nameHtml: "<i>Acer</i>"},
+        ]);
+        expect(fetchMock).toHaveBeenCalledWith(
+            "/api/react/taxa/queryAll?prefix=Acer",
+            expect.objectContaining({method: "GET"}),
+        );
+    });
+
+    it("passes the abort signal to fetch (typeahead cancellation)", async () => {
+        fetchMock.mockResolvedValue(jsonResponse({success: true, data: []}));
+        const controller = new AbortController();
+
+        await searchTaxaByPrefix("Acer", controller.signal);
+
+        const [, init] = fetchMock.mock.calls[0];
+        expect(init?.signal).toBe(controller.signal);
+    });
+});
+
+describe("searchImportableTaxa", () => {
+    it("searches importable taxa by prefix", async () => {
+        fetchMock.mockResolvedValue(jsonResponse({success: true, data: [{id: 6, nameLat: "Acer platanoides"}]}));
+
+        await expect(searchImportableTaxa("Acer")).resolves.toEqual([{id: 6, nameLat: "Acer platanoides"}]);
+        expect(fetchMock).toHaveBeenCalledWith(
+            "/api/react/taxa/importable?prefix=Acer",
+            expect.objectContaining({method: "GET"}),
+        );
+    });
+});
+
+describe("searchPossibleTaxonParents", () => {
+    it("searches possible parents for the taxon by prefix", async () => {
+        fetchMock.mockResolvedValue(jsonResponse({success: true, data: [{id: 1, nameLat: "Acer"}]}));
+
+        await expect(searchPossibleTaxonParents(9, "Ac")).resolves.toEqual([{id: 1, nameLat: "Acer"}]);
+        expect(fetchMock).toHaveBeenCalledWith(
+            "/api/react/taxon/9/possibleParents?prefix=Ac",
+            expect.objectContaining({method: "GET"}),
         );
     });
 });

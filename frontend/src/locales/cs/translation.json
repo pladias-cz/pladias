@@ -645,6 +645,7 @@
     "autocomplete": {
       "allTaxaPlaceholder": "Napište taxon",
       "possibleParentsPlaceholder": "Vyhledej možného rodiče...",
+      "searchFailed": "Vyhledávání se nezdařilo.",
       "taxonPlaceholder": "Vyhledej taxon..."
     },
     "back": "Zpět",

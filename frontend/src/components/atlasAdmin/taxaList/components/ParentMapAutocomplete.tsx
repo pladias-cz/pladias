@@ -1,5 +1,6 @@
 import {useEffect, useState} from 'react';
 import {AsyncTypeahead} from 'react-bootstrap-typeahead';
+import {searchTaxaByPrefix} from '@/services/taxonApi';
 import type {TaxonOption} from '../types';
 
 interface ParentMapAutocompleteProps {
@@ -28,9 +29,7 @@ export function ParentMapAutocomplete({
 
         setIsLoading(true);
         try {
-            const res = await fetch(`/api/react/taxa/queryAll?prefix=${encodeURIComponent(query)}`);
-            const result = await res.json();
-            setOptions(result.data || []);
+            setOptions(await searchTaxaByPrefix(query));
         } catch (error) {
             console.error('Error loading taxa options:', error);
             setOptions([]);

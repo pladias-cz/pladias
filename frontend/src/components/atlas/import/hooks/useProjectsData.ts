@@ -1,8 +1,8 @@
 import {useCallback, useState, useEffect} from 'react';
-import type {Project} from '../types';
+import {getUserProjects, type UserProject} from '@/services/importApi';
 
 export function useProjectsData() {
-    const [projects, setProjects] = useState<Project[]>([]);
+    const [projects, setProjects] = useState<UserProject[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -11,20 +11,9 @@ export function useProjectsData() {
         setError(null);
 
         try {
-            const response = await fetch('/api/react/projects/user');
-            
-            if (!response.ok) {
-                throw new Error('Failed to fetch projects');
-            }
-
-            const data = await response.json();
-            if (data.success && data.projects) {
-                setProjects(data.projects);
-            } else {
-                throw new Error('Invalid response format');
-            }
-        } catch (err: any) {
-            setError(err.message || 'Unknown error');
+            setProjects(await getUserProjects());
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Failed to fetch projects');
         } finally {
             setIsLoading(false);
         }

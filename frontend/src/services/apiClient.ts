@@ -85,12 +85,13 @@ export function setNetworkErrorHandler(handler: ((error: ApiError) => void) | nu
     networkErrorHandler = handler;
 }
 
-/** Vytáhne chybovou hlášku z parsovaného těla – obálka nese `message` nebo `error`, výjimečně plain text. */
+/** Vytáhne chybovou hlášku z parsovaného těla – obálka nese `message`, `error` (JsonResult) nebo `errorMessage` (import kontrolery), výjimečně plain text. */
 function extractErrorMessage(payload: unknown): string | undefined {
     if (payload !== null && typeof payload === "object") {
-        const {message, error} = payload as {message?: unknown; error?: unknown};
+        const {message, error, errorMessage} = payload as {message?: unknown; error?: unknown; errorMessage?: unknown};
         if (typeof message === "string" && message !== "") return message;
         if (typeof error === "string" && error !== "") return error;
+        if (typeof errorMessage === "string" && errorMessage !== "") return errorMessage;
         return undefined;
     }
     if (typeof payload === "string" && payload !== "") return payload;

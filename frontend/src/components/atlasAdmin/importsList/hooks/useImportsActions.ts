@@ -1,5 +1,7 @@
 import {useState, useCallback} from 'react';
 import type {TFunction} from 'i18next';
+import {prepareBatchDelete} from '@/services/importApi';
+import {apiErrorMessage} from '@/services/apiClient';
 
 export interface UseImportsActionsReturn {
     deletingBatchId: number | null;
@@ -17,18 +19,11 @@ export function useImportsActions(
     const handleDelete = useCallback(async (batchId: number) => {
         setDeletingBatchId(batchId);
         try {
-            const response = await fetch(`/api/react/atlasadmin/prepareBatchDelete/${batchId}`);
-            const json = await response.json();
-            
-            if (response.ok && json.success) {
-                showFlash('success', t("atlas.admin.importsList.markedForDeletion"));
-                onImportChange?.();
-            } else {
-                showFlash('danger', json.data?.message || t("atlas.admin.importsList.error"));
-            }
+            await prepareBatchDelete(batchId);
+            showFlash('success', t("atlas.admin.importsList.markedForDeletion"));
+            onImportChange?.();
         } catch (err) {
-            console.error("Error deleting import:", err);
-            showFlash('danger', t("atlas.admin.importsList.error"));
+            showFlash('danger', apiErrorMessage(err, t("atlas.admin.importsList.error")));
         } finally {
             setDeletingBatchId(null);
         }

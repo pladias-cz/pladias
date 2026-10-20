@@ -1,5 +1,6 @@
 import {useCallback, useState} from 'react';
 import type {ImportResult, ImportError, ImportOperation} from '../types';
+import {importExcel} from '@/services/importApi';
 
 export interface UseImportDataOptions {
     onSuccess?: (result: ImportResult) => void;
@@ -19,37 +20,15 @@ export function useImportData(options: UseImportDataOptions = {}) {
         setIsUploading(true);
         setProgress(0);
 
-        const formData = new FormData();
-        formData.append('fileUpload', file);
-        formData.append('operation', operation);
-        if (projectId !== undefined) {
-            formData.append('project', String(projectId));
-        }
-
         try {
-            // Fake URL - backend not ready yet
-            const endpoint = operation === 'validation' 
-                ? '/api/react/import/validate' 
-                : '/api/react/import/upload';
-
-            const response = await fetch(endpoint, {
-                method: 'POST',
-                body: formData,
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}));
-                throw new Error(errorData.errorMessage || 'Upload failed');
-            }
-
-            const result: ImportResult = await response.json();
+            const result = await importExcel(file, operation, projectId);
             setProgress(100);
-            
+
             onSuccess?.(result);
             return result;
-        } catch (error: any) {
+        } catch (error) {
             const errorResult: ImportError = {
-                errorMessage: error.message || 'Unknown error occurred',
+                errorMessage: error instanceof Error ? error.message : 'Unknown error occurred',
             };
             onError?.(errorResult);
             return errorResult;

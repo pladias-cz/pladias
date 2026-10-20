@@ -682,11 +682,11 @@
       "remove": "Odebrat",
       "saveFailed": "Uložení selhalo"
     },
+    "no": "Ne",
+    "noData": "Nenalezeny žádné záznamy",
     "notification": {
       "networkError": "Chyba spojení se serverem – zkontrolujte připojení k internetu."
     },
-    "no": "Ne",
-    "noData": "Nenalezeny žádné záznamy",
     "null": "null",
     "ok": "OK",
     "save": "Uložit",
@@ -1031,6 +1031,7 @@
       "title": "Záloha traitů"
     },
     "data": {
+      "loadFailed": "Nepodařilo se načíst data vlastností",
       "section": "sekce",
       "title": "Data"
     },
@@ -1049,6 +1050,8 @@
       "title": "Základní informace k importům"
     },
     "deleteConfirm": "Opravdu chcete smazat tuto datovou řadu?",
+    "deleteFailed": "Nepodařilo se smazat datovou řadu",
+    "deleted": "Datová řada byla smazána",
     "export": {
       "failed": "Export se nezdařil. Zkuste to prosím znovu.",
       "placeholder": "Zde vkopírujte seznam požadovaných taxonů v podobě latinských jmen na jednotlivých řádcích.",
@@ -1071,14 +1074,19 @@
       "heading": "Biologické a ekologické vlastnosti české flóry",
       "title": "Obecné informace"
     },
+    "loadFailed": "Nepodařilo se načíst datové řady",
+    "setDefaultChanged": "Výchozí datová řada změněna",
+    "setDefaultFailed": "Nepodařilo se nastavit výchozí datovou řadu",
     "upload": {
       "attachment": "Příloha",
       "descriptionCz": "Popis CS",
       "descriptionEn": "Popis EN",
+      "failed": "Operace se nezdařila",
       "fileSize": "velikost ≤ 10MB",
       "fileStructure": "Struktura souboru je závazná – viz",
       "forDatatype": "pro datový typ",
       "import": "Importovat dávku do databáze",
+      "imported": "Datová řada byla importována",
       "inputFile": "Vstupní soubor*",
       "operation": "Akce",
       "owner": "Vlastník dat",
@@ -1088,6 +1096,7 @@
       "source": "Zdroj dat",
       "submit": "Odeslat",
       "validate": "Zkontrolovat dávku",
+      "validated": "Soubor je validní",
       "visibility": "Dostupnost dat"
     }
   },

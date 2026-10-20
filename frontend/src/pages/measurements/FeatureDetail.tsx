@@ -7,6 +7,8 @@ import {useTranslation} from "react-i18next";
 import TraitTable from "@/components/measurement/TraitTable";
 import FeatureDescription from "@/components/measurement/FeatureDescription";
 import TraitUpload from "@/components/measurement/TraitUpload";
+import {getFeature, importTrait} from "@/services/traitApi";
+import {ApiError, apiErrorMessage} from "@/services/apiClient";
 import {useNotifications} from "@/stores/notificationStore";
 
 export default function FeatureDetail() {
@@ -22,22 +24,20 @@ export default function FeatureDetail() {
     useEffect(() => {
         // hlášku po přesměrování z legacy stránky injectuje backend do
         // window.__FLASH__ (app/views/react/index.scala.html) – gotchas.md
-        const f = (window as any).__FLASH__;
-        if (!f) return;
+        const flash = (window as {__FLASH__?: {success?: string; error?: string}}).__FLASH__;
+        if (!flash) return;
 
         // obsah může nést HTML s odkazem na sešit s chybami importu
-        if (f.success) {
-            push({type: "success", html: f.success});
-        } else if (f.error) {
-            push({type: "danger", html: f.error});
+        if (flash.success) {
+            push({type: "success", html: flash.success});
+        } else if (flash.error) {
+            push({type: "danger", html: flash.error});
         }
     }, [push]);
 
     async function loadFeature(id: number) {
         try {
-            const res = await fetch(`/api/react/measurement/features/${id}`);
-            const json = await res.json();
-            setSelectedFeature(json.data);
+            setSelectedFeature(await getFeature(id));
         } catch (e) {
             console.error(e);
         }
@@ -59,31 +59,23 @@ export default function FeatureDetail() {
         setSubmitting(true);
 
         try {
-            const res = await fetch("/api/react/measurement/trait", {
-                method: "POST",
-                body: formData
-            });
-
-            // při úspěchu vrací backend samotný JSON řetězec s hlášením, při chybě JsonResult
-            const json = await res.json().catch(() => null);
-            const message: string | null = typeof json === "string" ? json : json?.message ?? null;
-
-            if (!res.ok) {
-                push({type: "danger", html: message || "Operace se nezdařila"});
-                return;
-            }
+            const message = await importTrait(formData);
 
             push({
                 type: "success",
-                html: message || (isImport ? "Datová řada byla importována" : "Soubor je validní")
+                html: message || (isImport ? t("trait.upload.imported") : t("trait.upload.validated"))
             });
 
             if (isImport) {
                 form.reset();
                 setTraitsRefreshKey(key => key + 1);
             }
-        } catch {
-            push({type: "danger", message: "Chyba komunikace se serverem"});
+        } catch (e) {
+            // hláška z backendu může nést HTML s odkazem na chybový sešit,
+            // proto jde do notifikace jako html; již ohlášené chyby (síť, 403)
+            // notifyApiError vylučuje, abychom je nezobrazili dvakrát
+            if (e instanceof ApiError && e.notified) return;
+            push({type: "danger", html: apiErrorMessage(e, t("trait.upload.failed"))});
         } finally {
             setSubmitting(false);
         }

@@ -3,27 +3,14 @@ import {useTranslation} from "react-i18next";
 import {useConfirm} from "@/hooks/useConfirm";
 import type {Feature} from "@/models/Feature";
 import type {Trait} from "@/models/Trait";
-import type {ApiResult} from "@/models/ApiResponse";
-import {useNotifications} from "@/stores/notificationStore";
+import {deleteTrait, getTraitsOfFeature, setDefaultTrait} from "@/services/traitApi";
+import {notifyApiError, useNotifications} from "@/stores/notificationStore";
 import RichTextMessage from "@/components/RichTextMessage";
 
 interface Props {
     feature: Feature;
     /** změnou hodnoty se tabulka datových řad znovu načte (např. po importu) */
     refreshKey?: number;
-}
-
-/**
- * Server odpovídá přes JsonResult ({success, data, message}), ale některé akce
- * (např. mazání) vrací jen samotný JSON řetězec s hlášením.
- */
-function extractMessage(body: unknown): string | null {
-    if (typeof body === "string") return body;
-    if (body && typeof body === "object" && "message" in body) {
-        const message = (body as {message?: unknown}).message;
-        if (typeof message === "string" && message) return message;
-    }
-    return null;
 }
 
 export default function TraitTable({feature, refreshKey}: Props) {
@@ -38,32 +25,23 @@ export default function TraitTable({feature, refreshKey}: Props) {
 
     const loadTraits = useCallback(async () => {
         try {
-            const res = await fetch(`/api/react/measurement/traits-of-feature/${feature.id}`);
-            if (!res.ok) {
-                throw new Error(`HTTP ${res.status}`);
-            }
-
-            const json = await res.json() as ApiResult<Trait[]>;
-            const list = json.data ?? [];
+            const list = await getTraitsOfFeature(feature.id);
 
             setTraits(list);
-            setDefaultTraitId(list.find(t => t.isDefault)?.id ?? null);
+            setDefaultTraitId(list.find(trait => trait.isDefault)?.id ?? null);
         } catch (e) {
-            push({
-                type: "danger",
-                message: `Nepodařilo se načíst datové řady: ${e instanceof Error ? e.message : "neznámá chyba"}`
-            });
+            notifyApiError(e, t("trait.loadFailed"));
         } finally {
             setLoading(false);
         }
-    }, [feature.id, push]);
+    }, [feature.id, t]);
 
     useEffect(() => {
         if (!feature?.id) return;
         loadTraits();
     }, [feature?.id, loadTraits, refreshKey]);
 
-    async function deleteTrait(traitId: number) {
+    async function handleDeleteTrait(traitId: number) {
         if (!(await confirm({
             message: t("trait.deleteConfirm"),
             confirmLabel: t("common.delete"),
@@ -74,37 +52,22 @@ export default function TraitTable({feature, refreshKey}: Props) {
         setBusyTraitId(traitId);
 
         try {
-            const res = await fetch(`/api/react/measurement/trait/${traitId}`, {
-                method: "DELETE"
-            });
-
-            const message = extractMessage(await res.json().catch(() => null));
-
-            if (!res.ok) {
-                push({
-                    type: "danger",
-                    message: message || "Nepodařilo se smazat datovou řadu"
-                });
-                return;
-            }
+            const message = await deleteTrait(traitId);
 
             push({
                 type: "success",
-                message: message || "Datová řada byla smazána"
+                message: message || t("trait.deleted")
             });
             // mazání může přenastavit výchozí řadu, proto znovu načíst
             await loadTraits();
-        } catch {
-            push({
-                type: "danger",
-                message: "Chyba komunikace se serverem"
-            });
+        } catch (e) {
+            notifyApiError(e, t("trait.deleteFailed"));
         } finally {
             setBusyTraitId(null);
         }
     }
 
-    async function setDefaultTrait(traitId: number) {
+    async function handleSetDefault(traitId: number) {
         const previous = defaultTraitId;
 
         // optimistický update
@@ -112,33 +75,16 @@ export default function TraitTable({feature, refreshKey}: Props) {
         setBusyTraitId(traitId);
 
         try {
-            const res = await fetch(`/api/react/measurement/trait/${traitId}/default`, {
-                method: "PUT"
-            });
-
-            const json = await res.json().catch(() => null);
-            const message = extractMessage(json);
-
-            if (!res.ok || json?.success === false) {
-                setDefaultTraitId(previous);
-                push({
-                    type: "danger",
-                    message: message || "Nepodařilo se nastavit výchozí datovou řadu"
-                });
-                return;
-            }
+            await setDefaultTrait(traitId);
 
             push({
                 type: "success",
-                message: "Výchozí datová řada změněna"
+                message: t("trait.setDefaultChanged")
             });
             await loadTraits();
-        } catch {
+        } catch (e) {
             setDefaultTraitId(previous);
-            push({
-                type: "danger",
-                message: "Chyba komunikace se serverem"
-            });
+            notifyApiError(e, t("trait.setDefaultFailed"));
         } finally {
             setBusyTraitId(null);
         }
@@ -227,7 +173,7 @@ export default function TraitTable({feature, refreshKey}: Props) {
                                 type="button"
                                 className="btn btn-sm btn-link p-0 text-danger"
                                 disabled={busyTraitId === t.id}
-                                onClick={() => deleteTrait(t.id)}
+                                onClick={() => handleDeleteTrait(t.id)}
                             >
                                 smazat
                             </button>
@@ -248,7 +194,7 @@ export default function TraitTable({feature, refreshKey}: Props) {
                             value={t.id}
                             checked={defaultTraitId === t.id}
                             disabled={!feature.canAdminister || busyTraitId !== null}
-                            onChange={() => setDefaultTrait(t.id)}
+                            onChange={() => handleSetDefault(t.id)}
                         />
                     </td>
 

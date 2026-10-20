@@ -16,8 +16,7 @@
  *    frontend nezíská, seznam se načítá znovu po uložení.
  */
 
-import {ApiError, apiDelete, apiGet, apiPatch, apiPost, apiPut, ensureSuccess} from "./apiClient";
-import type {ApiResult} from "@/models/ApiResponse";
+import {apiDelete, apiGet, apiPatch, apiPost, apiPut, requireData, requireEnvelope} from "./apiClient";
 import type {Taxon} from "@/models/Taxon";
 import type {TaxonId} from "@/models/TaxonId";
 import type {TaxonPublication} from "@/models/TaxonPublication";
@@ -35,28 +34,6 @@ export type TaxonEditorField =
     | "HYBRIDPARENTAGE"
     | "SUPPRESSED"
     | "COMMENT";
-
-/**
- * Ověří obálku `JsonResult`. Ne-obálkové tělo (string) vzniká u mutací
- * správce taxonů gotchasem „editor locked": backend vrací redirect na „/",
- * fetch ho sleduje a skončí na HTML stránce – ta uživateli nemá co říct,
- * použije se fallback hláška.
- */
-function requireEnvelope(payload: unknown, fallbackMessage: string): ApiResult {
-    if (typeof payload !== "object" || payload === null) {
-        throw new ApiError(fallbackMessage);
-    }
-    return ensureSuccess(payload as ApiResult, fallbackMessage);
-}
-
-/** Obálka + povinná položka `data` (GET endpointy a mutace vracející objekt). */
-function requireData<T>(payload: unknown, fallbackMessage: string): T {
-    const envelope = requireEnvelope(payload, fallbackMessage) as ApiResult<T>;
-    if (envelope.data === undefined) {
-        throw new ApiError(fallbackMessage);
-    }
-    return envelope.data;
-}
 
 /** GET /api/react/taxon/{id} – celý taxon. */
 export async function getTaxon(id: number): Promise<Taxon> {
@@ -76,6 +53,11 @@ export async function getTaxonFirstChildren(id: number): Promise<Taxon[]> {
 /** GET /api/react/taxonrank/queryAll – všechny taxonomické ranky. */
 export async function getTaxonRanks(): Promise<TaxonRankId[]> {
     return requireData<TaxonRankId[]>(await apiGet("/api/react/taxonrank/queryAll"), "Načtení taxonomických ranků selhalo.");
+}
+
+/** GET /api/react/taxonrank/queryExportable – ranky zahrnutelné do komplexního exportu vlastností. */
+export async function getExportableTaxonRanks(): Promise<TaxonRankId[]> {
+    return requireData<TaxonRankId[]>(await apiGet("/api/react/taxonrank/queryExportable"), "Načtení taxonomických ranků selhalo.");
 }
 
 /** GET /api/react/taxon/{id}/stats – statistiky záznamů taxonu. */

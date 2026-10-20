@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import type { FeatureGroup } from "@/models/FeatureGroup";
 import type { Feature } from "@/models/Feature";
 import type { Trait } from "@/models/Trait";
+import {getFeatureGroups, getFeaturesOfGroup, getTraitsOfFeature} from "@/services/traitApi";
 import { Spinner, Alert, Button, Form } from "react-bootstrap";
 import RichTextMessage from "@/components/RichTextMessage";
 
@@ -25,10 +26,9 @@ export default function ExportTraitList() {
 
     // načtení skupin
     useEffect(() => {
-        fetch("/api/react/measurement/feature-groups")
-            .then(r => r.json())
-            .then(r => setGroups(r.data))
-            .catch(e => setError(e.message));
+        getFeatureGroups()
+            .then(setGroups)
+            .catch(e => setError(e instanceof Error ? e.message : "Unknown error"));
     }, []);
 
     const toggleGroup = (groupId: number) => {
@@ -45,14 +45,13 @@ export default function ExportTraitList() {
 
         setLoadingGroup(groupId);
         try {
-            const res = await fetch(`/api/react/measurement/features-by-group/${groupId}`);
-            const result = await res.json();
+            const features = await getFeaturesOfGroup(groupId);
             setFeaturesByGroup(prev => ({
                 ...prev,
-                [groupId]: result.data
+                [groupId]: features
             }));
-        } catch (e: any) {
-            setError(e.message ?? "Unknown error");
+        } catch (e) {
+            setError(e instanceof Error ? e.message : "Unknown error");
         } finally {
             setLoadingGroup(null);
         }
@@ -72,14 +71,13 @@ export default function ExportTraitList() {
 
         setLoadingFeature(featureId);
         try {
-            const res = await fetch(`/api/react/measurement/traits-of-feature/${featureId}`);
-            const result = await res.json();
+            const traits = await getTraitsOfFeature(featureId);
             setTraitsByFeature(prev => ({
                 ...prev,
-                [featureId]: result.data ?? result
+                [featureId]: traits
             }));
-        } catch (e: any) {
-            setError(e.message ?? "Unknown error");
+        } catch (e) {
+            setError(e instanceof Error ? e.message : "Unknown error");
         } finally {
             setLoadingFeature(null);
         }

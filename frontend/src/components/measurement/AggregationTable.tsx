@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Table, Spinner, Alert } from "react-bootstrap";
 import { useTranslation } from "react-i18next";
 import type { TraitAggregationType } from "@/models/TraitAggregationType";
+import {getTraitAggregationTypes} from "@/services/traitApi";
 import RichTextMessage from "@/components/RichTextMessage";
 
 export default function AggregationTable() {
@@ -14,16 +15,7 @@ export default function AggregationTable() {
     useEffect(() => {
         const load = async () => {
             try {
-                const res = await fetch("/api/react/measurement/aggregation-types");
-
-                if (!res.ok) {
-                    throw new Error(`HTTP ${res.status}`);
-                }
-
-                const result = await res.json();
-                const data: TraitAggregationType[] = result.data;
-
-                setTypes(data);
+                setTypes(await getTraitAggregationTypes());
             } catch (e) {
                 setError(e instanceof Error ? e.message : "Unknown error");
             } finally {

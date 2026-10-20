@@ -6,6 +6,8 @@ import {usePageTitle} from "@/hooks/usePageTitle";
 import type {FeatureGroup} from "@/models/FeatureGroup";
 import type {Feature} from "@/models/Feature";
 import type {TraitDatatype} from "@/models/TraitDatatype";
+import {getFeatureGroups, getFeaturesOfGroup, getTraitDatatypes} from "@/services/traitApi";
+import {notifyApiError} from "@/stores/notificationStore";
 
 
 export default function Data() {
@@ -24,37 +26,37 @@ export default function Data() {
 
     // skupiny
     useEffect(() => {
-        fetch("/api/react/measurement/feature-groups")
-            .then(r => r.json())
-            .then(r => r.data)
-            .then(setGroups);
-    }, []);
+        getFeatureGroups()
+            .then(setGroups)
+            .catch(e => notifyApiError(e, t("trait.data.loadFailed")));
+    }, [t]);
 
     // číselník datatype (načte se jednou)
     useEffect(() => {
-        fetch("/api/react/measurement/datatypes")
-            .then(r => r.json())
-            .then(r => r.data)
+        getTraitDatatypes()
             .then((data: TraitDatatype[]) => {
                 const map: Record<number, TraitDatatype> = {};
                 data.forEach(d => (map[d.id] = d));
                 setDatatypes(map);
-            });
-    }, []);
+            })
+            .catch(e => notifyApiError(e, t("trait.data.loadFailed")));
+    }, [t]);
 
     const loadFeatures = async (groupId: number) => {
         if (featuresByGroup[groupId]) return;
 
         setLoadingGroup(groupId);
-        const res = await fetch(`/api/react/measurement/features-by-group/${groupId}`);
-        const result = await res.json();
-        const data = result.data;
-        setFeaturesByGroup(prev => ({
-            ...prev,
-            [groupId]: data
-        }));
-
-        setLoadingGroup(null);
+        try {
+            const data = await getFeaturesOfGroup(groupId);
+            setFeaturesByGroup(prev => ({
+                ...prev,
+                [groupId]: data
+            }));
+        } catch (e) {
+            notifyApiError(e, t("trait.data.loadFailed"));
+        } finally {
+            setLoadingGroup(null);
+        }
     };
 
     const goToDetail = (id: number) => {

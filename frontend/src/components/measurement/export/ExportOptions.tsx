@@ -1,8 +1,9 @@
 import { useTranslation } from "react-i18next";
 import { useEffect, useState } from "react";
 import type {TraitEntryType} from "@/models/TraitEntryType";
-import {type TaxonRankId} from '@/models/TaxonRankId';
-import type {ApiResult} from "@/models/ApiResponse";
+import type {TaxonRankId} from "@/models/TaxonRankId";
+import {getExportableTaxonRanks} from "@/services/taxonApi";
+import {getTraitEntryTypes} from "@/services/traitApi";
 
 export default function ExportOptions() {
     const { t } = useTranslation();
@@ -10,20 +11,15 @@ export default function ExportOptions() {
     const [ranks, setRank] = useState<TaxonRankId[]>([]);
 
     useEffect(() => {
-        fetch("/api/react/taxonrank/queryExportable")
-            .then(r => r.json())
-            .then((res: { data: TaxonRankId[] }) => setRank(res.data));
+        getExportableTaxonRanks()
+            .then(setRank)
+            .catch(e => console.error("Failed to load exportable taxon ranks:", e));
     }, []);
 
 
     useEffect(() => {
-        fetch("/api/react/measurement/trait-entry-type")
-            .then(res => res.json())
-            .then((json: ApiResult<TraitEntryType[]>) => {
-                if (json.success && Array.isArray(json.data)) {
-                    setEntryTypes(json.data);
-                }
-            })
+        getTraitEntryTypes()
+            .then(setEntryTypes)
             .catch(err => {
                 console.error("Failed to load trait entry types:", err);
             });

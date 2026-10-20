@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Table, Spinner, Alert } from "react-bootstrap";
 import { useTranslation } from "react-i18next";
 import type { TraitBackup } from "@/models/TraitBackup";
+import {getTraitBackups} from "@/services/traitApi";
 
 export default function BackupTable() {
     const { t } = useTranslation();
@@ -13,14 +14,7 @@ export default function BackupTable() {
     useEffect(() => {
         const load = async () => {
             try {
-                const res = await fetch("/api/react/measurement/backups");
-
-                if (!res.ok) {
-                    throw new Error(`HTTP ${res.status}`);
-                }
-
-                const result = await res.json();
-                setBackups(result.data);
+                setBackups(await getTraitBackups());
             } catch (e) {
                 setError(e instanceof Error ? e.message : "Unknown error");
             } finally {

@@ -3,6 +3,7 @@ import { Table, Spinner, Alert } from "react-bootstrap";
 import { useTranslation } from "react-i18next";
 // import 'bootstrap-icons/font/bootstrap-icons.css';
 import type { TraitDatatype } from "@/models/TraitDatatype";
+import {getTraitDatatypes} from "@/services/traitApi";
 
 export default function DatatypesTable() {
     const { t } = useTranslation();
@@ -14,16 +15,7 @@ export default function DatatypesTable() {
     useEffect(() => {
         const load = async () => {
             try {
-                const res = await fetch("/api/react/measurement/datatypes");
-
-                if (!res.ok) {
-                    throw new Error(`HTTP ${res.status}`);
-                }
-
-                const result = await res.json();
-                const data: TraitDatatype[] = result.data;
-
-                setDatatypes(data);
+                setDatatypes(await getTraitDatatypes());
             } catch (e) {
                 setError(e instanceof Error ? e.message : "Unknown error");
             } finally {

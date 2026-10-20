@@ -272,6 +272,10 @@ export interface DownloadedFile {
 export interface DownloadOptions extends ApiOptions {
     /** Použije se, když odpověď nese Content-disposition bez jména souboru. */
     fallbackFilename?: string;
+    /** HTTP metoda (default GET) – urlencoded formuláře se posílají POSTem. */
+    method?: "GET" | "POST";
+    /** Tělo požadavku pro POST (např. `URLSearchParams` formuláře exportu). */
+    body?: BodyInit;
 }
 
 /**
@@ -281,7 +285,7 @@ export interface DownloadOptions extends ApiOptions {
  * chyba končí jako `ApiError` s hláškou z obálky.
  */
 export async function apiDownload(url: string, options: DownloadOptions = {}): Promise<DownloadedFile> {
-    const response = await performRequest(url, "GET", {}, options);
+    const response = await performRequest(url, options.method ?? "GET", {body: options.body}, options);
     const contentType = response.headers.get("content-type") ?? "";
 
     if (contentType.includes("application/json")) {
@@ -321,6 +325,30 @@ export function ensureSuccess<T extends ApiResult>(payload: T, fallbackMessage =
         throw new ApiError(extractErrorMessage(payload) ?? fallbackMessage, undefined, payload);
     }
     return payload;
+}
+
+/**
+ * Ověří obálku `JsonResult` včetně úspěchu. Ne-obálkové tělo (HTML stránka po
+ * redirectu, plain text) vzniká u některých mutací gotchasem „editor locked“ –
+ * uživateli nemá co říct, použije se fallback hláška.
+ */
+export function requireEnvelope(payload: unknown, fallbackMessage: string): ApiResult {
+    if (typeof payload !== "object" || payload === null) {
+        throw new ApiError(fallbackMessage);
+    }
+    return ensureSuccess(payload as ApiResult, fallbackMessage);
+}
+
+/**
+ * Obálka + povinná položka `data` – standard pro GET endpointy a mutace
+ * vracející objekt. Sdílené pro všechny doménové service moduly.
+ */
+export function requireData<T>(payload: unknown, fallbackMessage: string): T {
+    const envelope = requireEnvelope(payload, fallbackMessage) as ApiResult<T>;
+    if (envelope.data === undefined) {
+        throw new ApiError(fallbackMessage);
+    }
+    return envelope.data;
 }
 
 /**

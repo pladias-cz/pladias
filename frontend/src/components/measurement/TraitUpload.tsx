@@ -6,6 +6,8 @@ import type {UserId} from "@/models/UserId";
 import type {TraitDatatype} from "@/models/TraitDatatype";
 import {useUser} from "@/context/UserContext";
 import {useTranslation} from "react-i18next";
+import {getUsersMinimal} from "@/services/userApi";
+import {getTraitDatatypes, getTraitVisibilityStatuses} from "@/services/traitApi";
 
 interface Props {
     feature: Feature;
@@ -24,21 +26,24 @@ export default function TraitUpload({feature, submitting = false}: Props) {
 
     useEffect(() => {
         async function load() {
-            const [usersRes, visRes, datatypeRes] = await Promise.all([
-                fetch("/api/react/users-minimal").then(r => r.json()),
-                fetch("/api/react/measurement/visibility-status").then(r => r.json()),
-                fetch("/api/react/measurement/datatypes").then(r => r.json()),
-            ]);
+            try {
+                const [users, statuses, datatypes] = await Promise.all([
+                    getUsersMinimal(),
+                    getTraitVisibilityStatuses(),
+                    getTraitDatatypes(),
+                ]);
 
-            setUsers(usersRes.data ?? usersRes);
-            setVisibility(visRes.data ?? visRes);
+                setUsers(users);
+                setVisibility(statuses);
 
-            const dt = (datatypeRes.data ?? datatypeRes).find(
-                (d: TraitDatatype) => d.id === feature.datatype
-            );
-
-            setDatatype(dt ?? null);
-            setLoading(false);
+                setDatatype(
+                    datatypes.find(d => d.id === feature.datatype) ?? null
+                );
+            } catch (e) {
+                console.error(e);
+            } finally {
+                setLoading(false);
+            }
         }
 
         load();

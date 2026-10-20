@@ -2,6 +2,8 @@ import {useState, type FormEvent} from "react";
 import {Button, Form, Spinner} from "react-bootstrap";
 import {useTranslation} from "react-i18next";
 import {useNotifications} from "@/stores/notificationStore";
+import {notifyApiError} from "@/stores/notificationStore";
+import {backupTraits} from "@/services/traitApi";
 
 export default function BackupForm() {
     const {t} = useTranslation();
@@ -16,23 +18,12 @@ export default function BackupForm() {
         setSubmitting(true);
 
         try {
-            const res = await fetch("/api/react/measurement/backup", {
-                method: "POST",
-                body: new URLSearchParams({description})
-            });
-
-            // backend vrací plain text hlášení, ne JsonResult
-            const message = (await res.text()).trim();
-
-            if (!res.ok) {
-                push({type: "danger", message: message || t("trait.backup.error")});
-                return;
-            }
+            const message = await backupTraits(description);
 
             push({type: "success", message: message || t("trait.backup.started")});
             setDescription("");
-        } catch {
-            push({type: "danger", message: t("trait.backup.error")});
+        } catch (e) {
+            notifyApiError(e, t("trait.backup.error"));
         } finally {
             setSubmitting(false);
         }

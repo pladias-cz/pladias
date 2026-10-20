@@ -264,7 +264,7 @@ describe("apiDownload", () => {
 
     it("uses the fallback filename when Content-disposition is missing", async () => {
         fetchMock.mockResolvedValue(
-            new Response(new Blob(["data"]), {headers: {"Content-Type": "application/octet-stream"}}),
+            new Response("data", {headers: {"Content-Type": "application/octet-stream"}}),
         );
 
         const file = await apiDownload("/export", {fallbackFilename: "zaklad.xlsx"});

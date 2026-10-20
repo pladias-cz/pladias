@@ -5,6 +5,7 @@ import type {TraitAggregationType} from "@/models/TraitAggregationType";
 import type {EnumerateValue} from "@/models/EnumerateValue";
 import {DatatypeDescriptionPopover} from "@/components/measurement/DatatypeDescriptionPopover";
 import RichTextMessage from "@/components/RichTextMessage";
+import {getEnumerateValues, getTraitAggregationTypes, getTraitDatatypes} from "@/services/traitApi";
 
 function BoolIcon({value}: { value: boolean }) {
     return value ? (
@@ -31,38 +32,22 @@ export default function FeatureDatatypeFlags({feature}: Props) {
             try {
                 setLoading(true);
 
-                const requests: Promise<Response>[] = [
-                    fetch("/api/react/measurement/datatypes"),
-                    fetch("/api/react/measurement/aggregation-types")
-                ];
-
-                if (feature.enumerate) {
-                    requests.push(
-                        fetch(`/api/react/measurement/enumerate-values/${feature.enumerate}`)
-                    );
-                }
-
-                const responses = await Promise.all(requests);
-
-                const [datatypeRes, inheritanceRes, enumerateRes] = responses;
-
-                const datatypeJson = await datatypeRes.json();
-                const inheritanceJson = await inheritanceRes.json();
-
-                const enumerateJson = enumerateRes
-                    ? await enumerateRes.json()
-                    : null;
+                const [datatypes, inheritances, enumerates] = await Promise.all([
+                    getTraitDatatypes(),
+                    getTraitAggregationTypes(),
+                    feature.enumerate ? getEnumerateValues(feature.enumerate) : Promise.resolve(null),
+                ]);
 
                 if (!cancelled) {
                     setDatatype(
-                        datatypeJson.data.find((d: TraitDatatype) => d.id === feature.datatype) ?? null
+                        datatypes.find(d => d.id === feature.datatype) ?? null
                     );
 
                     setInheritance(
-                        inheritanceJson.data.find((i: TraitAggregationType) => i.id === feature.inheritance) ?? null
+                        inheritances.find(i => i.id === feature.inheritance) ?? null
                     );
 
-                    setEnumerate(enumerateJson?.data ?? null);
+                    setEnumerate(enumerates);
                 }
             } catch (e) {
                 console.error(e);

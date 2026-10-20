@@ -260,9 +260,6 @@ public class RecordService {
    }
    ```
 
-4. **Testujte na obou serverech**
-   - Ujistěte se že replika má aktuální data
-   - Otestujte fallback na master při nedostupnosti repliky
 
 ### ❌ Nedoporučeno
 
@@ -294,59 +291,3 @@ public class RecordService {
    DatabaseContext.currentDatabase.set("replica");
    ```
 
-## Troubleshooting
-
-### Problém: "Connection is read-only"
-
-**Příčina:** Pokus o write operaci na replica databázi.
-
-**Řešení:**
-1. Zkontrolujte zda metoda nemá `@UseReplica` anotaci
-2. Pokud potřebuje write operaci, odstraňte anotaci
-3. Nebo explicitně přepněte na master:
-   ```java
-   try (DatabaseContext.Scope master = DatabaseContext.useMaster()) {
-       record.save();
-   }
-   ```
-
-### Problém: Replika nemá aktuální data
-
-**Příčina:** Replication lag mezi master a replica.
-
-**Řešení:**
-1. Pro kritické operace použijte master:
-   ```java
-   try (DatabaseContext.Scope master = DatabaseContext.useMaster()) {
-       // operace vyžadující aktuální data
-   }
-   ```
-2. Nakonfigurujte replication monitoring
-3. Zvažte synchronous replication pokud je lag nepřijatelný
-
-### Problém: ThreadLocal únik
-
-**Příčina:** Nepoužití try-with-resources nebo zapomenuté `restore()`.
-
-**Řešení:**
-1. Vždy používejte try-with-resources:
-   ```java
-   try (DatabaseContext.Scope replica = DatabaseContext.useReplica()) {
-       // kód
-   }
-   ```
-2. Pokud musíte použít manual restore:
-   ```java
-   DatabaseContext.Scope scope = DatabaseContext.useReplica();
-   try {
-       // kód
-   } finally {
-       scope.restore();
-   }
-   ```
-
-## Související dokumentace
-
-- [Architecture](./architecture.md) - Celková architektura aplikace
-- [Conventions](./conventions.md) - Coding standards a patterns
-- [Ebean Documentation](https://ebean.io/docs/) - Oficiální dokumentace Ebean ORM

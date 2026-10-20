@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { Table, Spinner, Alert } from "react-bootstrap";
 import { useTranslation } from "react-i18next";
+import { Table, Spinner, Alert } from "react-bootstrap";
+import {getDownloads} from "@/services/downloadApi";
 import type {DownloadDto} from "@/models/Download";
 
 export default function DownloadsTable() {
@@ -13,14 +14,7 @@ export default function DownloadsTable() {
     useEffect(() => {
         const load = async () => {
             try {
-                const res = await fetch("/api/react/downloads");
-
-                if (!res.ok) {
-                    throw new Error(`HTTP ${res.status}`);
-                }
-                const result = await res.json();
-                const data: DownloadDto[] = result.data;
-                setDownloads(data);
+                setDownloads(await getDownloads());
             } catch (e) {
                 setError(e instanceof Error ? e.message : "Unknown error");
             } finally {

@@ -5,6 +5,7 @@ import {
     createTextColumn,
     createCheckboxColumn,
 } from "@/core/dataTable";
+import {updateUserFlag, type UserFlagField} from "@/services/userApi";
 
 /**
  * User interface for the UsersTable component
@@ -28,25 +29,8 @@ export default function UsersTable() {
     const {t} = useTranslation();
 
     // Handle field changes for checkbox toggles
-    const handleFieldChange = async (user: UserTableRow, field: keyof UserTableRow, value: boolean) => {
-        try {
-            const response = await fetch(`/api/react/users/${user.id}`, {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({[field]: value}),
-            });
-
-            if (!response.ok) {
-                const errorText = await response.text();
-                console.error("Failed to update user:", errorText);
-                throw new Error(errorText || "Failed to update user");
-            }
-        } catch (err) {
-            console.error("Error updating user:", err);
-            throw err; // Re-throw to let DataTable handle the error
-        }
+    const handleFieldChange = async (user: UserTableRow, field: UserFlagField, value: boolean) => {
+        await updateUserFlag(user.id, field, value);
     };
 
     // Column definitions with filtering and sorting enabled
@@ -112,7 +96,7 @@ export default function UsersTable() {
             <DataTable<UserTableRow>
                 endpoint="/api/react/users"
                 columns={columns}
-                onRowUpdate={async (_row, _field, _value) => {
+                onRowUpdate={async () => {
                     // This callback is called after a successful toggle
                     // The DataTable will automatically refresh the data
                 }}

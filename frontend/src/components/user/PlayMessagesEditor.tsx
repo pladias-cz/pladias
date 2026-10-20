@@ -1,19 +1,8 @@
 import {useEffect, useState, type SyntheticEvent} from "react";
 import {useTranslation} from "react-i18next";
 import {Alert, Button, Form} from "react-bootstrap";
-
-interface PlayMessageEntryDto {
-    id: number | null;
-    key: string;
-    language: string;
-    value: string | null;
-}
-
-interface ApiResponse<T> {
-    success: boolean;
-    message?: string;
-    data?: T;
-}
+import {getPlayMessagesForLanguage, savePlayMessages, type PlayMessageEntry} from "@/services/playMessageApi";
+import {apiErrorMessage} from "@/services/apiClient";
 
 const LANGUAGES = ["cs", "en", "sk", "pl"] as const;
 
@@ -25,7 +14,7 @@ const LANGUAGES = ["cs", "en", "sk", "pl"] as const;
 export default function PlayMessagesEditor() {
     const {t} = useTranslation();
     const [language, setLanguage] = useState<string>("cs");
-    const [entries, setEntries] = useState<PlayMessageEntryDto[]>([]);
+    const [entries, setEntries] = useState<PlayMessageEntry[]>([]);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -37,26 +26,16 @@ export default function PlayMessagesEditor() {
         setError(null);
         setSuccess(null);
 
-        fetch(`/api/react/playmessage/admin/all?lang=${language}`)
-            .then((res) => {
-                if (!res.ok) {
-                    throw new Error(`HTTP error! status: ${res.status}`);
-                }
-                return res.json();
-            })
-            .then((data: ApiResponse<PlayMessageEntryDto[]>) => {
+        getPlayMessagesForLanguage(language)
+            .then((loaded) => {
                 if (cancelled) {
                     return;
                 }
-                if (data.success && data.data) {
-                    setEntries(data.data);
-                } else {
-                    setError(data.message || t("user.playMessages.error"));
-                }
+                setEntries(loaded);
             })
-            .catch(() => {
+            .catch((err) => {
                 if (!cancelled) {
-                    setError(t("user.playMessages.networkError"));
+                    setError(apiErrorMessage(err, t("user.playMessages.error")));
                 }
             })
             .finally(() => {
@@ -81,26 +60,11 @@ export default function PlayMessagesEditor() {
         setSuccess(null);
 
         try {
-            const response = await fetch("/api/react/playmessage/admin/save", {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    lang: language,
-                    values: entries.map((entry) => ({key: entry.key, value: entry.value ?? ""}))
-                })
-            });
+            await savePlayMessages(language, entries.map((entry) => ({key: entry.key, value: entry.value ?? ""})));
 
-            const data: ApiResponse<unknown> = await response.json();
-
-            if (response.ok && data.success) {
-                setSuccess(t("user.playMessages.success"));
-            } else {
-                setError(data.message || t("user.playMessages.error"));
-            }
-        } catch {
-            setError(t("user.playMessages.networkError"));
+            setSuccess(t("user.playMessages.success"));
+        } catch (err) {
+            setError(apiErrorMessage(err, t("user.playMessages.error")));
         } finally {
             setSaving(false);
         }

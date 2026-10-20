@@ -3,7 +3,7 @@
  * Komponenta nezná URL ani tvar požadavku.
  */
 
-import {ApiError, apiGet, apiPost, ensureSuccess, requireData} from "./apiClient";
+import {ApiError, apiGet, apiPost, apiPut, ensureSuccess, requireData, requireEnvelope} from "./apiClient";
 import type {ApiResult} from "@/models/ApiResponse";
 import type {UserId} from "@/models/UserId";
 import {parseRoles, type UserRole} from "@/models/UserRole";
@@ -83,4 +83,12 @@ export async function createApiToken(): Promise<string> {
 /** GET /api/react/users-minimal – všichni uživatelé (id + celé jméno), např. výběr vlastníka dat. */
 export async function getUsersMinimal(): Promise<UserId[]> {
     return requireData(await apiGet("/api/react/users-minimal"), "Načtení uživatelů selhalo.");
+}
+
+/** Editovatelná pole uživatele v tabulce sysAdmina. */
+export type UserFlagField = "mapAdmin" | "traitAdmin" | "sysAdmin" | "biblioAdmin" | "taxonAdmin" | "deleted";
+
+/** PUT /api/react/users/{id} – změna pole uživatele (JSON `{<field>: value}`). */
+export async function updateUserFlag(userId: number, field: UserFlagField, value: boolean): Promise<void> {
+    requireEnvelope(await apiPut(`/api/react/users/${userId}`, {[field]: value}), "Úprava uživatele selhala.");
 }

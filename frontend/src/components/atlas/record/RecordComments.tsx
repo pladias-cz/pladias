@@ -246,7 +246,7 @@ export default function RecordComments({recordId, canResolveComments}: RecordCom
                                                             className="me-1"
                                                             onClick={() => handleResolveComment(comment.id)}
                                                         >
-                                                            {t("common.resolve")}
+                                                            {t("record.resolve")}
                                                         </Button>
                                                     )}
                                                     {/* Delete button: for comment author OR MapAdmin */}

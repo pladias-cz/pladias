@@ -5,10 +5,10 @@ import {useTranslation} from "react-i18next";
 
 export default function Preslia() {
     const {t} = useTranslation();
-    usePageTitle(t("pages.atlasAdmin.preslia.title"));
+    usePageTitle(t("atlas.admin.preslia.title"));
     return (
         <Row>
-            <h3>{t("pages.atlasAdmin.preslia.title")}</h3>
+            <h3>{t("atlas.admin.preslia.title")}</h3>
         </Row>
     );
 }

@@ -9,10 +9,16 @@ export const OriginalityStatusId = {
 export type OriginalityStatusId =
     typeof OriginalityStatusId[keyof typeof OriginalityStatusId];
 
+export type OriginalityStatusI18nKey =
+    | "record.originalityStatus.native"
+    | "record.originalityStatus.cultivated"
+    | "record.originalityStatus.nonnative"
+    | "record.originalityStatus.unprocessed";
+
 export const OriginalityStatusMeta: Record<OriginalityStatusId, {
     color: string;
     icon: string;
-    i18nKey: string;
+    i18nKey: OriginalityStatusI18nKey;
 }> = {
     [OriginalityStatusId.NATIVE]: {
         color: "#000000",

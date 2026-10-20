@@ -57,7 +57,7 @@ export function MapUsersAddProjectModal({
             </Modal.Body>
             <Modal.Footer>
                 <Button variant="secondary" onClick={onClose}>
-                    {t("cancel")}
+                    {t("common.cancel")}
                 </Button>
                 <Button 
                     variant="primary" 

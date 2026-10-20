@@ -347,7 +347,7 @@ export default function RecordFloristic({record, onFieldUpdated}: RecordFloristi
                             <RecordReadonlyField label={t("record.altitudeMax")}
                                                  content={localRecord?.altitudeMax?.toString() ?? ''}/>
                             <RecordReadonlyField label={t("record.date")} content={localRecord.dateIso}/>
-                            <RecordReadonlyField label={t("record.collector")}
+                            <RecordReadonlyField label={t("record.collectors")}
                                                  content={localRecord.recordAuthors.map(s => s.authorFullName ?? '').join("; ")}/>
                             <div className="d-flex flex-wrap gap-1">
                                 {localRecord.recordAuthors.length === 0 ? (

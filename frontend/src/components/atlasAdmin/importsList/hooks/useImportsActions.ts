@@ -1,4 +1,5 @@
 import {useState, useCallback} from 'react';
+import type {TFunction} from 'i18next';
 
 export interface UseImportsActionsReturn {
     deletingBatchId: number | null;
@@ -8,7 +9,7 @@ export interface UseImportsActionsReturn {
 
 export function useImportsActions(
     showFlash: (type: 'success' | 'danger', message: string) => void,
-    t: (key: string) => string,
+    t: TFunction,
     onImportChange?: () => void
 ): UseImportsActionsReturn {
     const [deletingBatchId, setDeletingBatchId] = useState<number | null>(null);

@@ -119,7 +119,7 @@ export default function Record() {
             }
         } catch (err) {
             console.error('Failed to move record:', err);
-            setMoveError(err instanceof Error ? err.message : t('pages.atlas.record.moveFailed'));
+            setMoveError(err instanceof Error ? err.message : t("record.moveFailed"));
             setMoving(false);
         }
     };
@@ -181,7 +181,7 @@ export default function Record() {
                                 <div className="p-3 bg-light border rounded">
                                     <div className="d-flex flex-wrap align-items-center gap-3">
                                         <div>
-                                            <strong>{t("record.newLocation")}: </strong>
+                                            <strong>{t("record.newPosition")}: </strong>
                                             {proposedLocation.coordinates[0].toFixed(6)}, {proposedLocation.coordinates[1].toFixed(6)}
                                         </div>
                                         <div>

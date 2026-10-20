@@ -57,7 +57,7 @@ export default function ListOfControls() {
             await axios.delete(`/api/react/importResult/validated/${id}`);
             
             // Success - show flash message
-            showFlash('success', t("components.atlasAdmin.importsList.deleteSuccess"));
+            showFlash('success', t("atlas.admin.importsList.deleteSuccess"));
             
             // Note: DataTable will automatically refresh on next interaction
             // or user can manually refresh the page
@@ -65,7 +65,7 @@ export default function ListOfControls() {
             console.error("Delete failed:", error);
             
             // Show error message
-            showFlash('danger', t("components.atlasAdmin.importsList.deleteError"));
+            showFlash('danger', t("atlas.admin.importsList.deleteError"));
         } finally {
             // Clear deleting state
             setDeletingId(null);

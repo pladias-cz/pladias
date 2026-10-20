@@ -44,7 +44,7 @@ export default function AggregationTable() {
     if (error) {
         return (
             <Alert variant="danger" className="my-3">
-                {t("traitAggregation.error")}: {error}
+                {t("common.error")}: {error}
             </Alert>
         );
     }

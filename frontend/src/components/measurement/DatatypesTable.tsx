@@ -45,7 +45,7 @@ export default function DatatypesTable() {
     if (error) {
         return (
             <Alert variant="danger" className="my-3">
-                {t("traitDatatypes.error")}: {error}
+                {t("common.error")}: {error}
             </Alert>
         );
     }

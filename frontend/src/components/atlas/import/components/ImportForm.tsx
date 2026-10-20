@@ -107,7 +107,6 @@ export function ImportForm({onFileSelected, isUploading}: ImportFormProps) {
                             isUploading={isUploading}
                             hasFile={!!selectedFile}
                             hasProject={operation === 'validation' || !!projectId}
-                            t={t}
                         />
                     </Form.Group>
                 </Form>
@@ -165,10 +164,11 @@ interface SubmitButtonProps {
     isUploading: boolean;
     hasFile: boolean;
     hasProject: boolean;
-    t: (key: string) => string;
 }
 
-function SubmitButton({isUploading, hasFile, hasProject, t}: SubmitButtonProps) {
+function SubmitButton({isUploading, hasFile, hasProject}: SubmitButtonProps) {
+    const {t} = useTranslation();
+
     return (
         <Button
             type="submit"

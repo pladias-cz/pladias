@@ -1,3 +1,4 @@
+/// <reference types="vitest/config" />
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react-swc'
 
@@ -59,5 +60,11 @@ export default defineConfig(({ command }) => ({
         alias: {
           '@': resolve(__dirname, 'src')
         }
+      },
+    test: {
+        // Vitest sdílí aliasy a transformace s Vite (docs/refactoring.md, sekce I)
+        environment: "jsdom",
+        setupFiles: ["./src/test/setup.ts"],
+        include: ["src/**/*.{test,spec}.{ts,tsx}"],
       }
     }))

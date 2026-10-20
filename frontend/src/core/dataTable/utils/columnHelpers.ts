@@ -3,6 +3,7 @@
  */
 
 import type {DataTableColumnDef, TextColumnDef, BooleanColumnDef, CheckboxColumnDef, NumberColumnDef, DateColumnDef, TimestampColumnDef, ActionColumnDef} from '../types.ts';
+import type {TFunction} from 'i18next';
 
 /**
  * Create a text column definition with strict typing
@@ -212,7 +213,7 @@ export function createCheckboxColumn<T extends object>(
  * Get the filter placeholder for a column based on its type
  * Uses generic i18n keys that work for all columns
  */
-export function getFilterPlaceholder<T>(column: DataTableColumnDef<T>, t: (key: string) => string): string {
+export function getFilterPlaceholder<T>(column: DataTableColumnDef<T>, t: TFunction): string {
     switch (column.type) {
         case 'text':
             return t("common.table.filter.all");

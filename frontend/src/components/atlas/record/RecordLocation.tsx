@@ -73,7 +73,7 @@ export default function RecordLocation({record, proposedLocation}: RecordLocatio
     return (
         <Card>
             <Card.Header>
-                <strong>{t("record.location")}</strong>
+                <strong>{t("record.position")}</strong>
             </Card.Header>
             <Card.Body>
                 <Table className="table-sm">

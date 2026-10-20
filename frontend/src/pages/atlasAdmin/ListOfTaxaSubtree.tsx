@@ -5,10 +5,10 @@ import {useTranslation} from "react-i18next";
 
 export default function ListOfTaxaSubtree() {
     const {t} = useTranslation();
-    usePageTitle(t("pages.atlasAdmin.listOfTaxaSubtree.title"));
+    usePageTitle(t("atlas.admin.listOfTaxaSubtree.title"));
     return (
         <Row>
-            <h3>{t("pages.atlasAdmin.listOfTaxaSubtree.title")}</h3>
+            <h3>{t("atlas.admin.listOfTaxaSubtree.title")}</h3>
         </Row>
     );
 }

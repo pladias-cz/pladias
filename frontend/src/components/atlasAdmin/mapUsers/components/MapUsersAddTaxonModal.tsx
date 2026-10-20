@@ -93,7 +93,7 @@ export function MapUsersAddTaxonModal({
                     onClick={onClose}
                     disabled={submitting}
                 >
-                    {submitting ? t("user.usersAdministration.waitToClose") : t("cancel")}
+                    {submitting ? t("user.usersAdministration.waitToClose") : t("common.cancel")}
                 </Button>
             </Modal.Footer>
         </Modal>

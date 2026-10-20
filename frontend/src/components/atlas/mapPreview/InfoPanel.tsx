@@ -66,7 +66,7 @@ export function InfoPanel({type = 1, taxonId, taxonName}: InfoPanelProps) {
             })
             .catch(err => {
                 console.error('Failed to load taxon map settings:', err);
-                setError(t('components.atlas.mapPreview.loading'));
+                setError(t('atlas.mapPreview.loading'));
             })
             .finally(() => {
                 setLoading(false);

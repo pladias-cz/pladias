@@ -6,6 +6,8 @@
         "committer": "Importoval",
         "data": "Data",
         "delete": "Smazat",
+        "deleteError": "Mazání importu se nezdařilo",
+        "deleteSuccess": "Import byl smazán",
         "downloadModified": "Stáhnout editované záznamy",
         "error": "Chyba",
         "filename": "Soubor",
@@ -26,17 +28,23 @@
         "title": "Seznam importů",
         "warnings": "Varování"
       },
+      "listOfTaxaSubtree": {
+        "title": "Seznam taxonů podstromu"
+      },
       "pages": {
         "listOfImports": {
           "title": "Seznam všech importů"
         },
         "listOfTaxa": {
-          "title": "Správa taxonů",
-          "downloadPublicationCsv": "Stáhnout CSV přehled pro generování PDF"
+          "downloadPublicationCsv": "Stáhnout CSV přehled pro generování PDF",
+          "title": "Správa taxonů"
         },
         "listOfUsers": {
           "title": "Správa uživatelů map"
         }
+      },
+      "preslia": {
+        "title": "Preslia"
       },
       "taxaList": {
         "archiveCSV": "CSV archiv",
@@ -102,6 +110,9 @@
         "showingTaxa": "Zobrazeno {{showing}} z {{total}} taxonů",
         "title": "Přehled taxonů",
         "view": "Zobrazit"
+      },
+      "uploadFile": {
+        "title": "Nahrání souboru"
       }
     },
     "controls": {
@@ -120,6 +131,7 @@
         "errorMessage": "Popis chyby",
         "fixAndRetry": "fixAndRetry",
         "hasErrors": "Soubor obsahuje chyby",
+        "hasErrorsNotImported": "Importováno s chybami",
         "import": "Importovat dávku do databáze",
         "importAnother": "Nahrát další dávku",
         "noErrors": "Soubor je OK",
@@ -156,6 +168,7 @@
       "commented": "komentovaný",
       "comments": "Komentáře",
       "date": "Datum",
+      "district": "Okres",
       "districtInline": ", okres {{district}}",
       "editRecordShowDetail": "editovat záznam/zobrazit detail",
       "edited": "editovaný",
@@ -163,11 +176,10 @@
       "externalIdLabel": "Externí ID",
       "gps": "GPS",
       "gpsPrecision": "polohová přesnost",
+      "herbarium": "Herbář",
       "herbariumLower": "herbář",
       "importedBy": "importoval",
       "includedInMapLabel": "Zahrnut do mapy",
-      "district": "Okres",
-      "herbarium": "Herbář",
       "latitude": "Zeměpisná šířka",
       "locality": "Lokalita",
       "localityLower": "lokalita",
@@ -185,11 +197,11 @@
       "recordIdLabel": "ID záznamu",
       "records": "Záznamy",
       "revisedHerbariumLabel": "Revidovaný herbář",
-      "sourceLower": "pramen",
       "source": "Zdroj",
+      "sourceLower": "pramen",
+      "square": "čtverec",
       "squareAbbrev": "Kv.",
       "substrate": "Substrát",
-      "square": "čtverec",
       "title": "Detailní mapa",
       "unknownYear": "neznámý rok",
       "validationStatus": "Status",
@@ -197,41 +209,41 @@
     },
     "mapMain": {
       "infoPanel": {
-          "boundToQuadrant": "přivázaných ke kvadrantu, \n",
-          "boundToSquare": "přivázaných k poli,\n",
-          "hasComment": "záznamů má komentář zadaný v aplikaci Pladias",
-          "hasCoordinates": "má konkrétní souřadnice,\n",
-          "loadingStatistics": "Načítám statistiky...",
-          "mapAuthors": "Autoři mapy",
-          "mapAuthorsNote": "Poznámka autorů mapy",
-          "mapTypeDescription": "Volbu proveďte zaškrtnutím příslušného kolečka vpravo od zvoleného typu mapy.\n                            Pro pracovní náhled mapy klikněte na příslušný modrý text.",
-          "mapTypeSelection": "Výběr typu mapy pro publikaci",
-          "mapTypes": {
-            "basic": "Základní",
-            "extinctVsRecent": "Zaniklý versus recentní",
-            "herbariumVsNonHerbarium": "Herbář versus neherbář",
-            "nativeVsNonNative": "Původní versus nepůvodní"
-          },
-          "noComment": "neobsahuje komentář",
-          "noLocation": "je zcela bez uvedení polohy",
-          "noSupervisors": "Žádní supervizoři.",
-          "ofWhich": "Z toho je:",
-          "preview": "Náhled",
-          "printMapNote": "Poznámka pro tisk mapy",
-          "projectsLoading": "Projekty budou načteny z dat výše.",
-          "quadrantStatus": "Stav kvadrantů:",
-          "recordCounts": "Počty záznamů",
-          "records": "Záznamy:",
-          "revisionStatus": {
-            "submit": "Pokud považujete mapu za připravenou k rozšířenému komentování, upozorněte Zdeňka Kaplana:",
-            "submitButton": "Odevzdat",
-            "submited": " Díky za odvedenou práci! Mapa je odevzdána a čeká na kontroly rozšířeným okruhem spolupracovníků. Autoři mapy mají stále právo upravovat záznamy a jejich příznaky. V okamžiku, kdy bude dokončena fáze kontrol, budou o tom autoři mapy informováni e-mailem.",
-            "supervised": " Mapa je ve fázi kontrol rozšířeným okruhem spolupracovníků. Autoři mapy mají stále právo upravovat záznamy a jejich příznaky, spolupracovníci mohou záznamy komentovat. V okamžiku, kdy bude dokončena fáze kontrol, budou o tom všichni autoři mapy informováni e-mailem.",
-            "finishing": " Máte k dispozici komentáře k mapě &ndash; zřejmě formou komentářů k jednotlivým záznamů či jinak &ndash; prosím až projdete tyto poznámky, odevzdejte mapu do předtiskové přípravy:",
-            "feedbackProceeded": " Zapracoval(a) jsem podněty kontrolorů"
-          },
-          "sourceProjects": "Zdrojové projekty a počty záznamů"
-  },
+        "boundToQuadrant": "přivázaných ke kvadrantu, \n",
+        "boundToSquare": "přivázaných k poli,\n",
+        "hasComment": "záznamů má komentář zadaný v aplikaci Pladias",
+        "hasCoordinates": "má konkrétní souřadnice,\n",
+        "loadingStatistics": "Načítám statistiky...",
+        "mapAuthors": "Autoři mapy",
+        "mapAuthorsNote": "Poznámka autorů mapy",
+        "mapTypeDescription": "Volbu proveďte zaškrtnutím příslušného kolečka vpravo od zvoleného typu mapy.\n                            Pro pracovní náhled mapy klikněte na příslušný modrý text.",
+        "mapTypeSelection": "Výběr typu mapy pro publikaci",
+        "mapTypes": {
+          "basic": "Základní",
+          "extinctVsRecent": "Zaniklý versus recentní",
+          "herbariumVsNonHerbarium": "Herbář versus neherbář",
+          "nativeVsNonNative": "Původní versus nepůvodní"
+        },
+        "noComment": "neobsahuje komentář",
+        "noLocation": "je zcela bez uvedení polohy",
+        "noSupervisors": "Žádní supervizoři.",
+        "ofWhich": "Z toho je:",
+        "preview": "Náhled",
+        "printMapNote": "Poznámka pro tisk mapy",
+        "projectsLoading": "Projekty budou načteny z dat výše.",
+        "quadrantStatus": "Stav kvadrantů:",
+        "recordCounts": "Počty záznamů",
+        "records": "Záznamy:",
+        "revisionStatus": {
+          "feedbackProceeded": " Zapracoval(a) jsem podněty kontrolorů",
+          "finishing": " Máte k dispozici komentáře k mapě &ndash; zřejmě formou komentářů k jednotlivým záznamů či jinak &ndash; prosím až projdete tyto poznámky, odevzdejte mapu do předtiskové přípravy:",
+          "submit": "Pokud považujete mapu za připravenou k rozšířenému komentování, upozorněte Zdeňka Kaplana:",
+          "submitButton": "Odevzdat",
+          "submited": " Díky za odvedenou práci! Mapa je odevzdána a čeká na kontroly rozšířeným okruhem spolupracovníků. Autoři mapy mají stále právo upravovat záznamy a jejich příznaky. V okamžiku, kdy bude dokončena fáze kontrol, budou o tom autoři mapy informováni e-mailem.",
+          "supervised": " Mapa je ve fázi kontrol rozšířeným okruhem spolupracovníků. Autoři mapy mají stále právo upravovat záznamy a jejich příznaky, spolupracovníci mohou záznamy komentovat. V okamžiku, kdy bude dokončena fáze kontrol, budou o tom všichni autoři mapy informováni e-mailem."
+        },
+        "sourceProjects": "Zdrojové projekty a počty záznamů"
+      },
       "taxonId": "ID taxonu",
       "title": "Přehledová mapa"
     },
@@ -311,10 +323,10 @@
           "batchProgress": "Průběh: {{processed}} / {{total}}",
           "batchStartFailed": "Nepodařilo se spustit hromadnou operaci.",
           "bufferChangeReady": "Akce (změna samotného bufferu na {{value}}) připravena.",
-          "confirmSemafor": "Opravdu chcete změnit semafor pro všechny vybrané záznamy?",
-          "confirmTaxon": "Opravdu chcete změnit taxon u všech vybraných záznamů?",
           "confirmEmptyNote": "Poznámka je prázdná. Opravdu ji chcete nastavit na prázdnou hodnotu?",
           "confirmEmptySource": "Pramen je prázdný. Opravdu ho chcete nastavit na prázdnou hodnotu?",
+          "confirmSemafor": "Opravdu chcete změnit semafor pro všechny vybrané záznamy?",
+          "confirmTaxon": "Opravdu chcete změnit taxon u všech vybraných záznamů?",
           "coordsParseFailed": "Souřadnice nelze automaticky rozparsovat. Použijte formát lat,lon nebo vyplňte Lat/Lon ručně.",
           "coordsPrefilled": "Souřadnice byly předvyplněny do polí Lat/Lon.",
           "coordsRequired": "Vyplňte Lat i Lon pro přesun lokality.",
@@ -333,11 +345,11 @@
           "requiredLocality": "Lokalita je povinná.",
           "requiredNearestTown": "Nejbližší obec je povinná.",
           "searchFirst": "Nejprve spusťte vyhledávání, aby bylo možné načíst záznamy k úpravě.",
-          "semaforChangeReady": "Akce (změna semaforu) připravena.",
           "selectFinder": "Vyberte nálezce.",
           "selectPhytochorion": "Vyberte fytochorion.",
           "selectSemafor": "Vyberte nový semafor.",
           "selectTaxon": "Vyberte taxon.",
+          "semaforChangeReady": "Akce (změna semaforu) připravena.",
           "showFailedIds": "Neúspěšné záznamy ({{count}})",
           "showSuccessfulIds": "Úspěšně upravené záznamy ({{count}})",
           "sourceChangeReady": "Akce (změna pramene) připravena.",
@@ -520,13 +532,13 @@
         "sortDescending": "sestupně",
         "sortLabel": "Seřadit dle",
         "sortOptions": {
-          "taxonName": "taxonu",
+          "date": "data",
           "locality": "lokality",
           "nearestTownName": "nejbližší obce",
-          "date": "data",
-          "validationStatus": "stavu validace",
+          "phytochorion": "fytochorionu",
           "square": "mapového pole",
-          "phytochorion": "fytochorionu"
+          "taxonName": "taxonu",
+          "validationStatus": "stavu validace"
         },
         "submit": "vyhledat",
         "submitFailed": "Nepodařilo se odeslat formulář.",
@@ -633,9 +645,11 @@
     "back": "Zpět",
     "cancel": "Zrušit",
     "close": "Zavřít",
+    "delete": "Smazat",
     "description": "Popis",
     "download": "stáhnout",
     "edit": "Upravit",
+    "error": "Chyba",
     "false": "false",
     "inlineField": {
       "add": "Přidat",
@@ -654,16 +668,18 @@
       "remove": "Odebrat",
       "saveFailed": "Uložení selhalo"
     },
+    "no": "Ne",
+    "noData": "Nenalezeny žádné záznamy",
+    "null": "null",
+    "ok": "OK",
+    "save": "Uložit",
+    "saving": "Ukládám...",
+    "select": "- - Vyberte - -",
     "singleSelectEdit": {
       "loadFailed": "Načtení možností selhalo",
       "none": "Neurčeno",
       "saveFailed": "Uložení selhalo"
     },
-    "no": "Ne",
-    "noData": "Nenalezeny žádné záznamy",
-    "null": "null",
-    "ok": "OK",
-    "select": "- - Vyberte - -",
     "submitting": "Odesílám...",
     "table": {
       "all": "Vše",
@@ -797,8 +813,8 @@
     }
   },
   "record": {
-    "addComment": "Přidat komentář",
     "actualPosition": "Současná pozice",
+    "addComment": "Přidat komentář",
     "altitude": "Nadmořská výška",
     "altitudeAproximate": "Nadm. výška aprox.",
     "altitudeMax": "Nadmořská výška MAX",
@@ -819,10 +835,10 @@
     "commentPlaceholder": "Zadejte svůj komentář zde...",
     "commentResolved": "Vyřešeno",
     "comments": "Komentáře",
-    "coordsOrigin": "Zdroj souřadnic",
-    "coordsPrecision": "Polohová přesnost [m]",
     "confirmDeleteComment": "Opravdu chcete smazat tento komentář?",
     "confirmLocationChange": "Potvrdit změnu pozice",
+    "coordsOrigin": "Zdroj souřadnic",
+    "coordsPrecision": "Polohová přesnost [m]",
     "date": "Datum",
     "dateIso": "Datum (ISO)",
     "detrev": "Revize určení",
@@ -836,16 +852,17 @@
     "herbariums": "Herbáře",
     "history": "Historie záznamu",
     "historyField": "Historie pole",
-    "historyOldValue": "Původní hodnota",
     "historyNewValue": "Upravená hodnota",
+    "historyOldValue": "Původní hodnota",
     "includedInMap": "Záznam do mapy",
     "latitude": "Zeměpisná šířka",
     "license": "Licence",
-    "localityDetails": "Detaily lokality",
     "locality": "Lokalita",
+    "localityDetails": "Detaily lokality",
     "localityExtra": "Lokalita pomocná",
     "longitude": "Zeměpisná délka",
     "map": "Mapa",
+    "moveFailed": "Přesun pozice se nezdařil",
     "moveLocationPrompt": "Opravdu chcete přesunout pozici na:",
     "nameOriginal": "Původní jméno",
     "nearestTown": "Nejbližší obec",
@@ -856,8 +873,15 @@
     "origin": "Původ",
     "originalId": "Externí ID",
     "originality": "Původnost",
+    "originalityStatus": {
+      "cultivated": "Pěstovaný",
+      "native": "Původní",
+      "nonnative": "Nepůvodní",
+      "unprocessed": "Nezpracováno"
+    },
     "phytochorion": "Fytochorion",
     "phytochorionComputed": "Dopočtený fytochorion",
+    "position": "Pozice",
     "project": "Projekt",
     "quadrant": "Kvadrant",
     "remarkDoubt": "Poznámka - pochyby",
@@ -869,17 +893,24 @@
     "resolvedWhen": "Datum vyřešení",
     "revisedHerbarium": "Revidovaný herbář",
     "source": "Pramen",
+    "squares": "Kvadranty",
     "status": "Status",
-    "substrateText": "Substrát",
     "substrate1": "Hlavní kategorie substrát",
     "substrate2": "Upřesňující kategorie substrát",
+    "substrateText": "Substrát",
     "taxon": "Taxon",
     "titles": {
       "detail": "Záznam",
       "floristic": "Floristický záznam"
     },
-    "uploaded": "Nahrál",
     "unresolved": "nevyřešených",
+    "uploaded": "Nahrál",
+    "validation": {
+      "accepted": "Schváleno",
+      "declined": "Zamítnuto",
+      "uncertain": "Nejisté",
+      "unprocessed": "Nezpracováno"
+    },
     "validationStatus": "Validace",
     "year": "Rok"
   },
@@ -892,10 +923,14 @@
     },
     "create": {
       "createButton": "Vytvořit taxon",
+      "createError": "Vytvoření taxonu se nezdařilo",
       "latinName": "Latinské jméno",
       "latinNamePlaceholder": "např. Quercus robur",
+      "latinNameRequired": "Zadejte latinské jméno",
+      "loadRanksError": "Nepodařilo se načíst seznam ranků",
       "rank": "Rank",
-      "title": "Nový taxon pod {name}"
+      "title": "Nový taxon pod {name}",
+      "unexpectedError": "Neočekávaná chyba"
     },
     "detail": {
       "apiError": "API vrátilo chybu při načítání rodičů",
@@ -952,56 +987,56 @@
   },
   "trait": {
     "aggregationTypes": {
+      "description": "popis",
       "heading": "Základní informace ke komplexnímu exportu",
+      "key": "kód",
       "paragraph1": "Komplexní export vlastností druhů umožňuje exportovat originální, zděděné, agregované, nebo sloučené hodnoty. <b>Originální hodnoty</b> jsou ty, které měly jednotlivé taxony pro danou vlastnost uvedeny ve výchozím datovém souboru. Tyto originální hodnoty však nejsou uvedeny pro všechny taxony. Existují případy, kdy jsou hodnoty uvedeny např. pro poddruh, ale nikoliv pro nadřazený druh. V takových případech je možné použít zděděné nebo agregované hodnoty. Proces <b>dědění</b> probíhá v taxonomickém stromu směrem dolů a hodnoty se přenášejí pouze na tzv. jedináčky, tj. taxony, které jsou jediné v rámci nadřazeného taxonu. U takového taxonu se pak ve zděděných hodnotách objeví všechny údaje, které lze nalézt v originálních hodnotách při pohledu nahoru ke kořeni stromu do takové vzdálenosti, dokud jsou rodiče rovněž jedináčci. Proces <b>agregace</b> naopak probíhá v taxonomickém stromu směrem nahoru. Existuje několik způsobů, jak se hodnoty uvedené u taxonů agregují. Přesně jsou tyto způsoby agregace popsány u jednotlivých typů agregace. Do exportu lze zahrnout originální, zděděné i agregované hodnoty najednou a exportovat je jako tzv. <b>sloučené hodnoty</b>. V tom případě mají originální hodnoty přednost před agregovanými a agregované hodnoty mají přednost před zděděnými. Pokud při exportu nezaškrtneme žádné políčko z nabízených hodnot, tak se automaticky exportují originální, zděděné a agregované hodnoty.",
       "paragraph2": "Při exportu je dále možné zvolit seznam taxonů, pro které chceme hodnoty exportovat. Pokud žádné taxony nezvolíme, exportují se automaticky všechny. Jako poslední možnost si uživatel může vybrat taxonomické ranky, které chce do exportu zahrnout. Pokud nezaškrtne žádné, automaticky se exportují všechny.",
       "paragraph3": "Přesný způsob exportu jednotlivých hodnot (originálních, zděděných, agregovaných) je dán typem agregace nastaveným pro každou vlastnost. Seznam jednotlivých typů agregace je uveden níže.",
-      "title": "Typy agregace",
-      "key": "kód",
-      "description": "popis"
+      "title": "Typy agregace"
     },
     "backup": {
-      "title": "Záloha traitů",
-      "error": "Chyba",
-      "description": "popis",
       "createdAt": "vytvořeno",
+      "description": "popis",
       "download": "stáhnout",
-      "started": "započato",
+      "error": "Chyba",
       "note": "poznámka",
       "notePlaceholder": "sem vložte text poznámky",
+      "started": "započato",
+      "submit": "Odeslat",
       "submitting": "odesílání",
-      "submit": "Odeslat"
-    },
-    "feature": {
-      "name": "název",
-      "admin": "administrátor"
+      "title": "Záloha traitů"
     },
     "data": {
-      "title": "Data",
-      "section": "sekce"
+      "section": "sekce",
+      "title": "Data"
     },
     "datatypes": {
+      "comment": "komentář",
       "datatype": "datový typ",
-      "title": "Základní informace k importům",
-      "text1": "Zakládání nových vlastností druhů, datových typů a změny v číselnících výčtových typů se provádějí ručně. Tyto procesy vyřizuje Marcela Řezníčková",
-      "text2": "Aktuální přehled dostupných datových typů, jejich popis a omezení prezentuje následující tabulka. ",
-      "name": "Jméno",
-      "nameCz": "Jméno CZ",
       "description": "popis",
-      "multiplicity": "multiplicita",
       "dominance": "dominance",
       "frequency": "frekvence",
-      "comment": "komentář",
-      "immeasurability": "neměřitelnost"
+      "immeasurability": "neměřitelnost",
+      "multiplicity": "multiplicita",
+      "name": "Jméno",
+      "nameCz": "Jméno CZ",
+      "text1": "Zakládání nových vlastností druhů, datových typů a změny v číselnících výčtových typů se provádějí ručně. Tyto procesy vyřizuje Marcela Řezníčková",
+      "text2": "Aktuální přehled dostupných datových typů, jejich popis a omezení prezentuje následující tabulka. ",
+      "title": "Základní informace k importům"
     },
     "export": {
-      "title": "Komplexní export vlastností druhů",
-      "valueTypes": "typy hodnot",
-      "taxaRanks": "taxonomické ranky",
+      "failed": "Export se nezdařil. Zkuste to prosím znovu.",
       "placeholder": "Zde vkopírujte seznam požadovaných taxonů v podobě latinských jmen na jednotlivých řádcích.",
       "submit": "Exportovat",
       "suppressed": "Zahrnout potlačené",
-      "failed": "Export se nezdařil. Zkuste to prosím znovu."
+      "taxaRanks": "taxonomické ranky",
+      "title": "Komplexní export vlastností druhů",
+      "valueTypes": "typy hodnot"
+    },
+    "feature": {
+      "admin": "administrátor",
+      "name": "název"
     },
     "featureDetail": {
       "title": "Detail vlastnosti",
@@ -1031,6 +1066,11 @@
       "validate": "Zkontrolovat dávku",
       "visibility": "Dostupnost dat"
     }
+  },
+  "unauthorized": {
+    "goBack": "Zpět na předchozí stránku",
+    "message": "K této části aplikace nemáte přístup.",
+    "title": "Nemáte přístup"
   },
   "user": {
     "addUser": {
@@ -1177,11 +1217,5 @@
       "traitAdmin": "Trait Admin",
       "waitToClose": "Počkejte na zavření..."
     }
-  },
-  "unauthorized":
-  {
-    "title": "Nemáte přístup",
-    "message": "K této části aplikace nemáte přístup.",
-    "goBack": "Zpět na předchozí stránku"
   }
 }

@@ -42,7 +42,7 @@ export default function DownloadsTable() {
     if (error) {
         return (
             <Alert variant="danger" className="my-3">
-                {t("downloads.error")}: {error}
+                {t("common.error")}: {error}
             </Alert>
         );
     }

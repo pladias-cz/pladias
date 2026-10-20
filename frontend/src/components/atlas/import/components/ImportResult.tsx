@@ -20,7 +20,7 @@ export function ImportResult({result, onReset}: ImportResultProps) {
             if (!hasErrors) {
                 return t("atlas.import.component.successImported");
             }
-            return t('components.atlas.import.hasErrorsNotImported');
+            return t('atlas.import.component.hasErrorsNotImported');
         }
         if (!hasErrors) {
             return t("atlas.import.component.noErrors");

@@ -32,13 +32,13 @@ export default function NewTaxonCard({ taxon }: Props) {
             )
             .then(setRankOptions)
             .catch(() =>
-                setError(t("components.newTaxonCard.loadRanksError"))
+                setError(t("taxon.create.loadRanksError"))
             );
     }, []);
 
     const handleAdd = async () => {
         if (!nameLat.trim()) {
-            setError(t("components.newTaxonCard.latinNameRequired"));
+            setError(t("taxon.create.latinNameRequired"));
             return;
         }
 
@@ -59,7 +59,7 @@ export default function NewTaxonCard({ taxon }: Props) {
             });
 
             if (!res.ok) {
-                throw new Error(t("components.newTaxonCard.createError"));
+                throw new Error(t("taxon.create.createError"));
             }
 
             const json = await res.json();
@@ -67,7 +67,7 @@ export default function NewTaxonCard({ taxon }: Props) {
 
             navigate(`/user/taxaAdministration/${addedTaxon.id}`);
         } catch (e: any) {
-            setError(e.message ?? t("components.newTaxonCard.unexpectedError"));
+            setError(e.message ?? t("taxon.create.unexpectedError"));
         } finally {
             setLoading(false);
         }

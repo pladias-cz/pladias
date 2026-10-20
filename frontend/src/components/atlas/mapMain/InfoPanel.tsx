@@ -102,7 +102,7 @@ const MAP_TYPES = [
     {id: 2, key: 'atlas.mapMain.infoPanel.mapTypes.extinctVsRecent'},
     {id: 3, key: 'atlas.mapMain.infoPanel.mapTypes.nativeVsNonNative'},
     {id: 4, key: 'atlas.mapMain.infoPanel.mapTypes.herbariumVsNonHerbarium'},
-];
+] as const;
 
 // Revision status IDs, must match app/models/RevisionStatus.java
 const REVISION_STATUS_MAP_SUBMITTED = 3;

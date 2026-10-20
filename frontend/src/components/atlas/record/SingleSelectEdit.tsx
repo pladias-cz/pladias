@@ -143,13 +143,13 @@ export default function SingleSelectEdit({
                                 aria-hidden="true"
                                 style={{cursor: "pointer"}}
                                 onClick={() => setEditing(true)}
-                                title={t("common.singleSelectEdit.edit")}
+                                title={t("common.edit")}
                             />
                             <span
                                 className="editable-value ms-1"
                                 style={{cursor: "pointer"}}
                                 onClick={() => setEditing(true)}
-                                title={t("common.singleSelectEdit.edit")}
+                                title={t("common.edit")}
                             >
                                 {displayContent}
                             </span>

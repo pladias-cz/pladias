@@ -186,7 +186,7 @@ export default function SearchForm() {
     const herbariumOptions = useMemo<TypeaheadOption[]>(() => (
         herbariums.map((herbarium) => ({
             id: herbarium.id,
-            label: herbarium.translationKey ? t(herbarium.translationKey) : herbarium.name,
+            label: herbarium.translationKey ? t(herbarium.translationKey as never) : herbarium.name,
         }))
     ), [herbariums, t]);
 

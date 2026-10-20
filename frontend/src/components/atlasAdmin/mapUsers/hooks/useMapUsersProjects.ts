@@ -4,6 +4,7 @@
 
 import {useCallback, useState} from 'react';
 import axios from 'axios';
+import type {TFunction} from 'i18next';
 import type {Project} from '../types';
 
 export interface UseMapUsersProjectsReturn {
@@ -22,7 +23,7 @@ export interface UseMapUsersProjectsReturn {
 
 export function useMapUsersProjects(
     showFlash: (type: 'success' | 'danger', message: string) => void,
-    t: (key: string) => string,
+    t: TFunction,
     onProjectChange?: () => void
 ): UseMapUsersProjectsReturn {
     const [projects, setProjects] = useState<Project[]>([]);

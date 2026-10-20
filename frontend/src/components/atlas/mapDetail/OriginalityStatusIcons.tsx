@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import {useTranslation} from 'react-i18next';
 import { OriginalityStatusId, OriginalityStatusMeta } from '@/core/originalityStatus';
 import type { RecordPladias } from '@/models';
 import { useRecordQuickUpdates } from './hooks/useRecordQuickUpdates.ts';
@@ -9,6 +10,7 @@ interface OriginalityStatusIconsProps {
 }
 
 export function OriginalityStatusIcons({ record, onRecordUpdated }: OriginalityStatusIconsProps) {
+    const {t} = useTranslation();
     const { updateOriginalityStatus } = useRecordQuickUpdates();
     const [optimisticStatus, setOptimisticStatus] = useState<OriginalityStatusId | null>(null);
 
@@ -67,7 +69,7 @@ export function OriginalityStatusIcons({ record, onRecordUpdated }: OriginalityS
                         type="button"
                         onClick={() => handleStatusChange(id)}
                         disabled={!record.canEditValidationFields}
-                        title={meta.i18nKey}
+                        title={t(meta.i18nKey)}
                         style={{
                             display: 'flex',
                             alignItems: 'center',

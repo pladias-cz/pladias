@@ -4,6 +4,7 @@
 
 import {useCallback, useState, useEffect, useRef} from 'react';
 import axios from 'axios';
+import type {TFunction} from 'i18next';
 import type {SupervisedTaxon} from '../types';
 
 export interface UseMapUsersTaxaReturn {
@@ -23,7 +24,7 @@ export interface UseMapUsersTaxaReturn {
 
 export function useMapUsersTaxa(
     showFlash: (type: 'success' | 'danger', message: string) => void,
-    t: (key: string) => string,
+    t: TFunction,
     onTaxonChange?: () => void
 ): UseMapUsersTaxaReturn {
     const [taxa, setTaxa] = useState<SupervisedTaxon[]>([]);

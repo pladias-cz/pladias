@@ -435,25 +435,28 @@ Třída `SynonymController` je anotována `@Security.Authenticated(AuthorizedAsT
 ### POST `/atlasadmin/taxonMapSettings` – Editace polí nastavení mapy taxonu (`TaxonMapSettingsController.updateMapSettings`)
 
 **Kdo smí provést:**
-- Controller vyžaduje pouze přihlášení (`@Security.Authenticated(Authorized.class)`) – role se kontroluje **per klíč**, ne pro celý endpoint:
+- Controller vyžaduje přihlášení (`@Security.Authenticated(Authorized.class)`); centrální kontrola `verifyCurrentUserCanEditKey` (před kontrolou timestampu) rozhoduje per klíč:
+  - **mapAdmin** smí měnit **všechny klíče**,
+  - **revizor daného taxonu nebo některého jeho nadřazeného taxonu** (`taxonService.getInheritedRevisors`) smí měnit pouze `MAPTYPE`, `REVISIONSTATUS`, `REVISORSCOMMENT` a `REVISORSPRINTMAPCOMMENT`,
+  - ostatní uživatelé nemohou měnit nic (`TaxonMapSettingsController.userNotEligible`).
 
-| Klíč (`key`) | Kdo smí měnit | Kontrola
+| Klíč (`key`) | Kdo smí měnit | Další kontrola
 |---|---|---|
-| `ISMAPPED` | mapAdmin | `verifyCurrentUserIsMapAdmin` ✅
-| `SETCOMMONTHRESHOLD` | mapAdmin | `verifyCurrentUserIsMapAdmin` ✅
-| `PUBLICATIONSTATUS` | mapAdmin | `verifyCurrentUserIsMapAdmin` + `PublicationUpdateService` ✅
-| `REVISIONSTATUS` | viz níže | `RevisionUpdateService.verifyTransitionIsFeasible` ⚠️ částečná
-| `MAPTYPE` | **kdokoli přihlášený** ⚠️ | žádná kontrola
-| `REVISORSCOMMENT` | **kdokoli přihlášený** ⚠️ | žádná kontrola
-| `REVISORSPRINTMAPCOMMENT` | **kdokoli přihlážený** ⚠️ | žádná kontrola
-| `MAPADMINCOMMENT` | **kdokoli přihlášený** ⚠️ | žádná kontrola
-| `PRESLIA` | **kdokoli přihlášený** ⚠️ | žádná kontrola
-| `PROTECTED` | **kdokoli přihlášený** ⚠️ | žádná kontrola
-| `PARENT_MAP` | **kdokoli přihlášený** ⚠️ | žádná kontrola
+| `ISMAPPED` | mapAdmin | –
+| `SETCOMMONTHRESHOLD` | mapAdmin | –
+| `PUBLICATIONSTATUS` | mapAdmin | `PublicationUpdateService` (přechody statusů mapy)
+| `MAPADMINCOMMENT` | mapAdmin | –
+| `PRESLIA` | mapAdmin | –
+| `PROTECTED` | mapAdmin | –
+| `PARENT_MAP` | mapAdmin | `TaxonMapSettingsParentUpdateService`
+| `MAPTYPE` | mapAdmin, revizor | –
+| `REVISORSCOMMENT` | mapAdmin, revizor | –
+| `REVISORSPRINTMAPCOMMENT` | mapAdmin, revizor | –
+| `REVISIONSTATUS` | mapAdmin, revizor | viz níže
 
 **REVISIONSTATUS detailně:**
 - Přechod na `Assigned`, `Review` nebo `Completing` vyžaduje mapAdmin
-- Ostatní přechody: non-mapAdmin smí jen o jeden krok vpřed (`oldStatus + 1 == newStatus`); **nekontroluje se, zda je uživatel revizorem daného taxonu** – tedy libovolný přihlášený uživatel může posunout revizní status taxonu o krok vpřed
+- Ostatní přechody: non-mapAdmin (tedy revizor) smí jen o jeden krok vpřed (`oldStatus + 1 == newStatus`) a pouze u taxonu, který revizuje (kontrola revizorské role v `verifyCurrentUserCanEditKey`)
 - Status `NotStarted` nelze nastavit, má-li taxon přiřazené revizory
 
 **Podmínky editace (všechny klíče):**
@@ -464,7 +467,7 @@ Třída `SynonymController` je anotována `@Security.Authenticated(AuthorizedAsT
 - Změna `REVISIONSTATUS` na `Submitted`/`Completing`/`Closed` odesílá e-maily adminům/revizorům
 - Aktualizace `lastEditTimestamp` a `editCount` v nastavení taxonu
 
-⚠️ Chybějící kontroly u většiny klíčů popisuje [problém č. 1](#1-post-atlasadmintaxonmapsettings--většina-polí-bez-kontroly-oprávnění)
+> Dříve většina klíčů neměla žádnou kontrolu oprávnění – viz [problém č. 1](#1-post-atlasadmintaxonmapsettings--většina-polí-bez-kontroly-oprávnění) (vyřešeno).
 
 ---
 
@@ -625,15 +628,11 @@ Třída `SynonymController` je anotována `@Security.Authenticated(AuthorizedAsT
 
 ## Zjištěné problémy s oprávněními a nesoulady
 
-### 1. POST `/atlasadmin/taxonMapSettings` – většina polí bez kontroly oprávnění
-
-Controller vyžaduje jen přihlášení; `verifyCurrentUserIsMapAdmin` se volá pouze u klíčů `ISMAPPED`, `SETCOMMONTHRESHOLD` a `PUBLICATIONSTATUS`. Klíče `MAPTYPE`, `REVISORSCOMMENT`, `REVISORSPRINTMAPCOMMENT`, `MAPADMINCOMMENT`, `PRESLIA`, `PROTECTED` a `PARENT_MAP` může měnit **libovolný přihlášený uživatel** (stačí znát aktuální timestamp). U `REVISIONSTATUS` se nekontroluje revizorská role – non-mapAdmin může posunout status o krok vpřed u libovolného taxonu.
-
-### 2. `GET /api/react/tempfiles/:fileId` – dočasné soubory bez kontroly vlastníka (částečně vyřešeno)
+### 1. `GET /api/react/tempfiles/:fileId` – dočasné soubory bez kontroly vlastníka (částečně vyřešeno)
 
   Chybí kontrola vlastníka – `fileId` je sekvenční integer bez vazby na uživatele, takže si **libovolný přihlášený uživatel** může enumerací stáhnout cizí dočasné soubory (jediné místo vzniku je `TraitUploadService.serializeWorkbook` – anotovaný workbook po neúspěšné validaci/importu vlastností, jehož download URL dostává uživatel ve zprávě `TraitsController.ValidationFailed`/`ImportFailed`). Soubor se po stažení smaže, takže ho útočník „vzetím“ zničí dřív, než si ho stáhne oprávněný uživatel (DoS).
 
-Budoucí dořešení (odloženo – vyžaduje změnu DB, evoluce jsou v `conf/common.conf` vypnuté a DDL se provádí ručně): přidat do `public.temporary_files` sloupec `owner bigint` (odkaz na `public.users`), ukládat do něj v `TraitUploadService.serializeWorkbook` aktuálního uživatele a v downloadu vracet soubor jen vlastníkovi (cizí i neexistující soubory by měly odpovídat stejnou zprávou, aby existence cizích id nic neprozrazovala):
+Budoucí dořešení (odloženo – vyžaduje změnu DB): přidat do `public.temporary_files` sloupec `owner bigint` (odkaz na `public.users`), ukládat do něj v `TraitUploadService.serializeWorkbook` aktuálního uživatele a v downloadu vracet soubor jen vlastníkovi (cizí i neexistující soubory by měly odpovídat stejnou zprávou, aby existence cizích id nic neprozrazovala):
 ```sql
 ALTER TABLE public.temporary_files ADD COLUMN owner bigint;
 ```

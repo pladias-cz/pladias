@@ -362,6 +362,7 @@ export function InfoPanel({taxonName, taxonId}: InfoPanelProps) {
                                             value={mapTypeOption.id}
                                             checked={mapType === mapTypeOption.id}
                                             onChange={() => handleMapTypeChange(mapTypeOption.id)}
+                                            disabled={!currentUserIsRevisor}
                                         />
                                         <label className="form-check-label" htmlFor={`mapType-${mapTypeOption.id}`}>
                                             {t(mapTypeOption.key)}

@@ -197,7 +197,8 @@ Celý prefix `/atlasAdmin/*` je chráněn rolí `isMapAdmin` (a modulem atlas).
 Editační tabulka nastavení taxonů (`useTaxonUpdates`): `ISMAPPED`, `SETCOMMONTHRESHOLD`, `PUBLICATIONSTATUS`, `REVISIONSTATUS`, `MAPTYPE`, `REVISORSCOMMENT`, `REVISORSPRINTMAPCOMMENT`, `MAPADMINCOMMENT`, `PRESLIA`, `PROTECTED`, `PARENT_MAP` – vše přes jediný `POST /api/react/atlasadmin/taxonMapSettings` s `taxonId`, `key`, `value` a `timestamp` (optimistická konkurence, po úspěchu se vrací nový timestamp).
 
 - **Kdo smí ve frontendu:** jen mapAdmin (route + menu).
-- ⚠️ Backend kontroluje roli jen u `ISMAPPED`, `SETCOMMONTHRESHOLD` a `PUBLICATIONSTATUS` – u ostatních klíčů by operaci provedl každý přihlášený (viz [rules_backend.md](./rules_backend.md), problém č. 1). Frontend tedy riziko v UI skrývá, ale neodstraňuje.
+- **Kdo smí na backendu:** mapAdmin všechny klíče; revizor taxonu (vč. nadřazených) jen `MAPTYPE`, `REVISIONSTATUS`, `REVISORSCOMMENT`, `REVISORSPRINTMAPCOMMENT`; ostatní uživatelé nic (centrální kontrola `verifyCurrentUserCanEditKey`).
+- Stejný endpoint používá i mapMain InfoPanel pro revizorské klíče – gate ve FE je `currentUserIsRevisor` (z `GET /atlas/taxonMapSettings/:taxonId`), které pokrývá i MAPTYPE radia.
 - Změny `PUBLICATIONSTATUS`/`REVISIONSTATUS` na backendu spouštějí přechody stavů a e-mailové notifikace – frontend po nich jen refetchuje data.
 
 ---

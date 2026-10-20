@@ -37,6 +37,7 @@ import javax.inject.Inject;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -57,6 +58,13 @@ public class TaxonMapSettingsController extends ControllerBase {
     public static final String PresliaKey = "PRESLIA";
     public static final String ProtectedKey = "PROTECTED";
     public static final String ParentMapKey = "PARENT_MAP";
+
+    /**
+     * Keys that a revisor of the taxon (or of any of its parents) may change without mapAdmin
+     * rights; all remaining keys are mapAdmin-only.
+     */
+    private static final Set<String> RevisorsEditableKeys = Set.of(
+        MapTypeKey, RevisionStatusKey, RevisorsCommentKey, RevisorsPrintMapCommentKey);
 
     @Inject
     private FormFactory formFactory;
@@ -95,6 +103,8 @@ public class TaxonMapSettingsController extends ControllerBase {
         if (settings == null) {
             throw new IllegalArgumentException(messages.at("TaxonMapSettingsController.invalidTaxon"));
         }
+
+        verifyCurrentUserCanEditKey(session, settings, key);
 
         if (settings.getLastEditTimestamp() != null &&
             settings.getLastEditTimestamp().getTime() != timestamp) {
@@ -158,7 +168,6 @@ public class TaxonMapSettingsController extends ControllerBase {
     }
 
     private void handleIsMapped(Session session, TaxonMapSettings settings, String value) {
-        verifyCurrentUserIsMapAdmin(session);
         Messages messages = getMessages(session);
         try {
             boolean v = Boolean.parseBoolean(value);
@@ -169,7 +178,6 @@ public class TaxonMapSettingsController extends ControllerBase {
     }
 
     private void handleSetCommonThreshold(Session session, TaxonMapSettings settings, String value) {
-        verifyCurrentUserIsMapAdmin(session);
         Messages messages = getMessages(session);
         try {
             Integer threshold = Integer.parseInt(value);
@@ -179,11 +187,22 @@ public class TaxonMapSettingsController extends ControllerBase {
         }
     }
 
-    private void verifyCurrentUserIsMapAdmin(Session session) {
+    /**
+     * mapAdmin may change all keys, a revisor of the taxon (or of any of its parents) only
+     * {@link #RevisorsEditableKeys}; everyone else may change nothing.
+     */
+    private void verifyCurrentUserCanEditKey(Session session, TaxonMapSettings settings, String key) {
         User currentUser = SessionUtils.getCurrentUser(session);
-        if (!currentUser.isMapAdmin()) {
-            throw new SecurityException("TaxonMapSettingsController.userNotEligible");
+        if (currentUser.isMapAdmin())
+            return;
+
+        if (RevisorsEditableKeys.contains(key)) {
+            Taxon taxon = Taxon.find().byId(settings.getId());
+            if (taxon != null && taxonService.getInheritedRevisors(taxon).contains(currentUser))
+                return;
         }
+
+        throw new SecurityException(getMessages(session).at("TaxonMapSettingsController.userNotEligible"));
     }
 
     private void handleMapType(Messages messages, TaxonMapSettings settings, String value) {
@@ -197,7 +216,6 @@ public class TaxonMapSettingsController extends ControllerBase {
     }
 
     private void handleProductionStatus(Session session, TaxonMapSettings settings, String value) {
-        verifyCurrentUserIsMapAdmin(session);
         Messages messages = getMessages(session);
         try {
             int v = Integer.parseInt(value);

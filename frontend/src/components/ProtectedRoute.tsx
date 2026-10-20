@@ -1,26 +1,29 @@
 import { Navigate, useLocation } from "react-router-dom";
 import { useInstanceConfig } from "@/context/InstanceConfigContext";
 import { useUser } from "@/context/UserContext";
-import type { UserRole } from "@/models/User";
+import type {InstanceModule} from "@/models/InstanceConfig";
+import type {UserRole} from "@/models/UserRole";
 
 interface ProtectedRouteProps {
     children: React.ReactNode;
-    requiredModule?: string;
-    requiredRole?: string;
-    requiredRoles?: string[];
+    requiredModule?: InstanceModule;
+    requiredRole?: UserRole;
+    requiredRoles?: readonly UserRole[];
 }
 
 /**
  * ProtectedRoute - A component that restricts access to routes based on module availability and user roles.
  *
- * Roles are assigned by the backend (`/api/react/config` -> `roles: string[]`, source: backend UserRole enum).
+ * Roles are assigned by the backend (`/api/react/config` -> `roles: UserRole[]`, source: backend UserRole enum,
+ * FE mirror in `models/UserRole.ts`). Props are compile-time kontrolované – překlep v názvu role
+ * ani modulu neprojde `tsc -b`.
  *
  * @param {Object} props
  * @param {React.ReactNode} props.children - The child components to render if access is granted
- * @param {string} props.requiredModule - The required module ("atlas", "biblio", or "measurements")
- * @param {string} props.requiredRole - The required user role (e.g., "mapAdmin", "bulkEditor").
+ * @param {InstanceModule} props.requiredModule - The required module ("atlas", "biblio", or "measurements")
+ * @param {UserRole} props.requiredRole - The required user role (e.g., "mapAdmin", "traitAdmin").
  *                                    Single role - user must have this role.
- * @param {string[]} props.requiredRoles - Array of roles where having ANY ONE grants access (OR logic).
+ * @param {readonly UserRole[]} props.requiredRoles - Array of roles where having ANY ONE grants access (OR logic).
  *                                      Cannot be used together with requiredRole.
  */
 const ProtectedRoute = ({
@@ -29,34 +32,23 @@ const ProtectedRoute = ({
     requiredRole,
     requiredRoles
 }: ProtectedRouteProps) => {
-    const { hasAtlasModule, hasBiblioModule, hasMeasurementsModule } = useInstanceConfig();
+    const instanceConfig = useInstanceConfig();
     const user = useUser();
     const location = useLocation();
 
-    // Check module availability
-    if (requiredModule === "atlas" && !hasAtlasModule) {
-        return <Navigate to="/unauthorized" replace state={{ from: location }} />;
-    }
-    if (requiredModule === "biblio" && !hasBiblioModule) {
-        return <Navigate to="/unauthorized" replace state={{ from: location }} />;
-    }
-    if (requiredModule === "measurements" && !hasMeasurementsModule) {
+    // Check module availability (declarative - see InstanceConfig.hasModule)
+    if (requiredModule && !instanceConfig.hasModule(requiredModule)) {
         return <Navigate to="/unauthorized" replace state={{ from: location }} />;
     }
 
     // Single role check
-    if (requiredRole) {
-        if (!user.hasRole(requiredRole as UserRole)) {
-            return <Navigate to="/unauthorized" replace state={{ from: location }} />;
-        }
+    if (requiredRole && !user.hasRole(requiredRole)) {
+        return <Navigate to="/unauthorized" replace state={{ from: location }} />;
     }
 
     // Multiple roles check (OR logic - any one grants access)
-    if (requiredRoles && requiredRoles.length > 0) {
-        const hasAnyRole = requiredRoles.some(role => user.hasRole(role as UserRole));
-        if (!hasAnyRole) {
-            return <Navigate to="/unauthorized" replace state={{ from: location }} />;
-        }
+    if (requiredRoles && requiredRoles.length > 0 && !requiredRoles.some(role => user.hasRole(role))) {
+        return <Navigate to="/unauthorized" replace state={{ from: location }} />;
     }
 
     return children;

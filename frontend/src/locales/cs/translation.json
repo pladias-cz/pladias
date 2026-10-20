@@ -645,16 +645,27 @@
     "back": "Zpět",
     "cancel": "Zrušit",
     "close": "Zavřít",
+    "confirm": {
+      "title": "Potvrzení akce"
+    },
     "delete": "Smazat",
     "description": "Popis",
     "download": "stáhnout",
     "edit": "Upravit",
     "error": "Chyba",
+    "errorBoundary": {
+      "message": "Část aplikace přestala fungovat. Zkuste stránku obnovit; pokud se chyba opakuje, kontaktujte správce.",
+      "reload": "Obnovit stránku",
+      "title": "Došlo k neočekávané chybě"
+    },
     "false": "false",
     "inlineField": {
       "add": "Přidat",
       "edit": "Upravit",
       "saveFailed": "Uložení selhalo"
+    },
+    "instanceMessages": {
+      "unavailable": "Zprávy o stavu instance jsou momentálně nedostupné."
     },
     "loading": "Načítám...",
     "manager": "Odpovědná osoba",
@@ -1025,6 +1036,7 @@
       "text2": "Aktuální přehled dostupných datových typů, jejich popis a omezení prezentuje následující tabulka. ",
       "title": "Základní informace k importům"
     },
+    "deleteConfirm": "Opravdu chcete smazat tuto datovou řadu?",
     "export": {
       "failed": "Export se nezdařil. Zkuste to prosím znovu.",
       "placeholder": "Zde vkopírujte seznam požadovaných taxonů v podobě latinských jmen na jednotlivých řádcích.",

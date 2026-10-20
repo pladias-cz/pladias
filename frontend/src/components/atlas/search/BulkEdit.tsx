@@ -5,6 +5,7 @@ import {Typeahead} from "react-bootstrap-typeahead";
 import {useTranslation} from "react-i18next";
 import {Autocomplete} from "@/components/autocomplete/Autocomplete";
 import {createTaxaImportableProvider} from "@/components/autocomplete/TaxaImportableProvider";
+import {useConfirm} from "@/hooks/useConfirm";
 import type { RecordPladias } from "@/models";
 import type {TaxonId} from "@/models/TaxonId";
 import {fetchRecordEditTimestamps, moveCoordinates, updateCoordsPrecision, updateDate, updatePhytochorion, updateLocality, updateNearestTownName, updateSource, updateNote, updateFinder, updateTaxon, updateValidationStatus} from "@/services/bulkEditApi";
@@ -152,6 +153,7 @@ const isValidDateValue = (value: string): boolean => {
 
 export default function BulkEdit({records, totalCount, searchPayloadEntries, onBulkEditComplete}: BulkEditProps) {
     const {t} = useTranslation();
+    const {confirm, dialog} = useConfirm();
     const [activeKey, setActiveKey] = useState<string>("0");
     const [rawCoords, setRawCoords] = useState<string>("");
     const [rawCoordsError, setRawCoordsError] = useState<string>("");
@@ -419,7 +421,7 @@ export default function BulkEdit({records, totalCount, searchPayloadEntries, onB
 
         setSemaforError(false);
 
-        if (!window.confirm(t("atlas.search.bulkEdit.messages.confirmSemafor"))) {
+        if (!(await confirm({message: t("atlas.search.bulkEdit.messages.confirmSemafor")}))) {
             return;
         }
 
@@ -523,7 +525,7 @@ export default function BulkEdit({records, totalCount, searchPayloadEntries, onB
     const submitSourceChange = async () => {
         const value = newSource.trim();
 
-        if (!value && !window.confirm(t("atlas.search.bulkEdit.messages.confirmEmptySource", {defaultValue: "Pramen je prázdný. Opravdu ho chcete nastavit na prázdnou hodnotu?"}))) {
+        if (!value && !(await confirm({message: t("atlas.search.bulkEdit.messages.confirmEmptySource")}))) {
             return;
         }
 
@@ -536,7 +538,7 @@ export default function BulkEdit({records, totalCount, searchPayloadEntries, onB
     const submitNoteChange = async () => {
         const value = newImportComment.trim();
 
-        if (!value && !window.confirm(t("atlas.search.bulkEdit.messages.confirmEmptyNote", {defaultValue: "Poznámka je prázdná. Opravdu ji chcete nastavit na prázdnou hodnotu?"}))) {
+        if (!value && !(await confirm({message: t("atlas.search.bulkEdit.messages.confirmEmptyNote")}))) {
             return;
         }
 
@@ -572,7 +574,7 @@ export default function BulkEdit({records, totalCount, searchPayloadEntries, onB
 
         setTaxonError(false);
 
-        if (!window.confirm(t("atlas.search.bulkEdit.messages.confirmTaxon"))) {
+        if (!(await confirm({message: t("atlas.search.bulkEdit.messages.confirmTaxon")}))) {
             return;
         }
 
@@ -584,6 +586,7 @@ export default function BulkEdit({records, totalCount, searchPayloadEntries, onB
 
     return (
         <section className="bulk-edit-panel p-3 p-lg-4 mt-4 w-100">
+            {dialog}
             <h4 className="bulk-edit-title mb-3">{t("atlas.search.bulkEdit.title")}</h4>
             <div className="bulk-edit-warning alert mb-3">
                 {t("atlas.search.bulkEdit.warning")}

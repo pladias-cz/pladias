@@ -1,6 +1,7 @@
 import {lazy, Suspense, useEffect, useState} from "react";
 import {BrowserRouter, Route, Routes} from "react-router-dom";
 import Layout from "./Layout";
+import ErrorBoundary from "./components/ErrorBoundary";
 import {InstanceConfigProvider} from "./context/InstanceConfigContext";
 import {UserProvider} from "./context/UserContext";
 import {ProjectNameProvider} from "./context/ProjectNameContext";
@@ -93,7 +94,10 @@ export default function App() {
             <InstanceConfigProvider config={instanceConfig}>
                 <UserProvider user={userData}>
                     <BrowserRouter basename="/">
-                    <Suspense fallback={<div>Loading page…</div>}>
+                    {/* Rozbitý lazy chunk po deployi (404/syntax error) zobrazí fallback
+                        s reloadem místo bílé stránky – sekce G. */}
+                    <ErrorBoundary>
+                        <Suspense fallback={<div>Loading page…</div>}>
                         <Routes>
                             <Route path="/" element={<Layout/>}>
                                 <Route index element={<Home/>}/>
@@ -263,7 +267,8 @@ export default function App() {
                                 </Route>
                             </Route>
                         </Routes>
-                    </Suspense>
+                        </Suspense>
+                    </ErrorBoundary>
                 </BrowserRouter>
             </UserProvider>
         </InstanceConfigProvider>

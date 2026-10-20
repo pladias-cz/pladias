@@ -79,7 +79,7 @@ The only existing alias is `@/` → `src/` (defined in both `frontend/vite.confi
 
 #### File Organization
 - One component per file. File name = component name (PascalCase).
-- Functional components only (`React.FC<Props>`). No class components.
+- Functional components only (`React.FC<Props>`). No class components – **single exception:** `components/ErrorBoundary.tsx` (React offers only the class API `getDerivedStateFromError`/`componentDidCatch` for catching render errors, section G).
 - Props interfaces defined in the same file, above the component.
 
 #### Component Types
@@ -168,6 +168,17 @@ Where state lives – decision tree (docs/refactoring.md, section L); use the fi
 4. **Everything else stays local** – `useState`/`useReducer` inside the component; lift state only when there is a real shared need (rule of three).
 
 New global state is created only exceptionally and must be justified in the PR description. Enforced by code review, not by lint rules.
+
+### Error Handling & Resilience
+
+Rules for failures and recovery (docs/refactoring.md, section G):
+
+- **Boundary for the unexpected, notifications for the expected.** Errors from rendering propagate to `ErrorBoundary` (`Layout.tsx` around `<Outlet/>`, `App.tsx` around `Suspense`) – do not wrap every `try/catch` in UI into a notification. Expected failures (403, validation, network) are shown to the user, ideally via the notification system (section F).
+- **`console.error` is for developers, never the only reaction.** Every user-facing action that can fail must produce a visible feedback (notification / inline error state). A silent `console.error` as the only handler is a bug.
+- **Session expiry (401)** is handled centrally in `apiClient` (redirect to backend `/login`) – never per-component.
+- **Confirmations** use `useConfirm()` (`src/hooks/useConfirm.tsx` + `components/ConfirmDialog.tsx`): `if (!(await confirm({message: t("...")}))) return;` and render `{dialog}` once in the component root. Native `window.confirm`/`window.alert` are forbidden (blocking, not localizable, visually foreign).
+- **Instance heartbeat** (`useInstanceMessages`) is the only polling loop for instance status messages – it pauses in hidden tabs and backs off on failures (docs/gotchas.md „Instance heartbeat“). Do not add another `setInterval` polling of `/api/react/*` endpoints; hook the new data onto the existing pattern instead.
+- **Stable React keys:** keys are derived from content (`instanceMessageKey`), never from array index when the list can change order.
 
 ### Styling
 

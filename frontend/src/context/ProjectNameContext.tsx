@@ -1,5 +1,7 @@
 import React, {createContext, useContext, useEffect, useState} from "react";
 import {useTranslation} from "react-i18next";
+import {isAbortError} from "@/services/apiClient";
+import {loadProjectName} from "@/services/instanceApi";
 
 interface ProjectNameContextValue {
     projectName: string;
@@ -15,7 +17,9 @@ const ProjectNameContext = createContext<ProjectNameContextValue | null>(null);
 
 /**
  * ProjectNameProvider - A context provider that fetches and provides the project name.
- * The project name is fetched from the PlayMessage API using the "project_name" key.
+ * The project name is fetched from the PlayMessage API using the "project_name" key
+ * (via `services/instanceApi` – stejný vzor jako heartbeat, docs/refactoring.md sekce A.4).
+ * Změna jazyka ruší rozjetý request (AbortController) a načítá znovu.
  */
 export const ProjectNameProvider: React.FC<Props> = ({children}) => {
     const {i18n} = useTranslation();
@@ -24,27 +28,30 @@ export const ProjectNameProvider: React.FC<Props> = ({children}) => {
     const [error, setError] = useState<Error | null>(null);
 
     useEffect(() => {
-        const fetchProjectName = async () => {
-            const lang = i18n.language || "cs";
-            try {
-                const res = await fetch(`/api/react/playmessage/project_name?lang=${lang}`);
-                const data = await res.json() as {success?: boolean; data?: {value?: string}};
-                if (data.success && data.data) {
-                    // Strip HTML tags from the project name
-                    const tempDiv = document.createElement("div");
-                    tempDiv.innerHTML = data.data.value ?? "";
-                    const plainText = tempDiv.textContent || tempDiv.innerText || "";
-                    setProjectName(plainText);
+        const controller = new AbortController();
+        const lang = i18n.language || "cs";
+
+        setLoading(true);
+        loadProjectName(lang, {signal: controller.signal})
+            .then((name) => {
+                setProjectName(name);
+                setError(null);
+            })
+            .catch((err) => {
+                // přepnutí jazyka přeruší request v letu – to není chyba
+                if (isAbortError(err)) {
+                    return;
                 }
-                setLoading(false);
-            } catch (err) {
                 console.error("Failed to load project name:", err);
                 setError(err instanceof Error ? err : new Error(String(err)));
-                setLoading(false);
-            }
-        };
+            })
+            .finally(() => {
+                if (!controller.signal.aborted) {
+                    setLoading(false);
+                }
+            });
 
-        fetchProjectName();
+        return () => controller.abort();
     }, [i18n.language]);
 
     return (

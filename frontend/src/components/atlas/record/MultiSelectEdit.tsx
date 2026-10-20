@@ -1,6 +1,7 @@
 import {useState, useEffect} from "react";
 import {Button, Form, Spinner} from "react-bootstrap";
 import {useTranslation} from "react-i18next";
+import {useConfirm} from "@/hooks/useConfirm";
 import type {MultiValueOption} from "@/models/MultiValueOption";
 
 interface Props {
@@ -25,6 +26,7 @@ export default function MultiSelectEdit({
     lastEditTimestampNum
 }: Props) {
     const {t} = useTranslation();
+    const {confirm, dialog} = useConfirm();
     const [options, setOptions] = useState<MultiValueOption[]>([]);
     const [selected, setSelected] = useState<MultiValueOption[]>(currentValue);
     const [pendingAdd, setPendingAdd] = useState<MultiValueOption | null>(null);
@@ -134,25 +136,30 @@ export default function MultiSelectEdit({
     }
 
     async function handleRemove(option: MultiValueOption) {
-        if (window.confirm(t("common.multiValueEdit.confirmDeleteMessage", {name: option.name}))) {
-            // Optimistic update - remove immediately from UI
-            const newSelected = selected.filter(o => o.id !== option.id);
-            setSelected(newSelected);
-            onUpdated?.({
-                updatedValue: newSelected,
-                newTimestamp: lastTimestamp
-            });
+        if (!(await confirm({
+            message: t("common.multiValueEdit.confirmDeleteMessage", {name: option.name}),
+            confirmLabel: t("common.multiValueEdit.remove"),
+        }))) {
+            return;
+        }
 
-            setSaving(true);
-            setError(null);
-            try {
-                await sendApiRequest(deleteKey, option.id);
-            } catch (e) {
-                // On error, restore the removed item
-                setSelected(selected);
-            } finally {
-                setSaving(false);
-            }
+        // Optimistic update - remove immediately from UI
+        const newSelected = selected.filter(o => o.id !== option.id);
+        setSelected(newSelected);
+        onUpdated?.({
+            updatedValue: newSelected,
+            newTimestamp: lastTimestamp
+        });
+
+        setSaving(true);
+        setError(null);
+        try {
+            await sendApiRequest(deleteKey, option.id);
+        } catch (e) {
+            // On error, restore the removed item
+            setSelected(selected);
+        } finally {
+            setSaving(false);
         }
     }
 
@@ -266,6 +273,7 @@ export default function MultiSelectEdit({
 
     return (
         <>
+            {dialog}
             <div className="row align-items-center mb-1">
                 <div className="col-sm-3 text-muted small">
                     {label}

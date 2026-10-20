@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { type Taxon } from "@/models/Taxon";
 import { type TaxonId } from "@/models/TaxonId";
 import TaxaPossibleParentAutocomplete from "@/components/autocomplete/TaxaPossibleParentAutocomplete";
+import { useConfirm } from "@/hooks/useConfirm";
 import { useTranslation } from 'react-i18next';
 
 interface Props {
@@ -14,6 +15,7 @@ interface Props {
 export default function MoveTaxonCard({ taxon, onMoved }: Props) {
     const { t } = useTranslation();
     const navigate = useNavigate();
+    const { confirm, dialog } = useConfirm();
 
     const [selectedParentId, setSelectedParentId] = useState<TaxonId | null>(null);
     const [isMoving, setIsMoving] = useState(false);
@@ -58,9 +60,10 @@ export default function MoveTaxonCard({ taxon, onMoved }: Props) {
     }
 
     async function handleDelete() {
-        if (!window.confirm(
-            t("taxon.move.deleteConfirm", { name: taxon.nameLat })
-        )) {
+        if (!(await confirm({
+            message: t("taxon.move.deleteConfirm", { name: taxon.nameLat }),
+            confirmLabel: t("common.delete"),
+        }))) {
             return;
         }
 
@@ -92,6 +95,7 @@ export default function MoveTaxonCard({ taxon, onMoved }: Props) {
 
     return (
         <Card>
+            {dialog}
             <Card.Header>{t("taxon.move.title", { name: taxon.nameLat })}</Card.Header>
             <Card.Body>
                 <Form>

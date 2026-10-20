@@ -1,16 +1,9 @@
-export type UserRole =
-    | "mapAdmin"
-    | "bulkEditor"
-    | "traitAdmin"
-    | "sysAdmin"
-    | "taxonAdmin"
-    | "asyncImporter"
-    | "biblioAdmin";
+import type {UserRole} from "./UserRole";
 
 export interface UserData {
     id: number;
-    /** Role assigned by the backend (`/api/react/config` → `roles: string[]`, source: UserRole.keysOf). */
-    roles?: string[];
+    /** Role přiřazené backendem (`/api/react/config`, zdroj `UserRole.keysOf`) – viz `models/UserRole.ts`. */
+    roles?: UserRole[];
     userEmail?: string;
     language?: string;
     supervisedTaxonIds?: number[];
@@ -18,7 +11,7 @@ export interface UserData {
 
 export default class User {
     readonly id: number;
-    readonly roles: string[];
+    readonly roles: UserRole[];
     readonly userEmail: string;
     readonly language: string;
     readonly supervisedTaxonIds: number[];

@@ -29,6 +29,12 @@ Known exceptions (do not copy, frontend has to tolerate them):
   (`ok(Json.toJson(message))`) with HTTP 200 on success instead of `JsonResult`; errors use
   `notFound(JsonResult.error(...))`. Frontend code therefore checks `res.ok` and reads either
   a string or `json.message`.
+- `ConfigController.infoGlobal` returns a bare JSON **array** of maintenance messages
+  (`ok(Json.toJson(messages))`) – no `JsonResult` wrapper. The frontend tolerates it in
+  `services/instanceApi.ts` (`parseInstanceMessages` drops invalid entries).
+- The project name (`/api/react/playmessage/project_name`) carries a rich-text value –
+  `loadProjectName` strips HTML tags via a DOM element (trusted backend input, no sanitizer
+  dependency).
 - Import/validation error messages (`TraitsController.ImportFailed` / `ValidationFailed`)
   contain an HTML `<a>` link to the workbook with highlighted error rows, so `FeatureDetail`
   renders them with `dangerouslySetInnerHTML`.
@@ -65,6 +71,33 @@ Known exceptions (do not copy, frontend has to tolerate them):
 - User roles arrive as `roles: string[]` from `GET /api/react/config` (backend enum
   `models.UserRole`); the FE `User` model exposes `hasRole()` with `isMapAdmin`-style getters
   as aliases.
+
+---
+
+## Resilience
+
+### Instance heartbeat (`useInstanceMessages`)
+- The heartbeat polls `GET /api/react/infoGlobal` (maintenance messages) and is the **only** owner
+  of that polling – `FlashMessages.tsx` is purely presentational (props `messages`, `unavailable`).
+- **Hidden tab → no polling.** `visibilitychange` pauses the schedule; returning to the tab fires
+  one tick immediately. A user-visible behavioral requirement (section A), verified by unit tests
+  on fake timers.
+- **Failures do not wipe messages.** A network hiccup keeps the last known messages in the UI;
+  only after 3 consecutive failures a warning „instance status messages are unavailable“ appears.
+- **Exponential backoff:** after failures the interval grows 30 s → 1 min → 2 min → 5 min (cap);
+  a success resets it to 30 s. The endpoint is cheap (`MaintenanceMessageUtils.getMessage()`).
+- **401 → redirect to `/login`** is handled by `apiClient`, not by the hook.
+
+### Roles are backend-owned (FE mirror in `models/UserRole.ts`)
+- The FE `USER_ROLES` const mirrors the backend enum `app/models/UserRole.java` 1:1
+  (`mapAdmin`, `bulkEditor`, `traitAdmin`, `sysAdmin`, `taxonAdmin`, `asyncImporter`, `biblioAdmin`).
+  When adding a role on the backend, add the same key to `USER_ROLES` – `parseRoles` then logs a
+  `console.warn` about BE↔FE drift on unknown keys (visible at SPA startup).
+- `ProtectedRoute` props are typed (`requiredRole?: UserRole`, `requiredRoles?: readonly UserRole[]`,
+  `requiredModule?: InstanceModule`) – a typo in `App.tsx` route definitions fails `tsc -b`.
+  Module availability is declared in `InstanceConfig.hasModule()`, not hardcoded in the component.
+- `biblioAdmin` stays in the FE union on purpose: it is consumed by `UsersTable`
+  (user administration checkbox) and dropping it would false-positive the drift warning.
 
 ---
 

@@ -28,8 +28,13 @@
   - user stránky na services: AddUser, ChangeEmail, ChangePassword, Settings (+ `useUserSettings`, `App.tsx` config fetch přes `loadReactConfig`)
   - `useTableData` + `useExcelExport` na apiClient; všech 22 souborů s axios přemigrováno; axios odebrán z package.json (−1 runtime dependency)
   - conventions.md: nová sekce HTTP Communication (apiClient)
-- next: fáze 3 Odolnost (A – useInstanceMessages heartbeat; G – ErrorBoundary; B – typované role)
-- soupis k migraci (průběžně, dle D.4 – stahovat do services při každé úpravě souboru): zbývá 106× přímé `fetch()` v 60 souborech mimo `src/services/` (původně 118; axios soubory hotové):
+- hotovo fáze 3 (Odolnost – A, G, B):
+  - A: `hooks/useInstanceMessages.ts` heartbeat (visibilitychange pozastavení ve skryté záložce + okamžitý tik při návratu, exponenciální backoff 30 s → 1 min → 2 min → 5 min strop, selhání nemaže poslední zprávy, „nedostupné“ po 3 selháních, 401 řeší apiClient) + 5 unit testů na fake timerech; `FlashMessages.tsx` nyní prezentační (props), `models/InstanceMessage.ts` + parser, `services/instanceApi.ts` (infoGlobal – pole bez obálky; `loadProjectName` s AbortController – ProjectNameContext přešel na service)
+  - G: `components/ErrorBoundary.tsx` (jediná class komponenta – výjimka zdokumentovaná v conventions.md) zapojený v Layout (kolem Outlet) i App (kolem Suspense pro rozbité lazy chunky); `useConfirm()` + `ConfirmDialog` nahradily všech 8× `window.confirm` (MoveTaxonCard, BulkEdit 4×, MultiSelectEdit, RecordComments, TraitTable – ten dostal i i18n klíč trait.deleteConfirm místo hardcoded textu)
+  - B: `models/UserRole.ts` (USER_ROLES zrcadlí BE enum 1:1, `parseRoles` loguje drift BE↔FE), `ProtectedRoute` typovaný (`UserRole`, `InstanceModule`), `InstanceConfig.hasModule()` deklarativně; biblioAdmin zůstává (konzumuje UsersTable); volitelný refresh rolí v heartbeatu (B.4) odložen – mění runtime chování, zavádět až po ověření A v provozu
+  - docs: conventions.md sekce Error Handling & Resilience; gotchas.md sekce Resilience (heartbeat, role) + výjimka infoGlobal
+- next: fáze 4 Notifikace (F – globální toast/flash store na zustandu + napojení `setForbiddenHandler`), postupně H (dekompozice velkých komponent), E (fetch místo DOM formulářů)
+- soupis k migraci (průběžně, dle D.4 – stahovat do services při každé úpravě souboru): zbývá 104× přímé `fetch()` v 58 souborech mimo `src/services/` (původně 118; hotové: axios soubory, FlashMessages, ProjectNameContext):
   - src/components/atlasAdmin/importsList/hooks/useImportsActions.ts
   - src/components/atlasAdmin/mapUsers/hooks/useMapUsersProjects.ts
   - src/components/atlasAdmin/mapUsers/hooks/useMapUsersTaxa.ts
@@ -74,8 +79,6 @@
   - src/components/taxonAdmin/TaxonTraitCount.tsx
   - src/components/user/PlayMessagesEditor.tsx
   - src/components/user/UsersTable.tsx
-  - src/context/ProjectNameContext.tsx
-  - src/core/FlashMessages.tsx
   - src/core/mapLayers/components/Layer.tsx
   - src/core/mapLayers/components/SquaresOverlay.tsx
   - src/core/mapLayers/factory/adapters/universalAdapter.ts

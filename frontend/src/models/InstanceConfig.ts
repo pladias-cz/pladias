@@ -5,6 +5,9 @@ export interface InstanceConfigData {
     hasMeasurementsModule?: boolean;
 }
 
+/** Modul instance dostupný podle konfigurace (`ConfigController.config`). */
+export type InstanceModule = "atlas" | "biblio" | "measurements";
+
 class InstanceConfig {
     isVascular: boolean;
     hasAtlasModule: boolean;
@@ -16,6 +19,21 @@ class InstanceConfig {
         this.hasAtlasModule = data.hasAtlasModule || false;
         this.hasBiblioModule = data.hasBiblioModule || false;
         this.hasMeasurementsModule = data.hasMeasurementsModule || false;
+    }
+
+    /**
+     * Declarativní dostupnost modulu – přidání nového modulu = jeden řádek tady,
+     * ne úprava `ProtectedRoute` (docs/refactoring.md, sekce B).
+     */
+    hasModule(module: InstanceModule): boolean {
+        switch (module) {
+            case "atlas":
+                return this.hasAtlasModule;
+            case "biblio":
+                return this.hasBiblioModule;
+            case "measurements":
+                return this.hasMeasurementsModule;
+        }
     }
 }
 

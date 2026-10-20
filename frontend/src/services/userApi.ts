@@ -5,6 +5,7 @@
 
 import {ApiError, apiGet, apiPost, ensureSuccess} from "./apiClient";
 import type {ApiResult} from "@/models/ApiResponse";
+import {parseRoles, type UserRole} from "@/models/UserRole";
 
 /**
  * GET /api/react/config – konfigurace instance + data přihlášeného uživatele
@@ -16,15 +17,17 @@ export interface ReactConfig {
     hasAtlasModule: boolean;
     hasBiblioModule: boolean;
     hasMeasurementsModule: boolean;
-    /** Role přiřazené backendem (enum UserRole); runtime kontrola driftu BE↔FE přidá sekce B. */
-    roles: string[];
+    /** Role přiřazené backendem (enum UserRole) – runtime kontrola driftu BE↔FE v `parseRoles`. */
+    roles: UserRole[];
     userEmail: string;
     language: string;
     supervisedTaxonIds: number[];
 }
 
-export function loadReactConfig(): Promise<ReactConfig> {
-    return apiGet<ReactConfig>("/api/react/config");
+export async function loadReactConfig(): Promise<ReactConfig> {
+    const config = await apiGet<ReactConfig>("/api/react/config");
+    // Sekce B: neznámé role z backendu se zalogují (drift BE↔FE) a zahodí.
+    return {...config, roles: parseRoles(config?.roles)};
 }
 
 export interface AddUserInput {

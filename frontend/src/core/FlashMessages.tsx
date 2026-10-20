@@ -1,42 +1,35 @@
-import React, {useEffect, useState} from "react";
+import React from "react";
 import {Alert, Col, Row} from "react-bootstrap";
+import {useTranslation} from "react-i18next";
+import {instanceMessageKey, type InstanceMessage} from "@/models/InstanceMessage";
 
-interface Message {
-    type: "success" | "danger" | "warning" | "info";
-    text: string;
+/**
+ * Prezentační komponenta globálních zpráv o stavu instance (údržba apod.).
+ * Polling (visibility, backoff, 401) vlastní `hooks/useInstanceMessages` –
+ * tady není žádný fetch ani interval.
+ */
+
+interface FlashMessagesProps {
+    messages: InstanceMessage[];
+    /** Heartbeat opakovaně selhává – zobrazí se varování o nedostupnosti zpráv. */
+    unavailable?: boolean;
 }
 
-// used only for global info (like server maintenance), for immediately flashing useúmodify new component
+const FlashMessages: React.FC<FlashMessagesProps> = ({messages, unavailable = false}) => {
+    const {t} = useTranslation();
 
-const FlashMessages: React.FC = () => {
-    const [messages, setMessages] = useState<Message[]>([]);
-
-    const fetchMessages = async () => {
-        try {
-            const res = await fetch("/api/react/infoGlobal");
-            if (!res.ok) throw new Error("Failed to fetch messages");
-            const data: Message[] = await res.json();
-            setMessages(data);
-        } catch (err) {
-            console.error(err);
-            setMessages([]);
-        }
-    };
-
-    useEffect(() => {
-        fetchMessages();
-
-        const interval = setInterval(fetchMessages, 30000); // každých 30s
-        return () => clearInterval(interval);
-    }, []);
-
-    if (messages.length === 0) return null;
+    if (messages.length === 0 && !unavailable) {
+        return null;
+    }
 
     return (
         <Row className="justify-content-center text-center">
             <Col sm={12} md={{span: 10, offset: 1}}>
-                {messages.map((message, idx) => (
-                    <Alert key={idx} variant={message.type}>
+                {unavailable && (
+                    <Alert variant="warning">{t("common.instanceMessages.unavailable")}</Alert>
+                )}
+                {messages.map((message) => (
+                    <Alert key={instanceMessageKey(message)} variant={message.type}>
                         {message.text}
                     </Alert>
                 ))}

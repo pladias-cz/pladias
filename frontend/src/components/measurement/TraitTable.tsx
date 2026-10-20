@@ -1,4 +1,6 @@
 import {useCallback, useEffect, useState} from "react";
+import {useTranslation} from "react-i18next";
+import {useConfirm} from "@/hooks/useConfirm";
 import type {Feature} from "@/models/Feature";
 import type {Trait} from "@/models/Trait";
 import type {ApiResult} from "@/models/ApiResponse";
@@ -24,6 +26,8 @@ function extractMessage(body: unknown): string | null {
 }
 
 export default function TraitTable({feature, refreshKey}: Props) {
+    const {t} = useTranslation();
+    const {confirm, dialog} = useConfirm();
     const [traits, setTraits] = useState<Trait[]>([]);
     const [defaultTraitId, setDefaultTraitId] = useState<number | null>(null);
     const [flash, setFlash] = useState<Flash | null>(null);
@@ -59,7 +63,12 @@ export default function TraitTable({feature, refreshKey}: Props) {
     }, [feature?.id, loadTraits, refreshKey]);
 
     async function deleteTrait(traitId: number) {
-        if (!window.confirm("Opravdu chcete smazat tuto datovou řadu?")) return;
+        if (!(await confirm({
+            message: t("trait.deleteConfirm"),
+            confirmLabel: t("common.delete"),
+        }))) {
+            return;
+        }
 
         setBusyTraitId(traitId);
 
@@ -138,6 +147,7 @@ export default function TraitTable({feature, refreshKey}: Props) {
 
     return (
         <>
+        {dialog}
         {flash && (
             <div className={`alert alert-${flash.type}`}>
                 {flash.message}

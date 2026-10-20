@@ -3,6 +3,7 @@ import {useTranslation} from "react-i18next";
 import {fetchRecordComments, createComment, updateComment, resolveComment, deleteComment} from "./recordService";
 import type { RecordComment } from '@/models/RecordComment';
 import {useState, useEffect} from "react";
+import {useConfirm} from "@/hooks/useConfirm";
 import {useUser} from "@/context/UserContext";
 
 interface RecordCommentsProps {
@@ -13,6 +14,7 @@ interface RecordCommentsProps {
 export default function RecordComments({recordId, canResolveComments}: RecordCommentsProps) {
     const {t} = useTranslation();
     const user = useUser();
+    const {confirm, dialog} = useConfirm();
     const [comments, setComments] = useState<RecordComment[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -115,10 +117,13 @@ export default function RecordComments({recordId, canResolveComments}: RecordCom
     };
 
     const handleDeleteComment = async (commentId: number) => {
-        if (!window.confirm(t("record.confirmDeleteComment") || "Are you sure?")) {
+        if (!(await confirm({
+            message: t("record.confirmDeleteComment"),
+            confirmLabel: t("common.delete"),
+        }))) {
             return;
         }
-        
+
         try {
             await deleteComment(commentId);
             // Refresh comments
@@ -305,6 +310,7 @@ export default function RecordComments({recordId, canResolveComments}: RecordCom
                     </Button>
                 </Modal.Footer>
             </Modal>
+            {dialog}
         </Row>
     );
 }

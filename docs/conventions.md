@@ -147,6 +147,17 @@ useEffect(() => {
 }, [deps]);
 ```
 
+### HTTP Communication (apiClient)
+
+All HTTP communication goes through `src/services/apiClient.ts` (docs/refactoring.md, section D) – one place for transport, the `JsonResult` envelope and 401/403 handling. Calling `fetch()` (or any HTTP library) directly from components or hooks is forbidden; only `src/services/` modules do I/O.
+
+- **Request helpers:** `apiGet/apiPost/apiPut/apiPatch/apiDelete` – typed, with `params` (query string) and `signal` (AbortController). They return the parsed JSON payload.
+- **Envelope:** the `JsonResult` shape (`ApiResult<T>` from `@/models/ApiResponse`) is interpreted by domain service modules (`src/services/*Api.ts`) – a component calls `addUser(input)` or `loadTraits(ids, {signal})` and never parses `{success, data|message|error}` itself. HTTP 200 with `success: false` is visible to the service (user settings use it as "value not set"); `ensureSuccess` throws for endpoints where it means an error.
+- **Errors:** HTTP failures (including 401 → redirect to `/login`, 403 → central handler wired by section F) are thrown as `ApiError`; `apiErrorMessage(err, fallback)` picks the backend message or a localized fallback for the UI.
+- **Named gotcha helpers** (docs/gotchas.md): `apiPostFormUrlencoded` (LF semantics of taxon lists), `apiGetLegacyString` (TraitsController bare string response), `apiDownload` (JSON error inside a file stream, Content-Type check).
+- **Multipart:** `FormData` is passed to `apiPost` without a Content-Type header – the browser adds the multipart boundary.
+- **Cancellation:** `isAbortError(err)` detects aborted requests (fetch throws a DOMException with `name === "AbortError"`).
+
 ### State Management
 
 Where state lives – decision tree (docs/refactoring.md, section L); use the first rule that fits:

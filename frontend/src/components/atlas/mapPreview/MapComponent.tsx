@@ -4,16 +4,13 @@ import type { LatLngExpression } from 'leaflet';
 import type { MapPreviewType } from '@/pages/atlas/MapPreview';
 import { useLayerManager, Layer } from '@/core/mapLayers';
 import { useEffect, useState, useMemo } from 'react';
-import axios from 'axios';
+import {apiGet} from '@/services/apiClient';
+import type {ApiResult} from '@/models/ApiResponse';
 import type { TaxonMapSettings } from '@/components/atlas/taxaList/types';
 
 interface MapComponentProps {
     type?: MapPreviewType;
     taxonId?: number;
-}
-
-interface TaxonMapSettingsResponse {
-    data: TaxonMapSettings;
 }
 
 /**
@@ -127,10 +124,10 @@ export function MapComponent({ type = 1, taxonId }: MapComponentProps) {
             return;
         }
 
-        axios.get<TaxonMapSettingsResponse>(`/api/react/atlas/taxonMapSettings/${taxonId}`)
-            .then(response => {
-                if (response.data?.data) {
-                    setMapSettings(response.data.data);
+        apiGet<ApiResult<TaxonMapSettings>>(`/api/react/atlas/taxonMapSettings/${taxonId}`)
+            .then(payload => {
+                if (payload.data) {
+                    setMapSettings(payload.data);
                 }
             })
             .catch(err => {

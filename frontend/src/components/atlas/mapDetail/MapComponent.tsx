@@ -1,7 +1,8 @@
 import { useMemo, useEffect, useState, useRef } from 'react';
 import { MapContainer, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import axios from 'axios';
+import {apiGet} from '@/services/apiClient';
+import type {ApiResult} from '@/models/ApiResponse';
 import { useNavigate } from 'react-router-dom';
 
 import { useLayerManager, useLayerState, Layer } from '@/core/mapLayers';
@@ -316,11 +317,10 @@ export function MapComponent({
             return;
         }
 
-        axios.get<SquareInfoResponse>(`/api/react/atlas/squareInfo/${squareCode}/${taxonId}`)
-            .then(response => {
-                const apiResponse = response.data as any;
-                if (apiResponse.success && apiResponse.data) {
-                    const data: SquareInfoResponse = apiResponse.data;
+        apiGet<ApiResult<SquareInfoResponse>>(`/api/react/atlas/squareInfo/${squareCode}/${taxonId}`)
+            .then(payload => {
+                if (payload.success && payload.data) {
+                    const data: SquareInfoResponse = payload.data;
                     
                     if (data.currentSquare) {
                         const center: [number, number] = [data.currentSquare.latitude, data.currentSquare.longitude];

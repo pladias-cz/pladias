@@ -5,6 +5,7 @@ import {InstanceConfigProvider} from "./context/InstanceConfigContext";
 import {UserProvider} from "./context/UserContext";
 import {ProjectNameProvider} from "./context/ProjectNameContext";
 import {changeLanguage} from "./i18n/i18n";
+import {loadReactConfig, type ReactConfig} from "./services/userApi";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 // Lazy-loaded pages
@@ -54,26 +55,11 @@ const AddUser = lazy(() => import("./pages/user/AddUser"));
 const PlayMessages = lazy(() => import("./pages/user/PlayMessages"));
 const Docs = lazy(() => import("./pages/user/Docs"));
 
-
-interface AppConfig {
-    id: number;
-    isVascular: boolean;
-    hasAtlasModule: boolean;
-    hasBiblioModule: boolean;
-    hasMeasurementsModule: boolean;
-    /** User roles assigned by the backend (UserRole enum). */
-    roles: string[];
-    userEmail: string;
-    language: string;
-    supervisedTaxonIds: number[];
-}
-
 export default function App() {
-    const [config, setConfig] = useState<AppConfig | null>(null);
+    const [config, setConfig] = useState<ReactConfig | null>(null);
 
     useEffect(() => {
-        fetch("/api/react/config")
-            .then((res) => res.json())
+        loadReactConfig()
             .then((data) => {
                 setConfig(data);
                 // Set the language from config

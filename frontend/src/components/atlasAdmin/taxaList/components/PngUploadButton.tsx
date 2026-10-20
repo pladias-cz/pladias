@@ -1,7 +1,8 @@
 import React, {useRef, useState} from 'react';
 import {Button, Spinner} from 'react-bootstrap';
 import {useTranslation} from 'react-i18next';
-import axios from 'axios';
+import {apiPost, ApiError} from '@/services/apiClient';
+import type {ApiResult} from '@/models/ApiResponse';
 
 interface PngUploadButtonProps {
     taxonId: number;
@@ -31,21 +32,18 @@ export function PngUploadButton({taxonId, onUploadComplete}: PngUploadButtonProp
         formData.append('pngFile', file);
 
         try {
-            const response = await axios.post(`/api/react/atlas/pngMap/taxon/${taxonId}`, formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
-            });
+            // FormData bez Content-Type – boundary doplní prohlížeč (multipart)
+            const payload = await apiPost<ApiResult>(`/api/react/atlas/pngMap/taxon/${taxonId}`, formData);
 
-            if (response.data?.success) {
+            if (payload.success) {
                 setSuccess(t("atlas.admin.taxaList.pngUpload.uploadSuccess"));
                 onUploadComplete(taxonId, true);
                 setTimeout(() => setSuccess(null), 3000);
             } else {
-                setError(response.data?.error || t("atlas.admin.taxaList.pngUpload.uploadFailed"));
+                setError(payload.error || t("atlas.admin.taxaList.pngUpload.uploadFailed"));
             }
-        } catch (err: any) {
-            setError(err.response?.data?.error || t("atlas.admin.taxaList.pngUpload.uploadFailed"));
+        } catch (err) {
+            setError(err instanceof ApiError && err.message ? err.message : t("atlas.admin.taxaList.pngUpload.uploadFailed"));
         } finally {
             setUploading(false);
             if (fileInputRef.current) {

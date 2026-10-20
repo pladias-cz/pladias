@@ -3,11 +3,19 @@
  */
 
 import {useCallback} from 'react';
-import axios from 'axios';
+import {apiGet, isAbortError} from '@/services/apiClient';
+import type {ApiResult} from '@/models/ApiResponse';
 import type {TaxonMapSettings} from '../types';
 
 export interface UseTaxaDataOptions {
     onSuccess?: (data: TaxonMapSettings[], totalCount: number, filteredCount: number) => void;
+}
+
+/** Odpověď /api/react/atlasadmin/taxa – řádky nese pole `taxa` (širší obálka). */
+interface TaxaTableResponse extends ApiResult {
+    taxa?: TaxonMapSettings[];
+    totalCount?: number;
+    filteredCount?: number;
 }
 
 /**
@@ -48,15 +56,15 @@ export function useTaxaData(options?: UseTaxaDataOptions) {
         const {page, pageSize, columnFilters, signal} = params;
 
         try {
-            const response = await axios.get('/api/react/atlasadmin/taxa', {
-                params: {page, pageSize, ...extractTaxaFilters(columnFilters)},
+            const payload = await apiGet<TaxaTableResponse>('/api/react/atlasadmin/taxa', {
+                params: {page: String(page), pageSize: String(pageSize), ...extractTaxaFilters(columnFilters)},
                 signal,
             });
 
-            if (response.data?.success) {
-                const data = response.data.taxa || [];
-                const totalCount = response.data.totalCount || 0;
-                const filteredCount = response.data.filteredCount || totalCount;
+            if (payload.success) {
+                const data = payload.taxa || [];
+                const totalCount = payload.totalCount || 0;
+                const filteredCount = payload.filteredCount || totalCount;
 
                 onSuccess?.(data, totalCount, filteredCount);
 
@@ -73,7 +81,7 @@ export function useTaxaData(options?: UseTaxaDataOptions) {
                 };
             }
         } catch (err) {
-            if (axios.isCancel(err) || (err as any).name === 'CanceledError') {
+            if (isAbortError(err)) {
                 // Aborted - ignore
             } else {
                 console.error('Error fetching taxa:', err);

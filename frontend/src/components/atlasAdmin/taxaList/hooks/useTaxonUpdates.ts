@@ -3,7 +3,7 @@
  */
 
 import {useState, useCallback} from 'react';
-import axios from 'axios';
+import {apiPost} from '@/services/apiClient';
 import type {TaxonMapSettings} from '../types';
 
 interface UpdateResponse {
@@ -28,18 +28,16 @@ export function useTaxonUpdates() {
         formData.append('key', key);
         formData.append('value', value.toString());
 
-        const response = await axios.post<UpdateResponse>('/api/react/atlasadmin/taxonMapSettings', formData, {
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-        });
+        // FormData bez Content-Type – boundary doplní prohlížeč (multipart);
+        // urlencoded hlavička z původního kódu se na drátě neposílala
+        const payload = await apiPost<UpdateResponse>('/api/react/atlasadmin/taxonMapSettings', formData);
 
-        if (!response.data?.success) {
-            throw new Error(response.data?.message || 'Unknown error');
+        if (!payload.success) {
+            throw new Error(payload.message || 'Unknown error');
         }
 
         // Parse and return the new timestamp from response
-        return parseInt(response.data.timestamp, 10);
+        return parseInt(payload.timestamp, 10);
     }, []);
 
     const updateIsMapped = useCallback(async (

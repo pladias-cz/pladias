@@ -1,6 +1,6 @@
 /**
  * Stav uživatelských nastavení spravovaný stránkou Settings.
- * Klíče jsou camelCase varianty backendových klíčů (mapování v `@/hooks/useUserSettings`).
+ * Klíče jsou camelCase varianty backendových klíčů (mapování v `@/services/settingsApi`).
  *
  * Type alias (nikoli interface) záměrně: díky implicitnímu index signatuře je
  * zapisovatelný přes `Record<string, string | boolean>` (načítání nastavení z backendu).

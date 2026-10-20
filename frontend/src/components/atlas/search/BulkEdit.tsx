@@ -7,7 +7,7 @@ import {Autocomplete} from "@/components/autocomplete/Autocomplete";
 import {createTaxaImportableProvider} from "@/components/autocomplete/TaxaImportableProvider";
 import type { RecordPladias } from "@/models";
 import type {TaxonId} from "@/models/TaxonId";
-import {fetchRecordEditTimestamps, moveCoordinates, updateCoordsPrecision, updateDate, updatePhytochorion, updateLocality, updateNearestTownName, updateSource, updateNote, updateFinder, updateTaxon, updateValidationStatus} from "./bulkEditApi";
+import {fetchRecordEditTimestamps, moveCoordinates, updateCoordsPrecision, updateDate, updatePhytochorion, updateLocality, updateNearestTownName, updateSource, updateNote, updateFinder, updateTaxon, updateValidationStatus} from "@/services/bulkEditApi";
 import {runBulkOperationSequential, type BulkOperationFailure} from "./bulkEditOperations";
 import "./BulkEdit.css";
 

@@ -4,7 +4,8 @@
  */
 
 import {useState, useCallback} from 'react';
-import axios from 'axios';
+import {apiGet, apiPatch} from '@/services/apiClient';
+import type {ApiResult} from '@/models/ApiResponse';
 import type { RecordPladias } from '@/models';
 import {ValidationStatusId, ValidationStatusMeta} from '@/core/validationStatus';
 
@@ -26,6 +27,12 @@ interface RecordMapFields {
     canEditValidationFields: boolean;
 }
 
+/**
+ * Odpověď PATCH /atlas/record/:recordId – data přichází v obálce (`data`),
+ * ale kód toleruje i odpověď bez obálky (proto průnik s Partial dat).
+ */
+type RecordUpdatePayload = ApiResult<{lastEditTimestampNum?: number}> & {lastEditTimestampNum?: number};
+
 export function useRecordQuickUpdates() {
     const [updatingRecordId, setUpdatingRecordId] = useState<number | null>(null);
 
@@ -37,15 +44,14 @@ export function useRecordQuickUpdates() {
         originalRecord?: RecordPladias
     ): Promise<UpdateResult> => {
         try {
-            const response = await axios.patch(`/api/react/atlas/record/${recordId}`, {
+            const payload = await apiPatch<RecordUpdatePayload>(`/api/react/atlas/record/${recordId}`, {
                 key: field,
                 value: value.toString(),
                 lastEditTimestampNum: timestamp,
             });
 
             // Backend returns {data: {validation_status: "2", timestamp: number}} structure
-            const responseData = response.data?.data || response.data;
-            const newTimestamp = responseData?.lastEditTimestampNum;
+            const newTimestamp = payload?.data?.lastEditTimestampNum ?? payload?.lastEditTimestampNum;
             
             if (newTimestamp !== undefined) {
                 // Merge new timestamp with original record to propagate to parent
@@ -57,14 +63,14 @@ export function useRecordQuickUpdates() {
                     timestamp: newTimestamp,
                     record: updatedRecord,
                 };
-            } else if (response.data?.error) {
-                return {success: false, error: response.data.error};
+            } else if (payload?.error) {
+                return {success: false, error: payload.error};
             } else {
                 return {success: false, error: 'Unknown error'};
             }
         } catch (error: any) {
             console.error(`Error updating ${field}:`, error);
-            const errorMsg = error.response?.data?.error || error.message || 'Network error';
+            const errorMsg = error?.message || 'Network error';
             return {success: false, error: errorMsg};
         }
     }, []);
@@ -74,8 +80,7 @@ export function useRecordQuickUpdates() {
      */
     const fetchRecordMapFields = useCallback(async (recordId: number): Promise<RecordMapFields | null> => {
         try {
-            const response = await axios.get(`/api/react/atlas/record/${recordId}/mapFields`);
-            return response.data;
+            return await apiGet<RecordMapFields>(`/api/react/atlas/record/${recordId}/mapFields`);
         } catch (error: any) {
             console.error(`Error fetching map fields for record ${recordId}:`, error);
             return null;

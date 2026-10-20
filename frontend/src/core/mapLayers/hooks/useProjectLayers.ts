@@ -8,7 +8,8 @@
 
 import { useEffect, useState, useMemo } from 'react';
 import { useLayerStore, getVisibilityStorageKey } from '../store/layerStore';
-import axios from 'axios';
+import {apiGet} from '@/services/apiClient';
+import type {ApiResult} from '@/models/ApiResponse';
 
 interface ProjectDto {
     id: number;
@@ -19,10 +20,6 @@ interface ProjectDto {
 interface ProjectRecordCountDto {
     project: ProjectDto;
     recordCount: number;
-}
-
-interface TaxonStatisticsResponse {
-    data: TaxonStatisticsDto;
 }
 
 interface TaxonStatisticsDto {
@@ -64,13 +61,9 @@ export function useProjectLayers(
         setLoading(true);
         setError(null);
 
-        axios.get<TaxonStatisticsResponse>(`/api/react/taxonStatistics/${taxonId}`)
-            .then(response => {
-                if (response.data && response.data.data) {
-                    setProjects(response.data.data.recordsByProject || []);
-                } else {
-                    setProjects([]);
-                }
+        apiGet<ApiResult<TaxonStatisticsDto>>(`/api/react/taxonStatistics/${taxonId}`)
+            .then(payload => {
+                setProjects(payload.data?.recordsByProject || []);
             })
             .catch(err => {
                 console.error('Failed to load taxon projects:', err);

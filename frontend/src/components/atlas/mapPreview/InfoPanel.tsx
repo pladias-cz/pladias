@@ -1,6 +1,7 @@
 import type {MapPreviewType} from '@/pages/atlas/MapPreview';
 import {useEffect, useState} from 'react';
-import axios from 'axios';
+import {apiGet} from '@/services/apiClient';
+import type {ApiResult} from '@/models/ApiResponse';
 import type {TaxonMapSettings} from '@/components/atlas/taxaList/types';
 import {useTranslation} from 'react-i18next';
 
@@ -8,10 +9,6 @@ interface InfoPanelProps {
     type?: MapPreviewType;
     taxonId?: number;
     taxonName?: string;
-}
-
-interface TaxonMapSettingsResponse {
-    data: TaxonMapSettings;
 }
 
 export function InfoPanel({type = 1, taxonId, taxonName}: InfoPanelProps) {
@@ -58,10 +55,10 @@ export function InfoPanel({type = 1, taxonId, taxonName}: InfoPanelProps) {
         setLoading(true);
         setError(null);
 
-        axios.get<TaxonMapSettingsResponse>(`/api/react/atlas/taxonMapSettings/${taxonId}`)
-            .then(response => {
-                if (response.data && response.data.data) {
-                    setMapSettings(response.data.data);
+        apiGet<ApiResult<TaxonMapSettings>>(`/api/react/atlas/taxonMapSettings/${taxonId}`)
+            .then(payload => {
+                if (payload.data) {
+                    setMapSettings(payload.data);
                 }
             })
             .catch(err => {

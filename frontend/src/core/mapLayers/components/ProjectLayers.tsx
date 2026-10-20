@@ -9,13 +9,10 @@
 import { useEffect, useState, useMemo } from 'react';
 import { WMSTileLayer } from 'react-leaflet';
 import type { WMSParams } from 'leaflet';
-import axios from 'axios';
+import {apiGet} from '@/services/apiClient';
+import type {ApiResult} from '@/models/ApiResponse';
 import { useLayerState } from '../store/layerStore';
 import { PROJECT_LAYER_TEMPLATE } from '../registry/groups/projectLayers';
-
-interface TaxonStatisticsResponse {
-    data: TaxonStatisticsDto;
-}
 
 interface TaxonStatisticsDto {
     recordsByProject: ProjectRecordCountDto[];
@@ -52,13 +49,9 @@ export function ProjectLayers({ taxonId, mapName }: ProjectLayersProps) {
             return;
         }
 
-        axios.get<TaxonStatisticsResponse>(`/api/react/taxonStatistics/${taxonId}`)
-            .then(response => {
-                if (response.data && response.data.data) {
-                    setProjects(response.data.data.recordsByProject || []);
-                } else {
-                    setProjects([]);
-                }
+        apiGet<ApiResult<TaxonStatisticsDto>>(`/api/react/taxonStatistics/${taxonId}`)
+            .then(payload => {
+                setProjects(payload.data?.recordsByProject || []);
             })
             .catch(err => {
                 console.error('Failed to load taxon projects:', err);

@@ -1,7 +1,7 @@
 import {useCallback, useEffect, useState} from "react";
 import type {Feature} from "@/models/Feature";
 import type {Trait} from "@/models/Trait";
-import type {ApiResponse} from "@/models/ApiResponse";
+import type {ApiResult} from "@/models/ApiResponse";
 import type {Flash} from "@/models/Flash";
 
 interface Props {
@@ -38,7 +38,7 @@ export default function TraitTable({feature, refreshKey}: Props) {
                 throw new Error(`HTTP ${res.status}`);
             }
 
-            const json = await res.json() as ApiResponse<Trait[]>;
+            const json = await res.json() as ApiResult<Trait[]>;
             const list = json.data ?? [];
 
             setTraits(list);

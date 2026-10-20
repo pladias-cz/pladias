@@ -3,7 +3,8 @@
  */
 
 import {useState, useCallback} from 'react';
-import axios from 'axios';
+import {apiPost} from '@/services/apiClient';
+import type {ApiResult} from '@/models/ApiResponse';
 import type {TaxonMapSettings} from '../types';
 
 export function useTaxonUpdates() {
@@ -22,16 +23,14 @@ export function useTaxonUpdates() {
             formData.append('key', key);
             formData.append('value', value.toString());
 
-            const response = await axios.post('/api/react/atlasadmin/taxonMapSettings', formData, {
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-            });
+            // FormData bez Content-Type – boundary doplní prohlížeč (multipart);
+            // urlencoded hlavička z původního kódu se na drátě neposílala
+            const payload = await apiPost<ApiResult>('/api/react/atlasadmin/taxonMapSettings', formData);
 
-            if (response.data?.success) {
+            if (payload.success) {
                 return true;
             } else {
-                throw new Error(response.data?.error || 'Unknown error');
+                throw new Error(payload.error || 'Unknown error');
             }
         } catch (error) {
             console.error(`Error updating ${key}:`, error);

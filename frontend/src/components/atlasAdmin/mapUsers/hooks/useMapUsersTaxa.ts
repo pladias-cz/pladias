@@ -3,7 +3,8 @@
  */
 
 import {useCallback, useState, useEffect, useRef} from 'react';
-import axios from 'axios';
+import {apiGet} from '@/services/apiClient';
+import type {ApiResult} from '@/models/ApiResponse';
 import type {TFunction} from 'i18next';
 import type {SupervisedTaxon} from '../types';
 
@@ -39,11 +40,11 @@ export function useMapUsersTaxa(
     const fetchTaxa = useCallback(async (searchTerm: string) => {
         setTaxaLoading(true);
         try {
-            const response = await axios.get("/api/react/taxa/queryAll", {
+            const payload = await apiGet<ApiResult<SupervisedTaxon[]>>("/api/react/taxa/queryAll", {
                 params: { prefix: searchTerm }
             });
-            if (response.data?.success) {
-                setTaxa(response.data.data || []);
+            if (payload.success) {
+                setTaxa(payload.data || []);
             }
         } catch (err) {
             console.error("Error fetching taxa:", err);

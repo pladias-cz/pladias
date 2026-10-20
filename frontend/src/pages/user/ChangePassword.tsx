@@ -2,23 +2,13 @@ import React, {useState} from "react";
 import {Alert, Button, Col, Form, Row} from "react-bootstrap";
 import {usePageTitle} from "@/hooks/usePageTitle";
 import {useTranslation} from "react-i18next";
+import {changePassword, createApiToken} from "@/services/userApi";
+import {apiErrorMessage} from "@/services/apiClient";
 
 interface ChangePasswordFormData {
     originalPassword: string;
     newPassword: string;
     confirmNewPassword: string;
-}
-
-interface ChangePasswordResponse {
-    message?: string;
-    error?: string;
-}
-
-interface CreateTokenResponse {
-    success?: boolean;
-    token?: string;
-    error?: string;
-    message?: string;
 }
 
 export default function ChangePassword() {
@@ -45,16 +35,9 @@ export default function ChangePassword() {
         setToken(null);
 
         try {
-            const response = await fetch("/api/react/user/createToken", {method: "POST"});
-            const data: CreateTokenResponse = await response.json();
-
-            if (response.ok && data.success) {
-                setToken(data.token ?? null);
-            } else {
-                setError(data.error || data.message || t("user.changePassword.tokenError"));
-            }
-        } catch {
-            setError(t("user.changePassword.networkError"));
+            setToken(await createApiToken());
+        } catch (err) {
+            setError(apiErrorMessage(err, t("user.changePassword.tokenError")));
         } finally {
             setTokenLoading(false);
         }
@@ -75,29 +58,16 @@ export default function ChangePassword() {
         setMessage(null);
 
         try {
-            const response = await fetch("/api/react/user/changePassword", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(formData)
+            const successMessage = await changePassword(formData);
+            setMessage(successMessage || t("user.changePassword.success"));
+            // Clear form
+            setFormData({
+                originalPassword: "",
+                newPassword: "",
+                confirmNewPassword: ""
             });
-
-            const data: ChangePasswordResponse = await response.json();
-
-            if (response.ok) {
-                setMessage(data.message || t("user.changePassword.success"));
-                // Clear form
-                setFormData({
-                    originalPassword: "",
-                    newPassword: "",
-                    confirmNewPassword: ""
-                });
-            } else {
-                setError(data.error || t("user.changePassword.error"));
-            }
-        } catch {
-            setError(t("user.changePassword.networkError"));
+        } catch (err) {
+            setError(apiErrorMessage(err, t("user.changePassword.networkError")));
         } finally {
             setLoading(false);
         }

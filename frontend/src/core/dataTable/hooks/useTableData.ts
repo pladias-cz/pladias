@@ -3,7 +3,7 @@
  */
 
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import axios from 'axios';
+import {apiGet, apiPost, isAbortError} from '@/services/apiClient';
 import type {ServerSideDataResponse, CustomDataFetcher, HttpMethod} from '../types';
 import {buildTableParams} from '../utils/tableParams';
 
@@ -113,28 +113,28 @@ export function useTableData<T>(options: UseTableDataOptions<T>) {
                     }, {} as Record<string, string>)),
                 };
 
-                const response = await axios.post<ServerSideDataResponse<T>>(endpoint, bodyData, {
+                const payload = await apiPost<ServerSideDataResponse<T>>(endpoint, bodyData, {
                     signal: controller.signal,
                 });
 
                 result = {
-                    data: response.data?.data || [],
-                    totalCount: response.data?.totalCount || 0,
-                    filteredCount: response.data?.filteredCount,
+                    data: payload?.data || [],
+                    totalCount: payload?.totalCount || 0,
+                    filteredCount: payload?.filteredCount,
                 };
             } else {
                 // GET request (default behavior)
                 const params = buildTableParams({page, pageSize, sorting, columnFilters, additionalParams});
 
-                const response = await axios.get<ServerSideDataResponse<T>>(endpoint, {
+                const payload = await apiGet<ServerSideDataResponse<T>>(endpoint, {
                     params,
                     signal: controller.signal,
                 });
 
                 result = {
-                    data: response.data?.data || [],
-                    totalCount: response.data?.totalCount || 0,
-                    filteredCount: response.data?.filteredCount,
+                    data: payload?.data || [],
+                    totalCount: payload?.totalCount || 0,
+                    filteredCount: payload?.filteredCount,
                 };
             }
 
@@ -148,7 +148,7 @@ export function useTableData<T>(options: UseTableDataOptions<T>) {
 
             onSuccess?.(newData, newTotalCount, newFilteredCount);
         } catch (err) {
-            if (axios.isCancel(err) || err instanceof Error && err.name === 'CanceledError') {
+            if (isAbortError(err)) {
                 // Request cancelled - ignore
             } else {
                 console.error('Error fetching table data:', err);

@@ -2,7 +2,7 @@ import { useTranslation } from "react-i18next";
 import { useEffect, useState } from "react";
 import type {TraitEntryType} from "@/models/TraitEntryType";
 import {type TaxonRankId} from '@/models/TaxonRankId';
-import type {ApiResponse} from "@/models/ApiResponse";
+import type {ApiResult} from "@/models/ApiResponse";
 
 export default function ExportOptions() {
     const { t } = useTranslation();
@@ -19,7 +19,7 @@ export default function ExportOptions() {
     useEffect(() => {
         fetch("/api/react/measurement/trait-entry-type")
             .then(res => res.json())
-            .then((json:ApiResponse<TraitEntryType[]>) => {
+            .then((json: ApiResult<TraitEntryType[]>) => {
                 if (json.success && Array.isArray(json.data)) {
                     setEntryTypes(json.data);
                 }

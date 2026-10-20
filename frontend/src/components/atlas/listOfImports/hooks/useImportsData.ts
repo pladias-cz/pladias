@@ -1,5 +1,6 @@
 import {useCallback} from 'react';
-import axios from 'axios';
+import {apiGet} from '@/services/apiClient';
+import type {ServerSideDataResponse} from '@/core/dataTable/types';
 import type {ImportRecord} from '../types';
 
 export interface UseImportsDataOptions {
@@ -50,7 +51,7 @@ export function useImportsData(options: UseImportsDataOptions = {}) {
             }
         });
 
-        const response = await axios.get("/api/react/importResult/imported", {
+        const payload = await apiGet<ServerSideDataResponse<ImportRecord>>("/api/react/importResult/imported", {
             params: {
                 page: String(page),
                 pageSize: String(pageSize),
@@ -61,10 +62,9 @@ export function useImportsData(options: UseImportsDataOptions = {}) {
             signal,
         });
 
-        const responseData = response.data;
-        const data = responseData?.data || [];
-        const totalCount = responseData?.totalCount || 0;
-        const filteredCount = responseData?.filteredCount ?? totalCount;
+        const data = payload?.data || [];
+        const totalCount = payload?.totalCount || 0;
+        const filteredCount = payload?.filteredCount ?? totalCount;
 
         if (data.length === 0) {
             return {data: [], totalCount, filteredCount};

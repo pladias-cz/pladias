@@ -3,9 +3,9 @@
  */
 
 import {useCallback, useRef, useState} from 'react';
-import axios, {type AxiosError} from 'axios';
+import {apiDownload, ApiError} from '@/services/apiClient';
 import {buildTableParams} from '../utils/tableParams';
-import {downloadBlob, readErrorMessage, resolveFilename} from './downloadFile';
+import {downloadBlob} from './downloadFile';
 
 export const XlsxAcceptHeader = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
 
@@ -51,7 +51,7 @@ export function useExcelExport({
 
         const state = tableState.current;
         try {
-            const response = await axios.get<Blob>(endpoint, {
+            const file = await apiDownload(endpoint, {
                 params: buildTableParams({
                     sorting: state.sorting,
                     columnFilters: variant === 'filtered' ? state.columnFilters : [],
@@ -59,20 +59,14 @@ export function useExcelExport({
                     additionalParams: state.additionalParams,
                 }),
                 headers: {Accept: XlsxAcceptHeader},
-                responseType: 'blob',
+                errorMessage,
+                fallbackFilename,
             });
 
-            if (String(response.headers['content-type'] ?? '').includes('application/json')) {
-                setError((await readErrorMessage(response.data)) || errorMessage);
-            } else {
-                downloadBlob(
-                    response.data,
-                    resolveFilename(response.headers['content-disposition'], fallbackFilename),
-                );
-            }
+            downloadBlob(file.blob, file.filename);
         } catch (err) {
-            const failed = err as AxiosError<Blob>;
-            setError((await readErrorMessage(failed.response?.data)) || errorMessage);
+            // apiDownload už vytáhl hlášku z JSON chyby v souborovém streamu (gotcha)
+            setError(err instanceof ApiError && err.message ? err.message : errorMessage);
         } finally {
             setExporting(current => (current === variant ? null : current));
         }

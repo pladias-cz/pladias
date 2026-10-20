@@ -7,7 +7,7 @@
 
 import {useState, useMemo, useCallback} from "react";
 import {useTranslation} from "react-i18next";
-import axios from "axios";
+import {apiDelete} from "@/services/apiClient";
 import {
     DataTable,
     type DataTableColumnDef,
@@ -54,7 +54,7 @@ export default function ListOfControls() {
         
         try {
             // Make DELETE request
-            await axios.delete(`/api/react/importResult/validated/${id}`);
+            await apiDelete(`/api/react/importResult/validated/${id}`);
             
             // Success - show flash message
             showFlash('success', t("atlas.admin.importsList.deleteSuccess"));

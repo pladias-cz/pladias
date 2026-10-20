@@ -1,17 +1,18 @@
-import type {BulkRecordVersion} from "./bulkEditOperations";
+/**
+ * Hromadné úpravy záznamů z výsledků vyhledávání – etalon service vrstvy
+ * (docs/refactoring.md, sekce D: vzor přesunut z components/atlas/search/).
+ * Komponenta (BulkEdit) nezná URL ani tvar požadavků.
+ */
+
+import {apiPatch, apiPost, ensureSuccess} from "./apiClient";
+import type {ApiResult} from "@/models/ApiResponse";
+import type {BulkRecordVersion} from "@/components/atlas/search/bulkEditOperations";
 
 type RecordEditTimestampRow = {
     id?: number;
     recordId?: number;
     edit_timestamp?: number | string | null;
     editTimestamp?: number | string | null;
-};
-
-type JsonResponse<T> = {
-    success?: boolean;
-    data?: T;
-    message?: string;
-    error?: string;
 };
 
 const toFormData = (payloadEntries: Array<[string, FormDataEntryValue]>) => {
@@ -48,86 +49,43 @@ const parseRecordVersion = (row: RecordEditTimestampRow): BulkRecordVersion | nu
     };
 };
 
-const checkApiResponse = (
-    response: Response,
-    payload: any,
-    defaultErrorMessage: string,
-): void => {
-    if (!response.ok) {
-        const message = payload?.message || payload?.error || defaultErrorMessage;
-        throw new Error(message);
-    }
-
-    if (!payload?.success) {
-        const message = payload?.message || payload?.error || defaultErrorMessage;
-        throw new Error(message);
-    }
-};
-
 const patchRecordField = async (
     record: BulkRecordVersion,
     key: string,
     value: string,
-    defaultErrorMessage: string,
+    errorMessage: string,
 ): Promise<void> => {
-    const response = await fetch(`/api/react/atlas/record/${record.id}`, {
-        method: "PATCH",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-            key,
-            value,
-            lastEditTimestampNum: record.lastEditTimestampNum,
-        }),
-    });
-
-    const payload = await response.json().catch(() => ({}));
-    checkApiResponse(response, payload, defaultErrorMessage);
+    const payload = await apiPatch<ApiResult>(`/api/react/atlas/record/${record.id}`, {
+        key,
+        value,
+        lastEditTimestampNum: record.lastEditTimestampNum,
+    }, {errorMessage});
+    ensureSuccess(payload, errorMessage);
 };
 
 export async function fetchRecordEditTimestamps(payloadEntries: Array<[string, FormDataEntryValue]>): Promise<BulkRecordVersion[]> {
-    const response = await fetch("/api/react/atlas/search/records-edit-timestamps", {
-        method: "POST",
-        body: toFormData(payloadEntries),
-    });
+    const payload = await apiPost<ApiResult<RecordEditTimestampRow[]>>(
+        "/api/react/atlas/search/records-edit-timestamps",
+        toFormData(payloadEntries),
+        {errorMessage: "Failed to load editable records"},
+    );
+    ensureSuccess(payload, "Failed to load editable records");
 
-    const payload = await response.json().catch(() => ({}));
-    checkApiResponse(response, payload, "Failed to load editable records");
-
-    const typedPayload = payload as JsonResponse<RecordEditTimestampRow[]> | RecordEditTimestampRow[];
-    const rows = Array.isArray(typedPayload)
-        ? typedPayload
-        : Array.isArray(typedPayload.data)
-            ? typedPayload.data
-            : [];
-
-    if (!Array.isArray(rows)) {
-        throw new Error("Invalid response format");
-    }
-
+    const rows = Array.isArray(payload.data) ? payload.data : [];
     return rows
         .map(parseRecordVersion)
         .filter((record): record is BulkRecordVersion => record != null);
 }
 
 export async function moveCoordinates(record: BulkRecordVersion, latitude: number, longitude: number, gpsPrecision: number): Promise<void> {
-    const response = await fetch("/api/react/atlas/record/moveCoordinates", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-            recordId: record.id,
-            latitude,
-            longitude,
-            gpsPrecision,
-            lastEditTimestampNum: record.lastEditTimestampNum,
-        }),
-    });
-
-    const payload = await response.json().catch(() => ({}));
-    checkApiResponse(response, payload, "Failed to move record");
+    const payload = await apiPost<ApiResult>("/api/react/atlas/record/moveCoordinates", {
+        recordId: record.id,
+        latitude,
+        longitude,
+        gpsPrecision,
+        lastEditTimestampNum: record.lastEditTimestampNum,
+    }, {errorMessage: "Failed to move record"});
+    ensureSuccess(payload, "Failed to move record");
 }
 
 export async function updateCoordsPrecision(record: BulkRecordVersion, gpsPrecision: number): Promise<void> {

@@ -3,7 +3,8 @@
  */
 
 import {useCallback, useState} from 'react';
-import axios from 'axios';
+import {apiGet} from '@/services/apiClient';
+import type {ApiResult} from '@/models/ApiResponse';
 import type {TFunction} from 'i18next';
 import type {Project} from '../types';
 
@@ -35,9 +36,9 @@ export function useMapUsersProjects(
     const fetchProjects = useCallback(async () => {
         setProjectsLoading(true);
         try {
-            const response = await axios.get("/api/react/occurrence/projects");
-            if (response.data?.success) {
-                setProjects(response.data.data || []);
+            const payload = await apiGet<ApiResult<Project[]>>("/api/react/occurrence/projects");
+            if (payload.success) {
+                setProjects(payload.data || []);
             }
         } catch (err) {
             console.error("Error fetching projects:", err);

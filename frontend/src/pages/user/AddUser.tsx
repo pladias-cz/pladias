@@ -2,17 +2,13 @@ import React, {useState} from "react";
 import {Alert, Button, Col, Form, Row} from "react-bootstrap";
 import {usePageTitle} from "@/hooks/usePageTitle";
 import {useTranslation} from "react-i18next";
+import {addUser} from "@/services/userApi";
+import {apiErrorMessage} from "@/services/apiClient";
 
 interface AddUserFormData {
     name: string;
     surname: string;
     email: string;
-}
-
-interface AddUserResponse {
-    success?: boolean;
-    message?: string;
-    error?: string;
 }
 
 export default function AddUser() {
@@ -43,34 +39,17 @@ export default function AddUser() {
         setMessage(null);
 
         try {
-            const response = await fetch("/api/react/users", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    name: formData.name,
-                    surname: formData.surname,
-                    email: formData.email
-                })
+            const successMessage = await addUser(formData);
+            setMessage(successMessage || t("user.addUser.success"));
+
+            // Clear form
+            setFormData({
+                name: "",
+                surname: "",
+                email: ""
             });
-
-            const data: AddUserResponse = await response.json();
-
-            if (response.ok && data.success) {
-                setMessage(data.message || t("user.addUser.success"));
-
-                // Clear form
-                setFormData({
-                    name: "",
-                    surname: "",
-                    email: ""
-                });
-            } else {
-                setError(data.error || t("user.addUser.error"));
-            }
-        } catch {
-            setError(t("user.addUser.networkError"));
+        } catch (err) {
+            setError(apiErrorMessage(err, t("user.addUser.networkError")));
         } finally {
             setLoading(false);
         }

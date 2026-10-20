@@ -1,6 +1,7 @@
 import {Accordion, Button} from 'react-bootstrap';
 import {useEffect, useState} from 'react';
-import axios from 'axios';
+import {apiGet} from '@/services/apiClient';
+import type {ApiResult} from '@/models/ApiResponse';
 import {useTaxonUpdates} from '../../atlasAdmin/taxaList/hooks';
 import {useTranslation} from 'react-i18next';
 
@@ -23,10 +24,6 @@ interface ProjectRecordCountDto {
 interface UserMinimalDto {
     id: number;
     name: string;
-}
-
-interface TaxonStatisticsResponse {
-    data: TaxonStatisticsDto;
 }
 
 interface TaxonStatisticsDto {
@@ -73,11 +70,6 @@ interface TaxonMapSettingsData {
     hasPng: boolean;
     currentUserIsRevisor: boolean;
     mapType: number;
-}
-
-interface TaxonMapSettingsResponse {
-    data: TaxonMapSettingsData;
-    success: boolean;
 }
 
 interface SectionProps {
@@ -136,10 +128,10 @@ export function InfoPanel({taxonName, taxonId}: InfoPanelProps) {
         setError(null);
 
         // Fetch taxon statistics
-        axios.get<TaxonStatisticsResponse>(`/api/react/taxonStatistics/${taxonId}`)
-            .then(response => {
-                if (response.data && response.data.data) {
-                    setStatistics(response.data.data);
+        apiGet<ApiResult<TaxonStatisticsDto>>(`/api/react/taxonStatistics/${taxonId}`)
+            .then(payload => {
+                if (payload.data) {
+                    setStatistics(payload.data);
                 }
             })
             .catch(err => {
@@ -148,16 +140,17 @@ export function InfoPanel({taxonName, taxonId}: InfoPanelProps) {
             });
 
         // Fetch taxon map settings to get currentUserIsRevisor and comments
-        axios.get<TaxonMapSettingsResponse>(`/api/react/atlas/taxonMapSettings/${taxonId}`)
-            .then(response => {
-                if (response.data && response.data.data) {
-                    setCurrentUserIsRevisor(response.data.data.currentUserIsRevisor);
-                    setRevisorsComment(response.data.data.revisorsComment ?? '');
-                    setRevisorsPrintMapComment(response.data.data.revisorsPrintComment ?? '');
-                    setMapType(response.data.data.mapType ?? 1);
-                    setLastEditTimestamp(response.data.data.lastEditTimestamp);
-                    setIsMapped(response.data.data.isMapped);
-                    setRevisionStatusId(response.data.data.revisionStatusId);
+        apiGet<ApiResult<TaxonMapSettingsData>>(`/api/react/atlas/taxonMapSettings/${taxonId}`)
+            .then(payload => {
+                if (payload.data) {
+                    const data = payload.data;
+                    setCurrentUserIsRevisor(data.currentUserIsRevisor);
+                    setRevisorsComment(data.revisorsComment ?? '');
+                    setRevisorsPrintMapComment(data.revisorsPrintComment ?? '');
+                    setMapType(data.mapType ?? 1);
+                    setLastEditTimestamp(data.lastEditTimestamp);
+                    setIsMapped(data.isMapped);
+                    setRevisionStatusId(data.revisionStatusId);
                 }
             })
             .catch(err => {

@@ -3,7 +3,7 @@
  */
 
 import {useCallback} from 'react';
-import axios from 'axios';
+import {apiGet} from '@/services/apiClient';
 import type {MapUserTableRow, Project, SupervisedTaxon} from '../types';
 
 export interface UseMapUsersDataOptions {
@@ -67,7 +67,7 @@ export function useMapUsersData(options: UseMapUsersDataOptions = {}) {
         });
 
         // Fetch users
-        const usersResponse = await axios.get<UsersApiResponse>("/api/react/atlasadmin/users", {
+        const usersPayload = await apiGet<UsersApiResponse>("/api/react/atlasadmin/users", {
             params: {
                 page: String(page),
                 pageSize: String(pageSize),
@@ -78,10 +78,9 @@ export function useMapUsersData(options: UseMapUsersDataOptions = {}) {
             signal,
         });
 
-        const usersData = usersResponse.data;
-        const users = usersData?.data || [];
-        const totalCount = usersData?.totalCount || 0;
-        const filteredCount = usersData?.filteredCount ?? totalCount;
+        const users = usersPayload?.data || [];
+        const totalCount = usersPayload?.totalCount || 0;
+        const filteredCount = usersPayload?.filteredCount ?? totalCount;
 
         if (users.length === 0) {
             return {data: [], totalCount, filteredCount};
@@ -90,12 +89,12 @@ export function useMapUsersData(options: UseMapUsersDataOptions = {}) {
         // Fetch rights for these users
         const userIds = users.map(u => u.id);
 
-        const rightsResponse = await axios.get<UserRightsApiResponse>("/api/react/atlasadmin/userrights", {
+        const rightsPayload = await apiGet<UserRightsApiResponse>("/api/react/atlasadmin/userrights", {
             params: { userIds: userIds.join(",") },
             signal,
         });
 
-        const rightsData = rightsResponse.data?.data || {};
+        const rightsData = rightsPayload?.data || {};
 
         // Merge users with their rights
         const mergedData: MapUserTableRow[] = users.map((user) => ({

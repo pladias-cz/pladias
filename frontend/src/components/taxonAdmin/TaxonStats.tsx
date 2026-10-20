@@ -1,6 +1,6 @@
 import {useEffect, useState} from "react";
 import type {TaxonStats} from "@/models/TaxonStats";
-import type {ApiResponse} from "@/models/ApiResponse";
+import type {ApiResult} from "@/models/ApiResponse";
 
 
 interface Props {
@@ -13,8 +13,8 @@ export default function TaxonRecordStats({taxonId}: Props) {
     useEffect(() => {
         fetch(`/api/react/taxon/${taxonId}/stats`)
             .then(r => r.json())
-            .then((res: ApiResponse<TaxonStats>) => {
-                if (res.success) {
+            .then((res: ApiResult<TaxonStats>) => {
+                if (res.success && res.data) {
                     setStats(res.data);
                 } else {
                     setStats(null);

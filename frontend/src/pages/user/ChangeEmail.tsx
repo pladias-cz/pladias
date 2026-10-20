@@ -2,16 +2,13 @@ import React, {useState} from "react";
 import {Alert, Button, Col, Form, Row} from "react-bootstrap";
 import {usePageTitle} from "@/hooks/usePageTitle";
 import {useTranslation} from "react-i18next";
+import {changeEmail} from "@/services/userApi";
+import {apiErrorMessage} from "@/services/apiClient";
 
 interface ChangeEmailFormData {
     password: string;
     newEmail: string;
     confirmNewEmail: string;
-}
-
-interface ChangeEmailResponse {
-    message?: string;
-    error?: string;
 }
 
 export default function ChangeEmail() {
@@ -48,32 +45,19 @@ export default function ChangeEmail() {
                 return;
             }
 
-            const response = await fetch("/api/react/user/changeEmail", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    password: formData.password,
-                    newEmail: formData.newEmail
-                })
+            const successMessage = await changeEmail({
+                password: formData.password,
+                newEmail: formData.newEmail
             });
-
-            const data: ChangeEmailResponse = await response.json();
-
-            if (response.ok) {
-                setMessage(data.message || t("user.changeEmail.success"));
-                // Clear form
-                setFormData({
-                    password: "",
-                    newEmail: "",
-                    confirmNewEmail: ""
-                });
-            } else {
-                setError(data.error || t("user.changeEmail.error"));
-            }
-        } catch {
-            setError(t("user.changeEmail.networkError"));
+            setMessage(successMessage || t("user.changeEmail.success"));
+            // Clear form
+            setFormData({
+                password: "",
+                newEmail: "",
+                confirmNewEmail: ""
+            });
+        } catch (err) {
+            setError(apiErrorMessage(err, t("user.changeEmail.networkError")));
         } finally {
             setLoading(false);
         }

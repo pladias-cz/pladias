@@ -7,14 +7,10 @@ import LanguageSettings from "@/components/settings/LanguageSettings";
 import TraitsSettings from "@/components/settings/TraitsSettings";
 import {useUser} from "@/context/UserContext";
 import {changeLanguage} from "@/i18n/i18n";
-import {useUserSettings, mapBackendKeyToStateKey} from "@/hooks/useUserSettings";
+import {useUserSettings} from "@/hooks/useUserSettings";
+import {getUserSetting, isBooleanSetting, mapBackendKeyToStateKey, resetUserSettings} from "@/services/settingsApi";
+import {apiErrorMessage} from "@/services/apiClient";
 import type {UserSettingsState} from "@/components/settings/types";
-
-interface UserSettingResponse {
-    success?: boolean;
-    value?: string;
-    error?: string;
-}
 
 export default function Settings() {
     const {t} = useTranslation();
@@ -68,10 +64,9 @@ export default function Settings() {
             };
 
             // Load application language setting
-            const appLangResponse = await fetch("/api/react/user/settings/application_language");
-            const appLangData: UserSettingResponse = await appLangResponse.json();
-            if (appLangResponse.ok && appLangData.success && appLangData.value) {
-                newSettings.applicationLanguage = appLangData.value;
+            const appLanguage = await getUserSetting("application_language");
+            if (appLanguage !== null) {
+                newSettings.applicationLanguage = appLanguage;
             }
 
             if (isTraitAdmin) {
@@ -88,15 +83,10 @@ export default function Settings() {
 
                 // Load all trait settings
                 for (const key of settingsToLoad) {
-                    const response = await fetch(`/api/react/user/settings/${key}`);
-                    const data: UserSettingResponse = await response.json();
-                    if (response.ok && data.success) {
+                    const value = await getUserSetting(key);
+                    if (value !== null) {
                         const stateKey = mapBackendKeyToStateKey(key) as keyof UserSettingsState;
-                        if (key.includes("traits_substitute_percentasinteger") || key.includes("traits_substitute_english")) {
-                            newSettingsRecord[stateKey] = data.value === "true";
-                        } else {
-                            newSettingsRecord[stateKey] = data.value ?? "";
-                        }
+                        newSettingsRecord[stateKey] = isBooleanSetting(key) ? value === "true" : value;
                     }
                 }
             }
@@ -138,22 +128,13 @@ export default function Settings() {
         setMessage(null);
 
         try {
-            const response = await fetch(`/api/react/user/settings/${keyPrefix}`, {
-                method: "DELETE"
-            });
-
-            const data: UserSettingResponse = await response.json();
-
-            if (response.ok && data.success) {
-                // Reload settings after reset
-                await loadUserSettings();
-                setMessage(t("user.settings.success"));
-            } else {
-                setError(data.error || t("user.settings.error"));
-            }
+            await resetUserSettings(keyPrefix);
+            // Reload settings after reset
+            await loadUserSettings();
+            setMessage(t("user.settings.success"));
         } catch (err) {
             console.error(err);
-            setError(t("user.settings.networkError"));
+            setError(apiErrorMessage(err, t("user.settings.networkError")));
         } finally {
             setLoading(false);
         }

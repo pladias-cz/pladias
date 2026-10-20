@@ -4,12 +4,10 @@
 
 První kolo refactoringu (čistý TypeScript, `apiClient` + service vrstva, globální notifikace,
 `ErrorBoundary`, typované role, heartbeat, CI pipeline) bylo realizováno ve fázích 1–4
-(commity `cbab703`…`c68d81b`) a plán (`docs/refactoring.md`, sekce A–L) byl po dokončení smazán.
+(commity `cbab703`…`c68d81b`) a jeho plán byl po dokončení smazán.
 Tento dokument je druhé kolo: oblasti, kde frontend **stále zaostává** za enterprise architekturou.
 Každá sekce má strukturu **Současný stav → Návrh → Kroky → Rizika → Hotovo, když**; všechna čísla
 jsou ověřitelná uvedenými příkazy.
-
-> Poznámka: v komentářích kódu a CI zbývají odkazy na smazaný `docs/refactoring.md` – viz sekce O.
 
 ## Obsah
 
@@ -171,7 +169,7 @@ kdy se změní větev renderu):
 **Návrh.** Pořadí: nejdřív bugy, pak dluh, nakonec gate.
 1. **`rules-of-hooks` (11):** přesunout hooky před všechny early-returny; `renderMultiValue`
    převést z inline helperu na skutečnou komponentu. Nutná ruční testace postižených obrazovek
-   (vrstvy mapy, inline editace záznamů, tabulka Pladias záznamů).
+   (vrstvy mapy, inline editace záznamů, tabulka Pladias záznamů). *(Hotovo 20. 10. 2026 – fáze 1.)*
 2. **`no-unused-vars` (32):** zapnout `argsIgnorePattern: "^_"` – značná část chyb jsou záměrné
    nepoužité parametry adapterů (`_definition`, `_url`), což je konvence, ne dluh. Zbytek smazat.
 3. **Drobnosti (15):** mechanické opravy.
@@ -340,10 +338,11 @@ testů ~150+; každý nový service modul má test.
   nebo tichý catch.
 
 **Návrh.**
-1. `TaxonSynonyms` → `useConfirm` (jediné místo s nativním `confirm`).
+1. `TaxonSynonyms` → `useConfirm` (jediné místo s nativním `confirm`). *(Hotovo 20. 10. 2026 – fáze 1.)*
 2. Pravidlo do [conventions.md](./conventions.md): catch apiClient volání vždy
-   `notifyApiError(err, fallback)`; inline error jen pro validace formulářových polí.
+   `notifyApiError(err, fallback)`; inline error jen pro validace formulářových polí. *(Hotovo 20. 10. 2026 – fáze 1.)*
 3. `console.*` odstranit tam, kde existuje/náleží uživatelská hláška; zbytek smazat s migrací A.
+   *(Částečně hotovo 20. 10. 2026 – fáze 1: ošetřeny soubory dotčené fází 1; zbytek s migrací A.)*
 
 **Rizika.** Žádná – jde o konzistenci.
 
@@ -374,7 +373,7 @@ grep -v node_modules` vrací 0; žádná catch větev není němá.
 dle nomenklatury) – formát se nemění, jen se centralizuje escaper.
 
 **Hotovo, když.** `grep -rln "dangerouslySetInnerHTML" src --include='*.tsx'` vrací jen
-`RichTextMessage.tsx`.
+`RichTextMessage.tsx`. *(Hotovo 20. 10. 2026 – fáze 1.)*
 
 ---
 
@@ -506,7 +505,7 @@ nemá automatizované updaty. `frontend/README.md` chybí (příkazy jsou jen v 
 
 **Návrh.**
 1. Do `.github/dependabot.yml` přidat `package-ecosystem: npm` s `directory: /frontend`
-   (skupinový update minor/patch, týdně; major ručně).
+   (skupinový update minor/patch, týdně; major ručně). *(Hotovo 20. 10. 2026 – fáze 1.)*
 2. Po splnění B odstranit `continue-on-error: true` u lintu.
 3. Krátký `frontend/README.md`: dev/build/test/lint/i18n:check + poznámka o BE proxy na
    `localhost:9443` + odkaz do `docs/`.
@@ -519,24 +518,23 @@ nemá automatizované updaty. `frontend/README.md` chybí (příkazy jsou jen v 
 
 ## O – Drobný dokumentační dluh
 
-**Současný stav.** Odkazy na smazaný `docs/refactoring.md` (sekce C/D/F/G/I/J) zůstaly viset v:
-`docs/conventions.md` (Path aliases, ErrorBoundary, RichTextMessage), `frontend/vite.config.ts`
-(test config), `.github/workflows/frontend.yml` (JS guard, lint), `src/services/apiClient.ts`,
-`src/services/apiClient.test.ts`, `scripts/check-i18n.mjs`. Nový vývojář hledá sekce, které už
-neexistují.
+**Současný stav.** Odkazy na smazaný plán prvního kola zůstaly viset v komentářích kódu a CI –
+nový vývojář hledá sekce, které už neexistují. *(Vyřešeno 20. 10. 2026 – fáze 1: odkazy
+odstraněny ze všech ~30 dotčených souborů, včetně dalších mimo původní výčet.)*
 
 **Návrh.** Odkazy odstranit (preferováno – odkazy na sekce dokumentu stárnou nejhůř) nebo
 přesměrovat na tento dokument.
 
-**Hotovo, když.** `grep -rn "refactoring.md" docs frontend .github` vrací 0.
+**Hotovo, když.** grep na název smazaného souboru v `docs frontend .github` vrací 0.
+*(Ověřeno 20. 10. 2026.)*
 
 ---
 
 ## Doporučené pořadí realizace
 
-**Fáze 1 – Bug fixy a rychlé vítězství (~1 týden):**
-B.1 `rules-of-hooks` (11 latentních bugů) → H (entity v překladech + `RichTextMessage`) →
-G (confirm konzistence) → N.1 dependabot npm → O (odkazy na smazaný plán).
+**Fáze 1 – Bug fixy a rychlé vítězství (~1 týden)** – *hotovo 20. 10. 2026:*
+~~B.1 `rules-of-hooks` (11 latentních bugů) → H (entity v překladech + `RichTextMessage`) →
+G (confirm konzistence) → N.1 dependabot npm → O (odkazy na smazaný plán).~~
 
 **Fáze 2 – Service vrstva (1–2 týdny, krájená po feature):**
 A po krocích 1–5 (taxonAdmin → measurement → pages/atlas → autocomplete → mapLayers); ke každému

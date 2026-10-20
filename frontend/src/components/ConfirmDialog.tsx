@@ -3,7 +3,7 @@ import {useTranslation} from "react-i18next";
 import {Button, Modal} from "react-bootstrap";
 
 /**
- * Potvrzovací dialog aplikace (docs/refactoring.md, sekce G/K) – náhrada
+ * Potvrzovací dialog aplikace – náhrada
  * nativního potvrzovacího dialogu prohlížeče (blokující, nelokalizovatelné
  * styly, vizuálně cizí Bootstrap UI).
  *

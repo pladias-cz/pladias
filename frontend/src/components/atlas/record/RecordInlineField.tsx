@@ -42,6 +42,8 @@ export default function RecordInlineField({
     const [lastTimestamp, setLastTimestamp] = useState(lastEditTimestampNum ?? 0);
     // Editing state - must be at top level to be accessible from save()
     const [editing, setEditing] = useState(false);
+    // Boolean switch keeps its own optimistic value; top-level hook (rules-of-hooks)
+    const [internalValue, setInternalValue] = useState(draft);
     
     // Sync internal timestamp with prop when prop changes (e.g., after another field was edited)
     useEffect(() => {
@@ -114,7 +116,6 @@ export default function RecordInlineField({
     let content: React.ReactNode;
 
     if (type === "boolean") {
-        const [internalValue, setInternalValue] = useState(draft);
         content = (
             <Form.Check
                 type="switch"
@@ -144,7 +145,7 @@ export default function RecordInlineField({
         } else if (type === "select") {
             content = renderSelect(options, draft, saving, save, setEditing);
         } else if (type === "multi-value") {
-            content = renderMultiValue(draft, save, setEditing, t, saving);
+            content = <MultiValueEditor value={draft} saving={saving} onSave={save} onDone={() => setEditing(false)}/>;
         } else {
             content = (
                 <Form.Control
@@ -204,8 +205,18 @@ function renderSelect(options: Option[] | undefined, draft: any, saving: boolean
     );
 }
 
-function renderMultiValue(draft: any, save: (v: any) => void, setEditing: (v: boolean) => void, t: any, saving: boolean) {
-    const [tags, setTags] = useState<string[]>(draft || []);
+/**
+ * Editor for "multi-value" fields (tags). A real component (rules-of-hooks):
+ * it owns its state and resets it every time editing starts.
+ */
+function MultiValueEditor({value, saving, onSave, onDone}: {
+    value: string[] | null | undefined;
+    saving: boolean;
+    onSave: (v: string[]) => void;
+    onDone: () => void;
+}) {
+    const {t} = useTranslation();
+    const [tags, setTags] = useState<string[]>(value || []);
     const [newTag, setNewTag] = useState('');
 
     const handleAddTag = () => {
@@ -220,8 +231,8 @@ function renderMultiValue(draft: any, save: (v: any) => void, setEditing: (v: bo
     };
 
     const handleSaveTags = () => {
-        save(tags);
-        setEditing(false);
+        onSave(tags);
+        onDone();
     };
 
     return (
@@ -281,7 +292,7 @@ function renderMultiValue(draft: any, save: (v: any) => void, setEditing: (v: bo
                 <Button
                     variant="secondary"
                     size="sm"
-                    onClick={() => setEditing(false)}
+                    onClick={onDone}
                     disabled={saving}
                 >
                     {t('common.cancel')}

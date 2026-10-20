@@ -62,7 +62,7 @@ export default defineConfig(({ command }) => ({
         }
       },
     test: {
-        // Vitest sdílí aliasy a transformace s Vite (docs/refactoring.md, sekce I)
+        // Vitest sdílí aliasy a transformace s Vite
         environment: "jsdom",
         setupFiles: ["./src/test/setup.ts"],
         include: ["src/**/*.{test,spec}.{ts,tsx}"],

@@ -39,7 +39,7 @@ export function parseInstanceMessages(raw: unknown): InstanceMessage[] {
 
 /**
  * Stabilní React klíč odvozený z obsahu (ne z indexu v poli – po změně pořadí
- * zpráv nemusí docházet k remountování Alertů; docs/refactoring.md, sekce A).
+ * zpráv nemusí docházet k remountování Alertů).
  */
 export function instanceMessageKey(message: InstanceMessage): string {
     return `${message.type}:${message.text}`;

@@ -1,6 +1,6 @@
 /**
  * Hromadné úpravy záznamů z výsledků vyhledávání – etalon service vrstvy
- * (docs/refactoring.md, sekce D: vzor přesunut z components/atlas/search/).
+ * (vzor přesunut z components/atlas/search/).
  * Komponenta (BulkEdit) nezná URL ani tvar požadavků.
  */
 

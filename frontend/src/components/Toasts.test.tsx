@@ -5,7 +5,7 @@ import {useNotificationStore} from "@/stores/notificationStore";
 import "@/i18n/i18n";
 
 /**
- * Testy výstupu notifikačního store (docs/refactoring.md, sekce F): textové
+ * Testy výstupu notifikačního store: textové
  * i rich-text (RichTextMessage) hlášky, zavření tlačítkem a prázdný stav.
  * Vitest bez globals: true nespouští auto-cleanup, proto ručně.
  */

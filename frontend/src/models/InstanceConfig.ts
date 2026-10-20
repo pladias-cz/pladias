@@ -23,7 +23,7 @@ class InstanceConfig {
 
     /**
      * Declarativní dostupnost modulu – přidání nového modulu = jeden řádek tady,
-     * ne úprava `ProtectedRoute` (docs/refactoring.md, sekce B).
+     * ne úprava `ProtectedRoute`.
      */
     hasModule(module: InstanceModule): boolean {
         switch (module) {

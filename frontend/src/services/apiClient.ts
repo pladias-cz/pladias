@@ -1,5 +1,5 @@
 /**
- * Jediný HTTP klient aplikace (docs/refactoring.md, sekce D).
+ * Jediný HTTP klient aplikace.
  *
  * Centralizuje: fetch volání, query parametry, parsování odpovědí, reakci na
  * 401 (přesměrování na /login), 403 (injectable handler – sekce F) a síťové

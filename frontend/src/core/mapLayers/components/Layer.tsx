@@ -163,17 +163,18 @@ function WmsLayerWithParams({
     const layerRef = useRef<L.TileLayer.WMS | null>(null);
     const visibleRef = useRef(visible);
     
-    if (!definition.service) return null;
-    const config = definition.service.config as any;
+    // Hooks must run unconditionally (rules-of-hooks) – renderWMSLayer already
+    // guarantees definition.service, optional chaining covers the impossible case.
+    const config = definition.service?.config as any;
     
     // Interpolate layers string
-    const layers = (config.layers as string | undefined)?.replace(/\{(\w+)\}/g, (_: string, key: string) => {
+    const layers = (config?.layers as string | undefined)?.replace(/\{(\w+)\}/g, (_: string, key: string) => {
         return params[key] !== undefined ? String(params[key]) : '';
     });
     
     // Build viewParams
     const viewParamsStr = useMemo(() => {
-        if (!config.viewParams || config.viewParams.length === 0) return '';
+        if (!config?.viewParams || config.viewParams.length === 0) return '';
         
         return config.viewParams
             .map((paramParam: string) => {
@@ -188,7 +189,7 @@ function WmsLayerWithParams({
             })
             .filter((paramParam: string) => !paramParam.includes('{'))
             .join(';');
-    }, [config.viewParams, params.taxonId, params.squareCode]);
+    }, [config?.viewParams, params.taxonId, params.squareCode]);
     
     // Create layer on mount
     useEffect(() => {

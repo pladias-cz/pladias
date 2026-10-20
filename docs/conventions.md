@@ -71,7 +71,7 @@ public class TaxonController extends ControllerBase {
 
 ### Path Aliases
 
-The only existing alias is `@/` → `src/` (defined in both `frontend/vite.config.ts` and `frontend/tsconfig.app.json`). Other aliases (`@hooks/…`, `@components/…`, `@services/…`, …) do not exist in the codebase – do not add them "just in case" (docs/refactoring.md, section C).
+The only existing alias is `@/` → `src/` (defined in both `frontend/vite.config.ts` and `frontend/tsconfig.app.json`). Other aliases (`@hooks/…`, `@components/…`, `@services/…`, …) do not exist in the codebase – do not add them "just in case".
 
 **Always use aliases**, never relative `../../` imports across feature boundaries.
 
@@ -149,7 +149,7 @@ useEffect(() => {
 
 ### HTTP Communication (apiClient)
 
-All HTTP communication goes through `src/services/apiClient.ts` (docs/refactoring.md, section D) – one place for transport, the `JsonResult` envelope and 401/403 handling. Calling `fetch()` (or any HTTP library) directly from components or hooks is forbidden; only `src/services/` modules do I/O.
+All HTTP communication goes through `src/services/apiClient.ts` – one place for transport, the `JsonResult` envelope and 401/403 handling. Calling `fetch()` (or any HTTP library) directly from components or hooks is forbidden; only `src/services/` modules do I/O.
 
 - **Request helpers:** `apiGet/apiPost/apiPut/apiPatch/apiDelete` – typed, with `params` (query string) and `signal` (AbortController). They return the parsed JSON payload.
 - **Envelope:** the `JsonResult` shape (`ApiResult<T>` from `@/models/ApiResponse`) is interpreted by domain service modules (`src/services/*Api.ts`) – a component calls `addUser(input)` or `loadTraits(ids, {signal})` and never parses `{success, data|message|error}` itself. HTTP 200 with `success: false` is visible to the service (user settings use it as "value not set"); `ensureSuccess` throws for endpoints where it means an error.
@@ -160,7 +160,7 @@ All HTTP communication goes through `src/services/apiClient.ts` (docs/refactorin
 
 ### State Management
 
-Where state lives – decision tree (docs/refactoring.md, section L); use the first rule that fits:
+Where state lives – decision tree; use the first rule that fits:
 
 1. **Server data → service hooks** (`useTableData` and friends, section D). Never keep global copies of server data in client state.
 2. **Global client state → zustand** (`create` + selectors; e.g. notifications (section F), map layers (`layerStore.ts`)).
@@ -171,7 +171,7 @@ New global state is created only exceptionally and must be justified in the PR d
 
 ### Error Handling & Resilience
 
-Rules for failures and recovery (docs/refactoring.md, section G):
+Rules for failures and recovery:
 
 - **Boundary for the unexpected, notifications for the expected.** Errors from rendering propagate to `ErrorBoundary` (`Layout.tsx` around `<Outlet/>`, `App.tsx` around `Suspense`) – do not wrap every `try/catch` in UI into a notification. Expected failures (403, validation, network) are shown to the user, ideally via the notification system (section F).
 - **`console.error` is for developers, never the only reaction.** Every user-facing action that can fail must produce a visible feedback (notification / inline error state). A silent `console.error` as the only handler is a bug.
@@ -188,6 +188,7 @@ One-off user feedback (action success/failure) goes through the global notificat
 - **Auto-dismiss:** success/info/warning disappear after 5 s; **danger stays until dismissed** (the user must notice it). A custom `timeout` (ms, `0` = sticky) overrides the default.
 - **Who may push:** a component/service right after finishing a user action (success and contextual errors), and `apiClient` centrally for 403 + network failures (handlers wired in `App.tsx`). 401 redirects; everything else is the caller's business.
 - **No duplicates:** in a `catch` of an apiClient-based call use `notifyApiError(err, fallback)` – it skips errors with `ApiError.notified` (already centrally shown) and aborted requests. Raw-`fetch` legacy code (still being migrated, docs/todo.md) pushes directly – it never sees `ApiError`.
+- **Catches are never mute:** a `catch` of an apiClient-based call always ends with `notifyApiError(err, fallback)` (or an equivalent notification) – `console.*` alone is not error handling. Inline error state is reserved for form field validation; failed actions and loads go through the notification store.
 - **Rich-text (`html`)** is reserved for trusted backend content (import messages with links, `window.__FLASH__`); plain text uses `message`. `<Toasts />` (`Layout.tsx`, outside `ErrorBoundary`) renders the stack.
 - **Trusted HTML renders only via `RichTextMessage`** (`components/RichTextMessage.tsx`, section K): the single component allowed to use `dangerouslySetInnerHTML`. The only exceptions are map popup templates (OpenLayers). Never pass user-composed strings to it; sanitization is deliberately not a dependency (backend-generated content).
 

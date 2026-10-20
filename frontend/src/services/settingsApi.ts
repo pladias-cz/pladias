@@ -1,6 +1,6 @@
 /**
  * User settings (controllers.common.UserController: GET/PUT/DELETE
- * /api/react/user/settings/{key}) – docs/refactoring.md, sekce D.
+ * /api/react/user/settings/{key}).
  *
  * Gotcha: tady obálka nese `value` místo `data` a `success: false` u GET
  * znamená „uživatel nemá hodnotu nastavenou" (fallback na výchozí hodnotu

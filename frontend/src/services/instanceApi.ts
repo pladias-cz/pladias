@@ -1,7 +1,7 @@
 /**
- * Instance doména (controllers.common.ConfigController) – docs/refactoring.md,
- * sekce A/D. Komponenta nezná URL ani tvar požadavku; heartbeat (`hooks/useInstanceMessages`)
- * i název projektu (`context/ProjectNameContext`) konzumují tento service.
+ * Instance doména (controllers.common.ConfigController). Komponenta nezná URL ani
+ * tvar požadavku; heartbeat (`hooks/useInstanceMessages`) i název projektu
+ * (`context/ProjectNameContext`) konzumují tento service.
  */
 
 import {apiGet, type ApiOptions} from "./apiClient";

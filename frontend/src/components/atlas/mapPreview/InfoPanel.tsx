@@ -3,6 +3,7 @@ import {useEffect, useState} from 'react';
 import {apiGet} from '@/services/apiClient';
 import type {ApiResult} from '@/models/ApiResponse';
 import type {TaxonMapSettings} from '@/components/atlas/taxaList/types';
+import RichTextMessage from '@/components/RichTextMessage';
 import {useTranslation} from 'react-i18next';
 
 interface InfoPanelProps {
@@ -61,8 +62,7 @@ export function InfoPanel({type = 1, taxonId, taxonName}: InfoPanelProps) {
                     setMapSettings(payload.data);
                 }
             })
-            .catch(err => {
-                console.error('Failed to load taxon map settings:', err);
+            .catch(() => {
                 setError(t('atlas.mapPreview.loading'));
             })
             .finally(() => {
@@ -76,7 +76,7 @@ export function InfoPanel({type = 1, taxonId, taxonName}: InfoPanelProps) {
                 <h2>{t("atlas.mapPreview.preview")} <span className={`small`}> <a href={`/atlas/mapMain/${taxonId}`}>{t("atlas.mapPreview.backToMainMap")}</a></span> </h2>
                 {taxonName && (
                     <h4>
-                        <span dangerouslySetInnerHTML={{__html: taxonName}}/>
+                        <RichTextMessage html={taxonName}/>
                         <span className="text-muted small"> ID: {taxonId}</span>
                     </h4>
                 )}

@@ -185,6 +185,7 @@
       "localityLower": "lokalita",
       "longitude": "Zeměpisná délka",
       "markCommentAsRead": "Označit komentář jako přečtený",
+      "markCommentAsReadError": "Označení komentáře jako přečteného se nezdařilo.",
       "nearestTownLower": "nejbližší obec",
       "noRecords": "Žádné záznamy",
       "originalName": "původní jméno",
@@ -213,6 +214,7 @@
         "boundToSquare": "přivázaných k poli,\n",
         "hasComment": "záznamů má komentář zadaný v aplikaci Pladias",
         "hasCoordinates": "má konkrétní souřadnice,\n",
+        "loadError": "Nepodařilo se načíst data mapy.",
         "loadingStatistics": "Načítám statistiky...",
         "mapAuthors": "Autoři mapy",
         "mapAuthorsNote": "Poznámka autorů mapy",
@@ -236,12 +238,13 @@
         "records": "Záznamy:",
         "revisionStatus": {
           "feedbackProceeded": " Zapracoval(a) jsem podněty kontrolorů",
-          "finishing": " Máte k dispozici komentáře k mapě &ndash; zřejmě formou komentářů k jednotlivým záznamů či jinak &ndash; prosím až projdete tyto poznámky, odevzdejte mapu do předtiskové přípravy:",
+          "finishing": " Máte k dispozici komentáře k mapě – zřejmě formou komentářů k jednotlivým záznamů či jinak – prosím až projdete tyto poznámky, odevzdejte mapu do předtiskové přípravy:",
           "submit": "Pokud považujete mapu za připravenou k rozšířenému komentování, upozorněte Zdeňka Kaplana:",
           "submitButton": "Odevzdat",
           "submited": " Díky za odvedenou práci! Mapa je odevzdána a čeká na kontroly rozšířeným okruhem spolupracovníků. Autoři mapy mají stále právo upravovat záznamy a jejich příznaky. V okamžiku, kdy bude dokončena fáze kontrol, budou o tom autoři mapy informováni e-mailem.",
           "supervised": " Mapa je ve fázi kontrol rozšířeným okruhem spolupracovníků. Autoři mapy mají stále právo upravovat záznamy a jejich příznaky, spolupracovníci mohou záznamy komentovat. V okamžiku, kdy bude dokončena fáze kontrol, budou o tom všichni autoři mapy informováni e-mailem."
         },
+        "saveError": "Uložení se nezdařilo.",
         "sourceProjects": "Zdrojové projekty a počty záznamů"
       },
       "taxonId": "ID taxonu",

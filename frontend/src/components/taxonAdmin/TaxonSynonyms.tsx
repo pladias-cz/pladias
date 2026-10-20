@@ -11,6 +11,7 @@ import {type Taxon} from '@/models/Taxon';
 import type {TaxonSynonym} from "@/models/TaxonSynonym";
 import type {TaxonPublication} from "@/models/TaxonPublication";
 import {useTranslation} from 'react-i18next';
+import {useConfirm} from '@/hooks/useConfirm';
 
 interface Props {
     taxon: Taxon;
@@ -19,6 +20,7 @@ interface Props {
 
 export default function TaxonSynonyms({taxon, cacheKey}: Props) {
     const {t} = useTranslation();
+    const {confirm, dialog} = useConfirm();
 
     const [synonyms, setSynonyms] = useState<TaxonSynonym[]>([]);
     const [publications, setPublications] = useState<TaxonPublication[]>([]);
@@ -145,7 +147,10 @@ export default function TaxonSynonyms({taxon, cacheKey}: Props) {
     };
 
     const deleteRow = async (id: number) => {
-        if (!confirm(t("taxon.synonyms.deleteConfirm"))) return;
+        if (!(await confirm({
+            message: t("taxon.synonyms.deleteConfirm"),
+            confirmLabel: t("common.delete"),
+        }))) return;
 
         setError(null);
 
@@ -262,7 +267,7 @@ export default function TaxonSynonyms({taxon, cacheKey}: Props) {
     return (
         <Card className="mt-3">
             <Card.Body>
-
+                {dialog}
                 <div className="d-flex justify-content-between mb-2">
                     <h5>{t("taxon.synonyms.title")}</h5>
                     <Button size="sm" onClick={addRow}>{t("taxon.synonyms.addButton")}</Button>

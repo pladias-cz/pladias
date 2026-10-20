@@ -13,6 +13,7 @@ import {IncludeInMapCheckbox} from './IncludeInMapCheckbox';
 import {useInstanceConfig} from '@/context/InstanceConfigContext';
 import {useUser} from '@/context/UserContext';
 import {markCommentAsRead} from '../record/recordService';
+import {notifyApiError} from '@/stores/notificationStore';
 
 interface PladiasRecordsTableProps {
     records: RecordPladias[];
@@ -72,10 +73,9 @@ export function PladiasRecordsTable({
     const rowRefs = useRef<{ [key: number]: HTMLTableRowElement | null }>({});
     const isAllExpanded = records.length > 0 && expandedRecordIds.size === records.length;
 
-    if (records.length === 0) {
-        return null;
-    }
-
+    // Hooks must run before the early return below (rules-of-hooks). With empty
+    // records both effects are harmless no-ops: filtering expanded ids finds
+    // nothing and the registered scroll function has no row to scroll to.
     useEffect(() => {
         const validRecordIds = new Set(records.map((record) => record.id));
         setExpandedRecordIds((prev) => {
@@ -133,7 +133,7 @@ export function PladiasRecordsTable({
                 return next;
             });
         } catch (error) {
-            console.error(error);
+            notifyApiError(error, t("atlas.mapDetail.markCommentAsReadError"));
         } finally {
             setMarkingCommentIds((prev) => {
                 const next = new Set(prev);
@@ -157,6 +157,10 @@ export function PladiasRecordsTable({
             registerScrollFn(scrollFn);
         }
     }, [registerScrollFn]);
+
+    if (records.length === 0) {
+        return null;
+    }
 
     return (
         <>

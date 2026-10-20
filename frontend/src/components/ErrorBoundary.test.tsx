@@ -4,7 +4,7 @@ import ErrorBoundary from "./ErrorBoundary";
 import "@/i18n/i18n";
 
 /**
- * Testy globální error boundary (docs/refactoring.md, sekce G): chyba renderu
+ * Testy globální error boundary: chyba renderu
  * zobrazí fallback UI s obnovením místo bílé stránky.
  */
 

@@ -3,7 +3,7 @@ import {ApiError} from "@/services/apiClient";
 import {notifyApiError, pushNotification, useNotificationStore} from "./notificationStore";
 
 /**
- * Testy globálního notifikačního store (docs/refactoring.md, sekce F): push,
+ * Testy globálního notifikačního store: push,
  * auto-dismiss timeouty (danger drží), dismiss/clear a deduplikace centrálně
  * oznámených chyb (`notifyApiError`). Timeouty se řídí fake timers.
  */

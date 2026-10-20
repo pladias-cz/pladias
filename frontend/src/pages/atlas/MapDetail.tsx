@@ -7,6 +7,7 @@ import type { TaxonId } from "@/models/TaxonId";
 import type { RecordPladias } from "@/models";
 import { MapComponent } from "@/components/atlas/mapDetail/MapComponent";
 import { InfoPanel } from "@/components/atlas/mapDetail/InfoPanel";
+import RichTextMessage from "@/components/RichTextMessage";
 
 /**
  * Project type enum
@@ -300,7 +301,7 @@ export default function MapDetail() {
             <Row className="g-0" style={{ height: 'calc(90vh - 56px)' }}>
                 <Col md={12} lg={5} xl={4} className="h-100">
                     <h5>
-                        <span dangerouslySetInnerHTML={{__html: taxon?.nameHtml  ?? "" }} />
+                        <RichTextMessage html={taxon?.nameHtml}/>
                         <span className="text-muted small"> ID: {taxonId}</span>
                         <span className="text-muted small ms-2">
                                     ({t("atlas.mapDetail.square")} {squareId})

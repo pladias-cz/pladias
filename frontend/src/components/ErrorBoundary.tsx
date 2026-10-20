@@ -3,7 +3,7 @@ import {useTranslation} from "react-i18next";
 import {Alert, Button} from "react-bootstrap";
 
 /**
- * Globální error boundary (docs/refactoring.md, sekce G).
+ * Globální error boundary.
  *
  * Chytá chyby z renderu podstromu a místo bílé stránky zobrazí fallback UI
  * s tlačítkem „Obnovit stránku“. Použití:

@@ -4,7 +4,7 @@ import RichTextMessage from "./RichTextMessage";
 import {useNotificationStore} from "@/stores/notificationStore";
 
 /**
- * Prezentační výstup globálního notifikačního store (docs/refactoring.md, sekce F).
+ * Prezentační výstup globálního notifikačního store.
  * Stack dismissible Alertů vpravo dole – mimo ErrorBoundary (přežije pád stránky)
  * a mimo obsah route (přežije navigaci). Timeouty drží store: success/info/warning
  * mizí samy, danger zůstává, dokud ho uživatel nezavře. Rich-text (`html`) z

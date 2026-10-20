@@ -1,5 +1,5 @@
 /**
- * Globální notifikační store (docs/refactoring.md, sekce F; fáze 4 UX).
+ * Globální notifikační store (fáze 4 UX).
  *
  * Jednorázové uživatelské hlášky (úspěch/nezdar akcí, chyby komunikace) –
  * jedna odpovědnost pro celou SPA: notifikace přežijí navigaci mezi routes

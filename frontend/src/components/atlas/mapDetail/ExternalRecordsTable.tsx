@@ -21,11 +21,9 @@ export function ExternalRecordsTable({
     const {t} = useTranslation();
     const rowRefs = useRef<{ [key: number]: HTMLTableRowElement | null }>({});
 
-    if (records.length === 0) {
-        return null;
-    }
-
-    // Register scroll function for map hover to use
+    // Register scroll function for map hover to use. Hooks must run before the
+    // early return below (rules-of-hooks); with empty records the registered
+    // scroll function simply finds no row – harmless no-op.
     useEffect(() => {
         if (registerScrollFn) {
             const scrollFn = (recordId: number) => {
@@ -39,6 +37,10 @@ export function ExternalRecordsTable({
             registerScrollFn(scrollFn);
         }
     }, [registerScrollFn]);
+
+    if (records.length === 0) {
+        return null;
+    }
 
     return (
         <Table striped bordered hover size="sm">

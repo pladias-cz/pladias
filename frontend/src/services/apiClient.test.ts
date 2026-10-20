@@ -13,7 +13,7 @@ import {
 } from "./apiClient";
 
 /**
- * Testy apiClientu (docs/refactoring.md, sekce I): parsování obálky, 401/403
+ * Testy apiClientu: parsování obálky, 401/403
  * větve, blob helper, urlencoded s LF. Fetch se mockuje přes vi.stubGlobal –
  * žádné patchování knihovny.
  */

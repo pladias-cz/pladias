@@ -1,6 +1,8 @@
 import {Accordion, Button} from 'react-bootstrap';
 import {useEffect, useState} from 'react';
 import {apiGet} from '@/services/apiClient';
+import {notifyApiError} from '@/stores/notificationStore';
+import RichTextMessage from '@/components/RichTextMessage';
 import type {ApiResult} from '@/models/ApiResponse';
 import {useTaxonUpdates} from '../../atlasAdmin/taxaList/hooks';
 import {useTranslation} from 'react-i18next';
@@ -134,8 +136,7 @@ export function InfoPanel({taxonName, taxonId}: InfoPanelProps) {
                     setStatistics(payload.data);
                 }
             })
-            .catch(err => {
-                console.error('Failed to load taxon statistics:', err);
+            .catch(() => {
                 setError(t("atlas.mapMain.infoPanel.loadingStatistics"));
             });
 
@@ -154,7 +155,7 @@ export function InfoPanel({taxonName, taxonId}: InfoPanelProps) {
                 }
             })
             .catch(err => {
-                console.error('Failed to load taxon map settings:', err);
+                notifyApiError(err, t("atlas.mapMain.infoPanel.loadError"));
             })
             .finally(() => {
                 setLoading(false);
@@ -168,7 +169,7 @@ export function InfoPanel({taxonName, taxonId}: InfoPanelProps) {
                 const newTimestamp = await updateRevisorsComment(taxonId, value, lastEditTimestamp);
                 setLastEditTimestamp(newTimestamp);
             } catch (err) {
-                console.error('Failed to save REVISORSCOMMENT:', err);
+                notifyApiError(err, t("atlas.mapMain.infoPanel.saveError"));
             }
         }
     };
@@ -180,7 +181,7 @@ export function InfoPanel({taxonName, taxonId}: InfoPanelProps) {
                 const newTimestamp = await updateRevisorsPrintMapComment(taxonId, value, lastEditTimestamp);
                 setLastEditTimestamp(newTimestamp);
             } catch (err) {
-                console.error('Failed to save REVISORSPRINTMAPCOMMENT:', err);
+                notifyApiError(err, t("atlas.mapMain.infoPanel.saveError"));
             }
         }
     };
@@ -192,7 +193,7 @@ export function InfoPanel({taxonName, taxonId}: InfoPanelProps) {
                 const newTimestamp = await updateMapType(taxonId, newMapType, lastEditTimestamp);
                 setLastEditTimestamp(newTimestamp);
             } catch (err) {
-                console.error('Failed to save MAPTYPE:', err);
+                notifyApiError(err, t("atlas.mapMain.infoPanel.saveError"));
             }
         }
     };
@@ -208,7 +209,6 @@ export function InfoPanel({taxonName, taxonId}: InfoPanelProps) {
             setLastEditTimestamp(newTimestamp);
             setRevisionStatusId(newStatus);
         } catch (err) {
-            console.error('Failed to save REVISIONSTATUS:', err);
             setRevisionStatusError(err instanceof Error ? err.message : 'Failed to update revision status');
         } finally {
             setRevisionUpdating(false);
@@ -220,7 +220,7 @@ export function InfoPanel({taxonName, taxonId}: InfoPanelProps) {
             <div className="flex-shrink-0 mb-3">
                 {taxonName && (
                     <h4>
-                        <span dangerouslySetInnerHTML={{__html: taxonName}}/>
+                        <RichTextMessage html={taxonName}/>
                         <span className="text-muted small"> ID: {taxonId}</span>
                     </h4>
                 )}
@@ -306,7 +306,7 @@ export function InfoPanel({taxonName, taxonId}: InfoPanelProps) {
                         <p id="revision-status" className="mb-3">
                             {currentUserIsRevisor && isMapped && revisionStatusId < REVISION_STATUS_MAP_SUBMITTED && (
                                 <>
-                                    <span dangerouslySetInnerHTML={{__html: t("atlas.mapMain.infoPanel.revisionStatus.submit")}}/>
+                                    {t("atlas.mapMain.infoPanel.revisionStatus.submit")}
                                     {' '}
                                     <Button
                                         variant="warning"
@@ -320,14 +320,14 @@ export function InfoPanel({taxonName, taxonId}: InfoPanelProps) {
                                 </>
                             )}
                             {currentUserIsRevisor && revisionStatusId === REVISION_STATUS_MAP_SUBMITTED && (
-                                <span dangerouslySetInnerHTML={{__html: t("atlas.mapMain.infoPanel.revisionStatus.submited")}}/>
+                                <>{t("atlas.mapMain.infoPanel.revisionStatus.submited")}</>
                             )}
                             {currentUserIsRevisor && revisionStatusId === REVISION_STATUS_REVIEW && (
-                                <span dangerouslySetInnerHTML={{__html: t("atlas.mapMain.infoPanel.revisionStatus.supervised")}}/>
+                                <>{t("atlas.mapMain.infoPanel.revisionStatus.supervised")}</>
                             )}
                             {currentUserIsRevisor && revisionStatusId === REVISION_STATUS_COMPLETING && (
                                 <>
-                                    <span dangerouslySetInnerHTML={{__html: t("atlas.mapMain.infoPanel.revisionStatus.finishing")}}/>
+                                    {t("atlas.mapMain.infoPanel.revisionStatus.finishing")}
                                     {' '}
                                     <Button
                                         variant="warning"

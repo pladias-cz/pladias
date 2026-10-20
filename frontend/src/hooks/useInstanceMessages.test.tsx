@@ -3,7 +3,7 @@ import {afterEach, beforeEach, describe, expect, it, vi} from "vitest";
 import {useInstanceMessages} from "./useInstanceMessages";
 
 /**
- * Testy heartbeatu (docs/refactoring.md, sekce A + I): visibility, exponenciální
+ * Testy heartbeatu: visibility, exponenciální
  * backoff, zachování zpráv při výpadku, „unavailable“ po třech selháních.
  * Fetch se mockuje přes vi.stubGlobal, čas běží na fake timerech.
  */

@@ -7,7 +7,7 @@ interface PendingConfirm {
 }
 
 /**
- * Imperativní potvrzení akce (docs/refactoring.md, sekce G/K):
+ * Imperativní potvrzení akce:
  *
  * ```tsx
  * const {confirm, dialog} = useConfirm();

@@ -5,7 +5,7 @@ import {useConfirm} from "@/hooks/useConfirm";
 import "@/i18n/i18n";
 
 /**
- * Testy potvrzovacího dialogu (docs/refactoring.md, sekce G/K) – promise API
+ * Testy potvrzovacího dialogu – promise API
  * `useConfirm`, řešení kliknutím na Ano/Zrušit i zavřením dialogu.
  */
 

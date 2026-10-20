@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * i18n audit frontendu (docs/refactoring.md, sekce J).
+ * i18n audit frontendu.
  *
  * Chyby (exit kód 1):
  *  - klíč použitý v kódu (`t("...")` / `i18nKey: "..."`) chybí v cs/translation.json

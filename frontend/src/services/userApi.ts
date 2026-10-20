@@ -1,6 +1,6 @@
 /**
- * User doména (controllers.common.UserController + ConfigController) –
- * docs/refactoring.md, sekce D. Komponenta nezná URL ani tvar požadavku.
+ * User doména (controllers.common.UserController + ConfigController).
+ * Komponenta nezná URL ani tvar požadavku.
  */
 
 import {ApiError, apiGet, apiPost, ensureSuccess} from "./apiClient";

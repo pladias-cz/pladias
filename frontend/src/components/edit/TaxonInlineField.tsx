@@ -31,6 +31,8 @@ export default function InlineField({
     const [draft, setDraft] = useState(value);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    // Editing state - top-level hook (rules-of-hooks), used by the text/select branches
+    const [editing, setEditing] = useState(false);
 
 
     async function save(newValue: any) {
@@ -84,8 +86,6 @@ export default function InlineField({
         );
     } else {
         // pro text a select zůstává edit-on-click
-        const [editing, setEditing] = useState(false);
-
         if (!editing) {
             content = (
                 <span className="d-inline-flex align-items-center">

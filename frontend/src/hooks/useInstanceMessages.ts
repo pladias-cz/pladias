@@ -1,5 +1,5 @@
 /**
- * Heartbeat zpráv o stavu instance (docs/refactoring.md, sekce A).
+ * Heartbeat zpráv o stavu instance.
  *
  * Jediný majitel pollingu `GET /api/react/infoGlobal`:
  *  - **Respekt k viditelnosti:** při `document.hidden` se čekání pozastaví;

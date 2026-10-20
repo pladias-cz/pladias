@@ -1,6 +1,6 @@
 /**
- * Jediné místo aplikace pro vykreslení HTML obsahu z backendu (docs/refactoring.md,
- * sekce K): taxon jména (kurzíva), popisy vlastností, hlášky importů s odkazy na
+ * Jediné místo aplikace pro vykreslení HTML obsahu z backendu: taxon jména
+ * (kurzíva), popisy vlastností, hlášky importů s odkazy na
  * sešity s chybami, play messages. Obsah je důvěryhodný (generuje backend, ne
  * uživatel), proto se záměrně nepoužívá sanitizér – viz docs/gotchas.md.
  *

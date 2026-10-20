@@ -34,18 +34,17 @@ jobs:
               run: npm ci
 
             # Guard proti regresi – celé frontend/src má být čistý TypeScript
-            # (docs/refactoring.md, sekce C)
             - name: Guard – žádné .js/.jsx soubory ve src
               run: |
                   found=$(find src \( -name '*.js' -o -name '*.jsx' \))
                   if [ -n "$found" ]; then
-                      echo "Ve frontend/src zbývají JS/JSX soubory (docs/refactoring.md, sekce C):"
+                      echo "Ve frontend/src zbývají JS/JSX soubory:"
                       echo "$found"
                       exit 1
                   fi
 
             # Neblokuje PR, dokud není splacen pre-existující lint dluh (~157 chyb,
-            # hlavně no-explicit-any). Výsledky se zobrazují jako annotace. (docs/refactoring.md, sekce I)
+            # hlavně no-explicit-any). Výsledky se zobrazují jako annotace.
             - name: Lint (non-blocking)
               run: npm run lint
               continue-on-error: true

@@ -18,7 +18,7 @@ const ProjectNameContext = createContext<ProjectNameContextValue | null>(null);
 /**
  * ProjectNameProvider - A context provider that fetches and provides the project name.
  * The project name is fetched from the PlayMessage API using the "project_name" key
- * (via `services/instanceApi` – stejný vzor jako heartbeat, docs/refactoring.md sekce A.4).
+ * (via `services/instanceApi` – stejný vzor jako heartbeat).
  * Změna jazyka ruší rozjetý request (AbortController) a načítá znovu.
  */
 export const ProjectNameProvider: React.FC<Props> = ({children}) => {

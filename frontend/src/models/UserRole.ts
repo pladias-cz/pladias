@@ -1,5 +1,5 @@
 /**
- * Jediný zdroj pravdy pro názvy rolí na FE (docs/refactoring.md, sekce B).
+ * Jediný zdroj pravdy pro názvy rolí na FE.
  *
  * Zrcadlí backendový enum `app/models/UserRole.java` 1:1 – role vlastní backend,
  * frontend je jen konzumuje (docs/gotchas.md „Role vlastní backend“). Při přidání

@@ -71,7 +71,7 @@ public class TaxonController extends ControllerBase {
 
 ### Path Aliases
 
-Jediný existující alias je `@/` → `src/` (definovaný ve `frontend/vite.config.ts` i `frontend/tsconfig.app.json`). Jiné aliasy (`@hooks/…`, `@components/…`, `@services/…` apod.) v kódu neexistují – nepřidávat je „pro jistotu“ (docs/refactoring.md, sekce C).
+The only existing alias is `@/` → `src/` (defined in both `frontend/vite.config.ts` and `frontend/tsconfig.app.json`). Other aliases (`@hooks/…`, `@components/…`, `@services/…`, …) do not exist in the codebase – do not add them "just in case" (docs/refactoring.md, section C).
 
 **Always use aliases**, never relative `../../` imports across feature boundaries.
 
@@ -146,6 +146,17 @@ useEffect(() => {
     return () => { cancelled = true; };
 }, [deps]);
 ```
+
+### State Management
+
+Where state lives – decision tree (docs/refactoring.md, section L); use the first rule that fits:
+
+1. **Server data → service hooks** (`useTableData` and friends, section D). Never keep global copies of server data in client state.
+2. **Global client state → zustand** (`create` + selectors; e.g. notifications (section F), map layers (`layerStore.ts`)).
+3. **App-wide read-only configuration → React Context** (user, instance config, project name) – always consumed via a typed hook (`useUser()`, `useInstanceConfig()`, `useProjectName()`), never directly from the raw context.
+4. **Everything else stays local** – `useState`/`useReducer` inside the component; lift state only when there is a real shared need (rule of three).
+
+New global state is created only exceptionally and must be justified in the PR description. Enforced by code review, not by lint rules.
 
 ### Styling
 

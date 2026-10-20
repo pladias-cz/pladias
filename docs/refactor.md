@@ -120,10 +120,17 @@ typovaná funkce service modulu, ne literál v komponentě. Chyby konzistentně 
 
 **Kroky.**
 1. `taxonAdmin` + `TaxaAdministration` (nejvíc duplikované logiky, sdílí endpointy s `atlasAdmin`). *(Hotovo 20. 10. 2026 – fáze 2, krok A.1: `taxonApi.ts` + testy, fix `TaxonInlineField` updated[field], smazán mrtvý `TaxonAllAutocomplete`.)*
-2. `measurement` (backup, export, trait tabulky, upload).
-3. `pages/atlas/` (mapy, Record, NewComments).
-4. Autocomplete providery – zde přidat `AbortSignal` (typeahead).
-5. `core/mapLayers/` (WFS/GeoJSON fetche v hookách a adapterech).
+2. `measurement` (backup, export, trait tabulky, upload). *(Hotovo 20. 10. 2026 – fáze 2, krok A.2: `traitApi.ts` + testy, 12 komponent.) *
+3. `pages/atlas/` (mapy, Record, NewComments). *(Hotovo 20. 10. 2026 – fáze 2, krok A.3: `recordApi.ts` + `atlasApi.ts` + testy, `AtlasRecords.ts` modely, smazán `recordService.ts`.)*
+4. Autocomplete providery – zde přidat `AbortSignal` (typeahead). *(Hotovo 20. 10. 2026 – fáze 2, krok A.4: `AbortController` v `Autocomplete`, signal v `searchTaxaByPrefix`/`searchImportableTaxa`/`searchPossibleTaxonParents`.)*
+5. `core/mapLayers/` (WFS/GeoJSON fetche v hookách a adapterech). *(Hotovo 20. 10. 2026 – fáze 2, krok A.5: `mapApi.fetchWfsGeoJson`, user-settings viditelnost vrstev přes `settingsApi`.)*
+
+Navazující kroky (splnění gate „Hotovo, když", původně mimo výčet koncentrací): *(vše hotovo 20. 10. 2026 – fáze 2)*
+- vyhledávání záznamů (`SearchForm`, `BulkEdit`): `searchApi.ts` (číselníky, stránkování, Excel export s `X-Excel-*` hlavičkami) + testy;
+- importy (`atlas/import`, `importCsv`, `atlasAdmin/importsList`): `importApi.ts` (Excel/CSV upload, `prepareBatchDelete`, `projects/user` s `projects` obálkou) + testy;
+- správce mapy (`TaxaList` ×2, `mapUsers`): `mapAdminApi.ts` (stavové číselníky, práva na projekty/taxony) + testy;
+- zbytek (`UsersTable`, `PlayMessagesEditor`, `PlayMessage`, `DownloadsTable`): `playMessageApi.ts`, `downloadApi.ts`, `userApi.updateUserFlag` + testy;
+- `extractErrorMessage` v apiClientu rozšířen o `errorMessage` (import kontrolery).
 
 Každý krok: `npm run build && npm test`; `grep "fetch(" <feature>` = 0.
 
@@ -133,7 +140,8 @@ endpointy) – `apiClient` už má `apiGetLegacyString`/`apiDownload`. Pozor na 
 
 **Hotovo, když.** `grep -rn "fetch(" src --include='*.ts' --include='*.tsx' | grep -v "src/services/" |
 grep -v ".test."` vrací 0; `no-explicit-any` a počet `console.*` výrazně klesnou (značná část zanikne
-spolu s ručním parsováním).
+spolu s ručním parsováním). *(Ověřeno 20. 10. 2026 – fáze 2 dokončena: grep vrací 0, `: any`/`as any`
+v kódu 0 výskytů, 15 service modulů, 165 testů.)*
 
 ---
 
@@ -172,19 +180,27 @@ kdy se změní větev renderu):
    (vrstvy mapy, inline editace záznamů, tabulka Pladias záznamů). *(Hotovo 20. 10. 2026 – fáze 1.)*
 2. **`no-unused-vars` (32):** zapnout `argsIgnorePattern: "^_"` – značná část chyb jsou záměrné
    nepoužité parametry adapterů (`_definition`, `_url`), což je konvence, ne dluh. Zbytek smazat.
-3. **Drobnosti (15):** mechanické opravy.
+   *(Hotovo 20. 10. 2026 – fáze 2: `argsIgnorePattern` + `varsIgnorePattern` "^_" v eslint.config.js,
+   mrtvé `catch (error)` parametry smazány.)*
+3. **Drobnosti (15):** mechanické opravy. *(Hotovo 20. 10. 2026 – fáze 2: case-declarations v
+   DataTable, ternární výrazy v useRecordQuickUpdates, require-import s disable, empty-interface.)*
 4. **`no-explicit-any` (90):** řešit po slices společně s A a C – velká část zanikne s migrací
-   fetchů; zbývající typovat.
+   fetchů; zbývající typovat. *(Hotovo 20. 10. 2026 – fáze 2: 0 výskytů; typovány Layer,
+   SquaresOverlay, DataTable + types, RecordInlineField/TaxonInlineField, InfoPanel a další.)*
 5. **`exhaustive-deps` (20):** projít ručně – část jsou reálné zapomenuté závislosti (bugy),
    část záměrné „načti jednou" patterny (dokumentovat `// eslint-disable-line` s odůvodněním).
+   *(Hotovo 20. 10. 2026 – fáze 2: 0 warnings; reálné deps doplněny, záměrné patterny
+   dokumentovány eslint-disable s odůvodněním.)*
 6. Až je chyba < 10: **odstranit `continue-on-error: true`** z `frontend.yml` – lint se stane
    gate. Cílový stav konfigurace: `tseslint.configs.recommendedTypeChecked`.
+   *(Gate odstraněn 20. 10. 2026 – fáze 2: `npm run lint` končí exit 0, CI fáze Lint je blocking.
+   `recommendedTypeChecked` zůstává future work.)*
 
 **Rizika.** Přesun hooků mění pořadí volání efektů – nutno ověřit za běhu (mapy, inline editace).
 `argsIgnorePattern` nezamaskuje skutečně mrtvý kód, jen formalizuje konvenci `_`.
 
 **Hotovo, když.** `npm run lint` končí exit 0; lint fáze v CI je blocking;
-`npm run lint 2>&1 | grep rules-of-hooks` vrací 0.
+`npm run lint 2>&1 | grep rules-of-hooks` vrací 0. *(Ověřeno 20. 10. 2026 – vše splněno.)*
 
 ---
 
@@ -536,9 +552,11 @@ přesměrovat na tento dokument.
 ~~B.1 `rules-of-hooks` (11 latentních bugů) → H (entity v překladech + `RichTextMessage`) →
 G (confirm konzistence) → N.1 dependabot npm → O (odkazy na smazaný plán).~~
 
-**Fáze 2 – Service vrstva (1–2 týdny, krájená po feature):**
-A po krocích 1–5 (taxonAdmin → measurement → pages/atlas → autocomplete → mapLayers); ke každému
-service modulu test parsování (F.4); na konci B.2–B.6 – lint gate v CI.
+**Fáze 2 – Service vrstva (1–2 týdny, krájená po feature):** *hotovo 20. 10. 2026:*
+~~A po krocích 1–5 (taxonAdmin → measurement → pages/atlas → autocomplete → mapLayers); ke každému
+service modulu test parsování (F.4); na konci B.2–B.6 – lint gate v CI.~~ (Navíc: search/import/
+mapAdmin/playMessage/downloads domény, AbortSignal u typeahead, `_` konvence v lintu, lint gate
+blocking – `grep fetch(` mimo `src/services/` = 0, `npm run lint` exit 0, 165 testů.)
 
 **Fáze 3 – Kvalita jádra (průběžně, po feature):**
 C+D+E na mapové doméně (Layer/SquaresOverlay/MapComponent společně), poté DataTable (C+F),

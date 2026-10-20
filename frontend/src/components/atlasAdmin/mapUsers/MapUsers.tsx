@@ -20,6 +20,8 @@ import {
     MapUsersAddTaxonModal,
 } from './components';
 import type {MapUserTableRow} from './types';
+import {removeUserTaxonFromUser} from '@/services/mapAdminApi';
+import {apiErrorMessage} from '@/services/apiClient';
 import {useNotifications} from "@/stores/notificationStore";
 
 export default function MapUsers() {
@@ -68,23 +70,13 @@ export default function MapUsers() {
     
     // Handler to convert taxon selection to remove operation
     const handleRemoveTaxonFromCell = useCallback((userId: number, taxonId: number) => {
-        // For removal, we call the API directly
-        // This is a simplified approach - in production you might want to use a hook
-        fetch(`/api/react/atlasadmin/removeUserTaxon/user/${userId}/taxon/${taxonId}`, {
-            method: "DELETE"
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                showFlash('success', data.message || t("user.usersAdministration.taxonRemoved"));
-            } else {
-                showFlash('danger', data.message || t("user.usersAdministration.error"));
-            }
-        })
-        .catch(err => {
-            console.error("Error removing taxon:", err);
-            showFlash('danger', t("user.usersAdministration.error"));
-        });
+        removeUserTaxonFromUser(userId, taxonId)
+            .then(() => {
+                showFlash('success', t("user.usersAdministration.taxonRemoved"));
+            })
+            .catch(err => {
+                showFlash('danger', apiErrorMessage(err, t("user.usersAdministration.error")));
+            });
     }, [showFlash, t]);
     
     // Column definitions

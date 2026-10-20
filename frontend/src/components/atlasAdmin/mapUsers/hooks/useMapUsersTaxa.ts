@@ -3,8 +3,9 @@
  */
 
 import {useCallback, useState, useEffect, useRef} from 'react';
-import {apiGet} from '@/services/apiClient';
-import type {ApiResult} from '@/models/ApiResponse';
+import {searchTaxaByPrefix} from '@/services/taxonApi';
+import {assignUserTaxon} from '@/services/mapAdminApi';
+import {apiErrorMessage} from '@/services/apiClient';
 import type {TFunction} from 'i18next';
 import type {SupervisedTaxon} from '../types';
 
@@ -40,12 +41,7 @@ export function useMapUsersTaxa(
     const fetchTaxa = useCallback(async (searchTerm: string) => {
         setTaxaLoading(true);
         try {
-            const payload = await apiGet<ApiResult<SupervisedTaxon[]>>("/api/react/taxa/queryAll", {
-                params: { prefix: searchTerm }
-            });
-            if (payload.success) {
-                setTaxa(payload.data || []);
-            }
+            setTaxa(await searchTaxaByPrefix(searchTerm));
         } catch (err) {
             console.error("Error fetching taxa:", err);
         } finally {
@@ -98,30 +94,13 @@ export function useMapUsersTaxa(
         setSelectedTaxon(taxon);
 
         try {
-            const formData = new URLSearchParams();
-            formData.append("user", String(selectedTaxonUserId));
-            formData.append("taxon", String(taxon.id));
+            await assignUserTaxon(selectedTaxonUserId, taxon.id);
 
-            const response = await fetch("/api/react/atlasadmin/assignUserTaxon", {
-                method: "POST",
-                headers: {"Content-Type": "application/x-www-form-urlencoded"},
-                body: formData.toString()
-            });
-
-            const data = await response.json();
-
-            if (response.ok && data.success) {
-                showFlash('success', data.message || t("user.usersAdministration.taxonAdded"));
-                onTaxonChange?.();
-                setTimeout(() => handleCloseTaxonModal(), 1000);
-            } else {
-                showFlash('danger', data.message || t("user.usersAdministration.error"));
-                setSubmitting(false);
-                setSelectedTaxon(null);
-            }
+            showFlash('success', t("user.usersAdministration.taxonAdded"));
+            onTaxonChange?.();
+            setTimeout(() => handleCloseTaxonModal(), 1000);
         } catch (err) {
-            console.error("Error adding taxon:", err);
-            showFlash('danger', t("user.usersAdministration.error"));
+            showFlash('danger', apiErrorMessage(err, t("user.usersAdministration.error")));
             setSubmitting(false);
             setSelectedTaxon(null);
         }

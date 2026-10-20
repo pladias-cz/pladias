@@ -3,8 +3,9 @@
  */
 
 import {useCallback, useState} from 'react';
-import {apiGet} from '@/services/apiClient';
-import type {ApiResult} from '@/models/ApiResponse';
+import {getProjects} from '@/services/searchApi';
+import {assignProjectToUser, removeProjectFromUser} from '@/services/mapAdminApi';
+import {apiErrorMessage} from '@/services/apiClient';
 import type {TFunction} from 'i18next';
 import type {Project} from '../types';
 
@@ -36,10 +37,7 @@ export function useMapUsersProjects(
     const fetchProjects = useCallback(async () => {
         setProjectsLoading(true);
         try {
-            const payload = await apiGet<ApiResult<Project[]>>("/api/react/occurrence/projects");
-            if (payload.success) {
-                setProjects(payload.data || []);
-            }
+            setProjects(await getProjects());
         } catch (err) {
             console.error("Error fetching projects:", err);
         } finally {
@@ -67,44 +65,24 @@ export function useMapUsersProjects(
         }
 
         try {
-            const response = await fetch(`/api/react/atlasadmin/users/${selectedUserId}/projects`, {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({projectId: parseInt(selectedProjectId, 10)})
-            });
+            await assignProjectToUser(selectedUserId, parseInt(selectedProjectId, 10));
 
-            const data = await response.json();
-
-            if (response.ok && data.success) {
-                showFlash('success', data.message || t("user.usersAdministration.projectAdded"));
-                handleCloseModal();
-                onProjectChange?.();
-            } else {
-                showFlash('danger', data.message || t("user.usersAdministration.error"));
-            }
+            showFlash('success', t("user.usersAdministration.projectAdded"));
+            handleCloseModal();
+            onProjectChange?.();
         } catch (err) {
-            console.error("Error adding project:", err);
-            showFlash('danger', t("user.usersAdministration.error"));
+            showFlash('danger', apiErrorMessage(err, t("user.usersAdministration.error")));
         }
     }, [selectedUserId, selectedProjectId, showFlash, t, handleCloseModal, onProjectChange]);
 
     const handleRemoveProject = useCallback(async (userId: number, projectId: number) => {
         try {
-            const response = await fetch(`/api/react/atlasadmin/users/${userId}/projects/${projectId}`, {
-                method: "DELETE"
-            });
+            await removeProjectFromUser(userId, projectId);
 
-            const data = await response.json();
-
-            if (response.ok && data.success) {
-                showFlash('success', data.message || t("user.usersAdministration.projectRemoved"));
-                onProjectChange?.();
-            } else {
-                showFlash('danger', data.message || t("user.usersAdministration.error"));
-            }
+            showFlash('success', t("user.usersAdministration.projectRemoved"));
+            onProjectChange?.();
         } catch (err) {
-            console.error("Error removing project:", err);
-            showFlash('danger', t("user.usersAdministration.error"));
+            showFlash('danger', apiErrorMessage(err, t("user.usersAdministration.error")));
         }
     }, [showFlash, t, onProjectChange]);
 

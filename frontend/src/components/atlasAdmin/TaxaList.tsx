@@ -20,6 +20,7 @@ import {
     MappedCell,
 } from './taxaList/components';
 import type {TaxonMapSettings, StatusOption, TaxonOption} from './taxaList/types';
+import {getPublicationStatuses, getRevisionStatuses} from '@/services/mapAdminApi';
 import {Link} from "react-router-dom";
 
 export default function TaxaList() {
@@ -33,20 +34,13 @@ export default function TaxaList() {
     useEffect(() => {
         const fetchStatusOptions = async () => {
             try {
-                const [revisionRes, publicationRes] = await Promise.all([
-                    fetch('/api/react/atlasadmin/revision-statuses'),
-                    fetch('/api/react/atlasadmin/publication-statuses')
+                const [revisionStatuses, publicationStatuses] = await Promise.all([
+                    getRevisionStatuses(),
+                    getPublicationStatuses(),
                 ]);
 
-                const revisionData = await revisionRes.json();
-                const publicationData = await publicationRes.json();
-
-                if (revisionData.success) {
-                    setRevisionStatusOptions(revisionData.data || []);
-                }
-                if (publicationData.success) {
-                    setPublicationStatusOptions(publicationData.data || []);
-                }
+                setRevisionStatusOptions(revisionStatuses);
+                setPublicationStatusOptions(publicationStatuses);
             } catch (error) {
                 console.error('Error fetching status options:', error);
             }

@@ -8,6 +8,7 @@
 import {useEffect, useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {DataTable, type DataTableColumnDef, createTextColumn, createBooleanColumn} from '@/core/dataTable';
+import {getPublicationStatuses, getRevisionStatuses} from '@/services/mapAdminApi';
 import {useTaxaData} from './taxaList/hooks';
 import type {TaxonMapSettings, StatusOption} from './taxaList/types';
 
@@ -20,12 +21,12 @@ export default function TaxaList() {
         let cancelled = false;
 
         Promise.all([
-            fetch('/api/react/atlasadmin/revision-statuses').then(res => res.json()),
-            fetch('/api/react/atlasadmin/publication-statuses').then(res => res.json()),
-        ]).then(([revisionData, publicationData]) => {
+            getRevisionStatuses(),
+            getPublicationStatuses(),
+        ]).then(([revisionStatuses, publicationStatuses]) => {
             if (cancelled) return;
-            if (revisionData.success) setRevisionStatusOptions(revisionData.data || []);
-            if (publicationData.success) setPublicationStatusOptions(publicationData.data || []);
+            setRevisionStatusOptions(revisionStatuses);
+            setPublicationStatusOptions(publicationStatuses);
         }).catch(error => console.error('Error fetching status options:', error));
 
         return () => { cancelled = true; };

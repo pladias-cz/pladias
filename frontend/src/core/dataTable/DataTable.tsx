@@ -39,7 +39,6 @@ export function DataTable<T extends object>(config: DataTableConfig<T>) {
         transformRequest,
         onRowUpdate,
         renderCustomFilters,
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         externalState: _externalState,
     } = config;
 
@@ -123,13 +122,14 @@ export function DataTable<T extends object>(config: DataTableConfig<T>) {
 
     const renderCell = useCallback((column: DataTableColumnDef<T>, row: T): React.ReactNode => {
         switch (column.type) {
-            case 'text':
+            case 'text': {
                 if (column.cellRenderer) {
-                    return column.cellRenderer(row[column.accessor] as any, row);
+                    return column.cellRenderer(row[column.accessor] as string, row);
                 }
                 return (row[column.accessor] as string) ?? '-';
+            }
 
-            case 'boolean':
+            case 'boolean': {
                 if (column.cellRenderer) {
                     return column.cellRenderer(row[column.accessor] as boolean, row);
                 }
@@ -137,11 +137,14 @@ export function DataTable<T extends object>(config: DataTableConfig<T>) {
                 return boolValue 
                     ? (column.trueLabel ?? t("common.table.yes"))
                     : (column.falseLabel ?? t("common.table.no"));
+            }
 
-            case 'checkbox':
+            case 'checkbox': {
                 // Checkbox columns always have an onToggle handler
                 const isChecked = row[column.accessor] as boolean;
                 const isDisabled = column.isDisabled?.(row) ?? false;
+                // Řádky se porovnávají referenčně, případně podle `id` (optimistická aktualizace).
+                const rowId = (row as {id?: unknown}).id;
                 return (
                     <Form.Check
                         type="checkbox"
@@ -153,7 +156,7 @@ export function DataTable<T extends object>(config: DataTableConfig<T>) {
                             // Optimistically update the local data first for instant UI feedback
                             setLocalData((prevData: T[]) => 
                                 prevData.map((item: T) => 
-                                    item === row || (item as any).id === (row as any).id
+                                    item === row || (item as {id?: unknown}).id === rowId
                                         ? { ...item, [column.accessor]: newValue } as T
                                         : item
                                 )
@@ -174,7 +177,7 @@ export function DataTable<T extends object>(config: DataTableConfig<T>) {
                                 // Rollback the optimistic update - revert to original value
                                 setLocalData((prevData: T[]) => 
                                     prevData.map((item: T) => 
-                                        item === row || (item as any).id === (row as any).id
+                                        item === row || (item as {id?: unknown}).id === rowId
                                             ? { ...item, [column.accessor]: !newValue } as T
                                             : item
                                     )
@@ -187,8 +190,9 @@ export function DataTable<T extends object>(config: DataTableConfig<T>) {
                         }}
                     />
                 );
+            }
 
-            case 'number':
+            case 'number': {
                 if (column.cellRenderer) {
                     return column.cellRenderer(row[column.accessor] as number, row);
                 }
@@ -197,8 +201,9 @@ export function DataTable<T extends object>(config: DataTableConfig<T>) {
                     return new Intl.NumberFormat('cs', column.formatOptions).format(numValue);
                 }
                 return String(numValue ?? '-');
+            }
 
-            case 'date':
+            case 'date': {
                 if (column.cellRenderer) {
                     return column.cellRenderer(row[column.accessor] as Date | string, row);
                 }
@@ -206,8 +211,9 @@ export function DataTable<T extends object>(config: DataTableConfig<T>) {
                 if (!dateValue) return '-';
                 const date = typeof dateValue === 'string' ? new Date(dateValue) : dateValue;
                 return date.toLocaleString('cs');
+            }
 
-            case 'timestamp':
+            case 'timestamp': {
                 if (column.cellRenderer) {
                     return column.cellRenderer(row[column.accessor] as Date | string, row);
                 }
@@ -223,6 +229,7 @@ export function DataTable<T extends object>(config: DataTableConfig<T>) {
                 if (format.includes('HH')) options.hour = '2-digit';
                 if (format.includes('mm')) options.minute = '2-digit';
                 return new Intl.DateTimeFormat('cs-CZ', options).format(timestamp);
+            }
 
             case 'action':
                 return column.cellRenderer(row);
@@ -230,7 +237,7 @@ export function DataTable<T extends object>(config: DataTableConfig<T>) {
             default:
                 return null;
         }
-    }, [t]);
+    }, [t, onRowUpdate, setLocalData]);
 
     return (
         <Card className={className}>

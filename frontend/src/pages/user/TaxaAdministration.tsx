@@ -62,6 +62,7 @@ export default function TaxaAdministration() {
             const id = parseInt(taxonId, 10);
             if (!isNaN(id)) loadTaxon(id);
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- loadTaxon není memoizované; načítá se jen při změně taxonId z URL, závislost by smyčila render
     }, [taxonId]);
 
     return (

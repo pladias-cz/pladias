@@ -19,15 +19,25 @@ import { useMap } from 'react-leaflet';
 import * as L from 'leaflet';
 import { useEffect, useRef, useCallback } from 'react';
 import {fetchWfsGeoJson} from '@/services/mapApi';
+import type {LayerParams} from '../types';
 import { useNavigate } from 'react-router-dom';
 import type { LatLngExpression, Popup } from 'leaflet';
 
 interface SquaresOverlayProps {
     visible: boolean;
-    params?: Record<string, any>;
+    params?: LayerParams;
     minZoom?: number;
     onSquareDoubleClick?: (squareId: string) => void;
 }
+
+/**
+ * GeoJSON path vrstva nese feature a cleanup funkci – leaflet typy `L.Path`
+ * tyto properties nemodelují (přidávají je GeoJSON event handlery).
+ */
+type FeaturePath = L.Path & {
+    feature: SquareFeature;
+    _squaresCleanup?: () => void;
+};
 
 interface SquareFeature {
     type: 'Feature';
@@ -135,8 +145,8 @@ export function SquaresOverlay({ visible, minZoom = 8, params, onSquareDoubleCli
      * Handle double-click on a square feature - cancel pending click popup and navigate
      */
     const handleDoubleClick = useCallback((e: L.LeafletEvent) => {
-        const layer = e.target as L.Path;
-        const feature = (layer as any).feature as SquareFeature;
+        const layer = e.target as FeaturePath;
+        const feature = layer.feature;
         
         // Cancel any pending click popup
         if (clickTimeoutRef.current) {
@@ -161,8 +171,8 @@ export function SquaresOverlay({ visible, minZoom = 8, params, onSquareDoubleCli
         // Suppress the browser's native context menu
         (e as L.LeafletMouseEvent).originalEvent.preventDefault();
 
-        const layer = e.target as L.Path;
-        const feature = (layer as any).feature as SquareFeature;
+        const layer = e.target as FeaturePath;
+        const feature = layer.feature;
         if (!feature) return;
 
         const squareId = feature.properties.name;
@@ -219,8 +229,8 @@ export function SquaresOverlay({ visible, minZoom = 8, params, onSquareDoubleCli
      * Handle mouseover on a square feature - highlight + show label (from zoom 10+)
      */
     const handleMouseOver = useCallback((e: L.LeafletEvent) => {
-        const layer = e.target as L.Path;
-        const feature = (layer as any).feature as SquareFeature;
+        const layer = e.target as FeaturePath;
+        const feature = layer.feature;
         
         // Don't show anything if layer is not visible
         if (!visibleRef.current) {
@@ -301,8 +311,8 @@ export function SquaresOverlay({ visible, minZoom = 8, params, onSquareDoubleCli
      * Uses the click coordinates for popup position, not the centroid
      */
     const handleFeatureClick = useCallback((e: L.LeafletEvent) => {
-        const layer = e.target as L.Path;
-        const feature = (layer as any).feature as SquareFeature;
+        const layer = e.target as FeaturePath;
+        const feature = layer.feature;
         
         if (!feature) {
             return;
@@ -397,7 +407,7 @@ export function SquaresOverlay({ visible, minZoom = 8, params, onSquareDoubleCli
                         // Attach events to each path layer
                         pathLayers.forEach((pathLayer) => {
                             // Store feature reference on the layer for use in handlers
-                            (pathLayer as any).feature = feature;
+                            (pathLayer as FeaturePath).feature = feature;
 
                             // Attach event listeners
                             pathLayer.on('mouseover', handleMouseOver);
@@ -407,7 +417,7 @@ export function SquaresOverlay({ visible, minZoom = 8, params, onSquareDoubleCli
                             pathLayer.on('contextmenu', handleContextMenu, { bubblingMouseEvents: false });
 
                             // Store cleanup function on the layer
-                            (pathLayer as any)._squaresCleanup = () => {
+                            (pathLayer as FeaturePath)._squaresCleanup = () => {
                                 pathLayer.off('mouseover', handleMouseOver);
                                 pathLayer.off('mouseout', handleMouseOut);
                                 pathLayer.off('click', handleFeatureClick);
@@ -456,7 +466,7 @@ export function SquaresOverlay({ visible, minZoom = 8, params, onSquareDoubleCli
             if (geoJsonLayerRef.current) {
                 // Clean up event listeners on all layers (including nested)
                 const cleanupLayer = (layer: L.Layer) => {
-                    const cleanup = (layer as any)._squaresCleanup;
+                    const cleanup = (layer as FeaturePath)._squaresCleanup;
                     if (cleanup) cleanup();
                     
                     // If it's a group, clean up child layers too

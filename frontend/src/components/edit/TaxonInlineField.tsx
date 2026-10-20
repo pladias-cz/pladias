@@ -2,13 +2,9 @@ import {useState} from "react";
 import {Col, Form, Row, Spinner} from "react-bootstrap";
 import {useTranslation} from "react-i18next";
 import type {Taxon} from "@/models/Taxon";
+import type {Option} from "@/models/Option";
 import {updateTaxonField, type TaxonEditorField} from "@/services/taxonApi";
 import {notifyApiError} from "@/stores/notificationStore";
-
-interface Option<T = any> {
-    value: T;
-    label: T;
-}
 
 /** Mapování backend konstant polí (PATCH) na vlastnosti modelu Taxon. */
 const FIELD_TO_PROPERTY: Record<TaxonEditorField, keyof Taxon> = {
@@ -26,10 +22,10 @@ interface Props {
     label: string;
     taxonId: number;
     field: TaxonEditorField;
-    value: any;
+    value: string | boolean | number | null | undefined;
     type?: "text" | "select" | "boolean";
     options?: Option[];
-    render?: (v: any) => React.ReactNode;
+    render?: (v: string | boolean | number | null) => React.ReactNode;
     /** Volá se s celým aktualizovaným taxonem z backendu. */
     onUpdated: (updated: Taxon) => void;
 }
@@ -44,18 +40,18 @@ export default function InlineField({
                                         onUpdated
                                     }: Props) {
     const {t} = useTranslation();
-    const [draft, setDraft] = useState(value);
+    const [draft, setDraft] = useState<string | boolean | number | null>(value ?? null);
     const [saving, setSaving] = useState(false);
     // Editing state - top-level hook (rules-of-hooks), used by the text/select branches
     const [editing, setEditing] = useState(false);
 
 
-    async function save(newValue: any) {
+    async function save(newValue: string | boolean) {
         setSaving(true);
 
         try {
             const updated = await updateTaxonField(taxonId, field, newValue);
-            setDraft(updated[FIELD_TO_PROPERTY[field]]);
+            setDraft(updated[FIELD_TO_PROPERTY[field]] as string | boolean | number | null);
             onUpdated(updated);
         } catch (e) {
             notifyApiError(e, t("common.inlineField.saveFailed"));
@@ -98,7 +94,7 @@ export default function InlineField({
               style={{cursor: "pointer"}}
               onClick={() => setEditing(true)}
           >
-            {render ? render(value) : value || <span className="text-muted">{t("common.inlineField.add")}</span>}
+            {render ? render(value ?? null) : value || <span className="text-muted">{t("common.inlineField.add")}</span>}
           </span>
         </span>
             );
@@ -107,7 +103,7 @@ export default function InlineField({
                 <Form.Select
                     size="sm"
                     autoFocus
-                    value={draft ?? ""}
+                    value={(draft as string | number | undefined) ?? ""}
                     disabled={saving}
                     onChange={e => save(e.target.value)}
                     onBlur={() => setEditing(false)}
@@ -125,11 +121,11 @@ export default function InlineField({
                 <Form.Control
                     size="sm"
                     autoFocus
-                    value={draft || ""}
+                    value={(draft as string | null | undefined) || ""}
                     disabled={saving}
                     onChange={e => setDraft(e.target.value)}
-                    onBlur={() => save(draft)}
-                    onKeyDown={e => e.key === "Enter" && save(draft)}
+                    onBlur={() => save(draft as string | boolean)}
+                    onKeyDown={e => e.key === "Enter" && save(draft as string | boolean)}
                     style={{maxWidth: "350px", display: "inline-block"}}
                 />
             );

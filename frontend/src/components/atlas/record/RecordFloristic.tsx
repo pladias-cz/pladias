@@ -13,7 +13,7 @@ import {getImportableTaxaForRecord, getPhytochorionOptions, getUnassignedAuthors
 import {useInstanceConfig} from "@/context/InstanceConfigContext";
 
 // Date format validation: YYYY, YYYY-MM, YYYY-MM-DD, or "s. d." (sine data - without date)
-const validateDateFormat = (value: any): string | null => {
+const validateDateFormat = (value: string): string | null => {
     const strValue = String(value ?? '').trim();
 
     // Allow empty values (will be handled by backend)
@@ -79,6 +79,7 @@ export default function RecordFloristic({record, onFieldUpdated}: RecordFloristi
                 lastEditTimestampNum: record.lastEditTimestampNum
             }));
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- záměrná částečná synchronizace: full-sync jen při změně id, jinak jen timestamp (optimistické lokální editace se nesmí přepsat)
     }, [record.id, record.lastEditTimestampNum]);
 
     const {canEditCommonFields: canEdit} = useRecordPermissions(localRecord);
@@ -117,7 +118,7 @@ export default function RecordFloristic({record, onFieldUpdated}: RecordFloristi
 
     // Handler for field updates - only updates local state, no API call
     // RecordInlineField already handles the API call
-    const handleSave = (field: string, data: { updatedValue: any, newTimestamp: number }) => {
+    const handleSave = (field: string, data: { updatedValue: string | null, newTimestamp: number }) => {
         const fieldMapping: { [key: string]: keyof RecordPladiasFull } = {
             'LOCALITY': 'locality',
             'ORIGINALNAME': 'taxonOriginal',
@@ -130,7 +131,7 @@ export default function RecordFloristic({record, onFieldUpdated}: RecordFloristi
 
         const mappedField = fieldMapping[field];
         if (mappedField) {
-            let updatedValue = data.updatedValue;
+            let updatedValue: string | number | null = data.updatedValue;
             // Convert numeric values for altitude fields - handle empty string as null
             if (field === 'ALTITUDEMIN' || field === 'ALTITUDEMAX') {
                 const strValue = String(data.updatedValue).trim();
@@ -307,9 +308,14 @@ export default function RecordFloristic({record, onFieldUpdated}: RecordFloristi
                                 deleteKey="DELETEFINDER"
                                 onUpdated={(data) => {
                                     setLocalRecord((prev: RecordPladiasFull) => {
-                                        const newRecordAuthors = data.updatedValue.map((opt): any => ({
+                                        // pole bez známých hodnot doplní backend při dalším načtení
+                                        const newRecordAuthors: RecordPladiasFull["recordAuthors"] = data.updatedValue.map((opt) => ({
+                                            recordId: null,
                                             authorId: opt.id,
+                                            authorName: null,
+                                            authorSurname: "",
                                             authorFullName: opt.name,
+                                            succession: null,
                                         }));
                                         return {
                                             ...prev,
@@ -360,8 +366,8 @@ export default function RecordFloristic({record, onFieldUpdated}: RecordFloristi
                                 {localRecord.recordAuthors.length === 0 ? (
                                     <span className="text-muted">{t("common.multiValueEdit.none")}</span>
                                 ) : (
-                                    localRecord.recordAuthors.map((author: any) => (
-                                        <span key={author.id} className="badge bg-secondary">
+                                    localRecord.recordAuthors.map((author) => (
+                                        <span key={author.authorId} className="badge bg-secondary">
                                             {author.authorFullName}
                                         </span>
                                     ))

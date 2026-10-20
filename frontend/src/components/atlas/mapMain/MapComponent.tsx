@@ -5,6 +5,7 @@ import type { LatLngExpression } from 'leaflet';
 import { useNavigate } from 'react-router-dom';
 
 import { useLayerManager, useLayerState, Layer, ProjectLayers, useProjectLayers } from '@/core/mapLayers';
+import type {LayerParams} from '@/core/mapLayers/types';
 import { LayerSwitcher } from '@/core/mapLayers/components/LayerSwitcher';
 import './MapComponent.scss';
 
@@ -42,7 +43,7 @@ function MapLayer({
 }: {
     layerId: string;
     mapName: string;
-    params?: Record<string, any>;
+    params?: LayerParams;
     onSquareDoubleClick?: (squareId: string) => void;
 }) {
     const layerState = useLayerState(mapName, layerId);

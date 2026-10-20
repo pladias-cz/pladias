@@ -22,7 +22,7 @@ export interface UseTableDataOptions<T> {
         sorting: Array<{id: string; desc: boolean}>;
         columnFilters: Array<{id: string; value: string}>;
         additionalParams: Record<string, string>;
-    }) => Record<string, any>;
+    }) => Record<string, unknown>;
     onSuccess?: (data: T[], totalCount: number, filteredCount: number) => void;
 }
 
@@ -68,7 +68,7 @@ export function useTableData<T>(options: UseTableDataOptions<T>) {
         if (abortControllerRef.current) {
             try {
                 abortControllerRef.current.abort();
-            } catch (e) {
+            } catch {
                 // ignore
             }
             abortControllerRef.current = null;
@@ -162,6 +162,7 @@ export function useTableData<T>(options: UseTableDataOptions<T>) {
                 abortControllerRef.current = null;
             }
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- columnFilters vstupuje přes stabilní filtersKey (serializace), aby identita callbacku přežila úhozy do filtrů
     }, [endpoint, page, pageSize, sorting, filtersKey, additionalParams, method, customFetcher, transformRequest, onSuccess]);
 
     /**
@@ -174,7 +175,7 @@ export function useTableData<T>(options: UseTableDataOptions<T>) {
             if (abortControllerRef.current) {
                 try {
                     abortControllerRef.current.abort();
-                } catch (e) {
+                } catch {
                     // ignore
                 }
                 abortControllerRef.current = null;

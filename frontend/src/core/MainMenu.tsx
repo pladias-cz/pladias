@@ -35,11 +35,8 @@ function ActiveDropdown({title, prefixes, children, align = "start"}: ActiveDrop
     );
 }
 
-interface MainMenuProps {
-    // No props currently needed
-}
-
-const MainMenu = React.forwardRef<HTMLDivElement, MainMenuProps>(function MainMenu(_props, ref) {
+// Zatím bez props – drží forwardRef typovou signaturu pro budoucí rozšíření.
+const MainMenu = React.forwardRef<HTMLDivElement>(function MainMenu(_props, ref) {
     const {t} = useTranslation();
     const navigate = useNavigate();
 

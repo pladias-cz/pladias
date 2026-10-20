@@ -15,6 +15,7 @@ import { TileLayer, WMSTileLayer, useMap } from 'react-leaflet';
 import type { CrossOrigin } from 'leaflet';
 import { getLayerDefinition } from '../registry/layerRegistry';
 import type { LayerParams } from '../types';
+import type {GeoServerConfig} from '../types/serviceConfig';
 import {fetchWfsGeoJson} from '@/services/mapApi';
 import { useEffect, useRef, useState, useMemo } from 'react';
 import * as L from 'leaflet';
@@ -69,7 +70,7 @@ export function Layer({ layerId, params = {}, visible = true, onSquareDoubleClic
             // Handle other geoserver services if needed
             return null;
         default:
-            console.warn(`Unsupported service type: ${(definition.service as any).type}`);
+            console.warn(`Unsupported service type: ${definition.service.type}`);
             return null;
     }
 }
@@ -82,7 +83,7 @@ function renderTileLayer(definition: ReturnType<typeof getLayerDefinition>, visi
     const config = definition.service.config;
     
     // Build TileLayer props - only include defined values
-    const tileProps: any = {
+    const tileProps: React.ComponentProps<typeof TileLayer> = {
         url: definition.service.baseUrl,
         maxZoom: config.maxZoom,
         minZoom: config.minZoom,
@@ -118,7 +119,7 @@ function renderWMSLayer(
         return null;
     }
 
-    const config = definition.service.config as any;
+    const config = definition.service.config;
     
     // If viewParams are specified, use custom component that can handle them properly
     if (config.viewParams && config.viewParams.length > 0) {
@@ -126,16 +127,16 @@ function renderWMSLayer(
     }
     
     // Standard WMS without viewParams
-    const layers = (config.layers as string | undefined)?.replace(/\{(\w+)\}/g, (_: string, key: string) => {
+    const layers = config.layers?.replace(/\{(\w+)\}/g, (_: string, key: string) => {
         return params[key] !== undefined ? String(params[key]) : '';
     });
 
-    const wmsProps: any = {
+    const wmsProps: React.ComponentProps<typeof WMSTileLayer> = {
         url: definition.service.baseUrl,
-        layers: layers || (config.typeName as string | undefined) || '',
-        format: (config.format as string | undefined) || 'image/png',
-        transparent: (config.transparent as boolean | undefined) ?? true,
-        version: (config.version as string | undefined) || '1.1.1',
+        layers: layers || config.typeName || '',
+        format: config.format || 'image/png',
+        transparent: config.transparent ?? true,
+        version: config.version || '1.1.1',
         attribution: definition.attribution,
         opacity: visible ? 1 : 0,
         zIndex: definition.zIndex,
@@ -166,10 +167,10 @@ function WmsLayerWithParams({
     
     // Hooks must run unconditionally (rules-of-hooks) – renderWMSLayer already
     // guarantees definition.service, optional chaining covers the impossible case.
-    const config = definition.service?.config as any;
+    const config = definition.service?.config as GeoServerConfig["config"] | undefined;
     
     // Interpolate layers string
-    const layers = (config?.layers as string | undefined)?.replace(/\{(\w+)\}/g, (_: string, key: string) => {
+    const layers = config?.layers?.replace(/\{(\w+)\}/g, (_: string, key: string) => {
         return params[key] !== undefined ? String(params[key]) : '';
     });
     
@@ -196,17 +197,21 @@ function WmsLayerWithParams({
     useEffect(() => {
         if (!map || !layers || !definition.service) return;
         
-        const wmsLayer = L.tileLayer.wms(definition.service.baseUrl, {
+        // `viewparams` je GeoServer rozšíření WMS (filtrování dat na serveru),
+        // které leaflet typy nemodelují – proto rozšířený typ proměnné
+        const wmsOptions: L.WMSOptions & { viewparams?: string } = {
             layers: layers || '',
-            format: (config.format as string | undefined) || 'image/png',
-            transparent: (config.transparent as boolean | undefined) ?? true,
-            version: (config.version as string | undefined) || '1.1.1',
+            format: (config?.format) || 'image/png',
+            transparent: (config?.transparent) ?? true,
+            version: (config?.version) || '1.1.1',
             attribution: definition.attribution,
             zIndex: definition.zIndex,
-            ...(config.styles && { styles: config.styles }),
-            // Add viewParams - cast to any to bypass TypeScript WMSParams limitation
-            ...(viewParamsStr && { viewparams: viewParamsStr } as any),
-        });
+            ...(config?.styles && { styles: config.styles }),
+        };
+        if (viewParamsStr) {
+            wmsOptions.viewparams = viewParamsStr;
+        }
+        const wmsLayer = L.tileLayer.wms(definition.service.baseUrl, wmsOptions);
         
         // Set initial opacity
         if (!visibleRef.current) {
@@ -227,8 +232,9 @@ function WmsLayerWithParams({
     // Update viewParams when they change
     useEffect(() => {
         if (!layerRef.current || !viewParamsStr) return;
-        layerRef.current.setParams({ viewparams: viewParamsStr } as any);
-    }, [viewParamsStr]);
+        const nextParams: L.WMSParams & { viewparams?: string } = { layers: layers || '', viewparams: viewParamsStr };
+        layerRef.current.setParams(nextParams);
+    }, [viewParamsStr, layers]);
     
     // Update visibility
     useEffect(() => {
@@ -253,18 +259,21 @@ function WfsLayer({
     params,
     visible,
 }: {
-    definition: any;
+    definition: NonNullable<ReturnType<typeof getLayerDefinition>>;
     params: LayerParams;
     visible: boolean;
 }) {
     const map = useMap();
-    const layerRef = useRef<any | null>(null);
+    const layerRef = useRef<L.GeoJSON | null>(null);
     const [loaded, setLoaded] = useState(false);
     const visibleRef = useRef(visible);
     const paramsRef = useRef<LayerParams>(params);
     const lastBboxRef = useRef<string | null>(null);
     
-    const config = definition.service.config;
+    // renderWFSLayer garantuje geoserver službu (service WFS) – typ zužíme tady,
+    // aby všechny effecty/mema pracovaly s konkrétní GeoServer konfigurací
+    const service = definition.service as GeoServerConfig;
+    const config = service.config;
     
     /**
      * Calculate bounding box with buffer to avoid frequent reloads
@@ -410,11 +419,12 @@ function WfsLayer({
         return () => {
             map.off('moveend', handleMoveEnd);
         };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- getBboxWithBuffer čte stav mapy v každém renderu; závislost by refetchovala WFS při každém renderu
     }, [map, loaded]);
     
     // Build WFS URL with parameters - memoized to avoid recalculating
     const wfsUrl = useMemo(() => {
-        const baseUrl = definition.service.baseUrl;
+        const baseUrl = service.baseUrl;
         const queryParams: Record<string, string> = {
             service: config.service || 'WFS',
             version: config.version || '1.0.0',
@@ -458,7 +468,8 @@ function WfsLayer({
         });
         
         return url.toString();
-    }, [config, definition.service.baseUrl, params]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- getBboxWithBuffer čte stav mapy v každém renderu; závislost by přepočítávala URL při každém renderu
+    }, [config, service.baseUrl, params]);
     
     // Fetch and create GeoJSON layer - ONLY depends on wfsUrl and map
     useEffect(() => {
@@ -517,7 +528,7 @@ function WfsLayer({
                 // Create GeoJSON layer with zoom-based radius
                 const geoJsonLayer = L.geoJSON(undefined, {
                     pane: paneName,
-                    pointToLayer: (_feature: any, latlng: any) => {
+                    pointToLayer: (_feature: GeoJSON.Feature, latlng: L.LatLngExpression) => {
                         const currentZoom = map.getZoom();
                         const radius = getRadiusForZoom(currentZoom);
 
@@ -528,15 +539,15 @@ function WfsLayer({
                             radius, // Override radius with zoom-based value
                         });
                     },
-                    style: styleOptions?.pathStyle || styleOptions?.style,
+                    style: (styleOptions?.pathStyle || styleOptions?.style) as L.GeoJSONOptions["style"],
                     onEachFeature: styleOptions?.onEachFeature,
                 });
                 
                 // Listen to zoom events to update marker sizes
                 const updateRadiusOnZoom = () => {
                     const currentZoom = map.getZoom();
-                    geoJsonLayer.eachLayer((layer: any) => {
-                        if (layer.setRadius) {
+                    geoJsonLayer.eachLayer((layer: L.Layer) => {
+                        if (layer instanceof L.CircleMarker) {
                             const radius = getRadiusForZoom(currentZoom);
                             layer.setRadius(radius);
                         }
@@ -546,7 +557,7 @@ function WfsLayer({
                 map.on('zoomend', updateRadiusOnZoom);
                 
                 // Store cleanup function reference
-                (geoJsonLayer as any)._zoomHandler = updateRadiusOnZoom;
+                (geoJsonLayer as L.GeoJSON & {_zoomHandler?: () => void})._zoomHandler = updateRadiusOnZoom;
                 
                 if (data.features && data.features.length > 0) {
                     geoJsonLayer.addData(data);
@@ -573,7 +584,7 @@ function WfsLayer({
         return () => {
             if (layerRef.current) {
                 // Remove zoom listener
-                const handler = (layerRef.current as any)._zoomHandler;
+                const handler = (layerRef.current as L.GeoJSON & {_zoomHandler?: () => void})._zoomHandler;
                 if (handler && map) {
                     map.off('zoomend', handler);
                 }

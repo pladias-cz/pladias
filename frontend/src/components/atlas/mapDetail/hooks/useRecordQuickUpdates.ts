@@ -68,9 +68,9 @@ export function useRecordQuickUpdates() {
             } else {
                 return {success: false, error: 'Unknown error'};
             }
-        } catch (error: any) {
+        } catch (error) {
             console.error(`Error updating ${field}:`, error);
-            const errorMsg = error?.message || 'Network error';
+            const errorMsg = error instanceof Error ? error.message : 'Network error';
             return {success: false, error: errorMsg};
         }
     }, []);
@@ -81,7 +81,7 @@ export function useRecordQuickUpdates() {
     const fetchRecordMapFields = useCallback(async (recordId: number): Promise<RecordMapFields | null> => {
         try {
             return await apiGet<RecordMapFields>(`/api/react/atlas/record/${recordId}/mapFields`);
-        } catch (error: any) {
+        } catch (error) {
             console.error(`Error fetching map fields for record ${recordId}:`, error);
             return null;
         }
@@ -169,7 +169,11 @@ export function useRecordQuickUpdates() {
     ): Promise<UpdateResult> => {
         setUpdatingRecordId(record.id);
         const result = await updateField(record.id, 'HERBARIUM_QUALITY', newValue, record.lastEditTimestampNum || 0, record);
-        result.success ? onSuccess?.(result.record!) : onError?.(result.error || 'Failed to update herbarium quality');
+        if (result.success) {
+            onSuccess?.(result.record!);
+        } else {
+            onError?.(result.error || 'Failed to update herbarium quality');
+        }
         setUpdatingRecordId(null);
         return result;
     }, [updateField]);
@@ -180,7 +184,11 @@ export function useRecordQuickUpdates() {
     ): Promise<UpdateResult> => {
         setUpdatingRecordId(record.id);
         const result = await updateField(record.id, 'INCLUDED_IN_MAP', newValue, record.lastEditTimestampNum || 0, record);
-        result.success ? onSuccess?.(result.record!) : onError?.(result.error || 'Failed to update include in map');
+        if (result.success) {
+            onSuccess?.(result.record!);
+        } else {
+            onError?.(result.error || 'Failed to update include in map');
+        }
         setUpdatingRecordId(null);
         return result;
     }, [updateField]);

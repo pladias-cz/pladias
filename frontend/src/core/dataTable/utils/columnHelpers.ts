@@ -18,7 +18,7 @@ export function createTextColumn<T extends object>(
         filterOptions?: Array<{value: string; label: string}>;
         width?: string | number;
         minWidth?: string | number;
-        cellRenderer?: (value: any, row: T) => React.ReactNode;
+        cellRenderer?: (value: string, row: T) => React.ReactNode;
     }
 ): TextColumnDef<T> {
     return {

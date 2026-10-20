@@ -19,6 +19,14 @@ export default tseslint.config([
       ecmaVersion: 2020,
       globals: globals.browser,
     },
+    rules: {
+      // Konvence `_` prefixu pro záměrně nepoužité parametry/proměnné
+      // (adaptery vrstev `_definition`, `_url`, …) – sekce B.2 refactor.md.
+      '@typescript-eslint/no-unused-vars': ['error', {
+        argsIgnorePattern: '^_',
+        varsIgnorePattern: '^_',
+      }],
+    },
   },
   {
     // Kontexty legitimně exportují hooky (useUser, useInstanceConfig, …) vedle

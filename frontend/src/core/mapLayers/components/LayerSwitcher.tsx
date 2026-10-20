@@ -32,8 +32,8 @@ export function LayerSwitcher({ mapName, layerIds, defaultVisibility }: LayerSwi
     const layerManager = useLayerManager(mapName, layerIds, defaultVisibility);
     const [isExpanded, setIsExpanded] = useState(false);
     const getLayerState = useLayerStore(state => state.getLayerState);
-    // Subscribe to layer states to trigger re-render when title updates
-    const layerStates = useLayerStore(state => state.layers[mapName]);
+    // Subscription kvůli re-renderu při změně stavů vrstev (např. titulků) – hodnota se nečte
+    useLayerStore(state => state.layers[mapName]);
     
     // Initialize open groups based on layerGroups config
     const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() => {
@@ -131,7 +131,7 @@ export function LayerSwitcher({ mapName, layerIds, defaultVisibility }: LayerSwi
                 };
             })
             .filter(group => group.children.length > 0); // Only show groups with layers
-    }, [layerIds, mapName, getLayerState, layerStates]);
+    }, [layerIds, mapName, getLayerState]);
 
     const toggleGroup = (groupId: string) => {
         setOpenGroups(prev => ({ ...prev, [groupId]: !prev[groupId] }));

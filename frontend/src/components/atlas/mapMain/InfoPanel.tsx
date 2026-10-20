@@ -54,7 +54,7 @@ interface TaxonMapSettingsData {
     taxonNameLat: string;
     taxonRankCz: string;
     isMapped: boolean;
-    commonThreshold: any;
+    commonThreshold: number;
     isProtected: boolean;
     preslia: string;
     revisors: string;
@@ -65,10 +65,10 @@ interface TaxonMapSettingsData {
     publicationStatusId: number;
     publicationStatusDescription: string;
     lastEditTimestamp: number;
-    parentTaxonId: any;
+    parentTaxonId?: number | null;
     parentTaxonNameLat: string;
-    csvMapDetailId: any;
-    csvMapDetailTimestamp: any;
+    csvMapDetailId?: number | null;
+    csvMapDetailTimestamp?: number | null;
     hasPng: boolean;
     currentUserIsRevisor: boolean;
     mapType: number;
@@ -160,7 +160,7 @@ export function InfoPanel({taxonName, taxonId}: InfoPanelProps) {
             .finally(() => {
                 setLoading(false);
             });
-    }, [taxonId]);
+    }, [taxonId, t]);
 
     const handleRevisorsCommentChange = async (value: string) => {
         setRevisorsComment(value);

@@ -47,6 +47,7 @@ export default function Settings() {
     // Load user settings on component mount
     useEffect(() => {
         loadUserSettings();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- načtení jednou při mountu; loadUserSettings není memoizované, jeho závislost by smyčila render
     }, []);
 
     const loadUserSettings = async (): Promise<void> => {

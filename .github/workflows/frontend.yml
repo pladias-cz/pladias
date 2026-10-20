@@ -43,11 +43,8 @@ jobs:
                       exit 1
                   fi
 
-            # Neblokuje PR, dokud není splacen pre-existující lint dluh (~157 chyb,
-            # hlavně no-explicit-any). Výsledky se zobrazují jako annotace.
-            - name: Lint (non-blocking)
+            - name: Lint
               run: npm run lint
-              continue-on-error: true
 
             - name: i18n audit
               run: npm run i18n:check

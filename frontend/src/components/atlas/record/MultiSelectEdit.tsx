@@ -49,7 +49,7 @@ export default function MultiSelectEdit({
         if (lastEditTimestampNum !== undefined && lastEditTimestampNum !== lastTimestamp) {
             setLastTimestamp(lastEditTimestampNum);
         }
-    }, [lastEditTimestampNum]);
+    }, [lastEditTimestampNum, lastTimestamp]);
 
     // Fetch available options when editing starts
     useEffect(() => {
@@ -57,7 +57,6 @@ export default function MultiSelectEdit({
             loadOptions()
                 .then(fetchedOptions => {
                     setOptions(fetchedOptions);
-                    updateAvailableOptions(fetchedOptions, selected);
                 })
                 .catch(err => {
                     setError(apiErrorMessage(err, t("common.multiValueEdit.loadFailed")));

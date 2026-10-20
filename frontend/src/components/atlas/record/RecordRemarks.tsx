@@ -36,6 +36,7 @@ export default function RecordRemarks({record, onFieldUpdated}: RecordRemarksPro
                 lastEditTimestampNum: record.lastEditTimestampNum
             }));
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- záměrná částečná synchronizace: full-sync jen při změně id, jinak jen timestamp (optimistické lokální editace se nesmí přepsat)
     }, [record.id, record.lastEditTimestampNum]);
 
     // Scroll position preservation on re-render
@@ -63,7 +64,7 @@ export default function RecordRemarks({record, onFieldUpdated}: RecordRemarksPro
     ].some(value => value?.trim());
 
     // Handler for SOURCE field update - only updates local state, no API call
-    const handleSourceSave = (data: { updatedValue: any, newTimestamp: number }) => {
+    const handleSourceSave = (data: { updatedValue: string | null, newTimestamp: number }) => {
         setLocalRecord((prev: RecordPladiasFull) => ({
             ...prev,
             source: data.updatedValue,
@@ -74,7 +75,7 @@ export default function RecordRemarks({record, onFieldUpdated}: RecordRemarksPro
     };
 
     // Handler for ORIGINALID field update - only updates local state, no API call
-    const handleOriginalIdSave = (data: { updatedValue: any, newTimestamp: number }) => {
+    const handleOriginalIdSave = (data: { updatedValue: string | null, newTimestamp: number }) => {
         setLocalRecord((prev: RecordPladiasFull) => ({
             ...prev,
             originalId: data.updatedValue,
@@ -156,11 +157,10 @@ export default function RecordRemarks({record, onFieldUpdated}: RecordRemarksPro
                                 deleteKey="DELETEHERBARIUM"
                                 onUpdated={(data) => {
                                     setLocalRecord((prev: RecordPladiasFull) => {
-                                        const newHerbariums = data.updatedValue.map((opt): any => ({
+                                        const newHerbariums: RecordPladiasFull["herbariums"] = data.updatedValue.map((opt) => ({
                                             id: opt.id,
                                             name: opt.name,
-                                            abbrev: opt.label || null,
-                                            abbrevExplanation: null
+                                            label: opt.label ?? "",
                                         }));
                                         return {
                                             ...prev,
@@ -177,7 +177,7 @@ export default function RecordRemarks({record, onFieldUpdated}: RecordRemarksPro
                                 {localRecord.herbariums.length === 0 ? (
                                     <span className="text-muted">{t("common.multiValueEdit.none")}</span>
                                 ) : (
-                                    localRecord.herbariums.map((herb: any) => (
+                                    localRecord.herbariums.map((herb) => (
                                         <span key={herb.id} className="badge bg-secondary">
                                             {herb.name}
                                         </span>

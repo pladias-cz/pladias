@@ -6,6 +6,7 @@ import type {ApiResult} from '@/models/ApiResponse';
 import { useNavigate } from 'react-router-dom';
 
 import { useLayerManager, useLayerState, Layer } from '@/core/mapLayers';
+import type {LayerParams} from '@/core/mapLayers/types';
 import { LayerSwitcher } from '@/core/mapLayers/components/LayerSwitcher';
 import './MapComponent.scss';
 
@@ -271,7 +272,7 @@ function MapLayer({
 }: {
     layerId: string;
     mapName: string;
-    params?: Record<string, any>;
+    params?: LayerParams;
 }) {
     const layerState = useLayerState(mapName, layerId);
     const visible = layerState?.visible ?? false;
@@ -299,7 +300,7 @@ export function MapComponent({
     const [maxBounds, setMaxBounds] = useState<[[number, number], [number, number]] | null>(null);
     const [neighbors, setNeighbors] = useState<SquareValidationStatus[]>([]);
     const [currentSquare, setCurrentSquare] = useState<CurrentSquareInfo | null>(null);
-    const mapRef = useRef<any>(null);
+    const mapRef = useRef<L.Map | null>(null);
 
     const allLayerIds = useMemo(() => {
         return MAP_MAIN_LAYERS;

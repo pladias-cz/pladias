@@ -52,7 +52,7 @@ export interface TextColumnDef<T> extends BaseColumnDef<T> {
     /** Options for select filter - when set, a select is rendered instead of text input */
     filterOptions?: Array<{value: string; label: string}>;
     /** Custom cell renderer */
-    cellRenderer?: (value: any, row: T) => React.ReactNode;
+    cellRenderer?: (value: string, row: T) => React.ReactNode;
 }
 
 /**
@@ -219,7 +219,7 @@ export interface DataTableConfig<T> {
     /** Available page size options */
     pageSizeOptions?: number[];
     /** Callback when row data changes */
-    onRowUpdate?: (row: T, field: keyof T, value: any) => Promise<void>;
+    onRowUpdate?: (row: T, field: keyof T, value: unknown) => Promise<void>;
     /** Additional query params to send with requests */
     additionalParams?: Record<string, string>;
     /** Custom class names */
@@ -244,7 +244,7 @@ export interface DataTableConfig<T> {
         sorting: Array<{id: string; desc: boolean}>;
         columnFilters: Array<{id: string; value: string}>;
         additionalParams: Record<string, string>;
-    }) => Record<string, any>;
+    }) => Record<string, unknown>;
     /** External state control for controlled component usage */
     externalState?: ExternalTableState;
     /** Custom filter row renderer - receives columnFilters and setColumnFilters */

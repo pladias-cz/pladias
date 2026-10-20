@@ -68,7 +68,7 @@ export function InfoPanel({type = 1, taxonId, taxonName}: InfoPanelProps) {
             .finally(() => {
                 setLoading(false);
             });
-    }, [taxonId]);
+    }, [taxonId, t]);
 
     return (
         <div className="d-flex flex-column h-100 overflow-hidden">

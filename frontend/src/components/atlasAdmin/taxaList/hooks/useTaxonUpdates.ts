@@ -64,7 +64,7 @@ export function useTaxonUpdates() {
                     t.taxonId === taxonId ? {...t, lastEditTimestamp: newTimestamp} : t
                 )
             );
-        } catch (error) {
+        } catch {
             newDataCallback(prev =>
                 prev.map(t =>
                     t.taxonId === taxonId ? {...t, isMapped: currentIsMapped} : t
@@ -115,7 +115,7 @@ export function useTaxonUpdates() {
                     } : t
                 )
             );
-        } catch (error) {
+        } catch {
             newDataCallback(prev =>
                 prev.map(t =>
                     t.taxonId === taxonId ? {
@@ -160,7 +160,7 @@ export function useTaxonUpdates() {
                     } : t
                 )
             );
-        } catch (error) {
+        } catch {
             newDataCallback(prev =>
                 prev.map(t =>
                     t.taxonId === taxonId ? {...t, commonThreshold: currentCommonThreshold} : t
@@ -200,7 +200,7 @@ export function useTaxonUpdates() {
                     } : t
                 )
             );
-        } catch (error) {
+        } catch {
             newDataCallback(prev =>
                 prev.map(t =>
                     t.taxonId === taxonId ? {...t, isProtected: currentIsProtected} : t
@@ -271,7 +271,7 @@ export function useTaxonUpdates() {
                     } : t
                 )
             );
-        } catch (error) {
+        } catch {
             newDataCallback(prev =>
                 prev.map(t =>
                     t.taxonId === taxonId ? {...t, revisionStatusId: currentRevisionStatusId} : t
@@ -312,7 +312,7 @@ export function useTaxonUpdates() {
                     } : t
                 )
             );
-        } catch (error) {
+        } catch {
             newDataCallback(prev =>
                 prev.map(t =>
                     t.taxonId === taxonId ? {...t, publicationStatusId: currentPublicationStatusId} : t

@@ -16,6 +16,7 @@ import type {
     ApiConfig,
     StaticConfig,
 } from '../../types';
+import type {BaseServiceConfig} from '../../types/serviceConfig';
 
 export class UniversalLayerAdapter {
     /**
@@ -55,7 +56,8 @@ export class UniversalLayerAdapter {
                 return this.createStaticLayer(definition, interpolatedUrl, serviceConfig.config, params);
                 
             default:
-                throw new Error(`Unsupported service type: ${(serviceConfig as any).type}`);
+                // v default větvi je union zužen na never – typ služby vytáhneme přes základ
+                throw new Error(`Unsupported service type: ${(serviceConfig as BaseServiceConfig).type}`);
         }
     }
 
@@ -235,6 +237,7 @@ export class UniversalLayerAdapter {
      * Legacy layer creation (for backward compatibility)
      */
     private createLegacyLayer(definition: LayerDefinition, params: LayerParams): L.Layer {
+        // eslint-disable-next-line @typescript-eslint/no-require-imports -- lazy import kvůli cyklu mezi adaptery
         const { TileLayerAdapter } = require('./tileLayerAdapter');
         const adapter = new TileLayerAdapter();
         return adapter.createLayer(definition, params);

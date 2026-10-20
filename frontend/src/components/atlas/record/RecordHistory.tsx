@@ -1,6 +1,6 @@
 import {Row, Col, Card} from "react-bootstrap";
 import {useTranslation} from "react-i18next";
-import {DataTable} from "@/core/dataTable";
+import {DataTable, type DataTableColumnDef} from "@/core/dataTable";
 import type { RecordHistoryEntry } from '@/models/RecordHistory';
 
 interface RecordHistoryProps {
@@ -10,17 +10,7 @@ interface RecordHistoryProps {
 export default function RecordHistory({recordId}: RecordHistoryProps) {
     const {t} = useTranslation();
 
-    const columns: Array<{
-        id: string;
-        header: string;
-        type: 'text' | 'timestamp';
-        accessor: keyof RecordHistoryEntry;
-        enableSorting: boolean;
-        enableFiltering: boolean;
-        width: string;
-        cellRenderer?: (value: any) => React.ReactNode;
-        dateFormat?: string;
-    }> = [
+    const columns: DataTableColumnDef<RecordHistoryEntry>[] = [
         {
             id: "userName",
             header: t("record.commentAuthor"),

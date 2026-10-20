@@ -89,7 +89,7 @@ export function DataTableFilterRow<T>(props: DataTableFilterRowProps<T>) {
                                 onChange={(e) => onFilterChange(String(column.id), e.target.value)}
                                 style={{width: '100%', boxSizing: 'border-box'}}
                             />
-                        ) : column.type === 'timestamp' && (column as any).enableRangeFilter !== false ? (
+                        ) : column.type === 'timestamp' && column.enableRangeFilter !== false ? (
                             <DateRangeFilter
                                 fromDate={getFromDateValue(String(column.id))}
                                 toDate={getToDateValue(String(column.id))}

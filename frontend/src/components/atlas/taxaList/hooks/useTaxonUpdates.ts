@@ -57,7 +57,7 @@ export function useTaxonUpdates() {
 
         try {
             await updateSetting(taxonId, 'ISMAPPED', !currentIsMapped, timestamp);
-        } catch (error) {
+        } catch {
             newDataCallback(prev =>
                 prev.map(t =>
                     t.taxonId === taxonId ? {...t, isMapped: currentIsMapped} : t
@@ -95,7 +95,7 @@ export function useTaxonUpdates() {
 
         try {
             await updateSetting(taxonId, 'PARENT_MAP', newParentTaxonId !== null ? newParentTaxonId : '', timestamp);
-        } catch (error) {
+        } catch {
             newDataCallback(prev =>
                 prev.map(t =>
                     t.taxonId === taxonId ? {
@@ -131,7 +131,7 @@ export function useTaxonUpdates() {
 
         try {
             await updateSetting(taxonId, 'SETCOMMONTHRESHOLD', newValue, timestamp);
-        } catch (error) {
+        } catch {
             newDataCallback(prev =>
                 prev.map(t =>
                     t.taxonId === taxonId ? {...t, commonThreshold: currentCommonThreshold} : t
@@ -162,7 +162,7 @@ export function useTaxonUpdates() {
 
         try {
             await updateSetting(taxonId, 'PROTECTED', !currentIsProtected, timestamp);
-        } catch (error) {
+        } catch {
             newDataCallback(prev =>
                 prev.map(t =>
                     t.taxonId === taxonId ? {...t, isProtected: currentIsProtected} : t
@@ -221,7 +221,7 @@ export function useTaxonUpdates() {
 
         try {
             await updateSetting(taxonId, 'REVISIONSTATUS', newValue, timestamp);
-        } catch (error) {
+        } catch {
             newDataCallback(prev =>
                 prev.map(t =>
                     t.taxonId === taxonId ? {...t, revisionStatusId: currentRevisionStatusId} : t
@@ -253,7 +253,7 @@ export function useTaxonUpdates() {
 
         try {
             await updateSetting(taxonId, 'PUBLICATIONSTATUS', newValue, timestamp);
-        } catch (error) {
+        } catch {
             newDataCallback(prev =>
                 prev.map(t =>
                     t.taxonId === taxonId ? {...t, publicationStatusId: currentPublicationStatusId} : t

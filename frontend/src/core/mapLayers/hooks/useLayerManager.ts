@@ -164,7 +164,7 @@ export function useLayerManager(
         };
 
         loadSavedVisibility();
-    }, [mapName, managedLayers, defaultVisibility, addLayer, setLayerVisibility, initialParams]);
+    }, [mapName, managedLayers, defaultVisibility, addLayer, setLayerVisibility, initialParams, getLayerState]);
 
     // Smart toggle that handles mutually exclusive groups
     const toggleLayer = useCallback((layerId: string) => {

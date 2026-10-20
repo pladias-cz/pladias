@@ -38,8 +38,8 @@ export function PresliaInlineField({
         try {
             await onSave(draft);
             setEditing(false);
-        } catch (e: any) {
-            setError(e.message || t("common.inlineField.saveFailed"));
+        } catch (e) {
+            setError(e instanceof Error ? e.message : t("common.inlineField.saveFailed"));
         } finally {
             setSaving(false);
         }

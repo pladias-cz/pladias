@@ -1,4 +1,4 @@
-import {useEffect, useMemo, useState} from 'react';
+import {useCallback, useEffect, useMemo, useState} from 'react';
 import {Card, Spinner, Button, Form, Alert, Table} from 'react-bootstrap';
 import {
     flexRender,
@@ -67,7 +67,7 @@ export default function TaxonSynonyms({taxon, cacheKey}: Props) {
        HANDLERS
     ========================= */
 
-    const updateField = (id: number, field: keyof TaxonSynonym, value: any) => {
+    const updateField = (id: number, field: keyof TaxonSynonym, value: string | boolean | number | null) => {
         setSynonyms(prev =>
             prev.map(s => s.id === id ? {...s, [field]: value} : s)
         );
@@ -88,7 +88,7 @@ export default function TaxonSynonyms({taxon, cacheKey}: Props) {
         ]);
     };
 
-    const saveRow = async (syn: TaxonSynonym) => {
+    const saveRow = useCallback(async (syn: TaxonSynonym) => {
         setSavingId(syn.id);
         setSuccessId(null);
 
@@ -105,7 +105,7 @@ export default function TaxonSynonyms({taxon, cacheKey}: Props) {
         } finally {
             setSavingId(null);
         }
-    };
+    }, [t]);
 
     const renderAlert = () => {
         if (successId) {
@@ -119,7 +119,7 @@ export default function TaxonSynonyms({taxon, cacheKey}: Props) {
         return null;
     };
 
-    const deleteRow = async (id: number) => {
+    const deleteRow = useCallback(async (id: number) => {
         if (!(await confirm({
             message: t("taxon.synonyms.deleteConfirm"),
             confirmLabel: t("common.delete"),
@@ -132,7 +132,7 @@ export default function TaxonSynonyms({taxon, cacheKey}: Props) {
         } catch (e) {
             notifyApiError(e, t("taxon.synonyms.deleteError"));
         }
-    };
+    }, [confirm, t]);
 
     /* =========================
        COLUMNS
@@ -215,7 +215,7 @@ export default function TaxonSynonyms({taxon, cacheKey}: Props) {
                 </div>
             )
         }
-    ], [publications, savingId]);
+    ], [publications, savingId, deleteRow, saveRow, t]);
 
     const table = useReactTable({
         data: synonyms,

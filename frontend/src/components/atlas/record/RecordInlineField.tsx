@@ -4,9 +4,10 @@ import {useTranslation} from "react-i18next";
 import {patchRecordField} from "@/services/recordApi";
 import {ApiError, apiErrorMessage} from "@/services/apiClient";
 
-interface Option<T = any> {
-    value: T;
-    label: T;
+/** Volba selectu (hodnota i popisek jsou řetězce – pole záznamu po editaci). */
+interface Option {
+    value: string;
+    label: string;
     icon?: string;
     color?: string;
 }
@@ -15,13 +16,13 @@ interface Props {
     label: string;
     recordId: number;
     field: string;
-    value: any;
+    value: string | string[] | boolean | null;
     type?: "text" | "select" | "boolean" | "multi-value";
     options?: Option[];
-    render?: (v: any) => React.ReactNode;
-    onUpdated?: (data: {updatedValue: any, newTimestamp: number}) => void;
+    render?: (v: string | string[] | boolean | null) => React.ReactNode;
+    onUpdated?: (data: {updatedValue: string | null, newTimestamp: number}) => void;
     lastEditTimestampNum?: number;
-    validate?: (value: any) => string | null;
+    validate?: (value: string) => string | null;
 }
 
 export default function RecordInlineField({
@@ -52,7 +53,7 @@ export default function RecordInlineField({
         if (lastEditTimestampNum !== undefined && lastEditTimestampNum !== lastTimestamp) {
             setLastTimestamp(lastEditTimestampNum);
         }
-    }, [lastEditTimestampNum]);
+    }, [lastEditTimestampNum, lastTimestamp]);
 
     async function save(valueToSave: unknown) {
         setSaving(true);
@@ -81,7 +82,8 @@ export default function RecordInlineField({
 
     const handleSaveWithValidation = () => {
         if (validate) {
-            const validationError = validate(draft);
+            // validate se používá jen u textových polí
+            const validationError = validate(draft as string);
             if (validationError) {
                 setError(validationError);
                 return;
@@ -130,15 +132,15 @@ export default function RecordInlineField({
                 </span>
             );
         } else if (type === "select") {
-            content = renderSelect(options, draft, saving, save, setEditing);
+            content = renderSelect(options, draft as string | null, saving, save, setEditing);
         } else if (type === "multi-value") {
-            content = <MultiValueEditor value={draft} saving={saving} onSave={save} onDone={() => setEditing(false)}/>;
+            content = <MultiValueEditor value={draft as string[] | null} saving={saving} onSave={save} onDone={() => setEditing(false)}/>;
         } else {
             content = (
                 <Form.Control
                     size="sm"
                     autoFocus
-                    value={draft || ""}
+                    value={(draft as string | null) || ""}
                     disabled={saving}
                     onChange={(e) => {
                         setDraft(e.target.value);
@@ -172,7 +174,7 @@ export default function RecordInlineField({
     );
 }
 
-function renderSelect(options: Option[] | undefined, draft: any, saving: boolean, save: (v: any) => void, setEditing: (v: boolean) => void) {
+function renderSelect(options: Option[] | undefined, draft: string | null, saving: boolean, save: (v: string) => void, setEditing: (v: boolean) => void) {
     return (
         <Form.Select
             size="sm"
@@ -246,8 +248,8 @@ function MultiValueEditor({value, saving, onSave, onDone}: {
                 <Form.Control
                     size="sm"
                     value={newTag}
-                    onChange={(e: any) => setNewTag(e.target.value)}
-                    onKeyDown={(e: any) => {
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewTag(e.target.value)}
+                    onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
                         if (e.key === 'Enter') {
                             e.preventDefault();
                             handleAddTag();

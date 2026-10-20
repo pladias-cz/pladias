@@ -10,52 +10,30 @@ import {PladiasRecordsTable} from "@/components/atlas/mapDetail/PladiasRecordsTa
 import BulkEdit from "@/components/atlas/search/BulkEdit";
 import type { RecordPladias } from "@/models";
 import type {TaxonId} from "@/models/TaxonId";
+import {
+    exportSearchExcel,
+    getCommitters,
+    getHerbariums,
+    getHistoryFlags,
+    getInstitutions,
+    getLicenses,
+    getPhytochorions,
+    getProjects,
+    searchRecords,
+    type CommitterOption,
+    type HerbariumOption,
+    type HistoryFlagOption,
+    type InstitutionOption,
+    type LicenseOption,
+    type PhytochorionOption,
+    type ProjectOption,
+} from "@/services/searchApi";
+import {ApiError, apiErrorMessage} from "@/services/apiClient";
 import "./SearchForm.css";
-
-type ProjectOption = {
-    id: number;
-    name: string;
-    abbrev?: string;
-};
-
-type PhytochorionOption = {
-    rowid: number;
-    name: string;
-};
-
-type HerbariumOption = {
-    id: number;
-    name: string;
-    translationKey?: string;
-};
-
-type InstitutionOption = {
-    id: string;
-    name: string;
-};
-
-type CommitterOption = {
-    id: number;
-    name: string;
-};
-
-type LicenseOption = {
-    id: number;
-    key: string;
-};
-
-type HistoryFlagOption = {
-    value: string;
-};
 
 type TypeaheadOption = {
     id: string | number;
     label: string;
-};
-
-type SearchApiPayload = {
-    records?: RecordPladias[];
-    totalCount?: number | null;
 };
 
 const DEFAULT_PAGE_SIZE = 50;
@@ -138,24 +116,6 @@ export default function SearchForm() {
         return typeof exportTypeEntry?.[1] === "string" ? exportTypeEntry[1] : "browser";
     }, []);
 
-    const getFileNameFromDisposition = useCallback((contentDisposition: string | null) => {
-        if (!contentDisposition) {
-            return "PladiasExport.xlsx";
-        }
-
-        const utf8Name = contentDisposition.match(/filename\*=UTF-8''([^;]+)/i);
-        if (utf8Name?.[1]) {
-            return decodeURIComponent(utf8Name[1]);
-        }
-
-        const simpleName = contentDisposition.match(/filename=\"?([^\";]+)\"?/i);
-        if (simpleName?.[1]) {
-            return simpleName[1];
-        }
-
-        return "PladiasExport.xlsx";
-    }, []);
-
     const downloadFile = useCallback((blob: Blob, fileName: string) => {
         const url = window.URL.createObjectURL(blob);
         const anchor = document.createElement("a");
@@ -231,132 +191,25 @@ export default function SearchForm() {
     useEffect(() => {
         let isMounted = true;
 
-        const loadProjects = async () => {
+        // číselníky formuláře – při selhání zůstane select prázdný (použitelný)
+        const load = async <T,>(loader: () => Promise<T[]>, setter: (options: T[]) => void) => {
             try {
-                const response = await fetch("/api/react/occurrence/projects");
-                const data = await response.json();
-
-                if (!response.ok || data?.success === false || !Array.isArray(data?.data)) {
-                    return;
-                }
-
+                const options = await loader();
                 if (isMounted) {
-                    setProjects(data.data as ProjectOption[]);
+                    setter(options);
                 }
             } catch {
                 // Keep the select usable with default empty option when loading fails.
             }
         };
 
-        const loadHerbariums = async () => {
-            try {
-                const response = await fetch("/api/react/atlas/common/herbariums");
-                const data = await response.json();
-
-                if (!response.ok || data?.success === false || !Array.isArray(data?.data)) {
-                    return;
-                }
-
-                if (isMounted) {
-                    setHerbariums(data.data as HerbariumOption[]);
-                }
-            } catch {
-                // Keep the select usable with default empty option when loading fails.
-            }
-        };
-
-        const loadInstitutions = async () => {
-            try {
-                const response = await fetch("/api/react/atlas/common/institutions");
-                const data = await response.json();
-
-                if (!response.ok || data?.success === false || !Array.isArray(data?.data)) {
-                    return;
-                }
-
-                if (isMounted) {
-                    setInstitutions(data.data as InstitutionOption[]);
-                }
-            } catch {
-                // Keep the select usable with default empty option when loading fails.
-            }
-        };
-
-        const loadCommitters = async () => {
-            try {
-                const response = await fetch("/api/react/atlas/common/committers");
-                const data = await response.json();
-
-                if (!response.ok || data?.success === false || !Array.isArray(data?.data)) {
-                    return;
-                }
-
-                if (isMounted) {
-                    setCommitters(data.data as CommitterOption[]);
-                }
-            } catch {
-                // Keep the select usable with default empty option when loading fails.
-            }
-        };
-
-        const loadLicenses = async () => {
-            try {
-                const response = await fetch("/api/react/atlas/common/licenses");
-                const data = await response.json();
-
-                if (!response.ok || data?.success === false || !Array.isArray(data?.data)) {
-                    return;
-                }
-
-                if (isMounted) {
-                    setLicenses(data.data as LicenseOption[]);
-                }
-            } catch {
-                // Keep the select usable with default empty option when loading fails.
-            }
-        };
-
-        const loadHistoryFlags = async () => {
-            try {
-                const response = await fetch("/api/react/atlas/common/history-flags");
-                const data = await response.json();
-
-                if (!response.ok || data?.success === false || !Array.isArray(data?.data)) {
-                    return;
-                }
-
-                if (isMounted) {
-                    setHistoryFlags(data.data as HistoryFlagOption[]);
-                }
-            } catch {
-                // Keep the select usable with default empty option when loading fails.
-            }
-        };
-
-        const loadPhytochorions = async () => {
-            try {
-                const response = await fetch("/api/react/atlas/common/phytochorions");
-                const data = await response.json();
-
-                if (!response.ok || data?.success === false || !Array.isArray(data?.data)) {
-                    return;
-                }
-
-                if (isMounted) {
-                    setPhytochorions(data.data as PhytochorionOption[]);
-                }
-            } catch {
-                // Keep the select usable with default empty option when loading fails.
-            }
-        };
-
-        loadProjects();
-        loadHerbariums();
-        loadInstitutions();
-        loadCommitters();
-        loadLicenses();
-        loadHistoryFlags();
-        loadPhytochorions();
+        void load(getProjects, setProjects);
+        void load(getHerbariums, setHerbariums);
+        void load(getInstitutions, setInstitutions);
+        void load(getCommitters, setCommitters);
+        void load(getLicenses, setLicenses);
+        void load(getHistoryFlags, setHistoryFlags);
+        void load(getPhytochorions, setPhytochorions);
 
         return () => {
             isMounted = false;
@@ -385,41 +238,20 @@ export default function SearchForm() {
 
         setIsLoading(true);
         try {
-            const response = await fetch(`/api/react/atlas/search/page/${page}/pageSize/${pageSize}/getCount/${getCountParam}`, {
-                method: "POST",
-                body: formData,
-            });
-
             if (exportType === EXCEL_EXPORT_TYPE) {
-                const contentType = response.headers.get("content-type") || "";
+                const file = await exportSearchExcel(EXCEL_EXPORT_PAGE_SIZE, formData);
 
-                if (contentType.includes("application/json")) {
-                    const errorData = await response.json();
-                    setSubmitMessage(errorData.message || t("atlas.search.form.searchFailed"));
-                    return false;
-                }
+                downloadFile(file.blob, file.filename);
 
-                if (!response.ok) {
-                    setSubmitMessage(t("atlas.search.form.searchFailed"));
-                    return false;
-                }
-
-                const recordsExported = parseInt(response.headers.get("X-Excel-Records-Exported") || "0", 10);
-                const totalRecords = response.headers.get("X-Excel-Total-Records");
-                const fileName = getFileNameFromDisposition(response.headers.get("content-disposition"));
-                const fileBlob = await response.blob();
-                downloadFile(fileBlob, fileName);
-
-                if (totalRecords != null) {
-                    const total = parseInt(totalRecords, 10);
-                    if (recordsExported >= total) {
+                if (file.totalRecords != null) {
+                    if (file.recordsExported >= file.totalRecords) {
                         setSubmitMessage(t("atlas.search.form.excelExportedAll", {
-                            recordsCount: recordsExported,
+                            recordsCount: file.recordsExported,
                         }));
                     } else {
                         setSubmitMessage(t("atlas.search.form.excelExportedPartial", {
-                            exported: recordsExported,
-                            total: total,
+                            exported: file.recordsExported,
+                            total: file.totalRecords,
                         }));
                     }
                 } else {
@@ -428,35 +260,34 @@ export default function SearchForm() {
                 return true;
             }
 
-            const data = await response.json();
-            if (!response.ok || data.success === false) {
-                setSubmitMessage(data.message || t("atlas.search.form.searchFailed"));
-                return false;
-            }
-
-            const payload: SearchApiPayload = data?.data ?? data;
-            const nextRecords = Array.isArray(payload?.records) ? payload.records : [];
+            const payload = await searchRecords(page, pageSize, getCountParam, formData);
+            const nextRecords = Array.isArray(payload.records) ? payload.records : [];
             setRecords(nextRecords);
 
             if (getCount) {
-                setTotalCount(typeof payload?.totalCount === "number" ? payload.totalCount : null);
+                setTotalCount(typeof payload.totalCount === "number" ? payload.totalCount : null);
             }
 
             const effectiveTotal = getCount
-                ? (typeof payload?.totalCount === "number" ? payload.totalCount : nextRecords.length)
+                ? (typeof payload.totalCount === "number" ? payload.totalCount : nextRecords.length)
                 : (totalCount ?? nextRecords.length);
             setSubmitMessage(t("atlas.search.form.foundRecords", {
                 recordsCount: nextRecords.length,
                 totalCount: effectiveTotal,
             }));
             return true;
-        } catch {
-            setSubmitMessage(t("atlas.search.form.submitFailed"));
+        } catch (err) {
+            if (err instanceof ApiError && err.payload !== undefined) {
+                // hláška z obálky (příliš mnoho záznamů apod.) nebo fallback
+                setSubmitMessage(apiErrorMessage(err, t("atlas.search.form.searchFailed")));
+            } else {
+                setSubmitMessage(t("atlas.search.form.submitFailed"));
+            }
             return false;
         } finally {
             setIsLoading(false);
         }
-    }, [downloadFile, getExportTypeFromPayload, getFileNameFromDisposition, sortBy, sortOrder, t, totalCount]);
+    }, [downloadFile, getExportTypeFromPayload, sortBy, sortOrder, t, totalCount]);
 
     const handleSearchSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();

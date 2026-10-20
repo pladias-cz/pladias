@@ -9,6 +9,8 @@ import {useConfirm} from "@/hooks/useConfirm";
 import type { RecordPladias } from "@/models";
 import type {TaxonId} from "@/models/TaxonId";
 import {fetchRecordEditTimestamps, moveCoordinates, updateCoordsPrecision, updateDate, updatePhytochorion, updateLocality, updateNearestTownName, updateSource, updateNote, updateFinder, updateTaxon, updateValidationStatus} from "@/services/bulkEditApi";
+import {getPhytochorions, type PhytochorionOption} from "@/services/searchApi";
+import {getUnassignedAuthors} from "@/services/recordApi";
 import {runBulkOperationSequential, type BulkOperationFailure} from "./bulkEditOperations";
 import "./BulkEdit.css";
 
@@ -17,19 +19,9 @@ type SemaforOption = {
     label: string;
 };
 
-type PhytochorionOption = {
-    rowid: number;
-    name: string;
-};
-
 type TypeaheadOption = {
     id: string | number;
     label: string;
-};
-
-type FinderOptionRow = {
-    id?: string | number;
-    name?: string;
 };
 
 type BulkEditProps = {
@@ -212,15 +204,9 @@ export default function BulkEdit({records, totalCount, searchPayloadEntries, onB
 
         const loadPhytochorions = async () => {
             try {
-                const response = await fetch("/api/react/atlas/common/phytochorions");
-                const data = await response.json();
-
-                if (!response.ok || data?.success === false || !Array.isArray(data?.data)) {
-                    return;
-                }
-
+                const options = await getPhytochorions();
                 if (isMounted) {
-                    setPhytochorions(data.data as PhytochorionOption[]);
+                    setPhytochorions(options);
                 }
             } catch {
                 // Keep the select usable with default empty option when loading fails.
@@ -247,19 +233,11 @@ export default function BulkEdit({records, totalCount, searchPayloadEntries, onB
             }
 
             try {
-                const response = await fetch(`/api/react/atlas/record/${firstRecordId}/unassignedAuthors`);
-                const data = await response.json();
-
-                if (!response.ok || data?.success === false || !Array.isArray(data?.data)) {
-                    return;
-                }
-
-                const options = (data.data as FinderOptionRow[])
-                    .filter((item) => item != null && (typeof item.id === "number" || typeof item.id === "string") && typeof item.name === "string")
-                    .map((item) => ({
-                        id: item.id as string | number,
-                        label: item.name as string,
-                    }));
+                const authors = await getUnassignedAuthors(firstRecordId);
+                const options = authors.map((author) => ({
+                    id: author.id as string | number,
+                    label: author.name,
+                }));
 
                 if (isMounted) {
                     setFinderOptions(options);

@@ -1,8 +1,9 @@
 import {Button, Form, Table} from "react-bootstrap";
 import {useTranslation} from "react-i18next";
+import type {UserSettingsState} from "./types";
 
 interface TraitsSettingsProps {
-    userSettings: Record<string, string | boolean>;
+    userSettings: UserSettingsState;
     handleInputChange: (key: string, value: string | boolean) => void;
     handleSaveSetting: (key: string, value: string) => void;
     loading: boolean;
@@ -23,14 +24,14 @@ export default function TraitsSettings({userSettings, handleInputChange, handleS
                     <td>
                         <Form.Control
                             type="text"
-                            value={userSettings.traitsSubstituteFalse as string}
+                            value={userSettings.traitsSubstituteFalse}
                             onChange={(e) => handleInputChange("traitsSubstituteFalse", e.target.value)}
                             className="d-inline-block w-auto me-2"
                         /></td>
                     <td>
                         <Button
                             variant="success"
-                            onClick={() => handleSaveSetting("traits_substitute_false", userSettings.traitsSubstituteFalse as string)}
+                            onClick={() => handleSaveSetting("traits_substitute_false", userSettings.traitsSubstituteFalse)}
                             disabled={loading}
                         >
                             {t("user.settings.setButton")}
@@ -42,14 +43,14 @@ export default function TraitsSettings({userSettings, handleInputChange, handleS
                     <td>
                         <Form.Control
                             type="text"
-                            value={userSettings.traitsSubstituteTrue as string}
+                            value={userSettings.traitsSubstituteTrue}
                             onChange={(e) => handleInputChange("traitsSubstituteTrue", e.target.value)}
                             className="d-inline-block w-auto me-2"
                         /></td>
                     <td>
                         <Button
                             variant="success"
-                            onClick={() => handleSaveSetting("traits_substitute_true", userSettings.traitsSubstituteTrue as string)}
+                            onClick={() => handleSaveSetting("traits_substitute_true", userSettings.traitsSubstituteTrue)}
                             disabled={loading}
                         >
                             {t("user.settings.setButton")}
@@ -61,14 +62,14 @@ export default function TraitsSettings({userSettings, handleInputChange, handleS
                     <td>
                         <Form.Control
                             type="text"
-                            value={userSettings.traitsSubstituteNull as string}
+                            value={userSettings.traitsSubstituteNull}
                             onChange={(e) => handleInputChange("traitsSubstituteNull", e.target.value)}
                             className="d-inline-block w-auto me-2"
                         /></td>
                     <td>
                         <Button
                             variant="success"
-                            onClick={() => handleSaveSetting("traits_substitute_null", userSettings.traitsSubstituteNull as string)}
+                            onClick={() => handleSaveSetting("traits_substitute_null", userSettings.traitsSubstituteNull)}
                             disabled={loading}
                         >
                             {t("user.settings.setButton")}
@@ -80,14 +81,14 @@ export default function TraitsSettings({userSettings, handleInputChange, handleS
                     <td>
                         <Form.Control
                             type="text"
-                            value={userSettings.traitsSubstituteUnmeasurable as string}
+                            value={userSettings.traitsSubstituteUnmeasurable}
                             onChange={(e) => handleInputChange("traitsSubstituteUnmeasurable", e.target.value)}
                             className="d-inline-block w-auto me-2"
                         /></td>
                     <td>
                         <Button
                             variant="success"
-                            onClick={() => handleSaveSetting("traits_substitute_unmeasurable", userSettings.traitsSubstituteUnmeasurable as string)}
+                            onClick={() => handleSaveSetting("traits_substitute_unmeasurable", userSettings.traitsSubstituteUnmeasurable)}
                             disabled={loading}
                         >
                             {t("user.settings.setButton")}
@@ -102,7 +103,7 @@ export default function TraitsSettings({userSettings, handleInputChange, handleS
                             id="optionsRadiosInteger"
                             label={t("user.settings.traitsPercentageInteger")}
                             name="traitsSubstitutePercentInteger"
-                            checked={userSettings.traitsSubstitutePercentInteger as boolean}
+                            checked={userSettings.traitsSubstitutePercentInteger}
                             onChange={() => handleInputChange("traitsSubstitutePercentInteger", true)}
                             className="mb-2"
                         />
@@ -111,7 +112,7 @@ export default function TraitsSettings({userSettings, handleInputChange, handleS
                             id="optionsRadiosProportion"
                             label={t("user.settings.traitsPercentageProportion")}
                             name="traitsSubstitutePercentInteger"
-                            checked={!(userSettings.traitsSubstitutePercentInteger as boolean)}
+                            checked={!(userSettings.traitsSubstitutePercentInteger)}
                             onChange={() => handleInputChange("traitsSubstitutePercentInteger", false)}
                             className="mb-2"
                         /></td>
@@ -142,7 +143,7 @@ export default function TraitsSettings({userSettings, handleInputChange, handleS
                             id="optionsRadiosEn"
                             label={t("user.settings.traitsLanguageEnglish")}
                             name="traitsSubstituteInEnglish"
-                            checked={userSettings.traitsSubstituteInEnglish as boolean}
+                            checked={userSettings.traitsSubstituteInEnglish}
                             onChange={() => handleInputChange("traitsSubstituteInEnglish", true)}
                             className="mb-2"
                         /></td>

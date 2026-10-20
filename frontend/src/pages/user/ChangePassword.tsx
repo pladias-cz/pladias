@@ -3,24 +3,42 @@ import {Alert, Button, Col, Form, Row} from "react-bootstrap";
 import {usePageTitle} from "@/hooks/usePageTitle";
 import {useTranslation} from "react-i18next";
 
+interface ChangePasswordFormData {
+    originalPassword: string;
+    newPassword: string;
+    confirmNewPassword: string;
+}
+
+interface ChangePasswordResponse {
+    message?: string;
+    error?: string;
+}
+
+interface CreateTokenResponse {
+    success?: boolean;
+    token?: string;
+    error?: string;
+    message?: string;
+}
+
 export default function ChangePassword() {
 
     const {t} = useTranslation();
     usePageTitle(t("user.changePassword.title"));
-    const [formData, setFormData] = useState({
+    const [formData, setFormData] = useState<ChangePasswordFormData>({
         originalPassword: "",
         newPassword: "",
         confirmNewPassword: ""
     });
 
     const [loading, setLoading] = useState(false);
-    const [message, setMessage] = useState(null);
-    const [error, setError] = useState(null);
+    const [message, setMessage] = useState<string | null>(null);
+    const [error, setError] = useState<string | null>(null);
 
-    const [token, setToken] = useState(null);
+    const [token, setToken] = useState<string | null>(null);
     const [tokenLoading, setTokenLoading] = useState(false);
 
-    const handleCreateToken = async () => {
+    const handleCreateToken = async (): Promise<void> => {
         setTokenLoading(true);
         setError(null);
         setMessage(null);
@@ -28,21 +46,21 @@ export default function ChangePassword() {
 
         try {
             const response = await fetch("/api/react/user/createToken", {method: "POST"});
-            const data = await response.json();
+            const data: CreateTokenResponse = await response.json();
 
             if (response.ok && data.success) {
-                setToken(data.token);
+                setToken(data.token ?? null);
             } else {
                 setError(data.error || data.message || t("user.changePassword.tokenError"));
             }
-        } catch (err) {
+        } catch {
             setError(t("user.changePassword.networkError"));
         } finally {
             setTokenLoading(false);
         }
     };
 
-    const handleChange = (e) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const {name, value} = e.target;
         setFormData(prev => ({
             ...prev,
@@ -50,7 +68,7 @@ export default function ChangePassword() {
         }));
     };
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setLoading(true);
         setError(null);
@@ -65,7 +83,7 @@ export default function ChangePassword() {
                 body: JSON.stringify(formData)
             });
 
-            const data = await response.json();
+            const data: ChangePasswordResponse = await response.json();
 
             if (response.ok) {
                 setMessage(data.message || t("user.changePassword.success"));
@@ -78,7 +96,7 @@ export default function ChangePassword() {
             } else {
                 setError(data.error || t("user.changePassword.error"));
             }
-        } catch (err) {
+        } catch {
             setError(t("user.changePassword.networkError"));
         } finally {
             setLoading(false);

@@ -5,7 +5,7 @@ import {changeLanguage} from "@/i18n/i18n";
 /**
  * Mapping from backend key format (snake_case) to frontend state key format (camelCase)
  */
-const BACKEND_TO_STATE_KEY_MAPPING = {
+const BACKEND_TO_STATE_KEY_MAPPING: Record<string, string> = {
     traits_substitute_false: "traitsSubstituteFalse",
     traits_substitute_true: "traitsSubstituteTrue",
     traits_substitute_null: "traitsSubstituteNull",
@@ -18,48 +18,60 @@ const BACKEND_TO_STATE_KEY_MAPPING = {
 /**
  * Checks if a setting value should be parsed as boolean
  */
-const isBooleanSetting = (backendKey) => {
-    return backendKey.includes("traits_substitute_percentasinteger") || 
-           backendKey.includes("traits_substitute_english");
+const isBooleanSetting = (backendKey: string): boolean => {
+    return backendKey.includes("traits_substitute_percentasinteger") ||
+        backendKey.includes("traits_substitute_english");
 };
 
 /**
  * Converts backend key (snake_case) to frontend state key (camelCase)
- * @param {string} backendKey - The key from the backend
- * @returns {string} - The corresponding state key
+ * @param backendKey - The key from the backend
+ * @returns The corresponding state key
  */
-export const mapBackendKeyToStateKey = (backendKey) => {
+export const mapBackendKeyToStateKey = (backendKey: string): string => {
     return BACKEND_TO_STATE_KEY_MAPPING[backendKey] ?? backendKey;
 };
+
+/** Odpověď backendu na GET/PUT /api/react/user/settings/{key}. */
+interface UserSettingResponse {
+    success?: boolean;
+    value?: string;
+    error?: string;
+}
+
+/** Callback volaný po úspěšném uložení nastavení. */
+export type OnSettingSaved = (key: string, value: string | boolean, stateKey: string) => void;
+
+/** Callback pro aktualizaci lokálního stavu po úspěšném uložení. */
+export type UpdateStateCallback = (stateKey: string, parsedValue: string | boolean) => void;
 
 /**
  * Custom hook for managing user settings with save functionality.
  * Provides a reusable way to save user settings to the backend.
- * 
- * @param {Function} onSettingSaved - Optional callback function called after a setting is successfully saved
- * @returns {{
- *   loading: boolean,
- *   message: string | null,
- *   error: string | null,
- *   saveSetting: (key: string, value: string | boolean, updateState?: Function, stateKey?: string) => Promise<void>
- * }}
+ *
+ * @param onSettingSaved - Optional callback function called after a setting is successfully saved
  */
-export const useUserSettings = (onSettingSaved = null) => {
+export const useUserSettings = (onSettingSaved?: OnSettingSaved) => {
     const {t} = useTranslation();
-    
+
     const [loading, setLoading] = useState(false);
-    const [message, setMessage] = useState(null);
-    const [error, setError] = useState(null);
+    const [message, setMessage] = useState<string | null>(null);
+    const [error, setError] = useState<string | null>(null);
 
     /**
      * Saves a user setting to the backend
-     * 
-     * @param {string} key - The backend key for the setting (e.g., "application_language")
-     * @param {string|boolean} value - The value to save
-     * @param {Function} [updateState] - Optional callback to update local state after successful save
-     * @param {string} [stateKey] - Optional state key override (defaults to mapped key from backend key)
+     *
+     * @param key - The backend key for the setting (e.g., "application_language")
+     * @param value - The value to save
+     * @param updateState - Optional callback to update local state after successful save
+     * @param stateKey - Optional state key override (defaults to mapped key from backend key)
      */
-    const saveSetting = async (key, value, updateState = null, stateKey = null) => {
+    const saveSetting = async (
+        key: string,
+        value: string | boolean,
+        updateState?: UpdateStateCallback,
+        stateKey?: string
+    ): Promise<void> => {
         setLoading(true);
         setError(null);
         setMessage(null);
@@ -73,16 +85,16 @@ export const useUserSettings = (onSettingSaved = null) => {
                 body: JSON.stringify({value: value.toString()})
             });
 
-            const data = await response.json();
+            const data: UserSettingResponse = await response.json();
 
             if (response.ok && data.success) {
                 setMessage(t("user.settings.success"));
-                
+
                 // Determine the state key and parse the value
                 const finalStateKey = stateKey ?? mapBackendKeyToStateKey(key);
-                const parsedValue = isBooleanSetting(key) 
-                    ? data.value === "true" 
-                    : data.value;
+                const parsedValue: string | boolean = isBooleanSetting(key)
+                    ? data.value === "true"
+                    : (data.value ?? "");
 
                 // Call the optional state update callback
                 if (updateState) {
@@ -91,7 +103,7 @@ export const useUserSettings = (onSettingSaved = null) => {
 
                 // Special handling for application language
                 if (key === "application_language") {
-                    changeLanguage(data.value);
+                    changeLanguage(data.value ?? "cs");
                 }
 
                 // Call the optional callback after saving

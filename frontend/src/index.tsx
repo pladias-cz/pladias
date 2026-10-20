@@ -1,7 +1,7 @@
 import ReactDOM from "react-dom/client";
 import "./i18n/i18n";
 import "./styles/global.scss";
-import App from "./App.jsx";
+import App from "./App";
 
 const root = document.getElementById("react-app");
 

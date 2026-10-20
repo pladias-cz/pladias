@@ -3,12 +3,12 @@ import {useProjectName} from "@/context/ProjectNameContext";
 
 /**
  * usePageTitle - A hook that sets the document title with the project name.
- * 
+ *
  * Uses the ProjectNameContext to access the project name, avoiding duplicate fetch calls.
- * 
- * @param {string} title - The page title to display before the project name
+ *
+ * @param title - The page title to display before the project name
  */
-export function usePageTitle(title) {
+export function usePageTitle(title: string) {
     const {projectName} = useProjectName();
 
     useEffect(() => {

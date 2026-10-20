@@ -3,8 +3,8 @@ import {Spinner} from "react-bootstrap";
 import {type Feature} from "@/models/Feature";
 import type {TraitVisibilityStatus} from "@/models/TraitVisibilityStatus";
 import type {UserId} from "@/models/UserId";
-import type {TraitDatatype} from "@/models/TraitDatatype.ts";
-import {useUser} from "@/context/UserContext.tsx";
+import type {TraitDatatype} from "@/models/TraitDatatype";
+import {useUser} from "@/context/UserContext";
 import {useTranslation} from "react-i18next";
 
 interface Props {

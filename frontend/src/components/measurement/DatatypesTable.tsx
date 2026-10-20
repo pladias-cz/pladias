@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Table, Spinner, Alert } from "react-bootstrap";
 import { useTranslation } from "react-i18next";
 // import 'bootstrap-icons/font/bootstrap-icons.css';
-import type { TraitDatatype } from "@/models/TraitDatatype.ts";
+import type { TraitDatatype } from "@/models/TraitDatatype";
 
 export default function DatatypesTable() {
     const { t } = useTranslation();

@@ -1,7 +1,7 @@
 import {useEffect, useState} from "react";
 import type {Feature} from "@/models/Feature";
-import type {TraitDatatype} from "@/models/TraitDatatype.ts";
-import type {TraitAggregationType} from "@/models/TraitAggregationType.ts";
+import type {TraitDatatype} from "@/models/TraitDatatype";
+import type {TraitAggregationType} from "@/models/TraitAggregationType";
 import type {EnumerateValue} from "@/models/EnumerateValue";
 import {DatatypeDescriptionPopover} from "@/components/measurement/DatatypeDescriptionPopover";
 

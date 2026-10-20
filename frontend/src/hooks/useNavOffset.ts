@@ -1,27 +1,27 @@
-import {useLayoutEffect, useState} from 'react';
+import {useLayoutEffect, useState, type RefObject} from 'react';
 
 /**
  * set top padding for content bellow the main, top-fixed navbar
  */
-export function useNavOffset(navRef) {
+export function useNavOffset(navRef: RefObject<HTMLElement | null>) {
     const [offset, setOffset] = useState(0);
 
     useLayoutEffect(() => {
-        const el = navRef?.current;
+        const el = navRef.current;
         if (!el) {
             setOffset(0);
             return;
         }
 
-        function update() {
+        const update = () => {
             const h = el.getBoundingClientRect().height || el.offsetHeight || 0;
             setOffset(h);
-        }
+        };
 
         update(); // initial measure
 
 
-        let ro;
+        let ro: ResizeObserver | undefined;
         if (typeof ResizeObserver !== 'undefined') {
             ro = new ResizeObserver(update);
             ro.observe(el);

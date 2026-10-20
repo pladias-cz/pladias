@@ -5,13 +5,13 @@ import {usePageTitle} from "@/hooks/usePageTitle";
 import {createTaxaAllProvider } from '@/components/autocomplete/TaxaAllProvider';
 import {Autocomplete} from '@/components/autocomplete/Autocomplete';
 import TaxonDetail from "@/components/taxonAdmin/TaxonDetail";
-import TaxonEditCard from "@/components/taxonAdmin/TaxonEditCard.tsx";
+import TaxonEditCard from "@/components/taxonAdmin/TaxonEditCard";
 import ChildrenOrderingCard from "@/components/taxonAdmin/ChildrenOrderingCard";
 import MoveTaxonCard from "@/components/taxonAdmin/MoveTaxonCard";
 import NewTaxonCard from "@/components/taxonAdmin/NewTaxonCard";
 import {type Taxon} from '@/models/Taxon';
 import {type TaxonId} from '@/models/TaxonId';
-import TaxonSynonyms from "@/components/taxonAdmin/TaxonSynonyms.tsx";
+import TaxonSynonyms from "@/components/taxonAdmin/TaxonSynonyms";
 import { useTranslation } from 'react-i18next';
 
 export default function TaxaAdministration() {

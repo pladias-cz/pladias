@@ -1,8 +1,8 @@
 import {Col, Row} from "react-bootstrap";
 import {usePageTitle} from "@/hooks/usePageTitle";
 import {useTranslation} from "react-i18next";
-import BackupForm from "@/components/measurement/backup/BackupForm.tsx";
-import BackupTable from "@/components/measurement/backup/BackupTable.tsx";
+import BackupForm from "@/components/measurement/backup/BackupForm";
+import BackupTable from "@/components/measurement/backup/BackupTable";
 
 export default function Backup() {
     const {t} = useTranslation();

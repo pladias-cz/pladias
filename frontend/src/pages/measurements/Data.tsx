@@ -3,9 +3,9 @@ import {Accordion, Row, Spinner, Table} from "react-bootstrap";
 import {useTranslation} from "react-i18next";
 import {useNavigate} from "react-router-dom";
 import {usePageTitle} from "@/hooks/usePageTitle";
-import type {FeatureGroup} from "@/models/FeatureGroup.ts";
-import type {Feature} from "@/models/Feature.ts";
-import type {TraitDatatype} from "@/models/TraitDatatype.ts";
+import type {FeatureGroup} from "@/models/FeatureGroup";
+import type {Feature} from "@/models/Feature";
+import type {TraitDatatype} from "@/models/TraitDatatype";
 
 
 export default function Data() {

@@ -5,7 +5,7 @@ import type { RecordPladias } from '@/models';
 import './RecordsTable.scss';
 import {HerbariumQualityCheckbox} from './HerbariumQualityCheckbox';
 import {AddCommentModal} from './AddCommentModal';
-import {ValidationStatusId} from "@/core/validationStatus.ts";
+import {ValidationStatusId} from "@/core/validationStatus";
 import {ValidationStatusCheckboxes} from './ValidationStatusCheckboxes';
 import {OriginalityStatusIcons} from './OriginalityStatusIcons';
 import {IncludeInMapCheckbox} from './IncludeInMapCheckbox';

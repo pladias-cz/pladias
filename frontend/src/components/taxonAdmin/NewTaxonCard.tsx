@@ -2,7 +2,7 @@ import { Button, Card, Form, Spinner } from "react-bootstrap";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { type Taxon } from "@/models/Taxon";
-import { type Option } from "@/models/Option.ts";
+import { type Option } from "@/models/Option";
 import { type TaxonRankId } from "@/models/TaxonRankId";
 import { useTranslation } from "react-i18next";
 

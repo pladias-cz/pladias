@@ -6,7 +6,7 @@ export {
     getVisiblePages,
     calculateTotalPages,
     clampPage,
-} from './paginationHelpers.ts';
+} from './paginationHelpers';
 
 export {
     createTextColumn,
@@ -19,7 +19,7 @@ export {
     getFilterPlaceholder,
     canFilter,
     canSort,
-} from './columnHelpers.ts';
+} from './columnHelpers';
 
-export {buildTableParams} from './tableParams.ts';
-export type {TableParamsOptions} from './tableParams.ts';
+export {buildTableParams} from './tableParams';
+export type {TableParamsOptions} from './tableParams';

@@ -1,4 +1,4 @@
-interface InstanceConfigData {
+export interface InstanceConfigData {
     isVascular?: boolean;
     hasAtlasModule?: boolean;
     hasBiblioModule?: boolean;

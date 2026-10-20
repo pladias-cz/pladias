@@ -1,8 +1,8 @@
 import {lazy, Suspense, useEffect, useState} from "react";
 import {BrowserRouter, Route, Routes} from "react-router-dom";
-import Layout from "./Layout.jsx";
+import Layout from "./Layout";
 import {InstanceConfigProvider} from "./context/InstanceConfigContext";
-import {UserProvider} from "./context/UserContext.tsx";
+import {UserProvider} from "./context/UserContext";
 import {ProjectNameProvider} from "./context/ProjectNameContext";
 import {changeLanguage} from "./i18n/i18n";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -12,47 +12,47 @@ const Home = lazy(() => import("./pages/Home"));
 const UnauthorizedPage = lazy(() => import("./pages/Unauthorized"));
 
 // Atlas
-const NewComments = lazy(() => import("./pages/atlas/NewComments.jsx"));
-const AtlasSearch = lazy(() => import("./pages/atlas/Search.jsx"));
-const ListOfControls = lazy(() => import("./pages/atlas/ListOfControls.jsx"));
-const AtlasListOfImports = lazy(() => import("./pages/atlas/ListOfImports.jsx"));
-const AtlasListOfTaxa = lazy(() => import("./pages/atlas/ListOfTaxa.jsx"));
-const Import = lazy(() => import("./pages/atlas/Import.jsx"));
-const ImportCSV = lazy(() => import("./pages/atlas/ImportCSV.jsx"));
-const MapMain = lazy(() => import("./pages/atlas/./MapMain"));
-const MapPreview = lazy(() => import("./pages/atlas/./MapPreview"));
-const MapDetail = lazy(() => import("./pages/atlas/MapDetail.tsx"));
-const Record = lazy(() => import("./pages/atlas/Record.tsx"));
+const NewComments = lazy(() => import("./pages/atlas/NewComments"));
+const AtlasSearch = lazy(() => import("./pages/atlas/Search"));
+const ListOfControls = lazy(() => import("./pages/atlas/ListOfControls"));
+const AtlasListOfImports = lazy(() => import("./pages/atlas/ListOfImports"));
+const AtlasListOfTaxa = lazy(() => import("./pages/atlas/ListOfTaxa"));
+const Import = lazy(() => import("./pages/atlas/Import"));
+const ImportCSV = lazy(() => import("./pages/atlas/ImportCSV"));
+const MapMain = lazy(() => import("./pages/atlas/MapMain"));
+const MapPreview = lazy(() => import("./pages/atlas/MapPreview"));
+const MapDetail = lazy(() => import("./pages/atlas/MapDetail"));
+const Record = lazy(() => import("./pages/atlas/Record"));
 
 // AtlasAdmin
-const AtlasAdminListOfImports = lazy(() => import("./pages/atlasAdmin/ListOfImports.jsx"));
-const ListOfUsers = lazy(() => import("./pages/atlasAdmin/ListOfUsers.jsx"));
-const AtlasAdminListOfTaxa = lazy(() => import("./pages/atlasAdmin/ListOfTaxa.jsx"));
+const AtlasAdminListOfImports = lazy(() => import("./pages/atlasAdmin/ListOfImports"));
+const ListOfUsers = lazy(() => import("./pages/atlasAdmin/ListOfUsers"));
+const AtlasAdminListOfTaxa = lazy(() => import("./pages/atlasAdmin/ListOfTaxa"));
 
 // Biblio
-const Bibliography = lazy(() => import("./pages/biblio/Bibliography.tsx"));
+const Bibliography = lazy(() => import("./pages/biblio/Bibliography"));
 
 // Measurements
-const General = lazy(() => import("./pages/measurements/General.tsx"));
-const Datatypes = lazy(() => import("./pages/measurements/Datatypes.tsx"));
-const AggregationTypes = lazy(() => import("./pages/measurements/AggregationTypes.tsx"));
-const Data = lazy(() => import("./pages/measurements/Data.tsx"));
-const Export = lazy(() => import("./pages/measurements/Export.tsx"));
-const Backup = lazy(() => import("./pages/measurements/Backup.tsx"));
-const FeatureDetail = lazy(() => import("./pages/measurements/./FeatureDetail.tsx"));
+const General = lazy(() => import("./pages/measurements/General"));
+const Datatypes = lazy(() => import("./pages/measurements/Datatypes"));
+const AggregationTypes = lazy(() => import("./pages/measurements/AggregationTypes"));
+const Data = lazy(() => import("./pages/measurements/Data"));
+const Export = lazy(() => import("./pages/measurements/Export"));
+const Backup = lazy(() => import("./pages/measurements/Backup"));
+const FeatureDetail = lazy(() => import("./pages/measurements/FeatureDetail"));
 
 // Downloads
-const DownloadsIndex = lazy(() => import("./pages/downloads/Index.tsx"));
+const DownloadsIndex = lazy(() => import("./pages/downloads/Index"));
 
 // User
-const ChangePassword = lazy(() => import("./pages/user/ChangePassword.jsx"));
-const ChangeEmail = lazy(() => import("./pages/user/ChangeEmail.jsx"));
-const Settings = lazy(() => import("./pages/user/Settings.jsx"));
-const UsersAdministration = lazy(() => import("./pages/user/UsersAdministration.jsx"));
-const TaxaAdministration = lazy(() => import("./pages/user/TaxaAdministration.jsx"));
-const AddUser = lazy(() => import("./pages/user/AddUser.jsx"));
+const ChangePassword = lazy(() => import("./pages/user/ChangePassword"));
+const ChangeEmail = lazy(() => import("./pages/user/ChangeEmail"));
+const Settings = lazy(() => import("./pages/user/Settings"));
+const UsersAdministration = lazy(() => import("./pages/user/UsersAdministration"));
+const TaxaAdministration = lazy(() => import("./pages/user/TaxaAdministration"));
+const AddUser = lazy(() => import("./pages/user/AddUser"));
 const PlayMessages = lazy(() => import("./pages/user/PlayMessages"));
-const Docs = lazy(() => import("./pages/user/Docs.jsx"));
+const Docs = lazy(() => import("./pages/user/Docs"));
 
 
 interface AppConfig {

@@ -1,8 +1,9 @@
 import {Button, Form, Table} from "react-bootstrap";
 import {useTranslation} from "react-i18next";
+import type {UserSettingsState} from "./types";
 
 interface LanguageSettingsProps {
-    userSettings: Record<string, string>;
+    userSettings: UserSettingsState;
     handleInputChange: (key: string, value: string) => void;
     handleSaveSetting: (key: string, value: string) => void;
     loading: boolean;

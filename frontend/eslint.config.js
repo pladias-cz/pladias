@@ -20,4 +20,12 @@ export default tseslint.config([
       globals: globals.browser,
     },
   },
+  {
+    // Kontexty legitimně exportují hooky (useUser, useInstanceConfig, …) vedle
+    // Provider komponent – known false-positive react-refresh/only-export-components.
+    files: ['src/context/**'],
+    rules: {
+      'react-refresh/only-export-components': 'off',
+    },
+  },
 ])

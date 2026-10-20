@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Table, Spinner, Alert } from "react-bootstrap";
 import { useTranslation } from "react-i18next";
-import type { TraitAggregationType } from "@/models/TraitAggregationType.ts";
+import type { TraitAggregationType } from "@/models/TraitAggregationType";
 
 export default function AggregationTable() {
     const { t } = useTranslation();

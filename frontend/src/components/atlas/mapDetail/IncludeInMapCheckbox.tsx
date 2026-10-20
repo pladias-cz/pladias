@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { RecordPladias } from '@/models';
-import { useRecordQuickUpdates } from './hooks/useRecordQuickUpdates.ts';
+import { useRecordQuickUpdates } from './hooks/useRecordQuickUpdates';
 
 interface IncludeInMapCheckboxProps {
     record: RecordPladias;

@@ -19,7 +19,7 @@ import {
     DataTableBody,
 } from './components';
 import {ExcelExportButtons} from './export';
-import type {DataTableConfig, DataTableColumnDef} from './types.ts';
+import type {DataTableConfig, DataTableColumnDef} from './types';
 import {canSort} from './utils';
 import styles from './DataTable.module.css';
 

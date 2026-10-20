@@ -71,15 +71,7 @@ public class TaxonController extends ControllerBase {
 
 ### Path Aliases
 
-| Alias | Resolves to |
-|-------|-------------|
-| `@types` | `src/types/index.ts` |
-| `@/types/facets` | `src/types/facets.ts` |
-| `@/types/suggestion` | `src/types/suggestion.ts` |
-| `@services/api` | `src/services/api.ts` |
-| `@hooks/...` | `src/hooks/...` |
-| `@components/...` | `src/components/...` |
-| `@pages/...` | `src/pages/...` |
+Jediný existující alias je `@/` → `src/` (definovaný ve `frontend/vite.config.ts` i `frontend/tsconfig.app.json`). Jiné aliasy (`@hooks/…`, `@components/…`, `@services/…` apod.) v kódu neexistují – nepřidávat je „pro jistotu“ (docs/refactoring.md, sekce C).
 
 **Always use aliases**, never relative `../../` imports across feature boundaries.
 

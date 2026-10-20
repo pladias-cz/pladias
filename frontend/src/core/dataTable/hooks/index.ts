@@ -2,13 +2,13 @@
  * Hook exports for DataTable
  */
 
-export {useTableFilters} from './useTableFilters.ts';
-export type {UseTableFiltersOptions} from './useTableFilters.ts';
+export {useTableFilters} from './useTableFilters';
+export type {UseTableFiltersOptions} from './useTableFilters';
 
-export {useTableSorting} from './useTableSorting.ts';
+export {useTableSorting} from './useTableSorting';
 
-export {useServerPagination} from './useServerPagination.ts';
-export type {UseServerPaginationOptions} from './useServerPagination.ts';
+export {useServerPagination} from './useServerPagination';
+export type {UseServerPaginationOptions} from './useServerPagination';
 
-export {useTableData} from './useTableData.ts';
-export type {UseTableDataOptions} from './useTableData.ts';
+export {useTableData} from './useTableData';
+export type {UseTableDataOptions} from './useTableData';

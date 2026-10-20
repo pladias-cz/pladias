@@ -2,7 +2,7 @@ import { useState } from 'react';
 import {useTranslation} from 'react-i18next';
 import { OriginalityStatusId, OriginalityStatusMeta } from '@/core/originalityStatus';
 import type { RecordPladias } from '@/models';
-import { useRecordQuickUpdates } from './hooks/useRecordQuickUpdates.ts';
+import { useRecordQuickUpdates } from './hooks/useRecordQuickUpdates';
 
 interface OriginalityStatusIconsProps {
     record: RecordPladias;

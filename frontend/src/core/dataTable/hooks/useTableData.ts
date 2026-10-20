@@ -4,8 +4,8 @@
 
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import axios from 'axios';
-import type {ServerSideDataResponse, CustomDataFetcher, HttpMethod} from '../types.ts';
-import {buildTableParams} from '../utils/tableParams.ts';
+import type {ServerSideDataResponse, CustomDataFetcher, HttpMethod} from '../types';
+import {buildTableParams} from '../utils/tableParams';
 
 export interface UseTableDataOptions<T> {
     endpoint: string;

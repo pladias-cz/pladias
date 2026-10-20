@@ -1,13 +1,13 @@
 import {Col, Row} from "react-bootstrap";
 import {usePageTitle} from "@/hooks/usePageTitle";
 import {NavLink, useParams} from "react-router-dom";
-import type {Feature} from "@/models/Feature.ts";
+import type {Feature} from "@/models/Feature";
 import {useEffect, useState, type FormEvent} from "react";
 import {useTranslation} from "react-i18next";
-import TraitTable from "@/components/measurement/TraitTable.tsx";
-import FeatureDescription from "@/components/measurement/FeatureDescription.tsx";
-import TraitUpload from "@/components/measurement/TraitUpload.tsx";
-import type {Flash} from "@/models/Flash.ts";
+import TraitTable from "@/components/measurement/TraitTable";
+import FeatureDescription from "@/components/measurement/FeatureDescription";
+import TraitUpload from "@/components/measurement/TraitUpload";
+import type {Flash} from "@/models/Flash";
 
 export default function FeatureDetail() {
     const {t} = useTranslation();

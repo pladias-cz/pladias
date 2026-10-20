@@ -1,7 +1,7 @@
 import type { RecordPladias } from '@/models';
 import {useRecordPermissions} from '@/components/atlas/record';
 import {useState} from 'react';
-import {useRecordQuickUpdates} from "@/components/atlas/mapDetail/hooks/useRecordQuickUpdates.ts";
+import {useRecordQuickUpdates} from "@/components/atlas/mapDetail/hooks/useRecordQuickUpdates";
 
 interface HerbariumQualityCheckboxProps {
     record: RecordPladias;

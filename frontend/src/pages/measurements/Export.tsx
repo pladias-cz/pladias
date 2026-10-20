@@ -2,10 +2,10 @@ import {useState, type FormEvent} from "react";
 import {Alert, Col, Row} from "react-bootstrap";
 import {usePageTitle} from "@/hooks/usePageTitle";
 import {useTranslation} from "react-i18next";
-import type {Flash} from "@/models/Flash.ts";
-import ExportTraitList from "@/components/measurement/export/ExportTraitList.tsx";
-import ExportTaxaList from "@/components/measurement/export/ExportTaxaList.tsx";
-import ExportOptions from "@/components/measurement/export/ExportOptions.tsx";
+import type {Flash} from "@/models/Flash";
+import ExportTraitList from "@/components/measurement/export/ExportTraitList";
+import ExportTaxaList from "@/components/measurement/export/ExportTaxaList";
+import ExportOptions from "@/components/measurement/export/ExportOptions";
 
 const EXPORT_URL = "/api/react/measurement/complexExport";
 const DOWNLOAD_CONTENT_TYPE = "application/x-download";

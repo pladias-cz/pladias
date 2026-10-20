@@ -1,8 +1,8 @@
 import { useTranslation } from "react-i18next";
 import { useEffect, useState } from "react";
-import type { FeatureGroup } from "@/models/FeatureGroup.ts";
-import type { Feature } from "@/models/Feature.ts";
-import type { Trait } from "@/models/Trait.ts";
+import type { FeatureGroup } from "@/models/FeatureGroup";
+import type { Feature } from "@/models/Feature";
+import type { Trait } from "@/models/Trait";
 import { Spinner, Alert, Button, Form } from "react-bootstrap";
 
 interface TraitsByFeature {

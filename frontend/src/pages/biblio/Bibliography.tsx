@@ -1,7 +1,7 @@
 import {useMemo} from "react";
 import {usePageTitle} from "@/hooks/usePageTitle";
 import {useTranslation} from "react-i18next";
-import type {BibliographyDto} from "@/models/Bibliography.ts";
+import type {BibliographyDto} from "@/models/Bibliography";
 import {Card} from "react-bootstrap";
 import {DataTable} from "@/core/dataTable";
 import {

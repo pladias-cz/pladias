@@ -1,7 +1,7 @@
 import {Card} from "react-bootstrap";
 import {type Taxon} from '@/models/Taxon';
 import {type TaxonRankId} from '@/models/TaxonRankId';
-import {type Option} from '@/models/Option.ts';
+import {type Option} from '@/models/Option';
 import TaxonTraitCount from "@/components/taxonAdmin/TaxonTraitCount";
 import TaxonStats from "@/components/taxonAdmin/TaxonStats";
 import {useEffect, useState} from "react";

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { ValidationStatusId, ValidationStatusMeta } from '@/core/validationStatus';
 import type { RecordPladias } from '@/models';
-import { useRecordQuickUpdates } from './hooks/useRecordQuickUpdates.ts';
+import { useRecordQuickUpdates } from './hooks/useRecordQuickUpdates';
 import { useUser } from '@/context/UserContext';
 
 interface ValidationStatusCheckboxesProps {

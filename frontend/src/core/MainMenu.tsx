@@ -5,7 +5,7 @@ import 'bootstrap-icons/font/bootstrap-icons.css';
 import 'react-bootstrap-typeahead/css/Typeahead.css';
 import {useTranslation} from "react-i18next";
 import {useInstanceConfig} from "@/context/InstanceConfigContext";
-import {useUser} from "@/context/UserContext.tsx";
+import {useUser} from "@/context/UserContext";
 import {useProjectName} from "@/context/ProjectNameContext";
 import {Container, Form, FormControl, Nav, Navbar, NavDropdown} from "react-bootstrap";
 import {Autocomplete} from "@/components/autocomplete/Autocomplete";

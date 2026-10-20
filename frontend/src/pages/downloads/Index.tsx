@@ -2,7 +2,7 @@ import {Row} from "react-bootstrap";
 import {useTranslation} from "react-i18next";
 
 import {usePageTitle} from "@/hooks/usePageTitle";
-import DownloadsTable from "@/components/downloads/DownloadsTable.tsx";
+import DownloadsTable from "@/components/downloads/DownloadsTable";
 
 export default function Index() {
     const {t} = useTranslation();

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Table, Spinner, Alert } from "react-bootstrap";
 import { useTranslation } from "react-i18next";
-import type { TraitBackup } from "@/models/TraitBackup.ts";
+import type { TraitBackup } from "@/models/TraitBackup";
 
 export default function BackupTable() {
     const { t } = useTranslation();

@@ -5,9 +5,9 @@
 
 import {Form} from 'react-bootstrap';
 import {useTranslation} from 'react-i18next';
-import type {DataTableColumnDef} from '../types.ts';
+import type {DataTableColumnDef} from '../types';
 import {canFilter, getFilterPlaceholder} from '../utils';
-import {DateRangeFilter} from './DateRangeFilter.tsx';
+import {DateRangeFilter} from './DateRangeFilter';
 
 interface DataTableFilterRowProps<T> {
     columns: DataTableColumnDef<T>[];

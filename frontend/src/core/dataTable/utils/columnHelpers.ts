@@ -2,7 +2,7 @@
  * Column helper functions for type-safe column creation
  */
 
-import type {DataTableColumnDef, TextColumnDef, BooleanColumnDef, CheckboxColumnDef, NumberColumnDef, DateColumnDef, TimestampColumnDef, ActionColumnDef} from '../types.ts';
+import type {DataTableColumnDef, TextColumnDef, BooleanColumnDef, CheckboxColumnDef, NumberColumnDef, DateColumnDef, TimestampColumnDef, ActionColumnDef} from '../types';
 import type {TFunction} from 'i18next';
 
 /**

@@ -16,4 +16,4 @@ export type {
     NumberColumnDef,
     DateColumnDef,
     ActionColumnDef,
-} from '../types.ts';
+} from '../types';

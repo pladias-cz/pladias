@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Table, Spinner, Alert } from "react-bootstrap";
 import { useTranslation } from "react-i18next";
-import type {DownloadDto} from "@/models/Download.ts";
+import type {DownloadDto} from "@/models/Download";
 
 export default function DownloadsTable() {
     const { t } = useTranslation();

@@ -4,7 +4,7 @@
 
 import React from 'react';
 import {useTranslation} from 'react-i18next';
-import type {DataTableColumnDef} from '../types.ts';
+import type {DataTableColumnDef} from '../types';
 
 interface DataTableBodyProps<T> {
     data: T[];

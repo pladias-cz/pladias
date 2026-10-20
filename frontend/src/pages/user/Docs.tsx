@@ -1,4 +1,3 @@
-import React from "react";
 import {Row} from "react-bootstrap";
 import {usePageTitle} from "@/hooks/usePageTitle";
 import {useTranslation} from "react-i18next";

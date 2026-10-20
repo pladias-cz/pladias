@@ -3,20 +3,32 @@ import {Alert, Button, Col, Form, Row} from "react-bootstrap";
 import {usePageTitle} from "@/hooks/usePageTitle";
 import {useTranslation} from "react-i18next";
 
+interface AddUserFormData {
+    name: string;
+    surname: string;
+    email: string;
+}
+
+interface AddUserResponse {
+    success?: boolean;
+    message?: string;
+    error?: string;
+}
+
 export default function AddUser() {
     const {t} = useTranslation();
     usePageTitle(t("user.addUser.title"));
-    const [formData, setFormData] = useState({
+    const [formData, setFormData] = useState<AddUserFormData>({
         name: "",
         surname: "",
         email: ""
     });
 
     const [loading, setLoading] = useState(false);
-    const [message, setMessage] = useState(null);
-    const [error, setError] = useState(null);
+    const [message, setMessage] = useState<string | null>(null);
+    const [error, setError] = useState<string | null>(null);
 
-    const handleChange = (e) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const {name, value} = e.target;
         setFormData(prev => ({
             ...prev,
@@ -24,7 +36,7 @@ export default function AddUser() {
         }));
     };
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setLoading(true);
         setError(null);
@@ -43,7 +55,7 @@ export default function AddUser() {
                 })
             });
 
-            const data = await response.json();
+            const data: AddUserResponse = await response.json();
 
             if (response.ok && data.success) {
                 setMessage(data.message || t("user.addUser.success"));
@@ -57,7 +69,7 @@ export default function AddUser() {
             } else {
                 setError(data.error || t("user.addUser.error"));
             }
-        } catch (err) {
+        } catch {
             setError(t("user.addUser.networkError"));
         } finally {
             setLoading(false);

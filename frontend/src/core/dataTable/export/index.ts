@@ -2,9 +2,9 @@
  * XLSX export exports for DataTable
  */
 
-export {ExcelExportButtons, default as DefaultExcelExportButtons} from './ExcelExportButtons.tsx';
+export {ExcelExportButtons, default as DefaultExcelExportButtons} from './ExcelExportButtons';
 
-export {useExcelExport, XlsxAcceptHeader} from './useExcelExport.ts';
-export type {UseExcelExportOptions} from './useExcelExport.ts';
+export {useExcelExport, XlsxAcceptHeader} from './useExcelExport';
+export type {UseExcelExportOptions} from './useExcelExport';
 
-export {downloadBlob, readErrorMessage, resolveFilename} from './downloadFile.ts';
+export {downloadBlob, readErrorMessage, resolveFilename} from './downloadFile';

@@ -4,7 +4,7 @@
 
 import {Spinner} from 'react-bootstrap';
 import {useTranslation} from 'react-i18next';
-import {useExcelExport, type ExcelExportVariant} from './useExcelExport.ts';
+import {useExcelExport, type ExcelExportVariant} from './useExcelExport';
 
 interface ExcelExportButtonsProps {
     endpoint: string;

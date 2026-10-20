@@ -4,8 +4,8 @@
 
 import {useCallback, useRef, useState} from 'react';
 import axios, {type AxiosError} from 'axios';
-import {buildTableParams} from '../utils/tableParams.ts';
-import {downloadBlob, readErrorMessage, resolveFilename} from './downloadFile.ts';
+import {buildTableParams} from '../utils/tableParams';
+import {downloadBlob, readErrorMessage, resolveFilename} from './downloadFile';
 
 export const XlsxAcceptHeader = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
 

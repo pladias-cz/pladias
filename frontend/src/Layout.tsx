@@ -2,8 +2,8 @@ import {useRef} from 'react';
 import {Outlet} from 'react-router-dom';
 import {Container, Row} from 'react-bootstrap';
 import MainMenu from './core/MainMenu';
-import FlashMessages from './core/FlashMessages.jsx';
-import {useNavOffset} from './hooks/useNavOffset.jsx';
+import FlashMessages from './core/FlashMessages';
+import {useNavOffset} from './hooks/useNavOffset';
 
 export default function Layout() {
     const navRef = useRef<HTMLDivElement>(null);

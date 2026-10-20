@@ -1,22 +1,27 @@
-import React, {useEffect, useState} from "react";
+import {useEffect, useState} from "react";
 import {Alert, Col, Row} from "react-bootstrap";
 import {usePageTitle} from "@/hooks/usePageTitle";
 import {useTranslation} from "react-i18next";
 import ResetSettings from "@/components/settings/ResetSettings";
 import LanguageSettings from "@/components/settings/LanguageSettings";
 import TraitsSettings from "@/components/settings/TraitsSettings";
-import {useInstanceConfig} from "@/context/InstanceConfigContext";
-import {useUser} from "@/context/UserContext.tsx";
+import {useUser} from "@/context/UserContext";
 import {changeLanguage} from "@/i18n/i18n";
 import {useUserSettings, mapBackendKeyToStateKey} from "@/hooks/useUserSettings";
+import type {UserSettingsState} from "@/components/settings/types";
+
+interface UserSettingResponse {
+    success?: boolean;
+    value?: string;
+    error?: string;
+}
 
 export default function Settings() {
     const {t} = useTranslation();
     usePageTitle(t("user.settings.title"));
-    const {hasAtlasModule, hasBiblioModule, hasMeasurementsModule} = useInstanceConfig();
-    const {isMapAdmin, isBulkEditor, isTraitAdmin, isSysAdmin, isTaxonAdmin, userEmail, language} = useUser();
+    const {isTraitAdmin, language} = useUser();
 
-    const [userSettings, setUserSettings] = useState({
+    const [userSettings, setUserSettings] = useState<UserSettingsState>({
         applicationLanguage: language || "cs",
         traitsSubstituteFalse: "FALSE",
         traitsSubstituteTrue: "TRUE",
@@ -35,7 +40,7 @@ export default function Settings() {
         setLoading,
         setMessage,
         setError
-    } = useUserSettings((key, value, stateKey) => {
+    } = useUserSettings((_key, value, stateKey) => {
         // Update local state after successful save
         setUserSettings(prev => ({
             ...prev,
@@ -48,11 +53,11 @@ export default function Settings() {
         loadUserSettings();
     }, []);
 
-    const loadUserSettings = async () => {
+    const loadUserSettings = async (): Promise<void> => {
         setLoading(true);
         try {
             // Initialize with default values
-            const newSettings = {
+            const newSettings: UserSettingsState = {
                 applicationLanguage: language || "cs",
                 traitsSubstituteFalse: "",
                 traitsSubstituteTrue: "",
@@ -64,12 +69,14 @@ export default function Settings() {
 
             // Load application language setting
             const appLangResponse = await fetch("/api/react/user/settings/application_language");
-            const appLangData = await appLangResponse.json();
-            if (appLangResponse.ok && appLangData.success) {
+            const appLangData: UserSettingResponse = await appLangResponse.json();
+            if (appLangResponse.ok && appLangData.success && appLangData.value) {
                 newSettings.applicationLanguage = appLangData.value;
             }
 
             if (isTraitAdmin) {
+                // zápis přes keyof union TS neumožňuje, použijeme Record pohled na stejný objekt
+                const newSettingsRecord = newSettings as Record<string, string | boolean>;
                 const settingsToLoad = [
                     "traits_substitute_false",
                     "traits_substitute_true",
@@ -82,13 +89,13 @@ export default function Settings() {
                 // Load all trait settings
                 for (const key of settingsToLoad) {
                     const response = await fetch(`/api/react/user/settings/${key}`);
-                    const data = await response.json();
+                    const data: UserSettingResponse = await response.json();
                     if (response.ok && data.success) {
-                        const stateKey = mapBackendKeyToStateKey(key);
+                        const stateKey = mapBackendKeyToStateKey(key) as keyof UserSettingsState;
                         if (key.includes("traits_substitute_percentasinteger") || key.includes("traits_substitute_english")) {
-                            newSettings[stateKey] = data.value === "true";
+                            newSettingsRecord[stateKey] = data.value === "true";
                         } else {
-                            newSettings[stateKey] = data.value;
+                            newSettingsRecord[stateKey] = data.value ?? "";
                         }
                     }
                 }
@@ -109,14 +116,14 @@ export default function Settings() {
         }
     };
 
-    const handleInputChange = (key, value) => {
+    const handleInputChange = (key: string, value: string | boolean): void => {
         setUserSettings(prev => ({
             ...prev,
             [key]: value
         }));
     };
 
-    const handleSaveSetting = (key, value) => {
+    const handleSaveSetting = (key: string, value: string): void => {
         saveSetting(key, value, (stateKey, parsedValue) => {
             setUserSettings(prev => ({
                 ...prev,
@@ -125,7 +132,7 @@ export default function Settings() {
         });
     };
 
-    const handleResetSettings = async (keyPrefix) => {
+    const handleResetSettings = async (keyPrefix: string): Promise<void> => {
         setLoading(true);
         setError(null);
         setMessage(null);
@@ -135,7 +142,7 @@ export default function Settings() {
                 method: "DELETE"
             });
 
-            const data = await response.json();
+            const data: UserSettingResponse = await response.json();
 
             if (response.ok && data.success) {
                 // Reload settings after reset

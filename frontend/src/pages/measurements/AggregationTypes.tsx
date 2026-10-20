@@ -1,7 +1,7 @@
 import {Row} from "react-bootstrap";
 import {usePageTitle} from "@/hooks/usePageTitle";
 import {useTranslation} from "react-i18next";
-import AggregationTable from "@/components/measurement/AggregationTable.tsx";
+import AggregationTable from "@/components/measurement/AggregationTable";
 
 export default function AggregationTypes() {
     const {t} = useTranslation();

@@ -1,7 +1,7 @@
 import {useState, type FormEvent} from "react";
 import {Alert, Button, Form, Spinner} from "react-bootstrap";
 import {useTranslation} from "react-i18next";
-import type {Flash} from "@/models/Flash.ts";
+import type {Flash} from "@/models/Flash";
 
 export default function BackupForm() {
     const {t} = useTranslation();

@@ -1,7 +1,7 @@
 import {Row} from "react-bootstrap";
 import {usePageTitle} from "@/hooks/usePageTitle";
 import {useTranslation} from "react-i18next";
-import TaxaList from "@/components/atlas/TaxaList.tsx";
+import TaxaList from "@/components/atlas/TaxaList";
 
 export default function ListOfTaxa() {
     const {t} = useTranslation();

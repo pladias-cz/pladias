@@ -2,11 +2,11 @@ import {Card, Col, Row} from "react-bootstrap";
 import {useLayoutEffect, useRef, useState, useEffect} from "react";
 import {useTranslation} from "react-i18next";
 import type { RecordPladiasFull } from '@/models/RecordPladiasFull';
-import RecordReadonlyField from "@/components/atlas/record/RecordReadonlyField.tsx";
-import RecordInlineField from "@/components/atlas/record/RecordInlineField.tsx";
-import MultiSelectEdit from "@/components/atlas/record/MultiSelectEdit.tsx";
+import RecordReadonlyField from "@/components/atlas/record/RecordReadonlyField";
+import RecordInlineField from "@/components/atlas/record/RecordInlineField";
+import MultiSelectEdit from "@/components/atlas/record/MultiSelectEdit";
 import type {MultiValueOption} from "@/models/MultiValueOption";
-import {useRecordPermissions} from "@/components/atlas/record/hooks/useRecordPermissions.ts";
+import {useRecordPermissions} from "@/components/atlas/record/hooks/useRecordPermissions";
 
 interface RecordRemarksProps {
     record: RecordPladiasFull;

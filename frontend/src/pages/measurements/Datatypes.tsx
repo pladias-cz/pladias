@@ -4,7 +4,7 @@ import {useTranslation} from "react-i18next";
 
 
 import {usePageTitle} from "@/hooks/usePageTitle";
-import DatatypesTable from "@/components/measurement/DatatypesTable.tsx";
+import DatatypesTable from "@/components/measurement/DatatypesTable";
 
 export default function Datatypes() {
     const {t} = useTranslation();

@@ -4,10 +4,10 @@ import {useTranslation} from "react-i18next";
 import type {RecordPladiasFull} from '@/models/RecordPladiasFull';
 import RecordInlineField from "./RecordInlineField";
 import {useRecordPermissions} from ".";
-import RecordReadonlyField from "@/components/atlas/record/RecordReadonlyField.tsx";
-import MultiSelectEdit from "@/components/atlas/record/MultiSelectEdit.tsx";
-import SingleSelectEdit from "@/components/atlas/record/SingleSelectEdit.tsx";
-import type {MultiValueOption} from "@/models/MultiValueOption.ts";
+import RecordReadonlyField from "@/components/atlas/record/RecordReadonlyField";
+import MultiSelectEdit from "@/components/atlas/record/MultiSelectEdit";
+import SingleSelectEdit from "@/components/atlas/record/SingleSelectEdit";
+import type {MultiValueOption} from "@/models/MultiValueOption";
 import {useInstanceConfig} from "@/context/InstanceConfigContext";
 
 // Date format validation: YYYY, YYYY-MM, YYYY-MM-DD, or "s. d." (sine data - without date)

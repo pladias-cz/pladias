@@ -3,21 +3,32 @@ import {Alert, Button, Col, Form, Row} from "react-bootstrap";
 import {usePageTitle} from "@/hooks/usePageTitle";
 import {useTranslation} from "react-i18next";
 
+interface ChangeEmailFormData {
+    password: string;
+    newEmail: string;
+    confirmNewEmail: string;
+}
+
+interface ChangeEmailResponse {
+    message?: string;
+    error?: string;
+}
+
 export default function ChangeEmail() {
 
     const {t} = useTranslation();
     usePageTitle(t("user.changeEmail.title"));
-    const [formData, setFormData] = useState({
+    const [formData, setFormData] = useState<ChangeEmailFormData>({
         password: "",
         newEmail: "",
         confirmNewEmail: ""
     });
 
     const [loading, setLoading] = useState(false);
-    const [message, setMessage] = useState(null);
-    const [error, setError] = useState(null);
+    const [message, setMessage] = useState<string | null>(null);
+    const [error, setError] = useState<string | null>(null);
 
-    const handleChange = (e) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const {name, value} = e.target;
         setFormData(prev => ({
             ...prev,
@@ -25,7 +36,7 @@ export default function ChangeEmail() {
         }));
     };
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setLoading(true);
         setError(null);
@@ -48,7 +59,7 @@ export default function ChangeEmail() {
                 })
             });
 
-            const data = await response.json();
+            const data: ChangeEmailResponse = await response.json();
 
             if (response.ok) {
                 setMessage(data.message || t("user.changeEmail.success"));
@@ -61,7 +72,7 @@ export default function ChangeEmail() {
             } else {
                 setError(data.error || t("user.changeEmail.error"));
             }
-        } catch (err) {
+        } catch {
             setError(t("user.changeEmail.networkError"));
         } finally {
             setLoading(false);

@@ -15,6 +15,7 @@ import { TileLayer, WMSTileLayer, useMap } from 'react-leaflet';
 import type { CrossOrigin } from 'leaflet';
 import { getLayerDefinition } from '../registry/layerRegistry';
 import type { LayerParams } from '../types';
+import {fetchWfsGeoJson} from '@/services/mapApi';
 import { useEffect, useRef, useState, useMemo } from 'react';
 import * as L from 'leaflet';
 import { SquaresOverlay } from './SquaresOverlay';
@@ -465,13 +466,7 @@ function WfsLayer({
         
         const fetchWfsData = async () => {
             try {
-                const response = await fetch(wfsUrl);
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                }
-                
-                const data = await response.json();
+                const data = await fetchWfsGeoJson(wfsUrl);
 
                 // Get style options from layer definition metadata or use defaults
                 const styleOptions = definition.wfsStyle;

@@ -8,23 +8,8 @@
 
 import { useEffect, useState, useMemo } from 'react';
 import { useLayerStore, getVisibilityStorageKey } from '../store/layerStore';
-import {apiGet} from '@/services/apiClient';
-import type {ApiResult} from '@/models/ApiResponse';
-
-interface ProjectDto {
-    id: number;
-    name: string;
-    abbrev: string;
-}
-
-interface ProjectRecordCountDto {
-    project: ProjectDto;
-    recordCount: number;
-}
-
-interface TaxonStatisticsDto {
-    recordsByProject: ProjectRecordCountDto[];
-}
+import {getTaxonRecordsByProject, type TaxonProjectRecords} from '@/services/taxonApi';
+import {getUserSetting} from '@/services/settingsApi';
 
 export interface UseProjectLayersReturn {
     /** Array of project layer IDs (e.g., ['project_1', 'project_2']) */
@@ -46,7 +31,7 @@ export function useProjectLayers(
     taxonId?: number
 ): UseProjectLayersReturn {
     const { addLayer } = useLayerStore();
-    const [projects, setProjects] = useState<ProjectRecordCountDto[]>([]);
+    const [projects, setProjects] = useState<TaxonProjectRecords[]>([]);
     const [savedVisibility, setSavedVisibility] = useState<Set<string> | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -61,9 +46,9 @@ export function useProjectLayers(
         setLoading(true);
         setError(null);
 
-        apiGet<ApiResult<TaxonStatisticsDto>>(`/api/react/taxonStatistics/${taxonId}`)
-            .then(payload => {
-                setProjects(payload.data?.recordsByProject || []);
+        getTaxonRecordsByProject(taxonId)
+            .then(records => {
+                setProjects(records);
             })
             .catch(err => {
                 console.error('Failed to load taxon projects:', err);
@@ -81,19 +66,9 @@ export function useProjectLayers(
 
         const loadSavedVisibility = async () => {
             try {
-                const response = await fetch(
-                    `/api/react/user/settings/${getVisibilityStorageKey(mapName)}`,
-                );
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data.success && data.value) {
-                        const saved: string[] = JSON.parse(data.value);
-                        setSavedVisibility(new Set(saved));
-                        return;
-                    }
-                }
-                // No saved value - use empty set (all layers will use default)
-                setSavedVisibility(new Set());
+                // `null` = uživatel nemá uloženou viditelnost → výchozí hodnoty vrstev
+                const value = await getUserSetting(getVisibilityStorageKey(mapName));
+                setSavedVisibility(value ? new Set(JSON.parse(value) as string[]) : new Set());
             } catch (err) {
                 console.error('Failed to load saved visibility:', err);
                 setSavedVisibility(new Set());

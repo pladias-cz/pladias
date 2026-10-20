@@ -65,6 +65,21 @@ export async function getTaxonStatistics(id: number): Promise<TaxonStats> {
     return requireData<TaxonStats>(await apiGet(`/api/react/taxon/${id}/stats`), "Načtení statistik taxonu selhalo.");
 }
 
+/** Počty záznamů taxonu v jednotlivých projektech (dynamické vrstvy mapy). */
+export interface TaxonProjectRecords {
+    project: {id: number; name: string; abbrev: string};
+    recordCount: number;
+}
+
+/** GET /api/react/taxonStatistics/{id} – počty záznamů taxonu podle projektů. */
+export async function getTaxonRecordsByProject(taxonId: number): Promise<TaxonProjectRecords[]> {
+    const stats = requireData<{recordsByProject?: TaxonProjectRecords[]}>(
+        await apiGet(`/api/react/taxonStatistics/${taxonId}`),
+        "Načtení projektů taxonu selhalo.",
+    );
+    return stats.recordsByProject ?? [];
+}
+
 /** GET /api/react/taxon/{id}/traitCount – počet trait hodnot taxonu. */
 export async function getTaxonTraitCount(id: number): Promise<number> {
     return requireData<number>(await apiGet(`/api/react/taxon/${id}/traitCount`), "Načtení počtu trait hodnot selhalo.");

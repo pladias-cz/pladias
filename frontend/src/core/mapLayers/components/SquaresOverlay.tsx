@@ -18,6 +18,7 @@
 import { useMap } from 'react-leaflet';
 import * as L from 'leaflet';
 import { useEffect, useRef, useCallback } from 'react';
+import {fetchWfsGeoJson} from '@/services/mapApi';
 import { useNavigate } from 'react-router-dom';
 import type { LatLngExpression, Popup } from 'leaflet';
 
@@ -365,13 +366,7 @@ export function SquaresOverlay({ visible, minZoom = 8, params, onSquareDoubleCli
 
             try {
                 const wfsUrl = buildWfsUrl();
-                const response = await fetch(wfsUrl);
-
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                }
-
-                const data: WFSResponse = await response.json();
+                const data = await fetchWfsGeoJson<WFSResponse>(wfsUrl);
 
                 // Remove existing layer if any
                 if (geoJsonLayerRef.current) {

@@ -9,6 +9,7 @@
 import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { useLayerStore, getVisibilityStorageKey } from '../store/layerStore';
 import { useUserSettings } from '@/hooks/useUserSettings';
+import {getUserSetting} from '@/services/settingsApi';
 import { getLayerGroup, getLayerDefinition, layerGroups } from '../registry/layerRegistry';
 import type { LayerParams } from '../types';
 
@@ -89,41 +90,33 @@ export function useLayerManager(
         });
 
         // 2. Load saved visibility from backend (overrides defaults)
+        const applyComponentDefaults = () => {
+            managedLayers.forEach(layerId => {
+                const defaultVisible = defaultVisibility?.[layerId];
+                if (defaultVisible !== undefined) {
+                    setLayerVisibility(mapName, layerId, defaultVisible);
+                }
+            });
+        };
+
         const loadSavedVisibility = async () => {
             try {
-                const response = await fetch(
-                    `/api/react/user/settings/${getVisibilityStorageKey(mapName)}`,
-                );
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data.success && data.value) {
-                        const saved: string[] = JSON.parse(data.value);
-                        managedLayers.forEach(layerId => {
-                            setLayerVisibility(mapName, layerId, saved.includes(layerId));
-                        });
-                    } else {
-                        // No saved value - apply component defaults
-                        managedLayers.forEach(layerId => {
-                            const defaultVisible = defaultVisibility?.[layerId];
-                            if (defaultVisible !== undefined) {
-                                setLayerVisibility(mapName, layerId, defaultVisible);
-                            }
-                        });
-                    }
-                } else {
-                    // Request failed - apply component defaults
+                // `null` = uživatel nemá uloženou viditelnost → výchozí hodnoty komponenty
+                const value = await getUserSetting(getVisibilityStorageKey(mapName));
+                if (value) {
+                    const saved: string[] = JSON.parse(value);
                     managedLayers.forEach(layerId => {
-                        const defaultVisible = defaultVisibility?.[layerId];
-                        if (defaultVisible !== undefined) {
-                            setLayerVisibility(mapName, layerId, defaultVisible);
-                        }
+                        setLayerVisibility(mapName, layerId, saved.includes(layerId));
                     });
+                } else {
+                    applyComponentDefaults();
                 }
 
                 // 3. Ensure mutually exclusive groups have exactly one layer visible
                 await ensureMutuallyExclusiveConstraints();
-            } catch (error) {
-                // Still ensure constraints even if loading failed
+            } catch {
+                // Request failed - apply component defaults and still ensure constraints
+                applyComponentDefaults();
                 await ensureMutuallyExclusiveConstraints();
             }
         };

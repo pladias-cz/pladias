@@ -6,6 +6,7 @@
  */
 
 import L from 'leaflet';
+import {fetchWfsGeoJson} from '@/services/mapApi';
 import type { 
     LayerDefinition, 
     LayerParams,
@@ -152,21 +153,10 @@ export class UniversalLayerAdapter {
             }
         });
 
-        fetch(url)
-            .then(response => {
-                console.log('[UniversalAdapter.createWfsLayer] Response status:', response.status);
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                }
-                return response.json();
-            })
+        fetchWfsGeoJson(url)
             .then(data => {
-                console.log('[UniversalAdapter.createWfsLayer] Received data:', data);
-                if (data && data.features) {
-                    console.log('[UniversalAdapter.createWfsLayer] Adding', data.features.length, 'features to map');
+                if (data?.features) {
                     geoJsonLayer.addData(data);
-                } else {
-                    console.warn('[UniversalAdapter.createWfsLayer] No features in response:', data);
                 }
             })
             .catch(error => {

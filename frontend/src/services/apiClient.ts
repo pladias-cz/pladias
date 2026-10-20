@@ -2,7 +2,8 @@
  * Jediný HTTP klient aplikace (docs/refactoring.md, sekce D).
  *
  * Centralizuje: fetch volání, query parametry, parsování odpovědí, reakci na
- * 401 (přesměrování na /login) a 403 (injectable handler – sekce F), HTTP chyby
+ * 401 (přesměrování na /login), 403 (injectable handler – sekce F) a síťové
+ * chyby (injectable handler, `silent` pro background požadavky), HTTP chyby
  * a známé backendové gotchasy (docs/gotchas.md):
  *  - obálka `JsonResult` se parsuje na jednom místě; širší odpovědi (tabulky,
  *    user settings) typují service moduly přes `ApiResult<T>`,
@@ -26,6 +27,12 @@ export class ApiError extends Error {
     readonly status?: number;
     /** Parsované tělo odpovědi (kvůli extra polím, např. `invalidTaxa` u exportu). */
     readonly payload?: unknown;
+    /**
+     * Centrální notifikace už proběhla (403 přes forbiddenHandler, síťová chyba
+     * přes networkErrorHandler – sekce F). Volající pak `notifyApiError` přeskočí,
+     * aby se stejná hláška nezobrazila dvakrát.
+     */
+    notified = false;
 
     constructor(message: string, status?: number, payload?: unknown) {
         super(message);
@@ -42,6 +49,11 @@ export interface ApiOptions {
     params?: Record<string, string>;
     /** Hláška pro chybu, když odpověď žádnou vlastní zprávu nese. */
     errorMessage?: string;
+    /**
+     * Background požadavek (heartbeat, název projektu) – potlačí centrální
+     * notifikaci síťové chyby; selhání má vlastní graceful zpracování.
+     */
+    silent?: boolean;
 }
 
 /**
@@ -54,13 +66,23 @@ export function isAbortError(err: unknown): boolean {
 }
 
 let forbiddenHandler: ((message: string) => void) | null = null;
+let networkErrorHandler: ((error: ApiError) => void) | null = null;
 
 /**
  * Centrální reakce na 403. Výchozí stav jen loguje; notifikační store (sekce F,
- * fáze 4) se zapojí přes `setForbiddenHandler` bez zásahu do volajících.
+ * fáze 4) se zapojuje přes `setForbiddenHandler` bez zásahu do volajících.
  */
 export function setForbiddenHandler(handler: ((message: string) => void) | null): void {
     forbiddenHandler = handler;
+}
+
+/**
+ * Centrální reakce na síťové chyby (fetch selhal – sekce F, fáze 4). Výchozí
+ * stav jen vyhodí ApiError; handlery zapojuje App (notifikace). Background
+ * požadavky (`ApiOptions.silent` – heartbeat) se nehlásí, selhání řeší samy.
+ */
+export function setNetworkErrorHandler(handler: ((error: ApiError) => void) | null): void {
+    networkErrorHandler = handler;
 }
 
 /** Vytáhne chybovou hlášku z parsovaného těla – obálka nese `message` nebo `error`, výjimečně plain text. */
@@ -111,7 +133,12 @@ async function performRequest(
         });
     } catch (err) {
         if (isAbortError(err)) throw err;
-        throw new ApiError(err instanceof Error ? err.message : "Síťová chyba.", undefined);
+        const apiError = new ApiError(err instanceof Error ? err.message : "Síťová chyba.", undefined);
+        if (!options.silent && networkErrorHandler) {
+            networkErrorHandler(apiError);
+            apiError.notified = true;
+        }
+        throw apiError;
     }
 
     if (response.status === 401) {
@@ -126,7 +153,9 @@ async function performRequest(
         } else {
             console.error(`[apiClient] ${message}`);
         }
-        throw new ApiError(message, 403, payload);
+        const error = new ApiError(message, 403, payload);
+        error.notified = forbiddenHandler !== null;
+        throw error;
     }
 
     if (!response.ok) {

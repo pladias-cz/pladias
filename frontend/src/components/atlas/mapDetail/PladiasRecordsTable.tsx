@@ -6,6 +6,7 @@ import './RecordsTable.scss';
 import {HerbariumQualityCheckbox} from './HerbariumQualityCheckbox';
 import {AddCommentModal} from './AddCommentModal';
 import {ValidationStatusId} from "@/core/validationStatus";
+import RichTextMessage from "@/components/RichTextMessage";
 import {ValidationStatusCheckboxes} from './ValidationStatusCheckboxes';
 import {OriginalityStatusIcons} from './OriginalityStatusIcons';
 import {IncludeInMapCheckbox} from './IncludeInMapCheckbox';
@@ -221,7 +222,7 @@ export function PladiasRecordsTable({
                                      >
                                           {showTaxonName && record.taxonNameHtml && (
                                               <>
-                                                  <span dangerouslySetInnerHTML={{ __html: record.taxonNameHtml }} />
+                                                  <RichTextMessage html={record.taxonNameHtml}/>
                                                   <br />
                                               </>
                                           )}

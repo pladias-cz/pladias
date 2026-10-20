@@ -153,7 +153,7 @@ All HTTP communication goes through `src/services/apiClient.ts` (docs/refactorin
 
 - **Request helpers:** `apiGet/apiPost/apiPut/apiPatch/apiDelete` – typed, with `params` (query string) and `signal` (AbortController). They return the parsed JSON payload.
 - **Envelope:** the `JsonResult` shape (`ApiResult<T>` from `@/models/ApiResponse`) is interpreted by domain service modules (`src/services/*Api.ts`) – a component calls `addUser(input)` or `loadTraits(ids, {signal})` and never parses `{success, data|message|error}` itself. HTTP 200 with `success: false` is visible to the service (user settings use it as "value not set"); `ensureSuccess` throws for endpoints where it means an error.
-- **Errors:** HTTP failures (including 401 → redirect to `/login`, 403 → central handler wired by section F) are thrown as `ApiError`; `apiErrorMessage(err, fallback)` picks the backend message or a localized fallback for the UI.
+- **Errors:** HTTP failures (including 401 → redirect to `/login`, 403 → central handler, network failures → central handler; both wired by section F) are thrown as `ApiError`; `apiErrorMessage(err, fallback)` picks the backend message or a localized fallback for the UI. `ApiError.notified` marks errors already shown to the user centrally (403, network) – `notifyApiError` then skips them, so the same message is never toasted twice. Background requests with graceful fallback (heartbeat, project name) pass `silent: true` to suppress the central network-error notification.
 - **Named gotcha helpers** (docs/gotchas.md): `apiPostFormUrlencoded` (LF semantics of taxon lists), `apiGetLegacyString` (TraitsController bare string response), `apiDownload` (JSON error inside a file stream, Content-Type check).
 - **Multipart:** `FormData` is passed to `apiPost` without a Content-Type header – the browser adds the multipart boundary.
 - **Cancellation:** `isAbortError(err)` detects aborted requests (fetch throws a DOMException with `name === "AbortError"`).
@@ -179,6 +179,17 @@ Rules for failures and recovery (docs/refactoring.md, section G):
 - **Confirmations** use `useConfirm()` (`src/hooks/useConfirm.tsx` + `components/ConfirmDialog.tsx`): `if (!(await confirm({message: t("...")}))) return;` and render `{dialog}` once in the component root. Native `window.confirm`/`window.alert` are forbidden (blocking, not localizable, visually foreign).
 - **Instance heartbeat** (`useInstanceMessages`) is the only polling loop for instance status messages – it pauses in hidden tabs and backs off on failures (docs/gotchas.md „Instance heartbeat“). Do not add another `setInterval` polling of `/api/react/*` endpoints; hook the new data onto the existing pattern instead.
 - **Stable React keys:** keys are derived from content (`instanceMessageKey`), never from array index when the list can change order.
+
+#### Notifications (`stores/notificationStore.ts`, section F)
+
+One-off user feedback (action success/failure) goes through the global notification store – no local `useState<Flash>` duplicates. Persistent maintenance messages stay in `FlashMessages` + `useInstanceMessages` (different content type, different behavior).
+
+- **Push from components:** `const {push} = useNotifications()`; from non-React code (services, `App.tsx` handler wiring) use the imperative `pushNotification(input)`.
+- **Auto-dismiss:** success/info/warning disappear after 5 s; **danger stays until dismissed** (the user must notice it). A custom `timeout` (ms, `0` = sticky) overrides the default.
+- **Who may push:** a component/service right after finishing a user action (success and contextual errors), and `apiClient` centrally for 403 + network failures (handlers wired in `App.tsx`). 401 redirects; everything else is the caller's business.
+- **No duplicates:** in a `catch` of an apiClient-based call use `notifyApiError(err, fallback)` – it skips errors with `ApiError.notified` (already centrally shown) and aborted requests. Raw-`fetch` legacy code (still being migrated, docs/todo.md) pushes directly – it never sees `ApiError`.
+- **Rich-text (`html`)** is reserved for trusted backend content (import messages with links, `window.__FLASH__`); plain text uses `message`. `<Toasts />` (`Layout.tsx`, outside `ErrorBoundary`) renders the stack.
+- **Trusted HTML renders only via `RichTextMessage`** (`components/RichTextMessage.tsx`, section K): the single component allowed to use `dangerouslySetInnerHTML`. The only exceptions are map popup templates (OpenLayers). Never pass user-composed strings to it; sanitization is deliberately not a dependency (backend-generated content).
 
 ### Styling
 

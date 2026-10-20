@@ -5,8 +5,10 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import {InstanceConfigProvider} from "./context/InstanceConfigContext";
 import {UserProvider} from "./context/UserContext";
 import {ProjectNameProvider} from "./context/ProjectNameContext";
-import {changeLanguage} from "./i18n/i18n";
+import i18n, {changeLanguage} from "./i18n/i18n";
 import {loadReactConfig, type ReactConfig} from "./services/userApi";
+import {setForbiddenHandler, setNetworkErrorHandler} from "./services/apiClient";
+import {pushNotification} from "./stores/notificationStore";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 // Lazy-loaded pages
@@ -58,6 +60,20 @@ const Docs = lazy(() => import("./pages/user/Docs"));
 
 export default function App() {
     const [config, setConfig] = useState<ReactConfig | null>(null);
+
+    useEffect(() => {
+        // Centrální notifikace z apiClientu (sekce F): 403 a síťové chyby se
+        // zobrazí bez práce komponenty. Texty se překládají až v okamžiku
+        // zobrazení (jazyk se mezitím může změnit).
+        setForbiddenHandler((message) => pushNotification({type: "danger", message}));
+        setNetworkErrorHandler(() =>
+            pushNotification({type: "danger", message: i18n.t("common.notification.networkError")}),
+        );
+        return () => {
+            setForbiddenHandler(null);
+            setNetworkErrorHandler(null);
+        };
+    }, []);
 
     useEffect(() => {
         loadReactConfig()

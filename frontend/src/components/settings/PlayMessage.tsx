@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import RichTextMessage from "@/components/RichTextMessage";
 
 interface PlayMessageData {
     value: string;
@@ -84,9 +85,6 @@ export default function PlayMessage({ messageKey, fallback = "", className = "",
     }
 
     return (
-        <span
-            className={className}
-            dangerouslySetInnerHTML={{ __html: content }}
-        />
+        <RichTextMessage className={className} html={content}/>
     );
 }

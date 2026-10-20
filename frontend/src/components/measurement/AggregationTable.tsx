@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Table, Spinner, Alert } from "react-bootstrap";
 import { useTranslation } from "react-i18next";
 import type { TraitAggregationType } from "@/models/TraitAggregationType";
+import RichTextMessage from "@/components/RichTextMessage";
 
 export default function AggregationTable() {
     const { t } = useTranslation();
@@ -64,7 +65,7 @@ export default function AggregationTable() {
                         <code>{tpe.key}</code>
                     </td>
 
-                    <td dangerouslySetInnerHTML={{__html: tpe.description ?? ""}}></td>
+                    <td><RichTextMessage html={tpe.description}/></td>
                 </tr>
             ))}
             </tbody>

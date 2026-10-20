@@ -1,6 +1,7 @@
 import {Button, Form, Table} from "react-bootstrap";
 import {useTranslation} from "react-i18next";
 import type {UserSettingsState} from "./types";
+import RichTextMessage from "@/components/RichTextMessage";
 
 interface LanguageSettingsProps {
     userSettings: UserSettingsState;
@@ -25,7 +26,7 @@ export default function LanguageSettings({userSettings, handleInputChange, handl
     return (
         <div className="mb-4">
             <h4>{t("user.settings.applicationLanguage")}</h4>
-            <p dangerouslySetInnerHTML={{__html: t("user.settings.languageDescription")}}/>
+            <RichTextMessage as="p" html={t("user.settings.languageDescription")}/>
 
             <Table hover responsive className="align-middle">
                 <tbody>

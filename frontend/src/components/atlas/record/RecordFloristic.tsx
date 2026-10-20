@@ -3,6 +3,7 @@ import {useEffect, useMemo, useState} from "react";
 import {useTranslation} from "react-i18next";
 import type {RecordPladiasFull} from '@/models/RecordPladiasFull';
 import RecordInlineField from "./RecordInlineField";
+import RichTextMessage from "@/components/RichTextMessage";
 import {useRecordPermissions} from ".";
 import RecordReadonlyField from "@/components/atlas/record/RecordReadonlyField";
 import MultiSelectEdit from "@/components/atlas/record/MultiSelectEdit";
@@ -156,7 +157,7 @@ export default function RecordFloristic({record, onFieldUpdated}: RecordFloristi
                                 endpoint={`/api/react/taxa/importable/record/${localRecord.id}`}
                                 field="TAXON"
                                 renderDisplay={(option) => (
-                                    <span dangerouslySetInnerHTML={{__html: option.label || option.name}}/>
+                                    <RichTextMessage html={option.label || option.name}/>
                                 )}
                                 onUpdated={(data) => {
                                     if (data.updatedValue) {

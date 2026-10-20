@@ -28,7 +28,3 @@ export interface MapUserTableRow {
     supervisedTaxa: SupervisedTaxon[];
 }
 
-export interface FlashMessage {
-    type: 'success' | 'danger';
-    message: string;
-}

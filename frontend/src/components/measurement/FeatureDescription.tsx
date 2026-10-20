@@ -4,6 +4,7 @@ import type {TraitDatatype} from "@/models/TraitDatatype";
 import type {TraitAggregationType} from "@/models/TraitAggregationType";
 import type {EnumerateValue} from "@/models/EnumerateValue";
 import {DatatypeDescriptionPopover} from "@/components/measurement/DatatypeDescriptionPopover";
+import RichTextMessage from "@/components/RichTextMessage";
 
 function BoolIcon({value}: { value: boolean }) {
     return value ? (
@@ -104,11 +105,11 @@ export default function FeatureDatatypeFlags({feature}: Props) {
             </p>
 
             {feature.explanation && (
-                <p dangerouslySetInnerHTML={{__html: feature.explanation}}/>
+                <RichTextMessage as="p" html={feature.explanation}/>
             )}
 
             {feature.bibliography && (
-                <p dangerouslySetInnerHTML={{__html: feature.bibliography}}/>
+                <RichTextMessage as="p" html={feature.bibliography}/>
             )}
 
             {enumerate && enumerate.length > 0 && (

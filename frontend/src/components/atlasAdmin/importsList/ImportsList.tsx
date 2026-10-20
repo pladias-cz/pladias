@@ -5,7 +5,7 @@
  * to efficiently load imports with pagination, sorting, and filtering.
  */
 
-import {useState, useMemo, useCallback} from "react";
+import {useMemo, useCallback} from "react";
 import {useTranslation} from "react-i18next";
 import {
     DataTable,
@@ -19,25 +19,22 @@ import {
     useImportsActions,
 } from './hooks';
 import {
-    ImportsListFlash,
     ImportsListDataCell,
     ImportsListFilenameCell,
     ImportsListDownloadCell,
     ImportsListDeleteCell,
 } from './components';
-import type {ImportRecord, FlashMessage} from './types';
+import type {ImportRecord} from './types';
+import {useNotifications} from "@/stores/notificationStore";
 
 export default function ImportsList() {
     const {t} = useTranslation();
-    
-    // Flash message state
-    const [flash, setFlash] = useState<FlashMessage | null>(null);
-    
-    // Flash message handler
+    const {push} = useNotifications();
+
+    // Flash message handler – globální notifikace (sekce F), danger drží, success mizí
     const showFlash = useCallback((type: 'success' | 'danger', message: string) => {
-        setFlash({type, message});
-        setTimeout(() => setFlash(null), 5000);
-    }, []);
+        push({type, message});
+    }, [push]);
     
     // Data fetching hook
     const {fetchImports} = useImportsData({
@@ -96,11 +93,6 @@ export default function ImportsList() {
     
     return (
         <div className="container-fluid">
-            <ImportsListFlash 
-                flash={flash} 
-                onDismiss={() => setFlash(null)} 
-            />
-            
             <DataTable<ImportRecord>
                 endpoint="/api/react/atlasadmin/imports"
                 columns={columns}

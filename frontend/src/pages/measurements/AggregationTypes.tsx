@@ -2,6 +2,7 @@ import {Row} from "react-bootstrap";
 import {usePageTitle} from "@/hooks/usePageTitle";
 import {useTranslation} from "react-i18next";
 import AggregationTable from "@/components/measurement/AggregationTable";
+import RichTextMessage from "@/components/RichTextMessage";
 
 export default function AggregationTypes() {
     const {t} = useTranslation();
@@ -10,7 +11,7 @@ export default function AggregationTypes() {
         <>
             <Row>
                 <h3>{t("trait.aggregationTypes.heading")}</h3>
-                <p dangerouslySetInnerHTML={{__html: t("trait.aggregationTypes.paragraph1")}} />
+                <RichTextMessage as="p" html={t("trait.aggregationTypes.paragraph1")}/>
                 <p>{t("trait.aggregationTypes.paragraph2")}</p>
                 <p>{t("trait.aggregationTypes.paragraph3")}</p>
             </Row>

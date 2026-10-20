@@ -19,26 +19,23 @@ import {
     useImportControlsData,
 } from './hooks';
 import {
-    ImportControlsFlash,
     ImportControlsFilenameCell,
     ImportControlsDeleteCell,
 } from './components';
-import type {ImportControlRecord, FlashMessage} from './types';
+import type {ImportControlRecord} from './types';
+import {useNotifications} from "@/stores/notificationStore";
 
 export default function ListOfControls() {
     const {t} = useTranslation();
-    
-    // Flash message state
-    const [flash, setFlash] = useState<FlashMessage | null>(null);
-    
+    const {push} = useNotifications();
+
     // Deleting state - tracks ID currently being deleted
     const [deletingId, setDeletingId] = useState<number | null>(null);
-    
-    // Flash message handler
+
+    // Flash message handler – globální notifikace (sekce F), danger drží, success mizí
     const showFlash = useCallback((type: 'success' | 'danger', message: string) => {
-        setFlash({type, message});
-        setTimeout(() => setFlash(null), 5000);
-    }, []);
+        push({type, message});
+    }, [push]);
     
     // Data fetching hook
     const {fetchControls} = useImportControlsData({
@@ -113,11 +110,6 @@ export default function ListOfControls() {
     
     return (
         <div className="container-fluid">
-            <ImportControlsFlash 
-                flash={flash} 
-                onDismiss={() => setFlash(null)} 
-            />
-            
             <DataTable<ImportControlRecord>
                 endpoint="/api/react/importResult/validated"
                 columns={columns}

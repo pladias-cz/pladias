@@ -4,6 +4,7 @@ import {Container, Row} from 'react-bootstrap';
 import MainMenu from './core/MainMenu';
 import FlashMessages from './core/FlashMessages';
 import ErrorBoundary from './components/ErrorBoundary';
+import Toasts from './components/Toasts';
 import {useInstanceMessages} from './hooks/useInstanceMessages';
 import {useNavOffset} from './hooks/useNavOffset';
 
@@ -24,6 +25,9 @@ export default function Layout() {
                     </ErrorBoundary>
                 </Row>
             </Container>
+            {/* Globální notifikace (sekce F) – mimo ErrorBoundary (přežijí pád
+                stránky) a mimo obsah route (přežijí navigaci). */}
+            <Toasts/>
         </>
     );
 }

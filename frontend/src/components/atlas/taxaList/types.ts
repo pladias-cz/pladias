@@ -41,7 +41,3 @@ export interface TaxonOption {
     nameLat: string;
 }
 
-export interface FlashMessage {
-    type: 'success' | 'danger';
-    message: string;
-}

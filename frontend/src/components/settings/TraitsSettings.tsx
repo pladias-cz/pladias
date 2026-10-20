@@ -1,6 +1,7 @@
 import {Button, Form, Table} from "react-bootstrap";
 import {useTranslation} from "react-i18next";
 import type {UserSettingsState} from "./types";
+import RichTextMessage from "@/components/RichTextMessage";
 
 interface TraitsSettingsProps {
     userSettings: UserSettingsState;
@@ -15,7 +16,7 @@ export default function TraitsSettings({userSettings, handleInputChange, handleS
     return (
         <div className="mb-4">
             <h4>{t("user.settings.traitsSubstitution")}</h4>
-            <p dangerouslySetInnerHTML={{__html: t("user.settings.traitsDescription")}}/>
+            <RichTextMessage as="p" html={t("user.settings.traitsDescription")}/>
 
             <Table hover responsive className="align-middle">
                 <tbody>

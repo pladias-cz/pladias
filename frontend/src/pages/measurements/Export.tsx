@@ -2,7 +2,7 @@ import {useState, type FormEvent} from "react";
 import {Alert, Col, Row} from "react-bootstrap";
 import {usePageTitle} from "@/hooks/usePageTitle";
 import {useTranslation} from "react-i18next";
-import type {Flash} from "@/models/Flash";
+import {useNotifications} from "@/stores/notificationStore";
 import ExportTraitList from "@/components/measurement/export/ExportTraitList";
 import ExportTaxaList from "@/components/measurement/export/ExportTaxaList";
 import ExportOptions from "@/components/measurement/export/ExportOptions";
@@ -42,9 +42,9 @@ function download(blob: Blob, filename: string) {
 export default function Export() {
     const {t} = useTranslation();
     usePageTitle(t("trait.export.title"));
+    const {push} = useNotifications();
 
     const [submitting, setSubmitting] = useState(false);
-    const [flash, setFlash] = useState<Flash | null>(null);
     // neplatné názvy taxonů od serveru – jeden na řádek, aby se dalily označit a opravit
     const [invalidTaxa, setInvalidTaxa] = useState<string | null>(null);
 
@@ -53,7 +53,6 @@ export default function Export() {
         const form = event.currentTarget;
 
         setSubmitting(true);
-        setFlash(null);
         setInvalidTaxa(null);
 
         try {
@@ -68,14 +67,14 @@ export default function Export() {
 
             if (!res.ok || !res.headers.get("content-type")?.includes(DOWNLOAD_CONTENT_TYPE)) {
                 const error = await readError(res);
-                setFlash({type: "danger", message: error.message || t("trait.export.failed")});
+                push({type: "danger", message: error.message || t("trait.export.failed")});
                 setInvalidTaxa(error.invalidTaxa ?? null);
                 return;
             }
 
             download(await res.blob(), resolveFilename(res.headers.get("content-disposition")));
         } catch {
-            setFlash({type: "danger", message: t("trait.export.failed")});
+            push({type: "danger", message: t("trait.export.failed")});
         } finally {
             setSubmitting(false);
         }
@@ -84,10 +83,11 @@ export default function Export() {
     return (
         <form onSubmit={handleSubmit} className="form-horizontal">
             <h3>{t("trait.export.title")}</h3>
-            {flash && (
-                <Alert variant={flash.type} dismissible onClose={() => setFlash(null)}>
-                    {flash.message}
-                    {invalidTaxa && <pre className="mb-0 mt-2">{invalidTaxa}</pre>}
+            {/* hláška o neúspěchu jde do globální notifikace; seznam neplatných
+                taxonů zůstává u formuláře – uživatel ho podle něj opravuje */}
+            {invalidTaxa && (
+                <Alert variant="danger" dismissible onClose={() => setInvalidTaxa(null)}>
+                    <pre className="mb-0">{invalidTaxa}</pre>
                 </Alert>
             )}
             <Row>

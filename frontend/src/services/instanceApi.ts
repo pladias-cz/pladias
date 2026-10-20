@@ -16,7 +16,9 @@ import {parseInstanceMessages, type InstanceMessage} from "@/models/InstanceMess
  * Neopravovat na backendu; tady se pole toleratně parsuje.
  */
 export async function loadInstanceMessages(options?: ApiOptions): Promise<InstanceMessage[]> {
-    const raw = await apiGet<unknown>("/api/react/infoGlobal", options);
+    // Background polling – síťovou chybu nehlásí centrální notifikace
+    // (sekce F); výpadek signalizuje `useInstanceMessages` (unavailable).
+    const raw = await apiGet<unknown>("/api/react/infoGlobal", {...options, silent: true});
     return parseInstanceMessages(raw);
 }
 
@@ -27,9 +29,12 @@ export async function loadInstanceMessages(options?: ApiOptions): Promise<Instan
  * Při neúspěchu vrací prázdný řetězec – menu pak zobrazí prázdný brand.
  */
 export async function loadProjectName(lang: string, options?: ApiOptions): Promise<string> {
+    // Background fetch s fallbackem (menu zobrazí prázdný brand) – centrální
+    // notifikace síťové chyby by byla jen šum.
     const payload = await apiGet<ApiResult<{value?: string}>>("/api/react/playmessage/project_name", {
         ...options,
         params: {lang},
+        silent: true,
     });
     if (payload?.success !== true || !payload.data) {
         return "";

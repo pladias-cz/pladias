@@ -5,7 +5,7 @@
  * to efficiently load users and their rights (projects, taxa) on demand.
  */
 
-import {useState, useCallback, useMemo} from "react";
+import {useCallback, useMemo} from "react";
 import {useTranslation} from "react-i18next";
 import {DataTable, type DataTableColumnDef, createActionColumn, createTextColumn} from "@/core/dataTable";
 import {
@@ -14,25 +14,22 @@ import {
     useMapUsersTaxa,
 } from './hooks';
 import {
-    MapUsersFlash,
     MapUsersProjectsCell,
     MapUsersTaxaCell,
     MapUsersAddProjectModal,
     MapUsersAddTaxonModal,
 } from './components';
-import type {MapUserTableRow, FlashMessage} from './types';
+import type {MapUserTableRow} from './types';
+import {useNotifications} from "@/stores/notificationStore";
 
 export default function MapUsers() {
     const {t} = useTranslation();
-    
-    // Flash message state
-    const [flash, setFlash] = useState<FlashMessage | null>(null);
-    
-    // Flash message handler
+    const {push} = useNotifications();
+
+    // Flash message handler – globální notifikace (sekce F), danger drží, success mizí
     const showFlash = useCallback((type: 'success' | 'danger', message: string) => {
-        setFlash({type, message});
-        setTimeout(() => setFlash(null), 5000);
-    }, []);
+        push({type, message});
+    }, [push]);
     
     // Data fetching hook
     const {fetchUsersWithRights} = useMapUsersData({
@@ -126,11 +123,6 @@ export default function MapUsers() {
     
     return (
         <div className="container-fluid">
-            <MapUsersFlash 
-                flash={flash} 
-                onDismiss={() => setFlash(null)} 
-            />
-            
             <DataTable<MapUserTableRow>
                 endpoint="/api/react/atlasadmin/users"
                 columns={columns}

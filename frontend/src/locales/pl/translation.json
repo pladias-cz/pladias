@@ -1,5 +1,6 @@
 {
   "common": {
+    "close": "Zamknij",
     "confirm": {
       "title": "Potwierdzenie działania"
     },
@@ -10,6 +11,9 @@
     },
     "instanceMessages": {
       "unavailable": "Komunikaty o stanie instancji są obecnie niedostępne."
+    },
+    "notification": {
+      "networkError": "Połączenie z serwerem nie powiodło się – sprawdź połączenie z internetem."
     }
   },
   "trait": {

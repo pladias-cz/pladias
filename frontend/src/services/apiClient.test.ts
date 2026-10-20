@@ -9,6 +9,7 @@ import {
     ensureSuccess,
     isAbortError,
     setForbiddenHandler,
+    setNetworkErrorHandler,
 } from "./apiClient";
 
 /**
@@ -40,6 +41,7 @@ beforeEach(() => {
 
 afterEach(() => {
     setForbiddenHandler(null);
+    setNetworkErrorHandler(null);
     vi.unstubAllGlobals();
     vi.restoreAllMocks();
 });
@@ -149,6 +151,32 @@ describe("HTTP error branches", () => {
         fetchMock.mockRejectedValue(new TypeError("Failed to fetch"));
 
         await expect(apiGet("/x")).rejects.toBeInstanceOf(ApiError);
+    });
+
+    it("reports network failures to the central handler and marks the error notified (section F)", async () => {
+        fetchMock.mockRejectedValue(new TypeError("Failed to fetch"));
+        const handler = vi.fn();
+        setNetworkErrorHandler(handler);
+
+        await expect(apiGet("/x")).rejects.toMatchObject({notified: true});
+        expect(handler).toHaveBeenCalledTimes(1);
+        expect(handler.mock.calls[0][0]).toBeInstanceOf(ApiError);
+    });
+
+    it("does not centrally report network failures of silent background requests", async () => {
+        fetchMock.mockRejectedValue(new TypeError("Failed to fetch"));
+        const handler = vi.fn();
+        setNetworkErrorHandler(handler);
+
+        await expect(apiGet("/api/react/infoGlobal", {silent: true})).rejects.toMatchObject({notified: false});
+        expect(handler).not.toHaveBeenCalled();
+    });
+
+    it("marks 403 as centrally notified when a forbidden handler is wired", async () => {
+        fetchMock.mockResolvedValue(jsonResponse({success: false, message: "Nedostatečná oprávnění"}, 403));
+        setForbiddenHandler(vi.fn());
+
+        await expect(apiGet("/api/react/atlasadmin/imports")).rejects.toMatchObject({status: 403, notified: true});
     });
 });
 

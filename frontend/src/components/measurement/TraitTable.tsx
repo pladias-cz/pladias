@@ -4,7 +4,8 @@ import {useConfirm} from "@/hooks/useConfirm";
 import type {Feature} from "@/models/Feature";
 import type {Trait} from "@/models/Trait";
 import type {ApiResult} from "@/models/ApiResponse";
-import type {Flash} from "@/models/Flash";
+import {useNotifications} from "@/stores/notificationStore";
+import RichTextMessage from "@/components/RichTextMessage";
 
 interface Props {
     feature: Feature;
@@ -28,9 +29,9 @@ function extractMessage(body: unknown): string | null {
 export default function TraitTable({feature, refreshKey}: Props) {
     const {t} = useTranslation();
     const {confirm, dialog} = useConfirm();
+    const {push} = useNotifications();
     const [traits, setTraits] = useState<Trait[]>([]);
     const [defaultTraitId, setDefaultTraitId] = useState<number | null>(null);
-    const [flash, setFlash] = useState<Flash | null>(null);
 
     const [loading, setLoading] = useState(true);
     const [busyTraitId, setBusyTraitId] = useState<number | null>(null);
@@ -48,14 +49,14 @@ export default function TraitTable({feature, refreshKey}: Props) {
             setTraits(list);
             setDefaultTraitId(list.find(t => t.isDefault)?.id ?? null);
         } catch (e) {
-            setFlash({
+            push({
                 type: "danger",
                 message: `Nepodařilo se načíst datové řady: ${e instanceof Error ? e.message : "neznámá chyba"}`
             });
         } finally {
             setLoading(false);
         }
-    }, [feature.id]);
+    }, [feature.id, push]);
 
     useEffect(() => {
         if (!feature?.id) return;
@@ -80,21 +81,21 @@ export default function TraitTable({feature, refreshKey}: Props) {
             const message = extractMessage(await res.json().catch(() => null));
 
             if (!res.ok) {
-                setFlash({
+                push({
                     type: "danger",
                     message: message || "Nepodařilo se smazat datovou řadu"
                 });
                 return;
             }
 
-            setFlash({
+            push({
                 type: "success",
                 message: message || "Datová řada byla smazána"
             });
             // mazání může přenastavit výchozí řadu, proto znovu načíst
             await loadTraits();
         } catch {
-            setFlash({
+            push({
                 type: "danger",
                 message: "Chyba komunikace se serverem"
             });
@@ -120,21 +121,21 @@ export default function TraitTable({feature, refreshKey}: Props) {
 
             if (!res.ok || json?.success === false) {
                 setDefaultTraitId(previous);
-                setFlash({
+                push({
                     type: "danger",
                     message: message || "Nepodařilo se nastavit výchozí datovou řadu"
                 });
                 return;
             }
 
-            setFlash({
+            push({
                 type: "success",
                 message: "Výchozí datová řada změněna"
             });
             await loadTraits();
         } catch {
             setDefaultTraitId(previous);
-            setFlash({
+            push({
                 type: "danger",
                 message: "Chyba komunikace se serverem"
             });
@@ -148,11 +149,6 @@ export default function TraitTable({feature, refreshKey}: Props) {
     return (
         <>
         {dialog}
-        {flash && (
-            <div className={`alert alert-${flash.type}`}>
-                {flash.message}
-            </div>
-        )}
 
     <table className="table table-condensed table-striped">
             <thead>
@@ -182,11 +178,11 @@ export default function TraitTable({feature, refreshKey}: Props) {
 
                     <td>{t.totalTaxonCount}</td>
 
-                    <td dangerouslySetInnerHTML={{__html: t.sourceHtml}}/>
+                    <td><RichTextMessage html={t.sourceHtml}/></td>
 
                     <td>{t.descriptionCz}</td>
 
-                    <td dangerouslySetInnerHTML={{__html: t.ownerHtml}}/>
+                    <td><RichTextMessage html={t.ownerHtml}/></td>
 
                     <td>{t.visibilityDescriptionCz}</td>
 

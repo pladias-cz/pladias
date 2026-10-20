@@ -36,8 +36,18 @@ Known exceptions (do not copy, frontend has to tolerate them):
   `loadProjectName` strips HTML tags via a DOM element (trusted backend input, no sanitizer
   dependency).
 - Import/validation error messages (`TraitsController.ImportFailed` / `ValidationFailed`)
-  contain an HTML `<a>` link to the workbook with highlighted error rows, so `FeatureDetail`
-  renders them with `dangerouslySetInnerHTML`.
+  contain an HTML `<a>` link to the workbook with highlighted error rows. `FeatureDetail`
+  therefore pushes them as rich-text notifications (`html`) – rendered by `RichTextMessage`,
+  the only component allowed to use `dangerouslySetInnerHTML`.
+
+### Server-injected flash (`window.__FLASH__`)
+- The backend boot template `app/views/react/index.scala.html` injects `window.__FLASH__`
+  (`{success?: string, error?: string}`) after legacy-server redirects into the SPA –
+  `FeatureDetail` reads it on mount and pushes it into the notification store.
+- The content is backend rich-text (may contain the import-workbook link above), so it goes
+  through the `html` notification variant – do not render it as plain text, the link would break.
+- Flash messages of the **legacy** pages (server-rendered) use a different mechanism
+  (`flash` in Play templates) – unrelated to this global.
 
 ### File Downloads vs JSON Errors
 - `TraitExportController.complexExportResult` answers with a **file stream**
@@ -98,6 +108,19 @@ Known exceptions (do not copy, frontend has to tolerate them):
   Module availability is declared in `InstanceConfig.hasModule()`, not hardcoded in the component.
 - `biblioAdmin` stays in the FE union on purpose: it is consumed by `UsersTable`
   (user administration checkbox) and dropping it would false-positive the drift warning.
+
+### Notifications are store-owned, not component-owned (section F)
+- One-off feedback lives in `stores/notificationStore.ts` (zustand) and is rendered by `<Toasts />`
+  in `Layout.tsx` – it survives navigation and page crashes (it sits outside `ErrorBoundary`).
+- **Deduplication contract:** `apiClient` centrally notifies 403 and network failures and marks
+  the thrown `ApiError` with `notified = true`. A component `catch` must use
+  `notifyApiError(err, fallback)` instead of pushing manually, otherwise the same failure
+  produces two toasts. Raw-`fetch` code (pre-migration) never sees `ApiError`, so it pushes directly.
+- Background requests (heartbeat via `loadInstanceMessages`, project name) pass `silent: true`
+  to apiClient – their failures have their own graceful handling (unavailable banner, empty brand)
+  and must not spam toasts.
+- `danger` notifications are sticky on purpose (no auto-dismiss); a toast that closes itself
+  before the user reads it is worse than none.
 
 ---
 

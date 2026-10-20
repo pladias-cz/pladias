@@ -679,6 +679,9 @@
       "remove": "Odebrat",
       "saveFailed": "Uložení selhalo"
     },
+    "notification": {
+      "networkError": "Chyba spojení se serverem – zkontrolujte připojení k internetu."
+    },
     "no": "Ne",
     "noData": "Nenalezeny žádné záznamy",
     "null": "null",

@@ -4,6 +4,7 @@ import type { FeatureGroup } from "@/models/FeatureGroup";
 import type { Feature } from "@/models/Feature";
 import type { Trait } from "@/models/Trait";
 import { Spinner, Alert, Button, Form } from "react-bootstrap";
+import RichTextMessage from "@/components/RichTextMessage";
 
 interface TraitsByFeature {
     [featureId: number]: Trait[];
@@ -172,7 +173,7 @@ export default function ExportTraitList() {
                                                                 value={trait.id}
                                                                 label={
                                                                     <>
-                                                                        datová řada založená na zdroji <span dangerouslySetInnerHTML={{__html: trait.sourceHtml}}></span>
+                                                                        datová řada založená na zdroji <RichTextMessage html={trait.sourceHtml}/>
                                                                         <small className="text-muted">
                                                                             ({new Date(trait.createTimestamp).toLocaleDateString("cs-CZ")})
                                                                         </small>

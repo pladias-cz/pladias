@@ -1,4 +1,5 @@
 import {OverlayTrigger, Popover, Badge} from "react-bootstrap";
+import RichTextMessage from "@/components/RichTextMessage";
 
 interface Props {
     description?: string | null;
@@ -10,7 +11,7 @@ export function DatatypeDescriptionPopover({description}: Props) {
     const popover = (
         <Popover id="datatype-description-popover">
             <Popover.Body>
-                <span dangerouslySetInnerHTML={{__html: description}} />
+                <RichTextMessage html={description}/>
             </Popover.Body>
         </Popover>
     );

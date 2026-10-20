@@ -7,28 +7,31 @@ import {useTranslation} from "react-i18next";
 import TraitTable from "@/components/measurement/TraitTable";
 import FeatureDescription from "@/components/measurement/FeatureDescription";
 import TraitUpload from "@/components/measurement/TraitUpload";
-import type {Flash} from "@/models/Flash";
+import {useNotifications} from "@/stores/notificationStore";
 
 export default function FeatureDetail() {
     const {t} = useTranslation();
     usePageTitle(t("trait.featureDetail.title"));
     const {featureId} = useParams<{ featureId: string }>();
     const [selectedFeature, setSelectedFeature] = useState<Feature | null>(null);
-    const [flash, setFlash] = useState<Flash | null>(null);
     const [submitting, setSubmitting] = useState(false);
     // po úspěšném importu je třeba znovu načíst tabulku datových řad
     const [traitsRefreshKey, setTraitsRefreshKey] = useState(0);
+    const {push} = useNotifications();
 
     useEffect(() => {
+        // hlášku po přesměrování z legacy stránky injectuje backend do
+        // window.__FLASH__ (app/views/react/index.scala.html) – gotchas.md
         const f = (window as any).__FLASH__;
         if (!f) return;
 
+        // obsah může nést HTML s odkazem na sešit s chybami importu
         if (f.success) {
-            setFlash({type: "success", message: f.success});
+            push({type: "success", html: f.success});
         } else if (f.error) {
-            setFlash({type: "danger", message: f.error});
+            push({type: "danger", html: f.error});
         }
-    }, []);
+    }, [push]);
 
     async function loadFeature(id: number) {
         try {
@@ -54,7 +57,6 @@ export default function FeatureDetail() {
         const isImport = formData.get("operation") === "import";
 
         setSubmitting(true);
-        setFlash(null);
 
         try {
             const res = await fetch("/api/react/measurement/trait", {
@@ -67,13 +69,13 @@ export default function FeatureDetail() {
             const message: string | null = typeof json === "string" ? json : json?.message ?? null;
 
             if (!res.ok) {
-                setFlash({type: "danger", message: message || "Operace se nezdařila"});
+                push({type: "danger", html: message || "Operace se nezdařila"});
                 return;
             }
 
-            setFlash({
+            push({
                 type: "success",
-                message: message || (isImport ? "Datová řada byla importována" : "Soubor je validní")
+                html: message || (isImport ? "Datová řada byla importována" : "Soubor je validní")
             });
 
             if (isImport) {
@@ -81,7 +83,7 @@ export default function FeatureDetail() {
                 setTraitsRefreshKey(key => key + 1);
             }
         } catch {
-            setFlash({type: "danger", message: "Chyba komunikace se serverem"});
+            push({type: "danger", message: "Chyba komunikace se serverem"});
         } finally {
             setSubmitting(false);
         }
@@ -111,14 +113,6 @@ export default function FeatureDetail() {
 
             <Row>
                 <Col>
-                    {flash && (
-                        /* hlášení z importu/validace obsahuje odkaz na sešit s vyznačenými chybnými řádky */
-                        <div
-                            className={`alert alert-${flash.type}`}
-                            role="alert"
-                            dangerouslySetInnerHTML={{__html: flash.message}}
-                        />
-                    )}
                     {/* importovat/smazat datovou řadu smí jen traitAdmin nebo admin vlastnosti (BE: user.supervises(feature)) */}
                     {selectedFeature.canAdminister ? (
                         <form onSubmit={uploadTrait} className="form-horizontal">

@@ -1,5 +1,7 @@
 import {useEffect, useState} from "react";
 import {useTranslation} from "react-i18next";
+import {getTaxonTraitCount} from "@/services/taxonApi";
+import {notifyApiError} from "@/stores/notificationStore";
 
 interface Props {
     taxonId: number;
@@ -10,17 +12,13 @@ export default function TaxonTraitCount({taxonId}: Props) {
     const [count, setCount] = useState<number | null>(null);
 
     useEffect(() => {
-        fetch(`/api/react/taxon/${taxonId}/traitCount`)
-            .then(r => r.json())
-            .then(res => {
-                if (res.success) {
-                    setCount(res.data);
-                } else {
-                    setCount(0);
-                }
-            })
-            .catch(() => setCount(0));
-    }, [taxonId]);
+        getTaxonTraitCount(taxonId)
+            .then(setCount)
+            .catch(e => {
+                notifyApiError(e, t("taxon.traitCount.loadFailed"));
+                setCount(0);
+            });
+    }, [taxonId, t]);
 
     if (count === null) {
         return null; // nebo třeba spinner

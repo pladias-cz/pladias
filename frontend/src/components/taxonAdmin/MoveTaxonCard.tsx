@@ -6,6 +6,8 @@ import { type TaxonId } from "@/models/TaxonId";
 import TaxaPossibleParentAutocomplete from "@/components/autocomplete/TaxaPossibleParentAutocomplete";
 import { useConfirm } from "@/hooks/useConfirm";
 import { useTranslation } from 'react-i18next';
+import {deleteTaxon, moveTaxon} from "@/services/taxonApi";
+import {notifyApiError} from "@/stores/notificationStore";
 
 interface Props {
     taxon: Taxon;
@@ -21,39 +23,16 @@ export default function MoveTaxonCard({ taxon, onMoved }: Props) {
     const [isMoving, setIsMoving] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
 
-    const [moveError, setMoveError] = useState<string | null>(null);
-    const [deleteError, setDeleteError] = useState<string | null>(null);
-
     async function handleMove() {
         if (selectedParentId == null) return;
 
         setIsMoving(true);
-        setMoveError(null);
 
         try {
-            const res = await fetch(`/api/react/taxon/${taxon.id}/move`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ parentId: selectedParentId.id }),
-            });
-
-            if (!res.ok) {
-                throw new Error(t("taxon.move.moveFailed"));
-            }
-
-            const json = await res.json();
-            if (!json.success) {
-                throw new Error(json.message ?? t("taxon.move.moveFailed"));
-            }
-
-            const updated: Taxon = json.data;
-            onMoved(updated);
+            onMoved(await moveTaxon(taxon.id, selectedParentId.id));
             setSelectedParentId(null);
-
         } catch (e) {
-            setMoveError((e as Error).message);
+            notifyApiError(e, t("taxon.move.moveFailed"));
         } finally {
             setIsMoving(false);
         }
@@ -68,26 +47,12 @@ export default function MoveTaxonCard({ taxon, onMoved }: Props) {
         }
 
         setIsDeleting(true);
-        setDeleteError(null);
 
         try {
-            const res = await fetch(`/api/react/taxon/${taxon.id}`, {
-                method: "DELETE",
-            });
-
-            if (!res.ok) {
-                throw new Error(t("taxon.move.deleteFailed"));
-            }
-
-            const json = await res.json();
-            if (!json.success) {
-                throw new Error(json.message ?? t("taxon.move.deleteFailed"));
-            }
-
+            await deleteTaxon(taxon.id);
             navigate(`/user/taxaAdministration/${taxon.parentId}`);
-
         } catch (e) {
-            setDeleteError((e as Error).message);
+            notifyApiError(e, t("taxon.move.deleteFailed"));
         } finally {
             setIsDeleting(false);
         }
@@ -106,12 +71,6 @@ export default function MoveTaxonCard({ taxon, onMoved }: Props) {
                             onSelect={setSelectedParentId}
                         />
                     </Form.Group>
-
-                    {moveError && (
-                        <div className="text-danger mb-2">
-                            {moveError}
-                        </div>
-                    )}
 
                     <Button
                         onClick={handleMove}
@@ -133,12 +92,6 @@ export default function MoveTaxonCard({ taxon, onMoved }: Props) {
                 <p>
                     {t("taxon.move.deleteDescription")}
                 </p>
-
-                {deleteError && (
-                    <div className="text-danger mb-2">
-                        {deleteError}
-                    </div>
-                )}
 
                 <Button
                     variant="danger"

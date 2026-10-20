@@ -5,6 +5,8 @@ import {type TaxonId} from '@/models/TaxonId';
 import TaxonName from '@/components/taxon/TaxonName';
 import {Link} from 'react-router-dom'; // pokud používáš react-router
 import {useTranslation} from 'react-i18next';
+import {getTaxonParents} from '@/services/taxonApi';
+import {notifyApiError} from '@/stores/notificationStore';
 
 interface Props {
     taxon: Taxon;
@@ -28,14 +30,9 @@ export default function TaxonDetail({taxon, cacheKey}: Props) {
         async function loadParents() {
             setLoadingParents(true);
             try {
-                const res = await fetch(`/api/react/taxon/${taxon.id}/parents`);
-                if (!res.ok) throw new Error(t("taxon.detail.loadParentsFailed"));
-                const json = await res.json();
-                if (!json.success) throw new Error(t("taxon.detail.apiError"));
-
-                setParents(json.data); // očekáváme pole Taxonů od kořene po přímého rodiče
+                setParents(await getTaxonParents(taxon.id)); // od kořene po přímého rodiče
             } catch (e) {
-                console.error(e);
+                notifyApiError(e, t("taxon.detail.loadParentsFailed"));
                 setParents([]);
             } finally {
                 setLoadingParents(false);
@@ -45,7 +42,7 @@ export default function TaxonDetail({taxon, cacheKey}: Props) {
         if (taxon?.id) {
             loadParents();
         }
-    }, [taxon]);
+    }, [taxon, t]);
 
     return (
         <Card className="mt-3">

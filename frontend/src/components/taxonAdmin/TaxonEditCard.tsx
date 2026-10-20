@@ -1,48 +1,43 @@
 import {Card} from "react-bootstrap";
 import {type Taxon} from '@/models/Taxon';
-import {type TaxonRankId} from '@/models/TaxonRankId';
 import {type Option} from '@/models/Option';
 import TaxonTraitCount from "@/components/taxonAdmin/TaxonTraitCount";
 import TaxonStats from "@/components/taxonAdmin/TaxonStats";
 import {useEffect, useState} from "react";
 import InlineField from '@/components/edit/TaxonInlineField';
 import {useTranslation} from 'react-i18next';
+import {getTaxonRanks} from "@/services/taxonApi";
+import {notifyApiError} from "@/stores/notificationStore";
 
 interface Props {
     taxon: Taxon;
     onTaxonChange: (updated: Taxon) => void;
-    cacheKey: number;
 }
 
 
-export default function TaxonEditCard({taxon, onTaxonChange, cacheKey}: Props) {
+export default function TaxonEditCard({taxon, onTaxonChange}: Props) {
     const {t} = useTranslation();
-    const [localTaxon, setLocalTaxon] = useState<Taxon>(taxon);
-
-    useEffect(() => {
-        setLocalTaxon(taxon); // aktualizujeme lokální taxon
-    }, [taxon.id, taxon.nameLat]);
-
-    useEffect(() => {
-        setLocalTaxon(taxon);
-    }, [cacheKey]);
 
     const [rankOptions, setRankOptions] = useState<Option[]>([]);
 
     useEffect(() => {
-        fetch("/api/react/taxonrank/queryAll")
-            .then(r => r.json())
-            .then(res => res.data as TaxonRankId[])
+        getTaxonRanks()
             .then(ranks =>
                 ranks.map(r => ({
                     value: r.id,
                     label: `${r.nameEng} – ${r.nameCz}`
                 }))
             )
-            .then(setRankOptions);
-    }, []);
+            .then(setRankOptions)
+            .catch(e => notifyApiError(e, t("taxon.create.loadRanksError")));
+    }, [t]);
 
     const rankLabel = rankOptions.find(o => o.value === taxon.rank)?.label;
+
+    /** Po úspěšném uložení inline pole – propaguje aktualizovaný taxon rodičovi. */
+    const handleInlineUpdate = (updated: Taxon) => {
+        onTaxonChange(updated);
+    };
 
     return (
         <Card>
@@ -57,11 +52,7 @@ export default function TaxonEditCard({taxon, onTaxonChange, cacheKey}: Props) {
                     field="LATNAME"
                     value={taxon.nameLat}
                     render={v => <i>{v}</i>}
-                    onUpdated={v => {
-                        const updatedTaxon = {...localTaxon, nameLat: v};
-                        setLocalTaxon(updatedTaxon);
-                        onTaxonChange(updatedTaxon);
-                    }}
+                    onUpdated={handleInlineUpdate}
                 />
 
                 <InlineField
@@ -70,11 +61,7 @@ export default function TaxonEditCard({taxon, onTaxonChange, cacheKey}: Props) {
                     field="NAMEHTML"
                     value={taxon.nameHtml}
                     render={v => v ? <>{v}</> : <span className="text-muted">—</span>}
-                    onUpdated={v => {
-                        const updatedTaxon = {...localTaxon, nameHtml: v};
-                        setLocalTaxon(updatedTaxon);
-                        onTaxonChange(updatedTaxon);
-                    }}
+                    onUpdated={handleInlineUpdate}
                 />
 
                 <InlineField
@@ -83,11 +70,7 @@ export default function TaxonEditCard({taxon, onTaxonChange, cacheKey}: Props) {
                     field="CZNAME"
                     value={taxon.nameCz}
                     render={v => v ? <>{v}</> : <span className="text-muted">—</span>}
-                    onUpdated={v => {
-                        const updatedTaxon = {...localTaxon, nameCz: v};
-                        setLocalTaxon(updatedTaxon);
-                        onTaxonChange(updatedTaxon);
-                    }}
+                    onUpdated={handleInlineUpdate}
                 />
 
                 <InlineField
@@ -98,11 +81,7 @@ export default function TaxonEditCard({taxon, onTaxonChange, cacheKey}: Props) {
                     type="select"
                     options={rankOptions}
                     render={() => rankLabel || "—"}
-                    onUpdated={v => {
-                        const updatedTaxon = {...localTaxon, rank: v};
-                        setLocalTaxon(updatedTaxon);
-                        onTaxonChange(updatedTaxon);
-                    }}
+                    onUpdated={handleInlineUpdate}
                 />
 
                 <InlineField
@@ -111,11 +90,7 @@ export default function TaxonEditCard({taxon, onTaxonChange, cacheKey}: Props) {
                     field="AUTHOR"
                     value={taxon.author}
                     render={v => v ? <>{v}</> : <span className="text-muted">—</span>}
-                    onUpdated={v => {
-                        const updatedTaxon = {...localTaxon, author: v};
-                        setLocalTaxon(updatedTaxon);
-                        onTaxonChange(updatedTaxon);
-                    }}
+                    onUpdated={handleInlineUpdate}
                 />
 
                 <InlineField
@@ -124,11 +99,7 @@ export default function TaxonEditCard({taxon, onTaxonChange, cacheKey}: Props) {
                     field="HYBRIDPARENTAGE"
                     value={taxon.hybridParents}
                     render={v => v ? <>{v}</> : <span className="text-muted">—</span>}
-                    onUpdated={v => {
-                        const updatedTaxon = {...localTaxon, hybridParents: v};
-                        setLocalTaxon(updatedTaxon);
-                        onTaxonChange(updatedTaxon);
-                    }}
+                    onUpdated={handleInlineUpdate}
                 />
 
                 <InlineField
@@ -137,11 +108,7 @@ export default function TaxonEditCard({taxon, onTaxonChange, cacheKey}: Props) {
                     field="SUPPRESSED"
                     value={taxon.suppressed || false}
                     type="boolean"
-                    onUpdated={v => {
-                        const updatedTaxon = {...localTaxon, suppressed: v};
-                        setLocalTaxon(updatedTaxon);
-                        onTaxonChange(updatedTaxon);
-                    }}
+                    onUpdated={handleInlineUpdate}
                 />
 
                 <InlineField
@@ -150,11 +117,7 @@ export default function TaxonEditCard({taxon, onTaxonChange, cacheKey}: Props) {
                     field="COMMENT"
                     value={taxon.note}
                     render={v => v ? <>{v}</> : <span className="text-muted">—</span>}
-                    onUpdated={v => {
-                        const updatedTaxon = {...localTaxon, note: v};
-                        setLocalTaxon(updatedTaxon);
-                        onTaxonChange(updatedTaxon);
-                    }}
+                    onUpdated={handleInlineUpdate}
                 />
             </Card.Body>
         </Card>

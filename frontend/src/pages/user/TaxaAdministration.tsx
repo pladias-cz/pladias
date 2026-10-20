@@ -12,6 +12,8 @@ import NewTaxonCard from "@/components/taxonAdmin/NewTaxonCard";
 import {type Taxon} from '@/models/Taxon';
 import {type TaxonId} from '@/models/TaxonId';
 import TaxonSynonyms from "@/components/taxonAdmin/TaxonSynonyms";
+import {getTaxon} from "@/services/taxonApi";
+import {notifyApiError} from "@/stores/notificationStore";
 import { useTranslation } from 'react-i18next';
 
 export default function TaxaAdministration() {
@@ -28,17 +30,9 @@ export default function TaxaAdministration() {
     async function loadTaxon(id: number) {
         setLoading(true);
         try {
-            const res = await fetch(`/api/react/taxon/${id}`);
-            if (!res.ok) throw new Error(t("taxon.administration.loadTaxonError"));
-
-            const json = await res.json();
-            if (!json.success) throw new Error(t("taxon.administration.apiError"));
-
-            const fullTaxon: Taxon = json.data;
-            setSelectedTaxon(fullTaxon);
-
-        } catch (e: any) {
-            console.error(e);
+            setSelectedTaxon(await getTaxon(id));
+        } catch (e) {
+            notifyApiError(e, t("taxon.administration.loadTaxonError"));
             setSelectedTaxon(null);
         } finally {
             setLoading(false);
@@ -110,7 +104,6 @@ export default function TaxaAdministration() {
                 <Row className="mt-3">
                     <Col md={4}>
                         <TaxonEditCard
-                            cacheKey={taxonVersion}
                             taxon={selectedTaxon}
                             onTaxonChange={refreshSelectedTaxon} // reload po úpravě
                         />

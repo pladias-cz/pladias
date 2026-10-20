@@ -3,8 +3,9 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { type Taxon } from "@/models/Taxon";
 import { type Option } from "@/models/Option";
-import { type TaxonRankId } from "@/models/TaxonRankId";
 import { useTranslation } from "react-i18next";
+import {createTaxon, getTaxonRanks} from "@/services/taxonApi";
+import {notifyApiError} from "@/stores/notificationStore";
 
 interface Props {
     taxon: Taxon;
@@ -21,9 +22,7 @@ export default function NewTaxonCard({ taxon }: Props) {
 
 
     useEffect(() => {
-        fetch("/api/react/taxonrank/queryAll")
-            .then(r => r.json())
-            .then(res => res.data as TaxonRankId[])
+        getTaxonRanks()
             .then(ranks =>
                 ranks.map(r => ({
                     value: r.id,
@@ -31,10 +30,10 @@ export default function NewTaxonCard({ taxon }: Props) {
                 }))
             )
             .then(setRankOptions)
-            .catch(() =>
-                setError(t("taxon.create.loadRanksError"))
+            .catch(e =>
+                notifyApiError(e, t("taxon.create.loadRanksError"))
             );
-    }, []);
+    }, [t]);
 
     const handleAdd = async () => {
         if (!nameLat.trim()) {
@@ -46,28 +45,15 @@ export default function NewTaxonCard({ taxon }: Props) {
         setError(null);
 
         try {
-            const res = await fetch("/api/react/taxon", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    nameLat,
-                    rankId,
-                    parentId: taxon.id,
-                }),
+            const addedTaxon = await createTaxon({
+                nameLat,
+                rankId,
+                parentId: taxon.id,
             });
 
-            if (!res.ok) {
-                throw new Error(t("taxon.create.createError"));
-            }
-
-            const json = await res.json();
-            const addedTaxon: Taxon = json.data;
-
             navigate(`/user/taxaAdministration/${addedTaxon.id}`);
-        } catch (e: any) {
-            setError(e.message ?? t("taxon.create.unexpectedError"));
+        } catch (e) {
+            notifyApiError(e, t("taxon.create.createError"));
         } finally {
             setLoading(false);
         }

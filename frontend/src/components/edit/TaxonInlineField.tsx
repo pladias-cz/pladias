@@ -1,21 +1,37 @@
 import {useState} from "react";
 import {Col, Form, Row, Spinner} from "react-bootstrap";
 import {useTranslation} from "react-i18next";
+import type {Taxon} from "@/models/Taxon";
+import {updateTaxonField, type TaxonEditorField} from "@/services/taxonApi";
+import {notifyApiError} from "@/stores/notificationStore";
 
 interface Option<T = any> {
     value: T;
     label: T;
 }
 
+/** Mapování backend konstant polí (PATCH) na vlastnosti modelu Taxon. */
+const FIELD_TO_PROPERTY: Record<TaxonEditorField, keyof Taxon> = {
+    LATNAME: "nameLat",
+    NAMEHTML: "nameHtml",
+    CZNAME: "nameCz",
+    RANK: "rank",
+    AUTHOR: "author",
+    HYBRIDPARENTAGE: "hybridParents",
+    SUPPRESSED: "suppressed",
+    COMMENT: "note",
+};
+
 interface Props {
     label: string;
     taxonId: number;
-    field: string;
+    field: TaxonEditorField;
     value: any;
     type?: "text" | "select" | "boolean";
     options?: Option[];
     render?: (v: any) => React.ReactNode;
-    onUpdated: (newValue: any) => void;
+    /** Volá se s celým aktualizovaným taxonem z backendu. */
+    onUpdated: (updated: Taxon) => void;
 }
 export default function InlineField({
                                         label,
@@ -30,32 +46,19 @@ export default function InlineField({
     const {t} = useTranslation();
     const [draft, setDraft] = useState(value);
     const [saving, setSaving] = useState(false);
-    const [error, setError] = useState<string | null>(null);
     // Editing state - top-level hook (rules-of-hooks), used by the text/select branches
     const [editing, setEditing] = useState(false);
 
 
     async function save(newValue: any) {
         setSaving(true);
-        setError(null);
 
         try {
-            const res = await fetch(`/api/react/taxon/${taxonId}`, {
-                method: "PATCH",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({field, value: newValue}),
-            });
-
-            if (!res.ok) {
-                const msg = await res.text();
-                throw new Error(msg || t("common.inlineField.saveFailed"));
-            }
-
-            const updated = await res.json();
-            onUpdated(updated[field]);
-            setDraft(updated[field]);
-        } catch (e: any) {
-            setError(e.message || t("common.inlineField.saveFailed"));
+            const updated = await updateTaxonField(taxonId, field, newValue);
+            setDraft(updated[FIELD_TO_PROPERTY[field]]);
+            onUpdated(updated);
+        } catch (e) {
+            notifyApiError(e, t("common.inlineField.saveFailed"));
         } finally {
             setSaving(false);
         }
@@ -141,7 +144,6 @@ export default function InlineField({
             <Col sm={9}>
                 {content}
                 {saving && <Spinner size="sm" className="ms-2"/>}
-                {error && <span className="text-danger ms-2">{error}</span>}
             </Col>
         </Row>
     );

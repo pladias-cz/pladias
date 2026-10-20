@@ -977,8 +977,12 @@
       "title": "Přesun taxonu {name}"
     },
     "ordering": {
+      "loadFailed": "Nepodařilo se načíst potomky taxonu",
       "reorderFailed": "Změna pořadí se nezdařila",
       "title": "Řazení potomků"
+    },
+    "stats": {
+      "loadFailed": "Nepodařilo se načíst statistiky záznamů taxonu"
     },
     "synonyms": {
       "actions": "Akce",
@@ -987,6 +991,7 @@
       "deleteConfirm": "Opravdu smazat synonymum?",
       "deleteError": "Došlo k chybě při mazání",
       "deleteFailed": "Mazání selhalo ({status})",
+      "loadFailed": "Nepodařilo se načíst synonyma",
       "nameHtml": "Název (HTML)",
       "nameLatin": "Název (lat)",
       "publication": "Publikace",
@@ -997,6 +1002,7 @@
       "title": "Synonyma"
     },
     "traitCount": {
+      "loadFailed": "Nepodařilo se načíst počet traitových řad",
       "notPresent": "Taxon není v žádném traitu.",
       "presentEnd": "traitových řadách.",
       "presentStart": "Vyskytuje se v"

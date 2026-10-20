@@ -3,6 +3,8 @@ import { Card, Spinner } from "react-bootstrap";
 import { type Taxon } from "@/models/Taxon";
 import { useTranslation } from "react-i18next";
 import {Link} from "react-router-dom";
+import {getTaxonFirstChildren, moveTaxonBeforeSibling} from "@/services/taxonApi";
+import {notifyApiError} from "@/stores/notificationStore";
 
 interface Props {
     taxon: Taxon;
@@ -14,17 +16,14 @@ export default function ChildrenOrderingCard({ taxon }: Props) {
     const [draggedId, setDraggedId] = useState<number | null>(null);
     const [hoveredId, setHoveredId] = useState<number | null>(null);
     const [isUpdating, setIsUpdating] = useState(false);
-    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        fetch(`/api/react/taxon/${taxon.id}/firstChildren`)
-            .then(r => r.json())
-            .then(json => {
-                if (json.success) {
-                    setChildren(json.data);
-                }
+        getTaxonFirstChildren(taxon.id)
+            .then(setChildren)
+            .catch(e => {
+                notifyApiError(e, t("taxon.ordering.loadFailed"));
             });
-    }, [taxon.id]);
+    }, [taxon.id, t]);
 
     function handleDragStart(id: number) {
         if (isUpdating) return;
@@ -45,23 +44,12 @@ export default function ChildrenOrderingCard({ taxon }: Props) {
         setChildren(filtered);
         setHoveredId(null);
         setIsUpdating(true);
-        setError(null);
 
         try {
-            const res = await fetch("/api/react/taxon/moveBeforeSibling", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ taxonId: draggedId, siblingId: targetId }),
-            });
-
-            if (!res.ok) throw new Error(t("taxon.ordering.reorderFailed"));
-
-            const json = await res.json();
-            if (!json.success) throw new Error(json.message ?? t("taxon.ordering.reorderFailed"));
-
+            await moveTaxonBeforeSibling(draggedId, targetId);
         } catch (e) {
             setChildren(original); // rollback
-            setError((e as Error).message);
+            notifyApiError(e, t("taxon.ordering.reorderFailed"));
         } finally {
             setIsUpdating(false);
             setDraggedId(null);
@@ -120,8 +108,6 @@ export default function ChildrenOrderingCard({ taxon }: Props) {
 
                     </div>
                 ))}
-
-                {error && <div className="text-danger mt-2">{error}</div>}
             </Card.Body>
         </Card>
     );

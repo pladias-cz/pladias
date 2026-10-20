@@ -12,6 +12,13 @@ import type {TaxonSynonym} from "@/models/TaxonSynonym";
 import type {TaxonPublication} from "@/models/TaxonPublication";
 import {useTranslation} from 'react-i18next';
 import {useConfirm} from '@/hooks/useConfirm';
+import {
+    deleteTaxonSynonym,
+    getTaxonPublications,
+    getTaxonSynonyms,
+    saveTaxonSynonym,
+} from '@/services/taxonApi';
+import {notifyApiError} from '@/stores/notificationStore';
 
 interface Props {
     taxon: Taxon;
@@ -26,7 +33,6 @@ export default function TaxonSynonyms({taxon, cacheKey}: Props) {
     const [publications, setPublications] = useState<TaxonPublication[]>([]);
     const [loading, setLoading] = useState(false);
     const [savingId, setSavingId] = useState<number | null>(null);
-    const [error, setError] = useState<string | null>(null);
     const [successId, setSuccessId] = useState<number | null>(null);
 
     /* =========================
@@ -41,20 +47,21 @@ export default function TaxonSynonyms({taxon, cacheKey}: Props) {
         async function load() {
             setLoading(true);
             try {
-                const res = await fetch(`/api/react/taxon/${taxon.id}/synonyms`);
-                const json = await res.json();
-                setSynonyms(json.data);
-
-                const pubRes = await fetch(`/api/react/taxaPublications`);
-                const pubJson = await pubRes.json();
-                setPublications(pubJson.data);
+                const [loadedSynonyms, loadedPublications] = await Promise.all([
+                    getTaxonSynonyms(taxon.id),
+                    getTaxonPublications(),
+                ]);
+                setSynonyms(loadedSynonyms);
+                setPublications(loadedPublications);
+            } catch (e) {
+                notifyApiError(e, t("taxon.synonyms.loadFailed"));
             } finally {
                 setLoading(false);
             }
         }
 
         if (taxon?.id) load();
-    }, [taxon]);
+    }, [taxon, t]);
 
     /* =========================
        HANDLERS
@@ -83,58 +90,24 @@ export default function TaxonSynonyms({taxon, cacheKey}: Props) {
 
     const saveRow = async (syn: TaxonSynonym) => {
         setSavingId(syn.id);
-        setError(null);
         setSuccessId(null);
 
         try {
-            const method = syn.id < 0 ? 'POST' : 'PUT';
-            const url = syn.id < 0
-                ? `/api/react/synonyms/${taxon.id}`
-                : `/api/react/synonyms/${syn.id}`;
-
-            const res = await fetch(url, {
-                method,
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(syn)
-            });
-
-            if (!res.ok) {
-                const json = await res.json().catch(() => null);
-                throw new Error(json?.message ?? t("taxon.synonyms.saveFailed", { status: res.status }));
-            }
-
-            const json = await res.json();
-
-            // když backend vrací nový objekt (typicky při POST)
-            if (syn.id < 0 && json.data?.id) {
-                setSynonyms(prev =>
-                    prev.map(s =>
-                        s.id === syn.id ? {...json.data} : s
-                    )
-                );
-            }
+            await saveTaxonSynonym(syn);
 
             setSuccessId(syn.id);
 
             // po 2s schovej success
             setTimeout(() => setSuccessId(null), 2000);
 
-        } catch (e: any) {
-            setError(e.message || t("taxon.synonyms.saveError"));
+        } catch (e) {
+            notifyApiError(e, t("taxon.synonyms.saveError"));
         } finally {
             setSavingId(null);
         }
     };
 
     const renderAlert = () => {
-        if (error) {
-            return (
-                <Alert variant="danger" dismissible onClose={() => setError(null)}>
-                    {error}
-                </Alert>
-            );
-        }
-
         if (successId) {
             return (
                 <Alert variant="success">
@@ -152,22 +125,12 @@ export default function TaxonSynonyms({taxon, cacheKey}: Props) {
             confirmLabel: t("common.delete"),
         }))) return;
 
-        setError(null);
-
         try {
-            const res = await fetch(`/api/react/synonyms/${id}`, {
-                method: 'DELETE'
-            });
-
-            if (!res.ok) {
-                const json = await res.json().catch(() => null);
-                throw new Error(json?.message ?? t("taxon.synonyms.deleteFailed", { status: res.status }));
-            }
-
+            await deleteTaxonSynonym(id);
             setSynonyms(prev => prev.filter(s => s.id !== id));
 
-        } catch (e: any) {
-            setError(e.message || t("taxon.synonyms.deleteError"));
+        } catch (e) {
+            notifyApiError(e, t("taxon.synonyms.deleteError"));
         }
     };
 

@@ -119,7 +119,7 @@ typovaná funkce service modulu, ne literál v komponentě. Chyby konzistentně 
 `notifyApiError(err, fallback)`.
 
 **Kroky.**
-1. `taxonAdmin` + `TaxaAdministration` (nejvíc duplikované logiky, sdílí endpointy s `atlasAdmin`).
+1. `taxonAdmin` + `TaxaAdministration` (nejvíc duplikované logiky, sdílí endpointy s `atlasAdmin`). *(Hotovo 20. 10. 2026 – fáze 2, krok A.1: `taxonApi.ts` + testy, fix `TaxonInlineField` updated[field], smazán mrtvý `TaxonAllAutocomplete`.)*
 2. `measurement` (backup, export, trait tabulky, upload).
 3. `pages/atlas/` (mapy, Record, NewComments).
 4. Autocomplete providery – zde přidat `AbortSignal` (typeahead).

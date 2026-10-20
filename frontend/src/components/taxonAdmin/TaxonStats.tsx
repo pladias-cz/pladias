@@ -1,6 +1,8 @@
 import {useEffect, useState} from "react";
 import type {TaxonStats} from "@/models/TaxonStats";
-import type {ApiResult} from "@/models/ApiResponse";
+import {useTranslation} from "react-i18next";
+import {getTaxonStatistics} from "@/services/taxonApi";
+import {notifyApiError} from "@/stores/notificationStore";
 
 
 interface Props {
@@ -8,20 +10,17 @@ interface Props {
 }
 
 export default function TaxonRecordStats({taxonId}: Props) {
+    const {t} = useTranslation();
     const [stats, setStats] = useState<TaxonStats | null>(null);
 
     useEffect(() => {
-        fetch(`/api/react/taxon/${taxonId}/stats`)
-            .then(r => r.json())
-            .then((res: ApiResult<TaxonStats>) => {
-                if (res.success && res.data) {
-                    setStats(res.data);
-                } else {
-                    setStats(null);
-                }
-            })
-            .catch(() => setStats(null));
-    }, [taxonId]);
+        getTaxonStatistics(taxonId)
+            .then(setStats)
+            .catch(e => {
+                notifyApiError(e, t("taxon.stats.loadFailed"));
+                setStats(null);
+            });
+    }, [taxonId, t]);
 
     if (!stats) {
         return null; // případně spinner

@@ -1,6 +1,7 @@
 import {Card, Table, Row, Col, Spinner, Button, Modal, Form} from "react-bootstrap";
 import {useTranslation} from "react-i18next";
-import {fetchRecordComments, createComment, updateComment, resolveComment, deleteComment} from "./recordService";
+import {getRecordComments, createComment, updateComment, resolveComment, deleteComment} from "@/services/recordApi";
+import {apiErrorMessage} from "@/services/apiClient";
 import type { RecordComment } from '@/models/RecordComment';
 import {useState, useEffect} from "react";
 import {useConfirm} from "@/hooks/useConfirm";
@@ -28,16 +29,16 @@ export default function RecordComments({recordId, canResolveComments}: RecordCom
         setLoading(true);
         setError(null);
         
-        fetchRecordComments(recordId)
+        getRecordComments(recordId)
             .then(data => {
                 setComments(data);
                 setLoading(false);
             })
             .catch(err => {
-                setError(err.message);
+                setError(apiErrorMessage(err, t("record.commentsLoadFailed")));
                 setLoading(false);
             });
-    }, [recordId]);
+    }, [recordId, t]);
 
     const nonDeletedComments = comments.filter(c => !c.deleted);
 
@@ -84,10 +85,10 @@ export default function RecordComments({recordId, canResolveComments}: RecordCom
             setEditingComment(null);
             setShowModal(false);
             // Refresh comments
-            const data = await fetchRecordComments(recordId);
+            const data = await getRecordComments(recordId);
             setComments(data);
         } catch (err) {
-            setActionError(err instanceof Error ? err.message : String(err));
+            setActionError(apiErrorMessage(err, t("record.commentActionFailed")));
         } finally {
             setSubmitting(false);
         }
@@ -109,10 +110,10 @@ export default function RecordComments({recordId, canResolveComments}: RecordCom
         try {
             await resolveComment(commentId);
             // Refresh comments
-            const data = await fetchRecordComments(recordId);
+            const data = await getRecordComments(recordId);
             setComments(data);
         } catch (err) {
-            setActionError(err instanceof Error ? err.message : String(err));
+            setActionError(apiErrorMessage(err, t("record.commentActionFailed")));
         }
     };
 
@@ -127,10 +128,10 @@ export default function RecordComments({recordId, canResolveComments}: RecordCom
         try {
             await deleteComment(commentId);
             // Refresh comments
-            const data = await fetchRecordComments(recordId);
+            const data = await getRecordComments(recordId);
             setComments(data);
         } catch (err) {
-            setActionError(err instanceof Error ? err.message : String(err));
+            setActionError(apiErrorMessage(err, t("record.commentActionFailed")));
         }
     };
 

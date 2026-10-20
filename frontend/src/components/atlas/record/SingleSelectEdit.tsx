@@ -2,12 +2,15 @@ import {useState, useEffect} from "react";
 import {Form, Spinner} from "react-bootstrap";
 import {useTranslation} from "react-i18next";
 import type {MultiValueOption} from "@/models/MultiValueOption";
+import {patchRecordField} from "@/services/recordApi";
+import {ApiError, apiErrorMessage} from "@/services/apiClient";
 
 interface Props {
     label: string;
     recordId: number;
     currentValue: MultiValueOption | null;
-    endpoint: string;
+    /** načte dostupné volby pro výběr */
+    loadOptions: () => Promise<MultiValueOption[]>;
     field: string;
     onUpdated?: (data: {updatedValue: MultiValueOption | null, newTimestamp: number}) => void;
     lastEditTimestampNum?: number;
@@ -18,7 +21,7 @@ export default function SingleSelectEdit({
     label,
     recordId,
     currentValue,
-    endpoint,
+    loadOptions,
     field,
     onUpdated,
     lastEditTimestampNum,
@@ -41,51 +44,28 @@ export default function SingleSelectEdit({
     // Fetch available options when editing starts
     useEffect(() => {
         if (editing) {
-            fetch(endpoint)
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success && data.data) {
-                        const fetchedOptions: MultiValueOption[] = data.data.map((item: { id: number; name?: string; nameLat?: string; label?: string; nameHtml?: string }) => ({
-                            id: item.id,
-                            name: item.name ?? item.nameLat ?? "",
-                            label: item.label ?? item.nameHtml
-                        }));
-                        setOptions(fetchedOptions);
-                    }
-                })
-                .catch((err: Error) => {
-                    setError(err.message || t("common.singleSelectEdit.loadFailed"));
+            loadOptions()
+                .then(setOptions)
+                .catch((err: unknown) => {
+                    setError(apiErrorMessage(err, t("common.singleSelectEdit.loadFailed")));
                 });
         }
-    }, [editing, endpoint, t]);
+    }, [editing, loadOptions, t]);
 
     async function sendApiRequest(key: string, value: number | null) {
         try {
-            const response = await fetch(`/api/react/atlas/record/${recordId}`, {
-                method: "PATCH",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({
-                    key: key,
-                    value: value?.toString() ?? '',
-                    lastEditTimestampNum: lastTimestamp
-                }),
-            });
-
-            if (!response.ok) {
-                const msg = await response.text();
-                throw new Error(msg || t("common.singleSelectEdit.saveFailed"));
-            }
-
-            const responseData = await response.json();
-            const newTimestamp = responseData.data?.lastEditTimestampNum;
+            const result = await patchRecordField(recordId, key, value?.toString() ?? "", lastTimestamp);
+            const newTimestamp = result.lastEditTimestampNum;
             if (newTimestamp) {
                 setLastTimestamp(newTimestamp);
             }
-            return responseData;
-        } catch (error: unknown) {
-            const errorMessage = error instanceof Error ? error.message : t("common.singleSelectEdit.saveFailed");
-            setError(errorMessage);
-            throw error;
+            return result;
+        } catch (e) {
+            // 403 apod. notifikuje centrálně apiClient – zde jen propagujeme
+            if (!(e instanceof ApiError && e.notified)) {
+                setError(apiErrorMessage(e, t("common.singleSelectEdit.saveFailed")));
+            }
+            throw e;
         }
     }
 
@@ -101,8 +81,8 @@ export default function SingleSelectEdit({
         setSaving(true);
         setError(null);
         try {
-            const responseData = await sendApiRequest(field, selectedOption.id);
-            const newTimestamp = responseData.data?.lastEditTimestampNum || lastTimestamp;
+            const result = await sendApiRequest(field, selectedOption.id);
+            const newTimestamp = result.lastEditTimestampNum || lastTimestamp;
             onUpdated?.({updatedValue: selectedOption, newTimestamp});
             setEditing(false);
         } catch {

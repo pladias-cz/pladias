@@ -1,6 +1,6 @@
 import { Table } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
-import type { RecordGbifMinimal } from '@/pages/atlas/MapDetail';
+import type { RecordGbifMinimal } from '@/models/AtlasRecords';
 import './RecordsTable.scss';
 
 interface RecordsTableProps {

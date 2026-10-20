@@ -74,7 +74,7 @@ export interface SquareInfoResponse {
     currentSquare: CurrentSquareInfo;
 }
 
-import type { RecordsByProject, RecordsByProjectMinimal } from '@/pages/atlas/MapDetail';
+import type { RecordsByProject, RecordsByProjectMinimal } from '@/models/AtlasRecords';
 import RecordMarkers from './RecordMarkers';
 import PladiasRecordMarkers from './PladiasRecordMarkers';
 

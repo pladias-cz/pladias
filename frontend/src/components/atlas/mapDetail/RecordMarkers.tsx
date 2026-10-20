@@ -1,5 +1,5 @@
 import { Circle, CircleMarker, Popup, Tooltip } from 'react-leaflet';
-import type { RecordGbifMinimal, ProjectType } from '@/pages/atlas/MapDetail';
+import type { RecordGbifMinimal, ProjectType } from '@/models/AtlasRecords';
 import './RecordMarkers.scss';
 
 interface RecordMarkersProps {

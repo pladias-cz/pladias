@@ -1,11 +1,12 @@
 import {Card, Col, Row} from "react-bootstrap";
-import {useLayoutEffect, useRef, useState, useEffect} from "react";
+import {useCallback, useLayoutEffect, useRef, useState, useEffect} from "react";
 import {useTranslation} from "react-i18next";
 import type { RecordPladiasFull } from '@/models/RecordPladiasFull';
 import RecordReadonlyField from "@/components/atlas/record/RecordReadonlyField";
 import RecordInlineField from "@/components/atlas/record/RecordInlineField";
 import MultiSelectEdit from "@/components/atlas/record/MultiSelectEdit";
 import type {MultiValueOption} from "@/models/MultiValueOption";
+import {getUnassignedHerbaria} from "@/services/recordApi";
 import {useRecordPermissions} from "@/components/atlas/record/hooks/useRecordPermissions";
 
 interface RecordRemarksProps {
@@ -49,6 +50,9 @@ export default function RecordRemarks({record, onFieldUpdated}: RecordRemarksPro
     }, [localRecord]);
 
     const {canEditCommonFields: canEdit} = useRecordPermissions(localRecord);
+
+    // Načítání voleb pro MultiValueEdit (memoizované kvůli deps efektu v komponentě)
+    const loadHerbariumOptions = useCallback(() => getUnassignedHerbaria(localRecord.id), [localRecord.id]);
 
     const hasRemarks = [
         localRecord.remarkExcerption,
@@ -147,7 +151,7 @@ export default function RecordRemarks({record, onFieldUpdated}: RecordRemarksPro
                                     name: h.name,
                                     label: h.label
                                 }))}
-                                endpoint={`/api/react/atlas/record/${localRecord.id}/unassignedHerbaria`}
+                                loadOptions={loadHerbariumOptions}
                                 addKey="ADDHERBARIUM"
                                 deleteKey="DELETEHERBARIUM"
                                 onUpdated={(data) => {

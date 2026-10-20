@@ -3,12 +3,15 @@ import {Button, Form, Spinner} from "react-bootstrap";
 import {useTranslation} from "react-i18next";
 import {useConfirm} from "@/hooks/useConfirm";
 import type {MultiValueOption} from "@/models/MultiValueOption";
+import {patchRecordField} from "@/services/recordApi";
+import {ApiError, apiErrorMessage} from "@/services/apiClient";
 
 interface Props {
     label: string;
     recordId: number;
     currentValue: MultiValueOption[];
-    endpoint: string;
+    /** načte dostupné volby (endpoint bez aktuálně vybraných hodnot) */
+    loadOptions: () => Promise<MultiValueOption[]>;
     addKey: string;      // API key for adding (e.g., "ADDHERBARIUM")
     deleteKey: string;   // API key for deleting (e.g., "DELETEHERBARIUM")
     onUpdated?: (data: {updatedValue: MultiValueOption[], newTimestamp: number}) => void;
@@ -19,7 +22,7 @@ export default function MultiSelectEdit({
     label,
     recordId,
     currentValue,
-    endpoint,
+    loadOptions,
     addKey,
     deleteKey,
     onUpdated,
@@ -51,24 +54,16 @@ export default function MultiSelectEdit({
     // Fetch available options when editing starts
     useEffect(() => {
         if (editing) {
-            fetch(endpoint)
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success && data.data) {
-                        const fetchedOptions: MultiValueOption[] = data.data.map((item: any) => ({
-                            id: item.id,
-                            name: item.name,
-                            label: item.label
-                        }));
-                        setOptions(fetchedOptions);
-                        updateAvailableOptions(fetchedOptions, selected);
-                    }
+            loadOptions()
+                .then(fetchedOptions => {
+                    setOptions(fetchedOptions);
+                    updateAvailableOptions(fetchedOptions, selected);
                 })
                 .catch(err => {
-                    setError(err.message || t("common.multiValueEdit.loadFailed"));
+                    setError(apiErrorMessage(err, t("common.multiValueEdit.loadFailed")));
                 });
         }
-    }, [editing]);
+    }, [editing, loadOptions, t]);
 
     // Update available options when options or selected change
     useEffect(() => {
@@ -87,29 +82,17 @@ export default function MultiSelectEdit({
 
     async function sendApiRequest(key: string, value: number) {
         try {
-            const response = await fetch(`/api/react/atlas/record/${recordId}`, {
-                method: "PATCH",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({
-                    key: key,
-                    value: value.toString(),
-                    lastEditTimestampNum: lastTimestamp
-                }),
-            });
-
-            if (!response.ok) {
-                const msg = await response.text();
-                throw new Error(msg || t("common.multiValueEdit.saveFailed"));
-            }
-
-            const responseData = await response.json();
-            const newTimestamp = responseData.data?.lastEditTimestampNum;
+            const result = await patchRecordField(recordId, key, value.toString(), lastTimestamp);
+            const newTimestamp = result.lastEditTimestampNum;
             if (newTimestamp) {
                 setLastTimestamp(newTimestamp);
             }
-            return responseData;
-        } catch (e: any) {
-            setError(e.message || t("common.multiValueEdit.saveFailed"));
+            return result;
+        } catch (e) {
+            // 403 apod. notifikuje centrálně apiClient – zde jen propagujeme
+            if (!(e instanceof ApiError && e.notified)) {
+                setError(apiErrorMessage(e, t("common.multiValueEdit.saveFailed")));
+            }
             throw e;
         }
     }
@@ -130,7 +113,7 @@ export default function MultiSelectEdit({
             onUpdated?.({updatedValue: newSelected, newTimestamp: lastTimestamp});
             setPendingAdd(null);
             setSaving(false);
-        } catch (e) {
+        } catch {
             setSaving(false);
         }
     }
@@ -155,7 +138,7 @@ export default function MultiSelectEdit({
         setError(null);
         try {
             await sendApiRequest(deleteKey, option.id);
-        } catch (e) {
+        } catch {
             // On error, restore the removed item
             setSelected(selected);
         } finally {

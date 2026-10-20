@@ -12,7 +12,7 @@ import {OriginalityStatusIcons} from './OriginalityStatusIcons';
 import {IncludeInMapCheckbox} from './IncludeInMapCheckbox';
 import {useInstanceConfig} from '@/context/InstanceConfigContext';
 import {useUser} from '@/context/UserContext';
-import {markCommentAsRead} from '../record/recordService';
+import {markCommentAsRead} from '@/services/recordApi';
 import {notifyApiError} from '@/stores/notificationStore';
 
 interface PladiasRecordsTableProps {

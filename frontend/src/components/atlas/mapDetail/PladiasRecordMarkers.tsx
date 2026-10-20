@@ -1,6 +1,6 @@
 import { Circle, CircleMarker, Popup, Tooltip } from 'react-leaflet';
 import type { RecordPladias } from '@/models';
-import type { RecordPladiasMinimal } from '@/pages/atlas/MapDetail';
+import type { RecordPladiasMinimal } from '@/models/AtlasRecords';
 import './RecordMarkers.scss';
 
 interface PladiasRecordMarkersProps {

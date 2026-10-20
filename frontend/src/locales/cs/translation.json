@@ -181,6 +181,7 @@
       "importedBy": "importoval",
       "includedInMapLabel": "Zahrnut do mapy",
       "latitude": "Zeměpisná šířka",
+      "loadRecordsFailed": "Nepodařilo se načíst záznamy.",
       "locality": "Lokalita",
       "localityLower": "lokalita",
       "longitude": "Zeměpisná délka",
@@ -604,7 +605,8 @@
     },
     "taxesList": {
       "title": "Seznam přidělených taxonů"
-    }
+    },
+    "taxonLoadFailed": "Nepodařilo se načíst taxon."
   },
   "bibliography": {
     "author": "Autor",
@@ -846,12 +848,14 @@
     "clickOnMap": "Klikněte na mapu pro výběr nové pozice",
     "collectors": "Sběratelé",
     "comment": "Importní poznámka",
+    "commentActionFailed": "Operace s komentářem se nezdařila.",
     "commentAuthor": "Autor",
     "commentDate": "Datum",
     "commentMessage": "Zpráva",
     "commentPlaceholder": "Zadejte svůj komentář zde...",
     "commentResolved": "Vyřešeno",
     "comments": "Komentáře",
+    "commentsLoadFailed": "Komentáře se nepodařilo načíst.",
     "confirmDeleteComment": "Opravdu chcete smazat tento komentář?",
     "confirmLocationChange": "Potvrdit změnu pozice",
     "coordsOrigin": "Zdroj souřadnic",
@@ -874,6 +878,7 @@
     "includedInMap": "Záznam do mapy",
     "latitude": "Zeměpisná šířka",
     "license": "Licence",
+    "loadFailed": "Záznam se nepodařilo načíst.",
     "locality": "Lokalita",
     "localityDetails": "Detaily lokality",
     "localityExtra": "Lokalita pomocná",

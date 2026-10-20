@@ -1,5 +1,5 @@
 import type { RecordPladias } from '@/models';
-import type {RecordsByProject} from '@/pages/atlas/MapDetail';
+import type {RecordsByProject} from '@/models/AtlasRecords';
 import {useTranslation} from 'react-i18next';
 import {PladiasRecordsTable} from './PladiasRecordsTable';
 import {ExternalRecordsTable} from './ExternalRecordsTable';

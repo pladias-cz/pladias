@@ -3,93 +3,20 @@ import { usePageTitle } from "@/hooks/usePageTitle";
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router-dom";
 import { useEffect, useState, useRef, useCallback } from "react";
-import type { TaxonId } from "@/models/TaxonId";
 import type { RecordPladias } from "@/models";
+import type {RecordsByProject, RecordsByProjectMinimal} from "@/models/AtlasRecords";
+import type { TaxonId } from "@/models/TaxonId";
+import {
+    getNearbyExternalRecords,
+    getNearbyPladiasRecords,
+    getSquareExternalRecords,
+    getSquarePladiasRecords,
+} from "@/services/atlasApi";
+import {getTaxon} from "@/services/taxonApi";
+import {notifyApiError} from "@/stores/notificationStore";
 import { MapComponent } from "@/components/atlas/mapDetail/MapComponent";
 import { InfoPanel } from "@/components/atlas/mapDetail/InfoPanel";
 import RichTextMessage from "@/components/RichTextMessage";
-
-/**
- * Project type enum
- */
-export type ProjectType = 'pladias' | 'gbif' | 'inaturalist';
-
-/**
- * PLADIAS record - minimal data for map display
- * Contains only fields needed for geographic context
- */
-export interface RecordPladiasMinimal {
-    id: number;
-    latitude: number | null;
-    longitude: number | null;
-    gpsPrecision: number | null;
-    year: number | null;
-    recordedBy: string | null;
-    validationStatusId: number | null;
-    validationStatusColor: string | null;
-    computedSquareCode: string | null;
-}
-
-/**
- * GBIF/iNaturalist record - minimal data from backend
- * Matches RecordGbifMinimalDto.java
- */
-export interface RecordGbifMinimal {
-    id: number;
-    latitude: number;
-    longitude: number;
-    gpsPrecision: number | null;
-    year: number | null;
-    recordedBy: string | null;
-    institutionCode: string | null;
-    validationStatusColor: string | null;
-    quadrantLetter: string | null;
-    squareCode: string | null;
-    computedSquareCode: string | null;
-    project: 'gbif' | 'inaturalist';
-}
-
-/**
- * Union type for all record types that have a project property
- */
-export type RecordWithProject = RecordGbifMinimal;
-
-/**
- * All record types including PLADIAS (which doesn't have project field but is handled separately)
- */
-export type AnyRecord = RecordPladias | RecordGbifMinimal;
-
-export interface RecordComment {
-    id: number;
-    authorId: number | null;
-    authorName: string | null;
-    message: string | null;
-    createTimestamp: string | null;
-    resolved: boolean | null;
-    deleted: boolean | null;
-}
-
-export interface HerbariumItem {
-    id: number;
-    name: string | null;
-    abbrev: string | null;
-    abbrevExplanation: string | null;
-}
-
-export interface RecordsByProject {
-    pladias: RecordPladias[];
-    gbif: RecordGbifMinimal[];
-    inaturalist: RecordGbifMinimal[];
-}
-
-/**
- * Records with minimal data for map display
- */
-export interface RecordsByProjectMinimal {
-    pladias: RecordPladiasMinimal[];
-    gbif: RecordGbifMinimal[];
-    inaturalist: RecordGbifMinimal[];
-}
 
 export default function MapDetail() {
     const { t } = useTranslation();
@@ -154,24 +81,14 @@ export default function MapDetail() {
         if (taxonId) {
             const id = parseInt(taxonId, 10);
             if (!isNaN(id)) {
-                fetch(`/api/react/taxon/${id}`)
-                    .then(res => {
-                        if (!res.ok) throw new Error('Taxon not found');
-                        return res.json();
+                getTaxon(id)
+                    .then(taxon => {
+                        setTaxon({id: taxon.id, nameLat: taxon.nameLat, nameHtml: taxon.nameHtml});
                     })
-                    .then(result => {
-                        if (result.data) {
-                            setTaxon({
-                                id: result.data.id,
-                                nameLat: result.data.nameLat,
-                                nameHtml: result.data.nameHtml
-                            });
-                        }
-                    })
-                    .catch(() => {});
+                    .catch(e => notifyApiError(e, t("atlas.taxonLoadFailed")));
             }
         }
-    }, [taxonId]);
+    }, [taxonId, t]);
 
     // Fetch records for all three projects - minimal data for map, full data for table
     useEffect(() => {
@@ -188,69 +105,15 @@ export default function MapDetail() {
 
         setRecordsLoading(true);
 
-        // Fetch minimal data for map display (includes records from surrounding squares)
-        const fetchMapPladiasRecords = async (): Promise<RecordPladiasMinimal[]> => {
-            const response = await fetch(`/api/react/atlas/records/${squareId}/${taxonId}/pladias`);
-            if (!response.ok) throw new Error('Failed to fetch pladias records for map');
-            const result = await response.json();
-            return result.data && Array.isArray(result.data) ? result.data : [];
-        };
-
-        const fetchMapGbifRecords = async (): Promise<RecordGbifMinimal[]> => {
-            const response = await fetch(`/api/react/atlas/records/${squareId}/${taxonId}/gbif`);
-            if (!response.ok) throw new Error('Failed to fetch gbif records for map');
-            const result = await response.json();
-            const data = result.data && Array.isArray(result.data) ? result.data : [];
-            return data.map((record: RecordGbifMinimal) => ({ ...record, project: 'gbif' as const }));
-        };
-
-        const fetchMapInaturalistRecords = async (): Promise<RecordGbifMinimal[]> => {
-            const response = await fetch(`/api/react/atlas/records/${squareId}/${taxonId}/inaturalist`);
-            if (!response.ok) throw new Error('Failed to fetch inaturalist records for map');
-            const result = await response.json();
-            const data = result.data && Array.isArray(result.data) ? result.data : [];
-            return data.map((record: RecordGbifMinimal) => ({ ...record, project: 'inaturalist' as const }));
-        };
-
-        // Fetch full data for table display (only records from current square)
-        const fetchTablePladiasRecords = async (): Promise<RecordPladias[]> => {
-            const response = await fetch(`/api/react/atlas/records-square/${squareId}/${taxonId}/pladias`);
-            if (!response.ok) throw new Error('Failed to fetch pladias records for table');
-            const result = await response.json();
-            const data = result.data && Array.isArray(result.data) ? result.data : [];
-            // Convert lastEditTimestamp string to lastEditTimestampNum for conflict detection
-            return data.map((record: RecordPladias) => ({
-                ...record,
-                lastEditTimestampNum: record.lastEditTimestamp
-                    ? new Date(record.lastEditTimestamp).getTime()
-                    : 0
-            }));
-        };
-
-        const fetchTableGbifRecords = async (): Promise<RecordGbifMinimal[]> => {
-            const response = await fetch(`/api/react/atlas/records-square/${squareId}/${taxonId}/gbif`);
-            if (!response.ok) throw new Error('Failed to fetch gbif records for table');
-            const result = await response.json();
-            const data = result.data && Array.isArray(result.data) ? result.data : [];
-            return data.map((record: RecordGbifMinimal) => ({ ...record, project: 'gbif' as const }));
-        };
-
-        const fetchTableInaturalistRecords = async (): Promise<RecordGbifMinimal[]> => {
-            const response = await fetch(`/api/react/atlas/records-square/${squareId}/${taxonId}/inaturalist`);
-            if (!response.ok) throw new Error('Failed to fetch inaturalist records for table');
-            const result = await response.json();
-            const data = result.data && Array.isArray(result.data) ? result.data : [];
-            return data.map((record: RecordGbifMinimal) => ({ ...record, project: 'inaturalist' as const }));
-        };
-
         // Fetch both map and table data in parallel
+        // (map: surrounding squares, minimal DTOs; table: current square, full data)
         Promise.all([
-            fetchMapPladiasRecords(),
-            fetchMapGbifRecords(),
-            fetchMapInaturalistRecords(),
-            fetchTablePladiasRecords(),
-            fetchTableGbifRecords(),
-            fetchTableInaturalistRecords()
+            getNearbyPladiasRecords(squareId, id),
+            getNearbyExternalRecords(squareId, id, "gbif"),
+            getNearbyExternalRecords(squareId, id, "inaturalist"),
+            getSquarePladiasRecords(squareId, id),
+            getSquareExternalRecords(squareId, id, "gbif"),
+            getSquareExternalRecords(squareId, id, "inaturalist"),
         ])
             .then(([
                 mapPladias, mapGbif, mapInaturalist,
@@ -259,14 +122,15 @@ export default function MapDetail() {
                 setMapRecords({ pladias: mapPladias, gbif: mapGbif, inaturalist: mapInaturalist });
                 setTableRecords({ pladias: tablePladias, gbif: tableGbif, inaturalist: tableInaturalist });
             })
-            .catch(() => {
+            .catch(e => {
+                notifyApiError(e, t("atlas.mapDetail.loadRecordsFailed"));
                 setMapRecords({ pladias: [], gbif: [], inaturalist: [] });
                 setTableRecords({ pladias: [], gbif: [], inaturalist: [] });
             })
             .finally(() => {
                 setRecordsLoading(false);
             });
-    }, [taxonId, squareId]);
+    }, [taxonId, squareId, t]);
 
     // Handle record update from quick actions (validation status, etc.)
     const handleRecordUpdated = useCallback((updatedRecord: RecordPladias) => {

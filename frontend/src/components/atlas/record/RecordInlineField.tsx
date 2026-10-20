@@ -1,6 +1,8 @@
 import {useState, useEffect} from "react";
 import {Col, Form, Row, Spinner, Button} from "react-bootstrap";
 import {useTranslation} from "react-i18next";
+import {patchRecordField} from "@/services/recordApi";
+import {ApiError, apiErrorMessage} from "@/services/apiClient";
 
 interface Option<T = any> {
     value: T;
@@ -52,41 +54,26 @@ export default function RecordInlineField({
         }
     }, [lastEditTimestampNum]);
 
-    async function save(valueToSave: any) {
+    async function save(valueToSave: unknown) {
         setSaving(true);
         setError(null);
 
         try {
-            const response = await fetch(`/api/react/atlas/record/${recordId}`, {
-                method: "PATCH",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({
-                    key: field,
-                    value: valueToSave,
-                    lastEditTimestampNum: lastTimestamp
-                }),
-            });
-
-            if (!response.ok) {
-                const msg = await response.text();
-                throw new Error(msg || t("common.inlineField.saveFailed"));
+            // server vrací hodnotu pod klíčem pole lowercase (např. "originalid")
+            const result = await patchRecordField(recordId, field, valueToSave, lastTimestamp);
+            if (result.updatedValue !== null) {
+                setDraft(result.updatedValue);
             }
-
-            const responseData = await response.json();
-            // Server returns value with lowercase field key (e.g., "originalid")
-            const fieldKeyLower = field.toLowerCase();
-            const updatedValue = responseData.data[fieldKeyLower];
-            const newTimestamp = responseData.data.lastEditTimestampNum;
-            if (updatedValue !== undefined) {
-                setDraft(updatedValue);
+            if (result.lastEditTimestampNum) {
+                setLastTimestamp(result.lastEditTimestampNum);
             }
-            if (newTimestamp) {
-                setLastTimestamp(newTimestamp);
-            }
-            onUpdated?.({updatedValue, newTimestamp});
+            onUpdated?.({updatedValue: result.updatedValue, newTimestamp: result.lastEditTimestampNum});
             setEditing(false);
-        } catch (e: any) {
-            setError(e.message || t("common.inlineField.saveFailed"));
+        } catch (e) {
+            // 403 apod. notifikuje centrálně apiClient – zde jen propagujeme
+            if (!(e instanceof ApiError && e.notified)) {
+                setError(apiErrorMessage(e, t("common.inlineField.saveFailed")));
+            }
         } finally {
             setSaving(false);
         }

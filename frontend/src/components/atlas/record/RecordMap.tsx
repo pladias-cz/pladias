@@ -10,6 +10,7 @@ import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
 import type { RecordPladiasFull } from '@/models/RecordPladiasFull';
 import type { ReverseGeocodingResponse } from '@/models/ReverseGeocoding';
+import {reverseGeocode} from "@/services/recordApi";
 import {useRecordPermissions} from "./";
 
 // Create a red marker icon for proposed location
@@ -79,20 +80,9 @@ export default function RecordMap({record, onLocationSelectWithGeocode, hasPropo
 
     const fetchReverseGeocoding = useCallback(async (lat: number, lng: number) => {
         try {
-            const response = await fetch(`/api/react/query/reverseGeocoding/lon/${lng}/lat/${lat}`);
-            const data = await response.json();
-
-            // The backend returns an array of objects like:
-            // [{success: true}, {quadrant: {...}}, {district: {...}}, {townHierarchy: [...]}, {phytochorions: [...]}]
-            // We need to merge all non-success objects into a single object
-            const mergedData: ReverseGeocodingResponse = {};
-            if (Array.isArray(data)) {
-                for (const item of data) {
-                    if (item.success !== undefined) continue; // Skip success flag
-                    // Merge each object's properties into mergedData
-                    Object.assign(mergedData, item);
-                }
-            }
+            // backend vrací pole objektů ([{success}, {quadrant}, …]);
+            // recordApi je slučuje do jediné ReverseGeocodingResponse
+            const mergedData = await reverseGeocode(lat, lng);
 
             if (onLocationSelectWithGeocode) {
                 onLocationSelectWithGeocode(lat, lng, mergedData);

@@ -11,7 +11,8 @@ import {
     RecordFloristic,
 } from "@/components/atlas/record";
 import type { RecordPladiasFull, ReverseGeocodingResponse } from "@/models";
-import {fetchRecordFull} from "@/components/atlas/record/recordService";
+import {getRecordFull, moveRecordCoordinates} from "@/services/recordApi";
+import {apiErrorMessage} from "@/services/apiClient";
 
 interface ProposedLocation {
     coordinates: [number, number];
@@ -44,13 +45,12 @@ export default function Record() {
         setLoading(true);
         setError(null);
 
-        fetchRecordFull(parseInt(recordId))
+        getRecordFull(parseInt(recordId))
             .then((data) => {
                 setRecord(data);
             })
             .catch((err) => {
-                console.error("Failed to fetch record:", err);
-                setError(err.message);
+                setError(apiErrorMessage(err, t("record.loadFailed")));
             })
             .finally(() => {
                 setLoading(false);
@@ -90,36 +90,18 @@ export default function Record() {
         setMoveError(null);
 
         try {
-            const response = await fetch('/api/react/atlas/record/moveCoordinates', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    recordId: currentRecord.id,
-                    latitude: proposedLocation.coordinates[0],
-                    longitude: proposedLocation.coordinates[1],
-                    gpsPrecision: proposedLocation.gpsPrecision,
-                    lastEditTimestampNum: currentRecord.lastEditTimestampNum || 0,
-                }),
-            });
+            await moveRecordCoordinates(
+                currentRecord.id,
+                proposedLocation.coordinates[0],
+                proposedLocation.coordinates[1],
+                proposedLocation.gpsPrecision,
+                currentRecord.lastEditTimestampNum || 0,
+            );
 
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}));
-                throw new Error(errorData.error || 'Failed to move record');
-            }
-
-            const result = await response.json();
-            
-            if (result.success) {
-                // Reload the page to show updated data
-                window.location.reload();
-            } else {
-                throw new Error(result.error || 'Failed to move record');
-            }
+            // Reload the page to show updated data
+            window.location.reload();
         } catch (err) {
-            console.error('Failed to move record:', err);
-            setMoveError(err instanceof Error ? err.message : t("record.moveFailed"));
+            setMoveError(apiErrorMessage(err, t("record.moveFailed")));
             setMoving(false);
         }
     };

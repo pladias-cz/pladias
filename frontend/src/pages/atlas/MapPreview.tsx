@@ -4,6 +4,8 @@ import { useTranslation } from "react-i18next";
 import { useParams } from "react-router-dom";
 import { useEffect, useState, useMemo } from "react";
 import type { TaxonId } from "@/models/TaxonId";
+import {getTaxon} from "@/services/taxonApi";
+import {notifyApiError} from "@/stores/notificationStore";
 import { MapComponent } from "@/components/atlas/mapPreview/MapComponent";
 import { InfoPanel } from "@/components/atlas/mapPreview/InfoPanel";
 
@@ -36,23 +38,13 @@ export default function MapPreview() {
     // Fetch additional taxon data asynchronously (for display purposes only)
     useEffect(() => {
         if (taxonId) {
-            fetch(`/api/react/taxon/${taxonId}`)
-                .then(res => {
-                    if (!res.ok) throw new Error('Taxon not found');
-                    return res.json();
+            getTaxon(taxonId)
+                .then(taxon => {
+                    setTaxon({id: taxon.id, nameLat: taxon.nameLat, nameHtml: taxon.nameHtml});
                 })
-                .then(result => {
-                    if (result.data) {
-                        setTaxon({
-                            id: result.data.id,
-                            nameLat: result.data.nameLat,
-                            nameHtml: result.data.nameHtml
-                        });
-                    }
-                })
-                .catch(() => {});
+                .catch(e => notifyApiError(e, t("atlas.taxonLoadFailed")));
         }
-    }, [taxonId]);
+    }, [taxonId, t]);
 
     return (
         <Container fluid className="px-0">

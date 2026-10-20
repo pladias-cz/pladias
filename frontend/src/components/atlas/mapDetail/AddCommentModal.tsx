@@ -1,7 +1,8 @@
 import {useState} from 'react';
 import {Button, Form, Modal} from 'react-bootstrap';
 import {useTranslation} from 'react-i18next';
-import {createComment} from '../record/recordService';
+import {createComment} from '@/services/recordApi';
+import {apiErrorMessage} from '@/services/apiClient';
 import {useUser} from '@/context/UserContext';
 
 interface AddCommentModalProps {
@@ -35,7 +36,7 @@ export function AddCommentModal({show, recordId, onHide, onCommentAdded}: AddCom
             onHide();
             onCommentAdded?.();
         } catch (err) {
-            setActionError(err instanceof Error ? err.message : String(err));
+            setActionError(apiErrorMessage(err, t("record.commentActionFailed")));
         } finally {
             setSubmitting(false);
         }

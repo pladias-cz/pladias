@@ -4,6 +4,8 @@ import {usePageTitle} from "@/hooks/usePageTitle";
 import {useTranslation} from "react-i18next";
 import {PladiasRecordsTable} from "@/components/atlas/mapDetail/PladiasRecordsTable";
 import type {RecordPladias} from "@/models";
+import {getRecordsWithComments} from "@/services/atlasApi";
+import {apiErrorMessage} from "@/services/apiClient";
 
 export default function NewComments() {
     const {t} = useTranslation();
@@ -19,17 +21,9 @@ export default function NewComments() {
             setError(null);
 
             try {
-                const response = await fetch("/api/react/atlas/search/records-with-comments");
-                const payload = await response.json();
-
-                if (!response.ok || payload?.success === false) {
-                    throw new Error(payload?.error || t("atlas.newComments.loadFailed"));
-                }
-
-                const nextRecords = Array.isArray(payload?.data?.records) ? payload.data.records : [];
-                setRecords(nextRecords);
+                setRecords(await getRecordsWithComments());
             } catch (err) {
-                setError(err instanceof Error ? err.message : t("atlas.newComments.loadFailed"));
+                setError(apiErrorMessage(err, t("atlas.newComments.loadFailed")));
                 setRecords([]);
             } finally {
                 setIsLoading(false);

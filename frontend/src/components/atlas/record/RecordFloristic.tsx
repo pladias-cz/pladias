@@ -1,5 +1,5 @@
 import {Card, Col, Row} from "react-bootstrap";
-import {useEffect, useMemo, useState} from "react";
+import {useCallback, useEffect, useMemo, useState} from "react";
 import {useTranslation} from "react-i18next";
 import type {RecordPladiasFull} from '@/models/RecordPladiasFull';
 import RecordInlineField from "./RecordInlineField";
@@ -9,6 +9,7 @@ import RecordReadonlyField from "@/components/atlas/record/RecordReadonlyField";
 import MultiSelectEdit from "@/components/atlas/record/MultiSelectEdit";
 import SingleSelectEdit from "@/components/atlas/record/SingleSelectEdit";
 import type {MultiValueOption} from "@/models/MultiValueOption";
+import {getImportableTaxaForRecord, getPhytochorionOptions, getUnassignedAuthors} from "@/services/recordApi";
 import {useInstanceConfig} from "@/context/InstanceConfigContext";
 
 // Date format validation: YYYY, YYYY-MM, YYYY-MM-DD, or "s. d." (sine data - without date)
@@ -82,6 +83,11 @@ export default function RecordFloristic({record, onFieldUpdated}: RecordFloristi
 
     const {canEditCommonFields: canEdit} = useRecordPermissions(localRecord);
 
+    // Načítání voleb pro select editory (memoizované kvůli deps efektu v komponentách)
+    const loadTaxonOptions = useCallback(() => getImportableTaxaForRecord(localRecord.id), [localRecord.id]);
+    const loadPhytochorionOptions = useCallback(() => getPhytochorionOptions(), []);
+    const loadAuthorOptions = useCallback(() => getUnassignedAuthors(localRecord.id), [localRecord.id]);
+
     // Memoize currentValue to prevent unnecessary re-renders in MultiValueEdit
     const authorsOptions = useMemo(() => localRecord.recordAuthors.map((a): MultiValueOption => ({
         id: a.authorId,
@@ -154,7 +160,7 @@ export default function RecordFloristic({record, onFieldUpdated}: RecordFloristi
                                 label={t("record.taxon")}
                                 recordId={localRecord.id}
                                 currentValue={taxonOption}
-                                endpoint={`/api/react/taxa/importable/record/${localRecord.id}`}
+                                loadOptions={loadTaxonOptions}
                                 field="TAXON"
                                 renderDisplay={(option) => (
                                     <RichTextMessage html={option.label || option.name}/>
@@ -187,7 +193,7 @@ export default function RecordFloristic({record, onFieldUpdated}: RecordFloristi
                                     label={t("record.phytochorion")}
                                     recordId={localRecord.id}
                                     currentValue={phytochorionOption}
-                                    endpoint="/api/react/selectOptions/phytochorions"
+                                    loadOptions={loadPhytochorionOptions}
                                     field="PHYTOCHORION"
                                     onUpdated={(data) => {
                                         if (data.updatedValue) {
@@ -296,7 +302,7 @@ export default function RecordFloristic({record, onFieldUpdated}: RecordFloristi
                                 label={t("record.authors")}
                                 recordId={localRecord.id}
                                 currentValue={authorsOptions}
-                                endpoint={`/api/react/atlas/record/${localRecord.id}/unassignedAuthors`}
+                                loadOptions={loadAuthorOptions}
                                 addKey="ADDFINDER"
                                 deleteKey="DELETEFINDER"
                                 onUpdated={(data) => {

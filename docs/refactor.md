@@ -223,22 +223,28 @@ vydělávaly nejvíc:
   `csvMapDetailId: any` – přitom `src/models/` typové modely mají.
 
 **Návrh.** Nic nového nevymýšlet – **zapojit typy, které už v `types/` jsou**:
-1. `Layer.tsx`: switch přes `service.type` s narrowingem unionu místo `as any` (ideálně po
-   dekompozici v E – subkomponenta per typ vrstvy).
+1. ~~`Layer.tsx`: switch přes `service.type` s narrowingem unionu místo `as any` (ideálně po
+   dekompozici v E – subkomponenta per typ vrstvy).~~
+   ✅ *Hotovo 21. 10. 2026 (refactor 13):* `Layer.tsx` je 105řádkový dispatcher se switchem
+   s TS narrowingem; subkomponenty `layers/TileLayerView`, `WmsLayerView`, `WfsLayerView`
+   (props typované `TileConfig`/`GeoServerConfig`, žádné `as`) + čisté `layers/wfsBounds`
+   (bbox buffer, reload threshold) s 5 unit testy.
 2. `DataTable`: `accessor: keyof T`, `cellRenderer?: (value: T[keyof T], row: T) => …` – kontrola
    definic sloupců v 10 konzumentech za pochodu.
 3. Leaflet workaroundy (`SquaresOverlay`): malý deklarovaný modul `leaflet-extensions.d.ts` nebo
    `Map<SquareLayer, …>` WeakMap místo expando vlastností.
 4. `InfoPanel`: použít existující modely z `src/models/`.
 
-**Kroky.** 1) mapLayers (s dekompozicí `Layer.tsx` v E), 2) DataTable (s testy v F), 3) zbývající
+**Kroky.** ~~1) mapLayers (s dekompozicí `Layer.tsx` v E)~~ ✅, 2) DataTable (s testy v F), 3) zbývající
 `: any` v komponentách průběžně s migrací A.
 
 **Rizika.** Zapojený discriminated union odhalí nekonzistence v datech registrů (chybějící
 `config` pole u některého typu vrstvy) – což je přesně ten typ bugu, který má vyjít navenek.
 
 **Hotovo, když.** `grep -rn ": any\|as any" src/core/ --include='*.ts' --include='*.tsx'` vrací 0
-(výjimky jen zdokumentované Leaflet workaroundy).
+(výjimky jen zdokumentované Leaflet workaroundy). ✅ *Ověřeno 21. 10. 2026: 0 výskytů – Leaflet
+expanda vlastnosti (`_zoomHandler`, feature) jsou typované deklarovanými průniky
+(`L.GeoJSON & {...}`, `FeaturePath`). Zbývají C.2 (DataTable generika) a C.4 (InfoPanel modely).*
 
 ---
 
@@ -248,9 +254,9 @@ vydělávaly nejvíc:
 
 | Kopie | Stav |
 |---|---|
-| `components/atlas/taxaList/components/ParentMapAutocomplete.tsx` × `atlasAdmin/…` | **identické** (diff 0) |
-| `useTaxonUpdates.ts` (atlas 278 ř. vs atlasAdmin 413 ř.) | 218 diff řádků – driftující kopie |
-| `MapComponent.tsx` (mapDetail 442 vs mapPreview 191) | 601 diff řádků |
+| `components/atlas/taxaList/components/` × `atlasAdmin/…` | ~~**identické** (diff 0)~~ ✅ *21. 10. 2026 (refactor 12): celý adresář (7 souborů) byl v atlas mrtvý kód – komponenty používal jen atlasAdmin; mrtvá kopie smazána* |
+| `useTaxonUpdates.ts` (atlas 278 ř. vs atlasAdmin 413 ř.) | ~~218 diff řádků – driftující kopie~~ ✅ *21. 10. 2026 (refactor 15): userská kopie nebyla importovaná nikde (InfoPanel i admin TaxaList používají atlasAdmin verzi) – smazána; jediný `useTaxonUpdates` v atlasAdmin* |
+| `MapComponent.tsx` (mapDetail 442 vs mapPreview 191) | ~~601 diff řádků~~ ✅ *21. 10. 2026 (refactor 14): společné jádro `MapCanvas` (MapContainer init) + `MapLayer` (odběr visibility) v `core/mapLayers/components`; view-specifické části (info panely, šipky, markery) zůstaly per page dle návrhu* |
 | `InfoPanel.tsx` (mapMain 390 vs mapPreview 183) | paralelní vývoj |
 | `TaxaList.tsx` (atlas vs atlasAdmin) | paralelní vývoj |
 
@@ -258,18 +264,25 @@ Admin varianta vznikla zkopírováním userské a liší se správou sloupců a 
 bugu v jedné kopii druhou mine (`useTaxonUpdates` je hlavní kandidát – je to mutační logika).
 
 **Návrh.** Jeden vlastník sdíleného kódu, rozdíly konfigurací:
-1. Identické kopie (`ParentMapAutocomplete`) → jeden sdílený modul (mechanické, bez rizika).
-2. `useTaxonUpdates` → jeden hook s parametrem režimu (admin vs userský liší endpointy/sloupce).
+1. ~~Identické kopie (`ParentMapAutocomplete`) → jeden sdílený modul (mechanické, bez rizika).~~
+   ✅ *Hotovo 21. 10. 2026 – ukázalo se, že atlas kopie je mrtvý kód: smazána, vlastníkem atlasAdmin.*
+2. ~~`useTaxonUpdates` → jeden hook s parametrem režimu (admin vs userský liší endpointy/sloupce).~~
+   ✅ *Hotovo 21. 10. 2026 – userská kopie nebyla používána (oba konzumenty volají atlasAdmin
+   verzi nad stejným endpointem); existuje jediný hook, režimový parametr není potřeba.*
 3. `TaxaList` → sdílená komponenta, admin rozdíly přes definice sloupců (DataTable podporuje
    column defs) a práva přes serverové `canEdit*` flagy (ne přes `isAdmin` větve FE).
-4. Mapové komponenty: společné jádro (inicializace Leaflet, panes, správa vrstev) do
+4. ~~Mapové komponenty: společné jádro (inicializace Leaflet, panes, správa vrstev) do
    `core/mapLayers/components`, view-specifické části (info panely, klikací chování) zůstanou
-   per page – současně s E.
+   per page – současně s E.~~
+   ✅ *Hotovo 21. 10. 2026 (refactor 14) – `MapCanvas` + `MapLayer`; panes spravuje
+   `WfsLayerView` (vlastní pane per vrstva dle zIndex).*
 
 **Rizika.** Sloučení admin/userské logiky musí zachovat autorizační rozdíly – vždy přes data z
 backendu ([rules_frontend.md](./rules_frontend.md)), ne FE dedukce.
 
 **Hotovo, když.** `diff` shodných jmen souborů ve `src` = 0; existuje jediný `useTaxonUpdates`.
+✅ *Částečně 21. 10. 2026: jediný `useTaxonUpdates` ✓; zbývá D.3 `TaxaList` a záměrně rozdílné
+`useTaxaData`/`types.ts` (různé endpointy a práva – slučovat až společně s D.3).*
 
 ---
 
@@ -290,7 +303,10 @@ backendu ([rules_frontend.md](./rules_frontend.md)), ne FE dedukce.
 1. `SearchForm` → `hooks/useSearchFilters` (stav filtrů + číselníky), `hooks/useSearchQuery`
    (dotaz přes service z A, paginace/řazení, `AbortSignal`), `components/` pro jednotlivá
    filter pole. Výsledky už mají vlastní komponentu (`PladiasRecordsTable`).
-2. `Layer.tsx` → subkomponenty per `service.type` (současně s C – každá s typovaným props).
+2. ~~`Layer.tsx` → subkomponenty per `service.type` (současně s C – každá s typovaným props).~~
+   ✅ *Hotovo 21. 10. 2026 (refactor 13): `Layer.tsx` 614 → 105 řádků (dispatcher);
+   `layers/TileLayerView` (54), `WmsLayerView` (145), `WfsLayerView` (302) + `wfsBounds`
+   (72, čisté funkce) s 5 unit testy.*
 3. `BulkEdit` → `hooks/useBulkEdit` + per-field komponenty (field definice už jsou deklarativní).
 4. `SquaresOverlay`, `PladiasRecordsTable` – průběžně při dalších změnách.
 
@@ -298,7 +314,7 @@ Nedekomponovat vše – jen co přináší testovatelnost (F) nebo sdílení (D)
 komponentu, ne dogma.
 
 **Kroky.** 1) `SearchForm` (nejvyšší hodnota – po něm jdou testy parametrů vyhledávání),
-2) `Layer` (s C), 3) `BulkEdit`, 4) zbylé průběžně.
+~~2) `Layer` (s C)~~ ✅ *21. 10. 2026*, 3) `BulkEdit`, 4) zbylé průběžně.
 
 **Rizika.** Mechanický přesun stavů změní chování re-renderů – po každém kroku ruční test
 vyhledávání/exportu. Dekompozici provádět po migraci service (A), ne před ní (dvojitá práce).
@@ -558,10 +574,14 @@ service modulu test parsování (F.4); na konci B.2–B.6 – lint gate v CI.~~ 
 mapAdmin/playMessage/downloads domény, AbortSignal u typeahead, `_` konvence v lintu, lint gate
 blocking – `grep fetch(` mimo `src/services/` = 0, `npm run lint` exit 0, 165 testů.)
 
-**Fáze 3 – Kvalita jádra (průběžně, po feature):**
-C+D+E na mapové doméně (Layer/SquaresOverlay/MapComponent společně), poté DataTable (C+F),
-SearchForm (E+F), BulkEdit. Deduplikaci (D) zařazovat vždy, když se dotýkáme konkrétního
-duplikátu.
+**Fáze 3 – Kvalita jádra (průběžně, po feature):** *mapová doména hotova 21. 10. 2026
+(refactor 12–15):*
+~~C+D+E na mapové doméně (Layer/SquaresOverlay/MapComponent společně)~~ – Layer.tsx 614 → 105
+řádků (dispatcher + subkomponenty per `service.type` s typovanými props, `wfsBounds` s 5 testy),
+společné jádro `MapCanvas`+`MapLayer`, mrtvé duplicity v taxaList smazány (D.1, D.2, D.4);
+`any` v core = 0, lint 0, 170 testů. Zbývá: DataTable (C+F), SearchForm (E+F), BulkEdit;
+SquaresOverlay (517 ř.) a D.3 TaxaList průběžně. Deduplikaci (D) zařazovat vždy, když se
+dotýkáme konkrétního duplikátu.
 
 **Fáze 4 – Rozhodnutí a hygiena (dle produktových priorit):**
 I (i18n obsah), J (data-fetching vzor), K (a11y), L (observabilita), M (bundle/CSS).

@@ -1,12 +1,10 @@
 import { useMemo, useEffect, useState, useRef } from 'react';
-import { MapContainer, useMap } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css';
+import { useMap } from 'react-leaflet';
 import {apiGet} from '@/services/apiClient';
 import type {ApiResult} from '@/models/ApiResponse';
 import { useNavigate } from 'react-router-dom';
 
-import { useLayerManager, useLayerState, Layer } from '@/core/mapLayers';
-import type {LayerParams} from '@/core/mapLayers/types';
+import { useLayerManager, MapCanvas, MapLayer } from '@/core/mapLayers';
 import { LayerSwitcher } from '@/core/mapLayers/components/LayerSwitcher';
 import './MapComponent.scss';
 
@@ -262,30 +260,6 @@ function CurrentSquareIndicator({
     );
 }
 
-/**
- * Individual layer component that subscribes to visibility state
- */
-function MapLayer({
-    layerId,
-    mapName,
-    params,
-}: {
-    layerId: string;
-    mapName: string;
-    params?: LayerParams;
-}) {
-    const layerState = useLayerState(mapName, layerId);
-    const visible = layerState?.visible ?? false;
-
-    return (
-        <Layer
-            layerId={layerId}
-            params={params}
-            visible={visible}
-        />
-    );
-}
-
 export function MapComponent({
     mapName = 'mapDetail',
     initialZoom = 12,
@@ -391,15 +365,13 @@ export function MapComponent({
                 />
             ))}
             
-            <MapContainer
-                key={squareId}
-                ref={mapRef}
+            <MapCanvas
                 center={mapCenter}
                 zoom={initialZoom}
                 minZoom={MIN_ZOOM}
                 maxZoom={MAX_ZOOM}
-                scrollWheelZoom={true}
-                style={{ height: '100%', width: '100%' }}
+                mapKey={squareId}
+                mapRef={mapRef}
             >
                 {mapCenter && maxBounds && (
                     <MapUpdater center={mapCenter} maxBounds={maxBounds} />
@@ -429,8 +401,8 @@ export function MapComponent({
                         onRecordHover={onRecordHover}
                     />
                 )}
-            </MapContainer>
-            
+            </MapCanvas>
+
             <LayerSwitcher
                 mapName={mapName}
                 layerIds={allLayerIds}

@@ -8,3 +8,5 @@ export { LayerSwitcher } from './LayerSwitcher';
 export { Layer } from './Layer';
 export { SquaresOverlay } from './SquaresOverlay';
 export { ProjectLayers } from './ProjectLayers';
+export { MapCanvas } from './MapCanvas';
+export { MapLayer } from './MapLayer';

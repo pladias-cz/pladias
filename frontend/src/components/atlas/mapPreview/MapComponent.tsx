@@ -1,8 +1,5 @@
-import { MapContainer } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css';
-import type { LatLngExpression } from 'leaflet';
 import type { MapPreviewType } from '@/pages/atlas/MapPreview';
-import { useLayerManager, Layer } from '@/core/mapLayers';
+import { useLayerManager, Layer, MapCanvas } from '@/core/mapLayers';
 import { useEffect, useState, useMemo } from 'react';
 import {apiGet} from '@/services/apiClient';
 import type {ApiResult} from '@/models/ApiResponse';
@@ -112,7 +109,7 @@ function getVisibilityOverrides(
 }
 
 export function MapComponent({ type = 1, taxonId }: MapComponentProps) {
-    const center: LatLngExpression = [49.8, 15.7];
+    const center: [number, number] = [49.8, 15.7];
     const initialZoom = 7.5;
 
     const [mapSettings, setMapSettings] = useState<TaxonMapSettings | null>(null);
@@ -166,15 +163,12 @@ export function MapComponent({ type = 1, taxonId }: MapComponentProps) {
 
     return (
         <div className="h-100 w-100">
-            <MapContainer
-                center={center as LatLngExpression}
+            <MapCanvas
+                center={center}
                 zoom={initialZoom}
-                attributionControl={true}
                 minZoom={6}
                 maxZoom={11}
-                scrollWheelZoom={true}
-                style={{ height: '100%', width: '100%' }}
-                key={String(taxonId ?? 'no-taxon')}
+                mapKey={String(taxonId ?? 'no-taxon')}
             >
                 {/* Render layers from registry - encapsulation preserved */}
                 {baseLayers.map(layerId => (
@@ -185,7 +179,7 @@ export function MapComponent({ type = 1, taxonId }: MapComponentProps) {
                         visible={layerVisibility[layerId] ?? true}
                     />
                 ))}
-            </MapContainer>
+            </MapCanvas>
         </div>
     );
 }

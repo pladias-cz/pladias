@@ -79,4 +79,4 @@ export { BaseLayerAdapter } from './factory/adapters';
 export { UniversalLayerAdapter } from './factory/adapters/universalAdapter';
 
 // Components
-export { LayerSwitcher, Layer, SquaresOverlay, ProjectLayers } from './components';
+export { LayerSwitcher, Layer, SquaresOverlay, ProjectLayers, MapCanvas, MapLayer } from './components';

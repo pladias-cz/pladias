@@ -1,11 +1,7 @@
 import { useMemo, useCallback } from 'react';
-import { MapContainer } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css';
-import type { LatLngExpression } from 'leaflet';
 import { useNavigate } from 'react-router-dom';
 
-import { useLayerManager, useLayerState, Layer, ProjectLayers, useProjectLayers } from '@/core/mapLayers';
-import type {LayerParams} from '@/core/mapLayers/types';
+import { useLayerManager, useProjectLayers, MapCanvas, MapLayer, ProjectLayers } from '@/core/mapLayers';
 import { LayerSwitcher } from '@/core/mapLayers/components/LayerSwitcher';
 import './MapComponent.scss';
 
@@ -31,33 +27,6 @@ const MAP_MAIN_LAYERS = [
     'validation_common_1',
     'gbif_quadrants_other'];
 const MAP_MAIN_DEFAULTS: Record<string, boolean> = { osm: true, opentopo: false, technical_quadrants: true, interactive_squares: true, gbif_quadrants_inaturalist: false, gbif_quadrants_other: false };
-
-/**
- * Individual layer component that subscribes to visibility state
- */
-function MapLayer({
-    layerId,
-    mapName,
-    params,
-    onSquareDoubleClick,
-}: {
-    layerId: string;
-    mapName: string;
-    params?: LayerParams;
-    onSquareDoubleClick?: (squareId: string) => void;
-}) {
-    const layerState = useLayerState(mapName, layerId);
-    const visible = layerState?.visible ?? false;
-
-    return (
-        <Layer
-            layerId={layerId}
-            params={params}
-            visible={visible}
-            onSquareDoubleClick={onSquareDoubleClick}
-        />
-    );
-}
 
 export function MapComponent({
     mapName = 'mapMain',
@@ -90,12 +59,10 @@ export function MapComponent({
 
     return (
         <div className="h-100 w-100">
-            <MapContainer
-                center={center as LatLngExpression}
+            <MapCanvas
+                center={center}
                 zoom={initialZoom}
-                scrollWheelZoom={true}
-                style={{ height: '100%', width: '100%' }}
-                key={mapName}
+                mapKey={mapName}
             >
                 {/* Render static layers from registry with visibility subscription */}
                 {MAP_MAIN_LAYERS.map(layerId => (
@@ -107,11 +74,11 @@ export function MapComponent({
                         onSquareDoubleClick={layerId === 'interactive_squares' ? handleSquareDoubleClick : undefined}
                     />
                 ))}
-                
+
                 {/* Dynamic project layers - rendered when taxonId is provided */}
                 {taxonId && <ProjectLayers taxonId={taxonId} mapName={mapName} />}
-            </MapContainer>
-            
+            </MapCanvas>
+
             {/* Layer Switcher - Shows all layer groups including dynamic project layers */}
             <LayerSwitcher
                 mapName={mapName}

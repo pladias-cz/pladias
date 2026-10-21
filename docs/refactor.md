@@ -302,9 +302,15 @@ backendu ([rules_frontend.md](./rules_frontend.md)), ne FE dedukce.
 
 **Návrh.** Rozdělit podle vzoru, který v kódu už je (`components/atlas/import/` má `hooks/`,
 `components/`, `types.ts`):
-1. `SearchForm` → `hooks/useSearchFilters` (stav filtrů + číselníky), `hooks/useSearchQuery`
+1. ~~`SearchForm` → `hooks/useSearchFilters` (stav filtrů + číselníky), `hooks/useSearchQuery`
    (dotaz přes service z A, paginace/řazení, `AbortSignal`), `components/` pro jednotlivá
-   filter pole. Výsledky už mají vlastní komponentu (`PladiasRecordsTable`).
+   filter pole. Výsledky už mají vlastní komponentu (`PladiasRecordsTable`).~~
+   ✅ *Hotovo 21. 10. 2026 (refactor 17):* SearchForm.tsx **952 → 177 řádků** – tenká
+   koordinace; `hooks/useSearchOptions` (číselníky), `hooks/useSearchFilters` (výběry +
+   reset), `hooks/useSearchQuery` (dotaz/paginace/řazení/Excel), `components/`
+   (TypeaheadFilterField pro 10 typeahead řádků, SearchFilterColumnOne/Two,
+   SearchResultsView), čisté `searchRequest.ts` (F.3 testy: export_type, FormData+sort,
+   pageSize, paginace). AbortSignal zatím nemá backend podporu – viz J.
 2. ~~`Layer.tsx` → subkomponenty per `service.type` (současně s C – každá s typovaným props).~~
    ✅ *Hotovo 21. 10. 2026 (refactor 13): `Layer.tsx` 614 → 105 řádků (dispatcher);
    `layers/TileLayerView` (54), `WmsLayerView` (145), `WfsLayerView` (302) + `wfsBounds`
@@ -315,14 +321,15 @@ backendu ([rules_frontend.md](./rules_frontend.md)), ne FE dedukce.
 Nedekomponovat vše – jen co přináší testovatelnost (F) nebo sdílení (D). Cíl ~300–400 řádků na
 komponentu, ne dogma.
 
-**Kroky.** 1) `SearchForm` (nejvyšší hodnota – po něm jdou testy parametrů vyhledávání),
-~~2) `Layer` (s C)~~ ✅ *21. 10. 2026*, 3) `BulkEdit`, 4) zbylé průběžně.
+**Kroky.** ~~1) `SearchForm` (nejvyšší hodnota – po něm jdou testy parametrů vyhledávání),~~
+✅ *21. 10. 2026*, ~~2) `Layer` (s C)~~ ✅ *21. 10. 2026*, 3) `BulkEdit`, 4) zbylé průběžně.
 
 **Rizika.** Mechanický přesun stavů změní chování re-renderů – po každém kroku ruční test
 vyhledávání/exportu. Dekompozici provádět po migraci service (A), ne před ní (dvojitá práce).
 
 **Hotovo, když.** žádná komponenta > ~500 řádků; `SearchForm` je tenká koordinační komponenta
-bez přímého `fetch`.
+bez přímého `fetch`. ✅ *SearchForm splněno 21. 10. 2026 (177 řádků); zbývají `BulkEdit` (973),
+`PladiasRecordsTable` (518) a `SquaresOverlay` (517).*
 
 ---
 
@@ -349,8 +356,9 @@ Coverage se neměří.
    optimistic update i rollback. Bonus: opraven latentní bug – `getFilterPlaceholder` ignoroval
    `column.filterPlaceholder` (nastavovaly ho TaxaList ×2).
 2. **`core/mapLayers` logika** – registry, store, cache, key generation (čisté funkce).
-3. **Business logika** – buildSearchParams (po E), BulkEdit confirm flow (po E),
-   `useTaxonUpdates` (po D).
+3. **Business logika** – ~~buildSearchParams (po E),~~ ✅ *hotovo 21. 10. 2026 (refactor 17):
+   `searchRequest.test.ts` – export_type, FormData+řazení, pageSize, paginace (10 testů)*;
+   BulkEdit confirm flow (po E), `useTaxonUpdates` (po D).
 4. Vzory: `vi.stubGlobal("fetch", …)` z `apiClient.test.ts` – žádné MSW, žádná nová závislost.
 5. Volitelně `@vitest/coverage-v8` (dev-dependency) pro report – zavadět, až když se testy stanou
    metrikou; jinak postačí pravidlo „nový service modul / hook přichází s testem".
@@ -588,8 +596,10 @@ blocking – `grep fetch(` mimo `src/services/` = 0, `npm run lint` exit 0, 165 
 společné jádro `MapCanvas`+`MapLayer`, mrtvé duplicity v taxaList smazány (D.1, D.2, D.4);
 `any` v core = 0, lint 0, 170 testů. *DataTable (C.2+F.1) hotovo 21. 10. 2026 (refactor 16):*
 C.2 hotovo (generika z B.4, `any`=0) + 8 testů přes custom fetcher; opraven ignorovaný
-`column.filterPlaceholder` v `getFilterPlaceholder`. 178 testů. Zbývá: SearchForm (E+F),
-BulkEdit; SquaresOverlay (517 ř.) a D.3 TaxaList průběžně. Deduplikaci (D) zařazovat vždy, když se
+`column.filterPlaceholder` v `getFilterPlaceholder`. *SearchForm (E.1+F.3) hotovo 21. 10. 2026
+(refactor 17):* 952 → 177 řádků (hooks + components + čisté `searchRequest.ts` s 10 testy);
+188 testů. Zbývá: BulkEdit (E.3+F); SquaresOverlay (517 ř.), PladiasRecordsTable (518 ř.)
+a D.3 TaxaList průběžně. Deduplikaci (D) zařazovat vždy, když se
 dotýkáme konkrétního duplikátu.
 
 **Fáze 4 – Rozhodnutí a hygiena (dle produktových priorit):**

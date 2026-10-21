@@ -252,6 +252,11 @@ expanda vlastnosti (`_zoomHandler`, feature) jsou typované deklarovanými průn
 
 ## D – Deduplikace: atlas vs atlasAdmin, mapMain vs mapPreview
 
+**✅ Uzavřeno 21. 10. 2026 rozhodnutím – dále se nerozvíjí.** Mrtvé a driftující kopie smazány
+(refactor 12, 15), mapové jádro sdílené (refactor 14). Zbývající paralelní kopie (`TaxaList` ×2,
+`InfoPanel` ×2, `useTaxaData`/`types.ts`) zůstávají záměrně oddělené – sloučení se neplánuje
+(různé endpointy, práva a view; riziko regresí převažuje přínos).
+
 **Současný stav.** Dvě feature větve drží kopie téhož kódu a driftují:
 
 | Kopie | Stav |
@@ -259,8 +264,8 @@ expanda vlastnosti (`_zoomHandler`, feature) jsou typované deklarovanými průn
 | `components/atlas/taxaList/components/` × `atlasAdmin/…` | ~~**identické** (diff 0)~~ ✅ *21. 10. 2026 (refactor 12): celý adresář (7 souborů) byl v atlas mrtvý kód – komponenty používal jen atlasAdmin; mrtvá kopie smazána* |
 | `useTaxonUpdates.ts` (atlas 278 ř. vs atlasAdmin 413 ř.) | ~~218 diff řádků – driftující kopie~~ ✅ *21. 10. 2026 (refactor 15): userská kopie nebyla importovaná nikde (InfoPanel i admin TaxaList používají atlasAdmin verzi) – smazána; jediný `useTaxonUpdates` v atlasAdmin* |
 | `MapComponent.tsx` (mapDetail 442 vs mapPreview 191) | ~~601 diff řádků~~ ✅ *21. 10. 2026 (refactor 14): společné jádro `MapCanvas` (MapContainer init) + `MapLayer` (odběr visibility) v `core/mapLayers/components`; view-specifické části (info panely, šipky, markery) zůstaly per page dle návrhu* |
-| `InfoPanel.tsx` (mapMain 390 vs mapPreview 183) | paralelní vývoj |
-| `TaxaList.tsx` (atlas vs atlasAdmin) | paralelní vývoj |
+| `InfoPanel.tsx` (mapMain 390 vs mapPreview 183) | paralelní vývoj – *uzavřeno bez sloučení (21. 10. 2026)* |
+| `TaxaList.tsx` (atlas vs atlasAdmin) | paralelní vývoj – *uzavřeno bez sloučení (21. 10. 2026)* |
 
 Admin varianta vznikla zkopírováním userské a liší se správou sloupců a právy. Typický následek: oprava
 bugu v jedné kopii druhou mine (`useTaxonUpdates` je hlavní kandidát – je to mutační logika).
@@ -271,8 +276,10 @@ bugu v jedné kopii druhou mine (`useTaxonUpdates` je hlavní kandidát – je t
 2. ~~`useTaxonUpdates` → jeden hook s parametrem režimu (admin vs userský liší endpointy/sloupce).~~
    ✅ *Hotovo 21. 10. 2026 – userská kopie nebyla používána (oba konzumenty volají atlasAdmin
    verzi nad stejným endpointem); existuje jediný hook, režimový parametr není potřeba.*
-3. `TaxaList` → sdílená komponenta, admin rozdíly přes definice sloupců (DataTable podporuje
-   column defs) a práva přes serverové `canEdit*` flagy (ne přes `isAdmin` větve FE).
+3. ~~`TaxaList` → sdílená komponenta, admin rozdíly přes definice sloupců (DataTable podporuje
+   column defs) a práva přes serverové `canEdit*` flagy (ne přes `isAdmin` větve FE).~~
+   ✗ *Uzavřeno bez realizace 21. 10. 2026 (rozhodnutí) – paralelní vývoj přijat jako kompromis,
+   sloučení již neproběhne.*
 4. ~~Mapové komponenty: společné jádro (inicializace Leaflet, panes, správa vrstev) do
    `core/mapLayers/components`, view-specifické části (info panely, klikací chování) zůstanou
    per page – současně s E.~~
@@ -283,12 +290,18 @@ bugu v jedné kopii druhou mine (`useTaxonUpdates` je hlavní kandidát – je t
 backendu ([rules_frontend.md](./rules_frontend.md)), ne FE dedukce.
 
 **Hotovo, když.** `diff` shodných jmen souborů ve `src` = 0; existuje jediný `useTaxonUpdates`.
-✅ *Částečně 21. 10. 2026: jediný `useTaxonUpdates` ✓; zbývá D.3 `TaxaList` a záměrně rozdílné
-`useTaxaData`/`types.ts` (různé endpointy a práva – slučovat až společně s D.3).*
+✅ *Uzavřeno 21. 10. 2026 rozhodnutím: jediný `useTaxonUpdates` ✓, mrtvé kopie smazány ✓;
+zbývající kopie (`TaxaList`, `InfoPanel`, `useTaxaData`/`types.ts`) jsou záměrně oddělené –
+formální cíl „diff = 0" se ruší, sekce se dále neřeší.*
 
 ---
 
 ## E – Dekompozice velkých komponent
+
+**✅ Uzavřeno 21. 10. 2026 rozhodnutím – dále se nerozvíjí.** `SearchForm`, `Layer`, `BulkEdit`
+dekomponovány (refactor 13, 17, 18); `SquaresOverlay` (517) a `PladiasRecordsTable` (518)
+zůstávají v aktuální podobě – dekompozice již neproběhne (návratnost nepřevažuje riziko změn
+chování re-renderů).
 
 **Současný stav.** Pět komponent přes 500 řádků kumuluje více odpovědností:
 
@@ -320,21 +333,23 @@ backendu ([rules_frontend.md](./rules_frontend.md)), ne FE dedukce.
    `bulkEdit/useBulkEdit` (641, veškerá logika – stav polí, číselníky, guardy dávky, confirmy),
    `bulkEdit/valueParsing` (137, čisté parsery souřadnic DMS/desetinných + data) s 13 testy,
    `bulkEdit/components/` (FieldRow 34, BatchStatus 73, PositionBufferFields 68).*
-4. `SquaresOverlay`, `PladiasRecordsTable` – průběžně při dalších změnách.
+4. ~~`SquaresOverlay`, `PladiasRecordsTable` – průběžně při dalších změnách.~~
+   ✗ *Uzavřeno bez realizace 21. 10. 2026 (rozhodnutí) – zůstávají v aktuální podobě.*
 
 Nedekomponovat vše – jen co přináší testovatelnost (F) nebo sdílení (D). Cíl ~300–400 řádků na
 komponentu, ne dogma.
 
 **Kroky.** ~~1) `SearchForm` (nejvyšší hodnota – po něm jdou testy parametrů vyhledávání),~~
 ✅ *21. 10. 2026*, ~~2) `Layer` (s C)~~ ✅ *21. 10. 2026*, ~~3) `BulkEdit`~~ ✅ *21. 10. 2026*,
-4) zbylé průběžně.
+~~4) zbylé průběžně~~ ✗ *uzavřeno bez realizace 21. 10. 2026 (rozhodnutí).*
 
 **Rizika.** Mechanický přesun stavů změní chování re-renderů – po každém kroku ruční test
 vyhledávání/exportu. Dekompozici provádět po migraci service (A), ne před ní (dvojitá práce).
 
 **Hotovo, když.** žádná komponenta > ~500 řádků; `SearchForm` je tenká koordinační komponenta
-bez přímého `fetch`. ✅ *SearchForm splněno 21. 10. 2026 (177 řádků), BulkEdit 21. 10. 2026
-(274 řádků); zbývají `PladiasRecordsTable` (518) a `SquaresOverlay` (517).*
+bez přímého `fetch`. ✅ *Uzavřeno 21. 10. 2026: SearchForm (177) a BulkEdit (274) splněny;
+`PladiasRecordsTable` (518) a `SquaresOverlay` (517) přijaty jako výjimky rozhodnutím –
+formální cíl „žádná > ~500 řádků" se ruší.*
 
 ---
 
@@ -605,9 +620,9 @@ C.2 hotovo (generika z B.4, `any`=0) + 8 testů přes custom fetcher; opraven ig
 `column.filterPlaceholder` v `getFilterPlaceholder`. *SearchForm (E.1+F.3) hotovo 21. 10. 2026
 (refactor 17):* 952 → 177 řádků (hooks + components + čisté `searchRequest.ts` s 10 testy);
 *BulkEdit (E.3+F.3) hotovo 21. 10. 2026 (refactor 18):* 973 → 274 řádků (`useBulkEdit` +
-`valueParsing` s 13 testy + confirm flow 3 testy); 204 testů. Zbývá: SquaresOverlay (517 ř.),
-PladiasRecordsTable (518 ř.) a D.3 TaxaList průběžně. Deduplikaci (D) zařazovat vždy, když se
-dotýkáme konkrétního duplikátu.
+`valueParsing` s 13 testy + confirm flow 3 testy); 204 testů. *D (deduplikace) i E (dekompozice)
+uzavřeny 21. 10. 2026 rozhodnutím:* SquaresOverlay a PladiasRecordsTable zůstávají
+nedekomponované, `TaxaList` ×2 a `InfoPanel` ×2 oddělené – těmito sekcemi se již nezabýváme.
 
 **Fáze 4 – Rozhodnutí a hygiena (dle produktových priorit):**
 I (i18n obsah), J (data-fetching vzor), K (a11y), L (observabilita), M (bundle/CSS).
@@ -630,6 +645,9 @@ Viz [seniorDeveloper.md](./seniorDeveloper.md) – „The best code is the code 
 - **Prettier / formátovací nástroje** – ESLint + `.editorconfig` formát drží dostatečně; nová
   dependency pro kosmetiku ne.
 - **Zpřísnění i18n auditu na en/pl** – až po rozhodnutí v I.
+- **Dekompozice `SquaresOverlay`/`PladiasRecordsTable` a sloučení `TaxaList`/`InfoPanel` ×2** –
+  uzavřeno rozhodnutím 21. 10. 2026; paralelní vývoj a velikosti přes 500 řádků jsou přijatý
+  kompromis, návratnost nepřevažuje riziko regresí.
 
 ---
 

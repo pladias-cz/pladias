@@ -88,7 +88,8 @@ the code never written"). Následující oblasti refaktorovat **nechceme**, fung
 | N – CI mezery (dependabot npm) | nízká | ½ dne | lint gate až po B |
 | M – Bundle/CSS hygiena | nízká | 1–2 dny | – |
 | I – i18n obsah en/pl | nízká (produktové rozhodnutí) | překladatelská práce | – |
-| J, K, L – decision pointy | volitelné | viz sekce | – |
+| J – TanStack Query (bez cache) | střední | 1–3 dny krájet po doménách | rozhodnuto 21. 10. 2026 |
+| K, L – decision pointy | volitelné | viz sekce | – |
 
 ---
 
@@ -469,27 +470,55 @@ případnými en/pl uživateli (interní app – předpoklad: nejsou).
 ## J – Server-state: jednotný data-fetching vzor
 
 **Současný stav.** Každá komponenta si ručně píše `useEffect + useState(data/loading/error)`.
-Chybí: cachování a deduplikace (číselníky – projekty, herbáře, instituce, licence, taxonranks,
-datatypes – se načítají znovu na každé obrazovce, která je potřebuje), rušení požadavků,
-jednotná invalidace po mutacích. Vzorů je víc (`useProjectsData`, `useImportData`, inline v
-komponentách) a všechny stojí na raw fetch (viz A).
+Chybí: deduplikace souběžných požadavků, jednotný tvar hooků, jednotné zpracování
+loading/error. Vzorů je víc (`useProjectsData`, `useImportData`, inline v komponentách);
+všechny už ale stojí na `apiClient` (viz A).
 
-**Návrh.**
-- *Lazy varianta (doporučeno):* po migraci A standardizovat `useXxxData` hooky per doména nad
-  `apiClient` s `AbortSignal`; sdílené číselníky centralizovat do jednoho hooku s modulovou
-  cache (vzor `ProjectNameContext` už v kódu je).
-- *Enterprise varianta (decision point):* TanStack Query (~13 kB gzip) – cache, invalidace,
-  retry, devtools. Pro: řeší vzorce, které si jinak píšeme sami. Proti: nová závislost
-  ([seniorDeveloper.md](./seniorDeveloper.md) – „no new dependency if it can be avoided") a app
-  má ~40 GET endpointů s jedním dominantním patternem (tabulka + číselníky).
-- **Doporučení: lazy varianta; TanStack Query přehodnotit, až když začnou reálně bolet
-  duplicitní načítání a zapomenuté invalidace.**
+**Rozhodnutí (21. 10. 2026, produktové).** Enterprise varianta: **TanStack Query**
+(`@tanstack/react-query` 5.x; rodina už v kódu je přes `@tanstack/react-table`). Původní
+doporučení lazy varianty přehodnoceno. **Bez cache – včetně číselníků:** všechna data jsou
+dynamická, každý mount komponenty načítá znovu:
+- `staleTime: 0` + `refetchOnMount: "always"` – mount nikdy nepoužije dosluživlou odpověď,
+- `gcTime: 0` – cache se zahodí se ztrátou posledního observera; mezi obrazovkami se nic
+  nesdílí (souběžně namontovaní observeré pouze sdílí jeden in-flight požadavek –
+  deduplikace, nikoli cache),
+- `refetchOnWindowFocus`/`refetchOnReconnect: false` – předvídatelný objem požadavků
+  (žádné refetche na přepnutí okna, stejně jako před migrací),
+- `retry: false` – jeden pokus jako dosud; 403 a síťové chyby hlásí apiClient centrálně
+  (sekce F), retry by notifikace duplikovalo.
 
-**Rizika.** Modulová cache číselníků bez invalidace – po mutaci správcovských číselníků je třeba
-cache umět promáčknout (reload stránkou je pro interní app přijatelný fallback).
+Infrastruktura `src/query/`: `createQueryClient()` (factory – používá ji `index.tsx` i testy),
+`useCatalogQuery(key, loader)` pro číselníky (selhání → prázdný select, jako dřív). Pro testy
+komponent slouží obal `withQueryClient()` (`src/test/`).
 
-**Hotovo, když.** číselníky se per session načítají jednou; feature hooky mají jednotný tvar
-`(data, loading, error, reload)`.
+**Hotovo (refactor 19, 21. 10. 2026):** migrace na `useQuery`/`useCatalogQuery` –
+- `useSearchOptions` – 7 číselníků vyhledávacího formuláře,
+- `useBulkEdit` – fytochoriony + nálezci (klíč `["unassignedAuthors", firstRecordId]`,
+  `enabled` podle výběru záznamů; reset vybraného nálezce při změně výběru zachován),
+- `TaxaList` ×2 – revizní/publikační statusy,
+- `useProjectsData` – projekty importu (tvar návratu zachován),
+- `NewComments` – záznamy s komentáři,
+- `Data` (measurements) – skupiny vlastností + číselník datatype (notifikace chyb zachována).
+
+Validace: tsc 0, eslint 0, 204/204 testů, build OK.
+
+**Zbývá (J.2+):** mapové stránky (`InfoPanel` ×2, `MapComponent` ×2,
+`useRecordQuickUpdates`, `ProjectLayers`/`useProjectLayers`, stránky
+`MapMain`/`MapDetail`/`MapPreview`), `Record.tsx`, `FeatureDetail`, user
+`Settings`/`TaxaAdministration`, `App.tsx` loadReactConfig, `useInstanceMessages`
+(heartbeat), tabulkové fetchery (`useTableData` + custom fetchery listOfControls/
+listOfImports/atlasAdmin/useTaxaData ×2), autocomplete providery (AbortSignal).
+Uživatelsky spouštěné toky (`useSearchQuery` – POST vyhledávání + Excel export) a mutace
+zůstávají imperativní přes service vrstvu.
+
+**Rizika.** Bez cache roste objem požadavků s počtem mountů (číselníky se nenačítají
+jednou za session) – přijatým kompromisem rozhodnutí; síťové echo je deduplikované jen
+pro souběžné observeré.
+
+**Hotovo, když.** deklarativní načítání dat komponentami (render na mount) běží přes
+TanStack Query bez cache; uživatelsky spouštěné toky (submit, export, mutace) zůstávají
+imperativní přes services. *(Původní cíl „číselníky se per session načítají jednou" zrušen
+rozhodnutím – číselníky jsou dynamická data.)*
 
 ---
 
@@ -625,7 +654,9 @@ uzavřeny 21. 10. 2026 rozhodnutím:* SquaresOverlay a PladiasRecordsTable zůst
 nedekomponované, `TaxaList` ×2 a `InfoPanel` ×2 oddělené – těmito sekcemi se již nezabýváme.
 
 **Fáze 4 – Rozhodnutí a hygiena (dle produktových priorit):**
-I (i18n obsah), J (data-fetching vzor), K (a11y), L (observabilita), M (bundle/CSS).
+I (i18n obsah), J (data-fetching vzor – rozhodnuto: TanStack Query bez cache; infra +
+číselníky a první vlna stránek hotovy v refactor 19, zbývají mapové stránky, Record a
+tabulkové fetchery), K (a11y), L (observabilita), M (bundle/CSS).
 
 ## Co záměrně nedělat (YAGNI)
 

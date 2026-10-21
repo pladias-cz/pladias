@@ -134,7 +134,13 @@ function useAtlasSearch(params) {
 ```
 
 #### Async Safety
-- Hooks that manage async state include a `cancelled` flag in `useEffect` cleanup:
+- Declarative data loading (anything a component renders from the server on mount) goes through
+  TanStack Query via `src/query/` (`useCatalogQuery` for catalogs, `useQuery` elsewhere). The
+  client is configured WITHOUT cache (`staleTime: 0`, `gcTime: 0`, `refetchOnMount: "always"`) –
+  catalogs are dynamic data and every mount refetches (decision, refactor.md section J).
+  Components in tests are wrapped with `withQueryClient()` from `src/test/`.
+- The `cancelled`-flag pattern below applies only to the remaining manual imperative loads
+  (user-triggered flows: search submit, exports, mutations, heartbeat):
 ```typescript
 useEffect(() => {
     let cancelled = false;

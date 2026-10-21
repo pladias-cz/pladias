@@ -1,9 +1,9 @@
-import {useEffect, useState} from "react";
+import {useEffect, useMemo, useState} from "react";
 import {Accordion, Row, Spinner, Table} from "react-bootstrap";
 import {useTranslation} from "react-i18next";
 import {useNavigate} from "react-router-dom";
+import {useQuery} from "@tanstack/react-query";
 import {usePageTitle} from "@/hooks/usePageTitle";
-import type {FeatureGroup} from "@/models/FeatureGroup";
 import type {Feature} from "@/models/Feature";
 import type {TraitDatatype} from "@/models/TraitDatatype";
 import {getFeatureGroups, getFeaturesOfGroup, getTraitDatatypes} from "@/services/traitApi";
@@ -15,32 +15,33 @@ export default function Data() {
     const navigate = useNavigate();
     usePageTitle(t("trait.data.title"));
 
-    const [groups, setGroups] = useState<FeatureGroup[]>([]);
     const [featuresByGroup, setFeaturesByGroup] =
         useState<Record<number, Feature[]>>({});
-    const [datatypes, setDatatypes] =
-        useState<Record<number, TraitDatatype>>({});
     const [loadingGroup, setLoadingGroup] = useState<number | null>(null);
     const [activeKey, setActiveKey] = useState<string | null>(null);
 
-
-    // skupiny
+    // skupiny vlastností (číselník) – bez cache (sekce J), při mountu znovu;
+    // chyba se zobrazí notifikací jako dřív
+    const groupsQuery = useQuery({queryKey: ["featureGroups"], queryFn: getFeatureGroups});
     useEffect(() => {
-        getFeatureGroups()
-            .then(setGroups)
-            .catch(e => notifyApiError(e, t("trait.data.loadFailed")));
-    }, [t]);
+        if (groupsQuery.error) {
+            notifyApiError(groupsQuery.error, t("trait.data.loadFailed"));
+        }
+    }, [groupsQuery.error, t]);
+    const groups = groupsQuery.data ?? [];
 
-    // číselník datatype (načte se jednou)
+    // číselník datatype – bez cache (sekce J), při mountu znovu
+    const datatypesQuery = useQuery({queryKey: ["traitDatatypes"], queryFn: getTraitDatatypes});
     useEffect(() => {
-        getTraitDatatypes()
-            .then((data: TraitDatatype[]) => {
-                const map: Record<number, TraitDatatype> = {};
-                data.forEach(d => (map[d.id] = d));
-                setDatatypes(map);
-            })
-            .catch(e => notifyApiError(e, t("trait.data.loadFailed")));
-    }, [t]);
+        if (datatypesQuery.error) {
+            notifyApiError(datatypesQuery.error, t("trait.data.loadFailed"));
+        }
+    }, [datatypesQuery.error, t]);
+    const datatypes = useMemo(() => {
+        const map: Record<number, TraitDatatype> = {};
+        (datatypesQuery.data ?? []).forEach(d => (map[d.id] = d));
+        return map;
+    }, [datatypesQuery.data]);
 
     const loadFeatures = async (groupId: number) => {
         if (featuresByGroup[groupId]) return;

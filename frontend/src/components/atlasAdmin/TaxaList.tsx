@@ -5,7 +5,7 @@
  * to efficiently load taxa and their map settings.
  */
 
-import {useState, useCallback, useMemo, useEffect} from 'react';
+import {useState, useCallback, useMemo} from 'react';
 import {useTranslation} from 'react-i18next';
 import {DataTable, type DataTableColumnDef, createActionColumn, createCheckboxColumn, createTextColumn, createNumberColumn} from '@/core/dataTable';
 import {
@@ -19,35 +19,21 @@ import {
     ArchiveCsvCell,
     MappedCell,
 } from './taxaList/components';
-import type {TaxonMapSettings, StatusOption, TaxonOption} from './taxaList/types';
+import type {TaxonMapSettings, TaxonOption} from './taxaList/types';
 import {getPublicationStatuses, getRevisionStatuses} from '@/services/mapAdminApi';
+import {useCatalogQuery} from '@/query/useCatalogQuery';
 import {Link} from "react-router-dom";
 
 export default function TaxaList() {
     const {t} = useTranslation();
 
     const [error, setError] = useState<string | null>(null);
-    const [revisionStatusOptions, setRevisionStatusOptions] = useState<StatusOption[]>([]);
-    const [publicationStatusOptions, setPublicationStatusOptions] = useState<StatusOption[]>([]);
     const [localDataUpdater, _setLocalDataUpdater] = useState<((updater: (prev: TaxonMapSettings[]) => TaxonMapSettings[]) => void) | null>(null);
 
-    useEffect(() => {
-        const fetchStatusOptions = async () => {
-            try {
-                const [revisionStatuses, publicationStatuses] = await Promise.all([
-                    getRevisionStatuses(),
-                    getPublicationStatuses(),
-                ]);
-
-                setRevisionStatusOptions(revisionStatuses);
-                setPublicationStatusOptions(publicationStatuses);
-            } catch (error) {
-                console.error('Error fetching status options:', error);
-            }
-        };
-
-        fetchStatusOptions();
-    }, []);
+    // číselníky statusů – bez cache (sekce J); při selhání zůstane filtr
+    // prázdný (stejně jako dřív – chybu jen logoval)
+    const revisionStatusOptions = useCatalogQuery(["revisionStatuses"], getRevisionStatuses);
+    const publicationStatusOptions = useCatalogQuery(["publicationStatuses"], getPublicationStatuses);
 
     const {fetchTaxa} = useTaxaData({
         onSuccess: () => {

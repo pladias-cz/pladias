@@ -12,6 +12,7 @@
     "i18n:check": "node scripts/check-i18n.mjs"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.104.5",
     "@tanstack/react-table": "^8",
     "bootstrap": "^5",
     "bootstrap-icons": "^1",

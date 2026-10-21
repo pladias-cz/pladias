@@ -4,12 +4,14 @@
  * dávky (načtení kandidátů + PATCH per záznam + souhrn + onBulkEditComplete).
  *
  * Fetch se stubuje přes vi.stubGlobal (vzor apiClient.test.ts), překlady
- * reálné (i18n), Link potřebuje MemoryRouter.
+ * reálné (i18n), Link potřebuje MemoryRouter, číselníky (sekce J) běží přes
+ * TanStack Query – render se obalí vlastním klientem (withQueryClient).
  */
 import {cleanup, fireEvent, render, screen, waitFor} from "@testing-library/react";
 import {MemoryRouter} from "react-router-dom";
 import {afterEach, beforeEach, describe, expect, it, vi, type Mock} from "vitest";
 import BulkEdit from "./BulkEdit";
+import {withQueryClient} from "@/test/withQueryClient";
 import type {RecordPladias} from "@/models";
 import "@/i18n/i18n";
 
@@ -32,13 +34,15 @@ const callsTo = (urlPart: string) =>
 
 function renderBulkEdit() {
     return render(
-        <MemoryRouter>
-            <BulkEdit
-                records={[makeRecord(1), makeRecord(2)]}
-                searchPayloadEntries={[["taxon", "Carex"]]}
-                onBulkEditComplete={onBulkEditComplete}
-            />
-        </MemoryRouter>,
+        withQueryClient(
+            <MemoryRouter>
+                <BulkEdit
+                    records={[makeRecord(1), makeRecord(2)]}
+                    searchPayloadEntries={[["taxon", "Carex"]]}
+                    onBulkEditComplete={onBulkEditComplete}
+                />
+            </MemoryRouter>,
+        ),
     );
 }
 

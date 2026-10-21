@@ -5,32 +5,21 @@
  * This is a simplified read-only view - only the first column remains interactive.
  */
 
-import {useEffect, useMemo, useState} from 'react';
+import {useMemo} from 'react';
 import {useTranslation} from 'react-i18next';
 import {DataTable, type DataTableColumnDef, createTextColumn, createBooleanColumn} from '@/core/dataTable';
 import {getPublicationStatuses, getRevisionStatuses} from '@/services/mapAdminApi';
+import {useCatalogQuery} from '@/query/useCatalogQuery';
 import {useTaxaData} from './taxaList/hooks';
-import type {TaxonMapSettings, StatusOption} from './taxaList/types';
+import type {TaxonMapSettings} from './taxaList/types';
 
 export default function TaxaList() {
     const {t} = useTranslation();
-    const [revisionStatusOptions, setRevisionStatusOptions] = useState<StatusOption[]>([]);
-    const [publicationStatusOptions, setPublicationStatusOptions] = useState<StatusOption[]>([]);
 
-    useEffect(() => {
-        let cancelled = false;
-
-        Promise.all([
-            getRevisionStatuses(),
-            getPublicationStatuses(),
-        ]).then(([revisionStatuses, publicationStatuses]) => {
-            if (cancelled) return;
-            setRevisionStatusOptions(revisionStatuses);
-            setPublicationStatusOptions(publicationStatuses);
-        }).catch(error => console.error('Error fetching status options:', error));
-
-        return () => { cancelled = true; };
-    }, []);
+    // číselníky statusů – bez cache (sekce J); při selhání zůstane filtr
+    // prázdný (stejně jako dřív – chybu jen logoval)
+    const revisionStatusOptions = useCatalogQuery(["revisionStatuses"], getRevisionStatuses);
+    const publicationStatusOptions = useCatalogQuery(["publicationStatuses"], getPublicationStatuses);
 
     const {fetchTaxa} = useTaxaData({
         onSuccess: () => {

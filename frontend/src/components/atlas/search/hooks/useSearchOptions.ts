@@ -3,8 +3,9 @@
  * service vrstvu a normalizace na TypeaheadOption pro selecty.
  */
 
-import {useEffect, useMemo, useState} from "react";
+import {useMemo} from "react";
 import {useTranslation} from "react-i18next";
+import {useCatalogQuery} from "@/query/useCatalogQuery";
 import {
     getCommitters,
     getHerbariums,
@@ -13,54 +14,21 @@ import {
     getLicenses,
     getPhytochorions,
     getProjects,
-    type CommitterOption,
-    type HerbariumOption,
-    type HistoryFlagOption,
-    type InstitutionOption,
-    type LicenseOption,
-    type PhytochorionOption,
-    type ProjectOption,
 } from "@/services/searchApi";
 import type {TypeaheadOption} from "../types";
 
 export function useSearchOptions() {
     const {t} = useTranslation();
 
-    const [projects, setProjects] = useState<ProjectOption[]>([]);
-    const [herbariums, setHerbariums] = useState<HerbariumOption[]>([]);
-    const [institutions, setInstitutions] = useState<InstitutionOption[]>([]);
-    const [committers, setCommitters] = useState<CommitterOption[]>([]);
-    const [licenses, setLicenses] = useState<LicenseOption[]>([]);
-    const [historyFlags, setHistoryFlags] = useState<HistoryFlagOption[]>([]);
-    const [phytochorions, setPhytochorions] = useState<PhytochorionOption[]>([]);
-
-    useEffect(() => {
-        let isMounted = true;
-
-        // číselníky formuláře – při selhání zůstane select prázdný (použitelný)
-        const load = async <T,>(loader: () => Promise<T[]>, setter: (options: T[]) => void) => {
-            try {
-                const options = await loader();
-                if (isMounted) {
-                    setter(options);
-                }
-            } catch {
-                // Keep the select usable with default empty option when loading fails.
-            }
-        };
-
-        void load(getProjects, setProjects);
-        void load(getHerbariums, setHerbariums);
-        void load(getInstitutions, setInstitutions);
-        void load(getCommitters, setCommitters);
-        void load(getLicenses, setLicenses);
-        void load(getHistoryFlags, setHistoryFlags);
-        void load(getPhytochorions, setPhytochorions);
-
-        return () => {
-            isMounted = false;
-        };
-    }, []);
+    // číselníky formuláře – při selhání zůstane select prázdný (použitelný);
+    // bez cache (sekce J): každý mount je načte znovu
+    const projects = useCatalogQuery(["projects"], getProjects);
+    const herbariums = useCatalogQuery(["herbariums"], getHerbariums);
+    const institutions = useCatalogQuery(["institutions"], getInstitutions);
+    const committers = useCatalogQuery(["committers"], getCommitters);
+    const licenses = useCatalogQuery(["licenses"], getLicenses);
+    const historyFlags = useCatalogQuery(["historyFlags"], getHistoryFlags);
+    const phytochorions = useCatalogQuery(["phytochorions"], getPhytochorions);
 
     const phytochorionOptions = useMemo<TypeaheadOption[]>(() => (
         phytochorions.map((phytochorion) => ({id: phytochorion.rowid, label: phytochorion.name}))

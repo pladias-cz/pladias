@@ -1,32 +1,20 @@
-import {useCallback, useState, useEffect} from 'react';
-import {getUserProjects, type UserProject} from '@/services/importApi';
+import {useQuery} from '@tanstack/react-query';
+import {getUserProjects} from '@/services/importApi';
 
+/**
+ * Projekty přidělené uživateli (import) – TanStack Query bez cache
+ * (sekce J). Tvar návratu zachován: (projects, isLoading, error, refetch).
+ */
 export function useProjectsData() {
-    const [projects, setProjects] = useState<UserProject[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-
-    const fetchProjects = useCallback(async () => {
-        setIsLoading(true);
-        setError(null);
-
-        try {
-            setProjects(await getUserProjects());
-        } catch (err) {
-            setError(err instanceof Error ? err.message : 'Failed to fetch projects');
-        } finally {
-            setIsLoading(false);
-        }
-    }, []);
-
-    useEffect(() => {
-        fetchProjects();
-    }, [fetchProjects]);
+    const {data, isPending, error, refetch} = useQuery({
+        queryKey: ['userProjects'],
+        queryFn: getUserProjects,
+    });
 
     return {
-        projects,
-        isLoading,
-        error,
-        refetch: fetchProjects,
+        projects: data ?? [],
+        isLoading: isPending,
+        error: error ? error.message : null,
+        refetch: () => void refetch(),
     };
 }

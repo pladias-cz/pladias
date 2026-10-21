@@ -28,8 +28,9 @@ import {
     updateTaxon,
     updateValidationStatus,
 } from "@/services/bulkEditApi";
-import {getPhytochorions, type PhytochorionOption} from "@/services/searchApi";
+import {getPhytochorions} from "@/services/searchApi";
 import {getUnassignedAuthors} from "@/services/recordApi";
+import {useCatalogQuery} from "@/query/useCatalogQuery";
 import {runBulkOperationSequential, type BulkRecordVersion} from "../bulkEditOperations";
 import {formatCoord, isValidDateValue, parseCoordinatePair} from "./valueParsing";
 import type {BulkOperationSummary, SemaforOption} from "./types";
@@ -77,13 +78,11 @@ export function useBulkEdit({records, totalCount, searchPayloadEntries, onBulkEd
     const [semaforError, setSemaforError] = useState<boolean>(false);
     // hodnoty polí
     const [newDate, setNewDate] = useState<string>("");
-    const [phytochorions, setPhytochorions] = useState<PhytochorionOption[]>([]);
     const [selectedPhytochorion, setSelectedPhytochorion] = useState<TypeaheadOption[]>([]);
     const [newLocality, setNewLocality] = useState<string>("");
     const [newNearestTownName, setNewNearestTownName] = useState<string>("");
     const [newSource, setNewSource] = useState<string>("");
     const [newImportComment, setNewImportComment] = useState<string>("");
-    const [finderOptions, setFinderOptions] = useState<TypeaheadOption[]>([]);
     const [selectedFinder, setSelectedFinder] = useState<TypeaheadOption[]>([]);
     const [selectedTaxon, setSelectedTaxon] = useState<TaxonId | null>(null);
     const [newSemafor, setNewSemafor] = useState<string>("");
@@ -107,66 +106,29 @@ export function useBulkEdit({records, totalCount, searchPayloadEntries, onBulkEd
         () => createTaxaImportableProvider(t("atlas.search.form.taxonAutocompletePlaceholder")),
         [t],
     );
+    // číselníky (sekce J, TanStack Query bez cache – jsou dynamická):
+    // fytochoriony + autoři nepřiřazení k prvnímu záznamu výběru; při selhání
+    // zůstane pole použitelné s prázdným číselníkem
+    const phytochorions = useCatalogQuery(["phytochorions"], getPhytochorions);
+    const firstRecordId = recordIds[0];
+    const finderAuthors = useCatalogQuery(
+        ["unassignedAuthors", firstRecordId],
+        // queryFn běží jen při firstRecordId != null (enabled níže)
+        () => getUnassignedAuthors(firstRecordId as number),
+        {enabled: firstRecordId != null},
+    );
+
     const phytochorionOptions = useMemo<TypeaheadOption[]>(() => (
         phytochorions.map((phytochorion) => ({id: phytochorion.rowid, label: phytochorion.name}))
     ), [phytochorions]);
+    const finderOptions = useMemo<TypeaheadOption[]>(() => (
+        finderAuthors.map((author) => ({id: author.id as string | number, label: author.name}))
+    ), [finderAuthors]);
 
+    // změna výběru záznamů vynuluje vybraného nálezce (číselník nálezců je
+    // navázaný na první záznam – bez cache se klíčem mění i načtená data)
     useEffect(() => {
-        let isMounted = true;
-
-        const loadPhytochorions = async () => {
-            try {
-                const options = await getPhytochorions();
-                if (isMounted) {
-                    setPhytochorions(options);
-                }
-            } catch {
-                // Pole zůstane použitelné s prázdným číselníkem.
-            }
-        };
-
-        loadPhytochorions();
-        return () => {
-            isMounted = false;
-        };
-    }, []);
-
-    useEffect(() => {
-        let isMounted = true;
-
-        const loadFinders = async () => {
-            const firstRecordId = recordIds[0];
-            if (firstRecordId == null) {
-                if (isMounted) {
-                    setFinderOptions([]);
-                    setSelectedFinder([]);
-                }
-                return;
-            }
-
-            try {
-                const authors = await getUnassignedAuthors(firstRecordId);
-                const options = authors.map((author) => ({
-                    id: author.id as string | number,
-                    label: author.name,
-                }));
-
-                if (isMounted) {
-                    setFinderOptions(options);
-                    setSelectedFinder([]);
-                }
-            } catch {
-                if (isMounted) {
-                    setFinderOptions([]);
-                    setSelectedFinder([]);
-                }
-            }
-        };
-
-        void loadFinders();
-        return () => {
-            isMounted = false;
-        };
+        setSelectedFinder([]);
     }, [recordIds]);
 
     const progressPercent = batchProgress.total > 0

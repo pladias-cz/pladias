@@ -211,9 +211,12 @@ export function createCheckboxColumn<T extends object>(
 
 /**
  * Get the filter placeholder for a column based on its type
- * Uses generic i18n keys that work for all columns
+ * Custom per-column placeholder takes precedence over generic i18n keys
  */
 export function getFilterPlaceholder<T>(column: DataTableColumnDef<T>, t: TFunction): string {
+    if (column.type === 'text' && column.filterPlaceholder) {
+        return column.filterPlaceholder;
+    }
     switch (column.type) {
         case 'text':
             return t("common.table.filter.all");

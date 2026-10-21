@@ -201,6 +201,8 @@ One-off user feedback (action success/failure) goes through the global notificat
 ### Styling
 
 - SCSS with BEM-like naming: `.block__element--modifier`
+- Vendor/framework styles (Bootstrap, bootstrap-icons, react-bootstrap-typeahead, Leaflet) are imported only in the entry point `index.tsx` – never inside components
+- Icons use the `bi-*` (bootstrap-icons) font set; do not add other icon libraries
 - Bootstrap 5 utility classes are used freely for layout/spacing
 - Custom classes for anything semantic
 

@@ -564,32 +564,48 @@ a je to zde zdokumentováno).
 
 ## M – Bundle a CSS hygiena
 
-**Současný stav.**
-- `main.css` **314 kB** – obsahuje celý Bootstrap dist CSS + ikonové fonty (~470 kB assetů) +
-  Leaflet + aplikace.
-- Bootstrap CSS se importuje **uvnitř komponenty** (`core/MainMenu.tsx:3`
-  `import 'bootstrap/dist/css/bootstrap.min.css'`; `bootstrap-icons` navíc v
-  `pages/measurements/Datatypes.tsx`) – vendor styly se táhnou import grafem komponent, ne
-  vstupním bodem.
-- **Dvojí ikonová strategie:** třídy `bi-*` (bootstrap-icons) v 20 souborech a zároveň
-  `react-icons` jako dependency (použito v 1 souboru).
-- Plain `.css` soubory vedle SCSS konvence: `search/SearchForm.css`, `BulkEdit.css` – globální
-  CSS bez namespacingu, riziko kolizí tříd.
+**Hotovo (refactor 20, 21. 10. 2026).**
 
-**Návrh.**
-1. Vendor styly (`bootstrap/dist/css`, `bootstrap-icons`, `leaflet`) konsolidovat do vstupního
-   bodu `index.tsx` – jediné místo, kde se řeší globální vzhled.
-2. Jedna ikonová sada: zůstat u `bi-*` (20 souborů), poslední použití `react-icons` převést a
-   dependency odebrat.
-3. Plain `.css` převést na SCSS s BEM namespacingem ([conventions.md](./conventions.md)).
-4. Volitelně: Bootstrap ze SCSS source s vypnutím nepoužitých komponent (potenciálně ~100+ kB
-   méně) – měřit před/po (`npx vite-bundle-visualizer`, žádná trvalá devDependency).
+**Východisko.** `main.css` ~315 kB (celý Bootstrap dist + Leaflet + aplikace), vendor styly
+importované uvnitř komponent (`MainMenu`, `Datatypes`, `RecordMap`, `MapCanvas`), dvojí
+ikonová strategie (`bi-*` v 20 souborech + `react-icons` v 1), plain `.css` soubory vedle
+SCSS konvence (`SearchForm.css`, `BulkEdit.css`, `DataTable.module.css`).
 
-**Rizika.** Přesun importů mění pořadí kaskády – po každém kroku vizuální kontrola klíčových
-obrazovek (mapy, tabulky).
+**Provedeno.**
+1. Vendor styly konsolidovány do vstupního bodu `index.tsx` – jediné místo globálního
+   vzhledu. Pořadí importů = pořadí kaskády: bootstrap → bootstrap-icons → Typeahead →
+   leaflet, `global.scss` poslední (aplikační pravidla tak přebíjejí vendor defaults; dříve
+   byla `global.scss` naopak před Bootstrapem). Odebráno z `MainMenu`, `Datatypes`,
+   `DatatypesTable` (zakomentovaný import), `RecordMap`, `MapCanvas` (aktualizován i doc
+   comment). Leaflet CSS se sloučil do eager `main.css` – zrušen samostatný lazy chunk.
+2. Jedna ikonová sada: `react-icons` dependency **odebrána**; `LayerSwitcher` používá
+   `bi-chevron-left/right` + `bi-stack` (velikosti 10/14/16 px zachovány, přesunuty do
+   `LayerSwitcher.scss`; fontové ikony místo SVG komponent).
+3. Plain `.css` → SCSS: `SearchForm.scss` (selektory zkompilované 1:1; ID `#searchForm`
+   záměrně zachováno – specificita 1-0-x drží přednost nad Bootstrap pravidly `.table td`;
+   mrtvá pravidla `#sliderResultsCount`/`#recordIdForm` odstraněna, nula výskytů v repo),
+   `BulkEdit.scss` (přejmenování, obsah beze změny – třídy `bulk-edit-*` namespaced už byly),
+   `DataTable.module.scss` (CSS modul, hashované názvy – pouze sjednocení na scss konvenci).
+   `find src -name '*.css'` = 0.
+4. **Rozhodnuto: Bootstrap zůstává z dist CSS.** Inventář react-bootstrap (Accordion, Alert,
+   Badge, Breadcrumb, Button, Card, Form, Modal, Nav/Navbar, Pagination, Spinner, Table…)
+   pokrývá většinu komponentového povrchu – trim nepoužitých modulů by ušetřil jen
+   ~15–25 kB raw / jednotky kB gzip (celé `bootstrap.min.css` = 232 kB raw / 31 kB gzip),
+   neproportční k riziku vizuálních regresí bez browser QA. `vite-bundle-visualizer`
+   neinstalován (žádná trvalá devDependency – změřeno `ls` + `gzip` + build outputem).
 
-**Hotovo, když.** vendor styly importované na jednom místě; jediná ikonová sada; žádný plain
-`.css` mimo `node_modules`.
+**Výsledek (build).** `main.css` 330 kB / 52 kB gzip – veškerý vendor CSS v jednom eager
+souboru, lazy leaflet chunk zrušen. Ikony: fonty `bi-*` (woff2 134 kB + woff 180 kB assetů;
+woff stahují jen prohlížeče bez woff2). Trasy mají vlastní malé css chunky (0,1–2,6 kB).
+
+**Rizika (realizace).** Změna pořadí kaskády (`global.scss` nyní po vendoru) – ověřeno, že
+`global.scss` definuje jen `.text|.bg|.border-{accepted,uncertain,declined,unprocessed}`
+(žádný překryv s bootstrap názvy) a pořadí v buildu grepem (`.text-accepted` na offsetu
+329,8 z 330,2 kB – poslední). Vizuální kontrolu v prohlížeči (mapy, tabulky) doporučeno
+udělat při nejbližší příležitosti – testy pokrývají render, ne vzhled.
+
+**Hotovo, když.** ✓ vendor styly importované na jednom místě; ✓ jediná ikonová sada
+(`bi-*`); ✓ žádný plain `.css` mimo `node_modules`.
 
 ---
 
@@ -656,7 +672,8 @@ nedekomponované, `TaxaList` ×2 a `InfoPanel` ×2 oddělené – těmito sekcem
 **Fáze 4 – Rozhodnutí a hygiena (dle produktových priorit):**
 I (i18n obsah), J (data-fetching vzor – rozhodnuto: TanStack Query bez cache; infra +
 číselníky a první vlna stránek hotovy v refactor 19, zbývají mapové stránky, Record a
-tabulkové fetchery), K (a11y), L (observabilita), M (bundle/CSS).
+tabulkové fetchery), K (a11y), L (observabilita), M (bundle/CSS – hotovo 21. 10. 2026,
+refactor 20).
 
 ## Co záměrně nedělat (YAGNI)
 

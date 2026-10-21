@@ -315,21 +315,26 @@ backendu ([rules_frontend.md](./rules_frontend.md)), ne FE dedukce.
    ✅ *Hotovo 21. 10. 2026 (refactor 13): `Layer.tsx` 614 → 105 řádků (dispatcher);
    `layers/TileLayerView` (54), `WmsLayerView` (145), `WfsLayerView` (302) + `wfsBounds`
    (72, čisté funkce) s 5 unit testy.*
-3. `BulkEdit` → `hooks/useBulkEdit` + per-field komponenty (field definice už jsou deklarativní).
+3. ~~`BulkEdit` → `hooks/useBulkEdit` + per-field komponenty.~~
+   ✅ *Hotovo 21. 10. 2026 (refactor 18): `BulkEdit.tsx` 973 → 274 řádků (tenká kompozice);
+   `bulkEdit/useBulkEdit` (641, veškerá logika – stav polí, číselníky, guardy dávky, confirmy),
+   `bulkEdit/valueParsing` (137, čisté parsery souřadnic DMS/desetinných + data) s 13 testy,
+   `bulkEdit/components/` (FieldRow 34, BatchStatus 73, PositionBufferFields 68).*
 4. `SquaresOverlay`, `PladiasRecordsTable` – průběžně při dalších změnách.
 
 Nedekomponovat vše – jen co přináší testovatelnost (F) nebo sdílení (D). Cíl ~300–400 řádků na
 komponentu, ne dogma.
 
 **Kroky.** ~~1) `SearchForm` (nejvyšší hodnota – po něm jdou testy parametrů vyhledávání),~~
-✅ *21. 10. 2026*, ~~2) `Layer` (s C)~~ ✅ *21. 10. 2026*, 3) `BulkEdit`, 4) zbylé průběžně.
+✅ *21. 10. 2026*, ~~2) `Layer` (s C)~~ ✅ *21. 10. 2026*, ~~3) `BulkEdit`~~ ✅ *21. 10. 2026*,
+4) zbylé průběžně.
 
 **Rizika.** Mechanický přesun stavů změní chování re-renderů – po každém kroku ruční test
 vyhledávání/exportu. Dekompozici provádět po migraci service (A), ne před ní (dvojitá práce).
 
 **Hotovo, když.** žádná komponenta > ~500 řádků; `SearchForm` je tenká koordinační komponenta
-bez přímého `fetch`. ✅ *SearchForm splněno 21. 10. 2026 (177 řádků); zbývají `BulkEdit` (973),
-`PladiasRecordsTable` (518) a `SquaresOverlay` (517).*
+bez přímého `fetch`. ✅ *SearchForm splněno 21. 10. 2026 (177 řádků), BulkEdit 21. 10. 2026
+(274 řádků); zbývají `PladiasRecordsTable` (518) a `SquaresOverlay` (517).*
 
 ---
 
@@ -358,7 +363,8 @@ Coverage se neměří.
 2. **`core/mapLayers` logika** – registry, store, cache, key generation (čisté funkce).
 3. **Business logika** – ~~buildSearchParams (po E),~~ ✅ *hotovo 21. 10. 2026 (refactor 17):
    `searchRequest.test.ts` – export_type, FormData+řazení, pageSize, paginace (10 testů)*;
-   BulkEdit confirm flow (po E), `useTaxonUpdates` (po D).
+   ~~BulkEdit confirm flow (po E),~~ ✅ *hotovo 21. 10. 2026 (refactor 18): `BulkEdit.test.tsx` –
+   validace bez výběru, zrušení dialogu, potvrzení + dávka + souhrn (3 testy)*, `useTaxonUpdates` (po D).
 4. Vzory: `vi.stubGlobal("fetch", …)` z `apiClient.test.ts` – žádné MSW, žádná nová závislost.
 5. Volitelně `@vitest/coverage-v8` (dev-dependency) pro report – zavadět, až když se testy stanou
    metrikou; jinak postačí pravidlo „nový service modul / hook přichází s testem".
@@ -598,8 +604,9 @@ společné jádro `MapCanvas`+`MapLayer`, mrtvé duplicity v taxaList smazány (
 C.2 hotovo (generika z B.4, `any`=0) + 8 testů přes custom fetcher; opraven ignorovaný
 `column.filterPlaceholder` v `getFilterPlaceholder`. *SearchForm (E.1+F.3) hotovo 21. 10. 2026
 (refactor 17):* 952 → 177 řádků (hooks + components + čisté `searchRequest.ts` s 10 testy);
-188 testů. Zbývá: BulkEdit (E.3+F); SquaresOverlay (517 ř.), PladiasRecordsTable (518 ř.)
-a D.3 TaxaList průběžně. Deduplikaci (D) zařazovat vždy, když se
+*BulkEdit (E.3+F.3) hotovo 21. 10. 2026 (refactor 18):* 973 → 274 řádků (`useBulkEdit` +
+`valueParsing` s 13 testy + confirm flow 3 testy); 204 testů. Zbývá: SquaresOverlay (517 ř.),
+PladiasRecordsTable (518 ř.) a D.3 TaxaList průběžně. Deduplikaci (D) zařazovat vždy, když se
 dotýkáme konkrétního duplikátu.
 
 **Fáze 4 – Rozhodnutí a hygiena (dle produktových priorit):**

@@ -21,7 +21,7 @@ import {
 import {ExcelExportButtons} from './export';
 import type {DataTableConfig, DataTableColumnDef} from './types';
 import {canSort} from './utils';
-import styles from './DataTable.module.css';
+import styles from './DataTable.module.scss';
 
 export function DataTable<T extends object>(config: DataTableConfig<T>) {
     const {

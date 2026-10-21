@@ -10,8 +10,6 @@
 
 import { useState, useCallback, useMemo } from 'react';
 import { useLayerManager, type LayerDefinition, layerGroups, getLayerDefinition, useLayerStore } from '../index';
-import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
-import { FiLayers } from 'react-icons/fi';
 
 interface LayerSwitcherProps {
     mapName: string;
@@ -185,7 +183,7 @@ export function LayerSwitcher({ mapName, layerIds, defaultVisibility }: LayerSwi
                     style={{ cursor: 'pointer' }}
                 >
                     <span className={`group-arrow me-2 ${isOpen ? 'open' : ''}`}>
-                        <FaChevronRight size={10} />
+                        <i className="bi bi-chevron-right" aria-hidden="true"></i>
                     </span>
                     <span className="group-title small fw-semibold">{group.title}</span>
                 </div>
@@ -210,7 +208,7 @@ export function LayerSwitcher({ mapName, layerIds, defaultVisibility }: LayerSwi
                 className="layer-switcher-toggle d-flex align-items-center justify-content-center"
                 onClick={() => setIsExpanded(!isExpanded)}
             >
-                {isExpanded ? <FaChevronLeft size={14} /> : <FiLayers size={16} />}
+                {isExpanded ? <i className="bi bi-chevron-left" aria-hidden="true"></i> : <i className="bi bi-stack" aria-hidden="true"></i>}
             </div>
             <div className="layer-switcher-content">
                 <h6 className="layer-switcher-title small fw-bold">Map Layers</h6>

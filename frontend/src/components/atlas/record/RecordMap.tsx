@@ -4,7 +4,6 @@ import {useState, useCallback, useEffect} from "react";
 import {MapContainer, TileLayer, Marker, Popup, useMapEvents} from 'react-leaflet';
 import {Icon} from 'leaflet';
 import type {LatLngExpression} from 'leaflet';
-import 'leaflet/dist/leaflet.css';
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';

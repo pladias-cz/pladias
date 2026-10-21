@@ -15,7 +15,7 @@ import type {RecordPladias} from "@/models";
 import {useBulkEdit} from "./bulkEdit/useBulkEdit";
 import {BulkEditBatchStatus, BulkEditFieldRow, PositionBufferFields} from "./bulkEdit/components";
 import type {TypeaheadOption} from "./types";
-import "./BulkEdit.css";
+import "./BulkEdit.scss";
 
 type BulkEditProps = {
     records: RecordPladias[];

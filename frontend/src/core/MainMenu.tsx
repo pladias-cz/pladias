@@ -1,8 +1,5 @@
 import React, {useCallback} from "react";
 import {Link, NavLink, useLocation} from "react-router-dom";
-import "bootstrap/dist/css/bootstrap.min.css";
-import 'bootstrap-icons/font/bootstrap-icons.css';
-import 'react-bootstrap-typeahead/css/Typeahead.css';
 import {useTranslation} from "react-i18next";
 import {useInstanceConfig} from "@/context/InstanceConfigContext";
 import {useUser} from "@/context/UserContext";

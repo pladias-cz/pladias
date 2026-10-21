@@ -68,6 +68,15 @@
     display: flex;
     align-items: center;
     justify-content: center;
+
+    // velikosti fontových ikon (bi-*) – stejné jako dřívější react-icons (14/16 px)
+    .bi {
+        font-size: 14px;
+    }
+
+    .bi-stack {
+        font-size: 16px;
+    }
 }
 
 .layer-switcher-content {
@@ -113,6 +122,8 @@
 .group-arrow {
     display: inline-block;
     transition: transform 0.2s;
+    // velikost šipky skupiny – stejné jako dřívější react-icons (10 px)
+    font-size: 10px;
 
     &.open {
         transform: rotate(90deg);

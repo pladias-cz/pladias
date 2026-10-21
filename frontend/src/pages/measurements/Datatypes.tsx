@@ -1,5 +1,4 @@
 import {Row} from "react-bootstrap";
-import 'bootstrap-icons/font/bootstrap-icons.css';
 import {useTranslation} from "react-i18next";
 
 

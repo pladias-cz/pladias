@@ -14,7 +14,7 @@ import BulkEdit from "@/components/atlas/search/BulkEdit";
 import {SearchFilterColumnOne, SearchFilterColumnTwo, SearchResultsView} from "./components";
 import {useSearchFilters, useSearchOptions, useSearchQuery} from "./hooks";
 import type {SortOption, TypeaheadOption} from "./types";
-import "./SearchForm.css";
+import "./SearchForm.scss";
 
 export default function SearchForm() {
     const {t} = useTranslation();

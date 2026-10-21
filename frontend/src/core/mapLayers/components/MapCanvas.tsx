@@ -2,13 +2,13 @@
  * MapCanvas – common MapContainer wrapper for all map views.
  *
  * Unifies the leaflet map initialization (MapContainer) in one place – common props
- * (scrollWheelZoom, full-size style) and the leaflet.css import. The contents of the map
+ * (scrollWheelZoom, full-size style). leaflet.css is imported once in the entry point
+ * (index.tsx, section M). The contents of the map
  * (layers, markers) are passed as children; the wrapper div and floating controls
  * remain with the specific map components.
  */
 
 import { MapContainer } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css';
 import type { LatLngExpression, Map as LeafletMap } from 'leaflet';
 
 export interface MapCanvasProps {

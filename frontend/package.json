@@ -23,7 +23,6 @@
     "react-bootstrap-typeahead": "^6",
     "react-dom": "^19",
     "react-i18next": "^15",
-    "react-icons": "^5",
     "react-leaflet": "^5",
     "react-router-dom": "^7",
     "zustand": "^5"

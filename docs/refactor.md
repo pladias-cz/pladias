@@ -229,8 +229,10 @@ vydělávaly nejvíc:
    s TS narrowingem; subkomponenty `layers/TileLayerView`, `WmsLayerView`, `WfsLayerView`
    (props typované `TileConfig`/`GeoServerConfig`, žádné `as`) + čisté `layers/wfsBounds`
    (bbox buffer, reload threshold) s 5 unit testy.
-2. `DataTable`: `accessor: keyof T`, `cellRenderer?: (value: T[keyof T], row: T) => …` – kontrola
-   definic sloupců v 10 konzumentech za pochodu.
+2. ~~`DataTable`: `accessor: keyof T`, `cellRenderer?: (value: T[keyof T], row: T) => …` – kontrola
+   definic sloupců v 10 konzumentech za pochodu.~~
+   ✅ *Hotovo 21. 10. 2026:* typová část už z B.4 (`accessor: keyof T`, typovaný `cellRenderer`,
+   `onRowUpdate` bez `any`); `any` v `src/core/dataTable` = 0.
 3. Leaflet workaroundy (`SquaresOverlay`): malý deklarovaný modul `leaflet-extensions.d.ts` nebo
    `Map<SquareLayer, …>` WeakMap místo expando vlastností.
 4. `InfoPanel`: použít existující modely z `src/models/`.
@@ -244,7 +246,7 @@ vydělávaly nejvíc:
 **Hotovo, když.** `grep -rn ": any\|as any" src/core/ --include='*.ts' --include='*.tsx'` vrací 0
 (výjimky jen zdokumentované Leaflet workaroundy). ✅ *Ověřeno 21. 10. 2026: 0 výskytů – Leaflet
 expanda vlastnosti (`_zoomHandler`, feature) jsou typované deklarovanými průniky
-(`L.GeoJSON & {...}`, `FeaturePath`). Zbývají C.2 (DataTable generika) a C.4 (InfoPanel modely).*
+(`L.GeoJSON & {...}`, `FeaturePath`). Zbývá C.4 (InfoPanel modely).*
 
 ---
 
@@ -340,7 +342,12 @@ bez přímého `fetch`.
 Coverage se neměří.
 
 **Návrh.** Priority podle poměru riziko/náklady:
-1. **`DataTable`** – render sloupců, filter row, paginace, optimistic update přes `onRowUpdate`.
+1. ~~**`DataTable`** – render sloupců, filter row, paginace, optimistic update přes `onRowUpdate`.~~
+   ✅ *Hotovo 21. 10. 2026 (refactor 16):* `DataTable.test.tsx`, 8 testů bez sítě (custom fetcher)
+   – render sloupců všech typů (text/boolean/number/timestamp/action/checkbox), filter row
+   (text/boolean/select, reset stránky, vymazání), řazení 3-stav, paginace + změna pageSize,
+   optimistic update i rollback. Bonus: opraven latentní bug – `getFilterPlaceholder` ignoroval
+   `column.filterPlaceholder` (nastavovaly ho TaxaList ×2).
 2. **`core/mapLayers` logika** – registry, store, cache, key generation (čisté funkce).
 3. **Business logika** – buildSearchParams (po E), BulkEdit confirm flow (po E),
    `useTaxonUpdates` (po D).
@@ -579,8 +586,10 @@ blocking – `grep fetch(` mimo `src/services/` = 0, `npm run lint` exit 0, 165 
 ~~C+D+E na mapové doméně (Layer/SquaresOverlay/MapComponent společně)~~ – Layer.tsx 614 → 105
 řádků (dispatcher + subkomponenty per `service.type` s typovanými props, `wfsBounds` s 5 testy),
 společné jádro `MapCanvas`+`MapLayer`, mrtvé duplicity v taxaList smazány (D.1, D.2, D.4);
-`any` v core = 0, lint 0, 170 testů. Zbývá: DataTable (C+F), SearchForm (E+F), BulkEdit;
-SquaresOverlay (517 ř.) a D.3 TaxaList průběžně. Deduplikaci (D) zařazovat vždy, když se
+`any` v core = 0, lint 0, 170 testů. *DataTable (C.2+F.1) hotovo 21. 10. 2026 (refactor 16):*
+C.2 hotovo (generika z B.4, `any`=0) + 8 testů přes custom fetcher; opraven ignorovaný
+`column.filterPlaceholder` v `getFilterPlaceholder`. 178 testů. Zbývá: SearchForm (E+F),
+BulkEdit; SquaresOverlay (517 ř.) a D.3 TaxaList průběžně. Deduplikaci (D) zařazovat vždy, když se
 dotýkáme konkrétního duplikátu.
 
 **Fáze 4 – Rozhodnutí a hygiena (dle produktových priorit):**

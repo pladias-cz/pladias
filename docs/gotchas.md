@@ -73,10 +73,13 @@ Known exceptions:
 
 ### Instance heartbeat (`useInstanceMessages`)
 - The heartbeat polls `GET /api/react/infoGlobal` (maintenance messages) and is the **only** owner
-  of that polling – `FlashMessages.tsx` is purely presentational (props `messages`, `unavailable`).
+  of that polling – `FlashMessages.tsx` renders nothing and only mirrors its props into the toast
+  store (section F): the full set on first load, a diff on content change (new messages open,
+  removed messages close their toast).
 - **Hidden tab → no polling.** `visibilitychange` pauses the schedule; returning to the tab fires
-  one tick immediately. A user-visible behavioral requirement (section A), verified by unit tests
-  on fake timers.
+  one tick immediately and `FlashMessages` resyncs its toasts (closes the current ones, re-shows
+  the active messages – auto-dismissed toasts would otherwise be missed while the tab was away).
+  A user-visible behavioral requirement (section A), verified by unit tests on fake timers.
 - **Failures do not wipe messages.** A network hiccup keeps the last known messages in the UI;
   only after 3 consecutive failures a warning „instance status messages are unavailable“ appears.
 - **Exponential backoff:** after failures the interval grows 30 s → 1 min → 2 min → 5 min (cap);

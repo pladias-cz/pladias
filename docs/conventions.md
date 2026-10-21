@@ -187,7 +187,7 @@ Rules for failures and recovery:
 
 #### Notifications (`stores/notificationStore.ts`, section F)
 
-One-off user feedback (action success/failure) goes through the global notification store – no local `useState<Flash>` duplicates. Persistent maintenance messages stay in `FlashMessages` + `useInstanceMessages` (different content type, different behavior).
+One-off user feedback (action success/failure) goes through the global notification store – no local `useState<Flash>` duplicates. Maintenance messages from `useInstanceMessages` go into the same store via `FlashMessages` – toasts on first load, on returning to the tab and on content change (no permanent banner).
 
 - **Push from components:** `const {push} = useNotifications()`; from non-React code (services, `App.tsx` handler wiring) use the imperative `pushNotification(input)`.
 - **Auto-dismiss:** success/info/warning disappear after 5 s; **danger stays until dismissed** (the user must notice it). A custom `timeout` (ms, `0` = sticky) overrides the default.

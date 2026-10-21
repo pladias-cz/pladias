@@ -4,9 +4,9 @@
  * Jednorázové uživatelské hlášky (úspěch/nezdar akcí, chyby komunikace) –
  * jedna odpovědnost pro celou SPA: notifikace přežijí navigaci mezi routes
  * a mizí sjednoceně (success/info/warning po 5 s, danger drží, dokud ho
- * uživatel nezavře). Persistentní zprávy o údržbě instance řeší samostatný
- * systém `FlashMessages` + `useInstanceMessages` (sekce A) – jiný typ
- * obsahu, odlišné chování (drží se, dokud je backend nemění).
+ * uživatel nezavře). Zprávy o údržbě instance (sekce A) posílá do store
+ * `FlashMessages` z dat heartbeatu `useInstanceMessages` – Toast se ukáže
+ * při prvním načtení, návratu do záložky a při změně obsahu.
  *
  * Kdo smí volat push (conventions.md, „Error Handling & Resilience“):
  *  - komponenta/service po dokončení user akce (úspěch i kontextové chyby),

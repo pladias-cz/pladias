@@ -17,7 +17,8 @@ export default function Layout() {
         <>
             <MainMenu ref={navRef}/>
             <Container fluid style={{paddingTop: navHeight}}>
-                <Row><FlashMessages messages={messages} unavailable={unavailable}/></Row>
+                {/* Zprávy instance (sekce A) jdou do Toastů – komponenta nic nevykresluje. */}
+                <FlashMessages messages={messages} unavailable={unavailable}/>
                 {/* Chyby renderu stránek zachytí boundary – menu a globální zprávy zůstávají. */}
                 <Row>
                     <ErrorBoundary>

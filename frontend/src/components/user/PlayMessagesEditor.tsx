@@ -1,9 +1,9 @@
 import {useEffect, useState, type SyntheticEvent} from "react";
 import {useTranslation} from "react-i18next";
-import {Alert, Button, Form} from "react-bootstrap";
+import {Button, Form} from "react-bootstrap";
 import {useQuery} from "@tanstack/react-query";
 import {getPlayMessagesForLanguage, savePlayMessages, type PlayMessageEntry} from "@/services/playMessageApi";
-import {apiErrorMessage} from "@/services/apiClient";
+import {notifyApiError, useNotifications} from "@/stores/notificationStore";
 
 const LANGUAGES = ["cs", "en", "sk", "pl"] as const;
 
@@ -14,11 +14,10 @@ const LANGUAGES = ["cs", "en", "sk", "pl"] as const;
  */
 export default function PlayMessagesEditor() {
     const {t} = useTranslation();
+    const {push} = useNotifications();
     const [language, setLanguage] = useState<string>("cs");
     const [entries, setEntries] = useState<PlayMessageEntry[]>([]);
     const [saving, setSaving] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    const [success, setSuccess] = useState<string | null>(null);
 
     // konstanty zvoleného jazyka – bez cache (sekce J), načtení při mountu
     // i po přepnutí jazyka; editovatelné hodnoty zůstávají lokální (jako
@@ -34,10 +33,15 @@ export default function PlayMessagesEditor() {
         }
     }, [loadedEntries]);
 
+    // chyba načtení → globální notifikace (Toast vpravo dole, sekce F)
+    useEffect(() => {
+        if (loadError) {
+            notifyApiError(loadError, t("user.playMessages.error"));
+        }
+    }, [loadError, t]);
+
     const handleLanguageChange = (lang: string) => {
         setLanguage(lang);
-        setError(null);
-        setSuccess(null);
     };
 
     const handleChange = (key: string, value: string) => {
@@ -47,15 +51,13 @@ export default function PlayMessagesEditor() {
     const handleSubmit = async (event: SyntheticEvent<HTMLFormElement>) => {
         event.preventDefault();
         setSaving(true);
-        setError(null);
-        setSuccess(null);
 
         try {
             await savePlayMessages(language, entries.map((entry) => ({key: entry.key, value: entry.value ?? ""})));
 
-            setSuccess(t("user.playMessages.success"));
+            push({type: "success", message: t("user.playMessages.success")});
         } catch (err) {
-            setError(apiErrorMessage(err, t("user.playMessages.error")));
+            notifyApiError(err, t("user.playMessages.error"));
         } finally {
             setSaving(false);
         }
@@ -79,10 +81,6 @@ export default function PlayMessagesEditor() {
                     ))}
                 </Form.Select>
             </Form.Group>
-
-            {success && <Alert variant="success">{success}</Alert>}
-            {loadError && <Alert variant="danger">{apiErrorMessage(loadError, t("user.playMessages.error"))}</Alert>}
-            {error && <Alert variant="danger">{error}</Alert>}
 
             {entries.map((entry) => (
                 <Form.Group key={entry.key} className="mb-3" controlId={`playMessage_${entry.key}`}>

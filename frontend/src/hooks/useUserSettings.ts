@@ -2,7 +2,7 @@ import {useState} from "react";
 import {useTranslation} from "react-i18next";
 import {changeLanguage} from "@/i18n/i18n";
 import {isBooleanSetting, mapBackendKeyToStateKey, saveUserSetting} from "@/services/settingsApi";
-import {apiErrorMessage} from "@/services/apiClient";
+import {notifyApiError} from "@/stores/notificationStore";
 
 /** Callback volaný po úspěšném uložení nastavení. */
 export type OnSettingSaved = (key: string, value: string | boolean, stateKey: string) => void;
@@ -14,14 +14,16 @@ export type UpdateStateCallback = (stateKey: string, parsedValue: string | boole
  * Custom hook for managing user settings with save functionality.
  * Provides a reusable way to save user settings to the backend.
  *
+ * Feedback: chybu ukládání hlásí centrálně danger notifikací (Toast);
+ * success hlášku tlačí volající v onSettingSaved – vrstvy mapy
+ * (useLayerManager) se ukládají bez ní.
+ *
  * @param onSettingSaved - Optional callback function called after a setting is successfully saved
  */
 export const useUserSettings = (onSettingSaved?: OnSettingSaved) => {
     const {t} = useTranslation();
 
     const [loading, setLoading] = useState(false);
-    const [message, setMessage] = useState<string | null>(null);
-    const [error, setError] = useState<string | null>(null);
 
     /**
      * Saves a user setting to the backend
@@ -38,12 +40,9 @@ export const useUserSettings = (onSettingSaved?: OnSettingSaved) => {
         stateKey?: string
     ): Promise<void> => {
         setLoading(true);
-        setError(null);
-        setMessage(null);
 
         try {
             const savedValue = await saveUserSetting(key, value.toString());
-            setMessage(t("user.settings.success"));
 
             // Determine the state key and parse the value
             const finalStateKey = stateKey ?? mapBackendKeyToStateKey(key);
@@ -66,20 +65,11 @@ export const useUserSettings = (onSettingSaved?: OnSettingSaved) => {
                 onSettingSaved(key, parsedValue, finalStateKey);
             }
         } catch (err) {
-            console.error(err);
-            setError(apiErrorMessage(err, t("user.settings.networkError")));
+            notifyApiError(err, t("user.settings.networkError"));
         } finally {
             setLoading(false);
         }
     };
 
-    return {
-        loading,
-        message,
-        error,
-        saveSetting,
-        setLoading,
-        setMessage,
-        setError
-    };
+    return {loading, saveSetting};
 };

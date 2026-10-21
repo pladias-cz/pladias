@@ -1,5 +1,5 @@
 import {useEffect, useState} from "react";
-import {Alert, Col, Row} from "react-bootstrap";
+import {Col, Row} from "react-bootstrap";
 import {useQuery, useQueryClient} from "@tanstack/react-query";
 import {usePageTitle} from "@/hooks/usePageTitle";
 import {useTranslation} from "react-i18next";
@@ -10,7 +10,7 @@ import {useUser} from "@/context/UserContext";
 import {changeLanguage} from "@/i18n/i18n";
 import {useUserSettings} from "@/hooks/useUserSettings";
 import {getUserSetting, isBooleanSetting, mapBackendKeyToStateKey, resetUserSettings} from "@/services/settingsApi";
-import {apiErrorMessage} from "@/services/apiClient";
+import {notifyApiError, useNotifications} from "@/stores/notificationStore";
 import type {UserSettingsState} from "@/components/settings/types";
 
 /** Trait nastavení spravovaná trait adminem (backend klíče). */
@@ -76,20 +76,21 @@ export default function Settings() {
         traitsSubstituteInEnglish: false
     });
 
-    // Use the reusable user settings hook (mutations stay imperative – sekce J)
+    const {push} = useNotifications();
+
+    // Use the reusable user settings hook (mutations stay imperative – sekce J).
+    // Feedback akcí jde do globálních notifikací (Toast vpravo dole) – inline
+    // Alert na začátku stránky není po scrollu vidět.
     const {
         loading: savingLoading,
-        message,
-        error,
-        saveSetting,
-        setMessage,
-        setError
+        saveSetting
     } = useUserSettings((_key, value, stateKey) => {
         // Update local state after successful save
         setUserSettings(prev => ({
             ...prev,
             [stateKey]: value
         }));
+        push({type: "success", message: t("user.settings.success")});
     });
 
     // Load user settings on component mount (declarative, bez cache – sekce J)
@@ -110,10 +111,15 @@ export default function Settings() {
         }
     }, [loadedSettings]);
 
+    // Chyba načtení → globální notifikace (stejně jako feedback akcí, sekce F)
+    useEffect(() => {
+        if (settingsError) {
+            notifyApiError(settingsError, t("user.settings.networkError"));
+        }
+    }, [settingsError, t]);
+
     // Formuláře jsou blokované při načítání i ukládání (jako dřív sdílený loading)
     const loading = loadingSettings || savingLoading;
-    const loadError = settingsError ? apiErrorMessage(settingsError, t("user.settings.networkError")) : null;
-    const displayError = error ?? loadError;
 
     const handleInputChange = (key: string, value: string | boolean): void => {
         setUserSettings(prev => ({
@@ -132,16 +138,13 @@ export default function Settings() {
     };
 
     const handleResetSettings = async (keyPrefix: string): Promise<void> => {
-        setError(null);
-        setMessage(null);
-
         try {
             await resetUserSettings(keyPrefix);
             // Reload settings after reset – invalidace spustí refetch query
             await queryClient.invalidateQueries({queryKey: ["userSettings"]});
-            setMessage(t("user.settings.success"));
+            push({type: "success", message: t("user.settings.success")});
         } catch (err) {
-            setError(apiErrorMessage(err, t("user.settings.networkError")));
+            notifyApiError(err, t("user.settings.networkError"));
         }
     };
 
@@ -149,9 +152,6 @@ export default function Settings() {
         <Row>
             <Col xs={12} md={{span: 10, offset: 1}} lg={{span: 6, offset: 2}}>
                 <h2>{t("user.settings.title")}</h2>
-
-                {displayError && <Alert variant="danger">{displayError}</Alert>}
-                {message && <Alert variant="success">{message}</Alert>}
 
                 {/* Reset default settings section */}
                 <ResetSettings

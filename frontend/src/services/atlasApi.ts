@@ -20,6 +20,7 @@ import type {
     RecordPladiasMinimal,
 } from "@/models/AtlasRecords";
 import type {RecordPladias} from "@/models/RecordPladias";
+import type {TaxonMapSettings} from "@/models/TaxonMapSettings";
 
 /** GET /api/react/atlas/records/{square}/{taxonId}/pladias – data pro mapu (okolní kvadranty). */
 export async function getNearbyPladiasRecords(squareCode: string, taxonId: number): Promise<RecordPladiasMinimal[]> {
@@ -78,4 +79,43 @@ export async function getRecordsWithComments(): Promise<RecordPladias[]> {
         "Načtení záznamů s komentáři selhalo.",
     );
     return Array.isArray(data.records) ? data.records : [];
+}
+
+/** GET /api/react/atlas/taxonMapSettings/{id} – nastavení mapy taxonu (panel, viditelnost vrstev). */
+export async function getTaxonMapSettings(taxonId: number): Promise<TaxonMapSettings> {
+    return requireData<TaxonMapSettings>(
+        await apiGet(`/api/react/atlas/taxonMapSettings/${taxonId}`),
+        "Načtení nastavení mapy taxonu selhalo.",
+    );
+}
+
+/** Stav ověření sousedního kvadrantu (navigační šipky detailu mapy). */
+export interface SquareValidationStatus {
+    direction: string;      // e.g. "north", "northeast", "east", etc.
+    squareCode: number;       // The ID of the square in that direction
+    text: string;           // Validation status text
+    color: string;          // Validation status color (RGB hex)
+}
+
+/** Informace o aktuálním kvadrantu (centroid, stav ověření). */
+export interface CurrentSquareInfo {
+    squareCode: number;     // The square code
+    latitude: number;       // Centroid latitude (WGS84)
+    longitude: number;       // Centroid longitude (WGS84)
+    statusText: string;     // Validation status text for current square
+    statusColor: string;    // Validation status color for current square
+}
+
+/** Odpověď GET /api/react/atlas/squareInfo/{squareCode}/{taxonId}. */
+export interface SquareInfoResponse {
+    neighbors: SquareValidationStatus[];
+    currentSquare: CurrentSquareInfo;
+}
+
+/** GET /api/react/atlas/squareInfo/{squareCode}/{taxonId} – stav kvadrantu a sousedů pro detail mapy. */
+export async function getSquareInfo(squareCode: number, taxonId: number): Promise<SquareInfoResponse> {
+    return requireData<SquareInfoResponse>(
+        await apiGet(`/api/react/atlas/squareInfo/${squareCode}/${taxonId}`),
+        "Načtení informací o kvadrantu selhalo.",
+    );
 }

@@ -71,6 +71,36 @@ export interface TaxonProjectRecords {
     recordCount: number;
 }
 
+/** Statistiky mapy taxonu – čítače záznamů, projekty i supervizoři (panel mapy). */
+export interface TaxonMapStatistics {
+    recordsTotal: number;
+    recordsAccepted: number;
+    recordsDeclined: number;
+    recordsUncertain: number;
+    recordsUnprocessed: number;
+    recordsIncludedInMap: number;
+    recordsCommented: number;
+    recordsUncommented: number;
+    recordsBoundToQuadrants: number;
+    recordsBoundToSquares: number;
+    recordsBoundToCoords: number;
+    recordsNotBoundToCoords: number;
+    quadrantsValidated: number;
+    quadrantsUncertain: number;
+    quadrantsDeclined: number;
+    quadrantsUnprocessed: number;
+    recordsByProject: Array<{project: {id: number; name: string; abbrev: string}; recordCount: number}>;
+    supervisors: Array<{id: number; name: string}>;
+}
+
+/** GET /api/react/taxonStatistics/{id} – kompletní statistiky mapy taxonu (mapMain panel). */
+export async function getTaxonMapStatistics(taxonId: number): Promise<TaxonMapStatistics> {
+    return requireData<TaxonMapStatistics>(
+        await apiGet(`/api/react/taxonStatistics/${taxonId}`),
+        "Načtení statistik taxonu selhalo.",
+    );
+}
+
 /** GET /api/react/taxonStatistics/{id} – počty záznamů taxonu podle projektů. */
 export async function getTaxonRecordsByProject(taxonId: number): Promise<TaxonProjectRecords[]> {
     const stats = requireData<{recordsByProject?: TaxonProjectRecords[]}>(

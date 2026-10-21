@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import {useQuery} from "@tanstack/react-query";
 import RichTextMessage from "@/components/RichTextMessage";
 import {getPlayMessage} from "@/services/playMessageApi";
 
@@ -26,39 +26,32 @@ interface PlayMessageProps {
  */
 export default function PlayMessage({ messageKey, fallback = "", className = "", children }: PlayMessageProps) {
     const { i18n } = useTranslation();
-    const [content, setContent] = useState<string | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+    // Get current language from i18n context and send it as query parameter
+    const lang = i18n.language || "cs";
 
-    useEffect(() => {
-        if (!messageKey) {
-            setLoading(false);
-            setError("messageKey prop is required");
-            return;
-        }
+    // text klíče v aktuálním jazyce – bez cache (sekce J); služba vrací `null`
+    // pro chybějící klíč (použije se fallback)
+    const {data, isPending, error} = useQuery({
+        queryKey: ["playMessage", messageKey, lang],
+        queryFn: () => getPlayMessage(messageKey, lang),
+        enabled: !!messageKey,
+    });
 
-        // Get current language from i18n context and send it as query parameter
-        const lang = i18n.language || "cs";
-        getPlayMessage(messageKey, lang)
-            .then((value) => {
-                // `null` = klíč v daném jazyce neexistuje – fallback text
-                setContent(value ?? fallback);
-                setLoading(false);
-            })
-            .catch((err) => {
-                console.error("Failed to load PlayMessage:", err);
-                setError(err instanceof Error ? err.message : String(err));
-                setLoading(false);
-            });
-    }, [messageKey, fallback, i18n.language]);
+    if (!messageKey) {
+        return children || <span>{fallback}</span>;
+    }
 
-    if (loading) {
+    if (isPending) {
         return <span>Loading...</span>;
     }
 
-    if (error && !content) {
+    if (error) {
+        console.error("Failed to load PlayMessage:", error);
         return children || <span>{fallback}</span>;
     }
+
+    // `null` = klíč v daném jazyce neexistuje – fallback text
+    const content = data ?? fallback;
 
     if (!content) {
         return children || null;

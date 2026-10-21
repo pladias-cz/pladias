@@ -2,30 +2,8 @@
  * Type definitions for TaxaList component
  */
 
-export interface TaxonMapSettings {
-    taxonId: number;
-    taxonNameLat: string;
-    taxonRankCz: string;
-    isMapped: boolean;
-    commonThreshold: number;
-    isProtected: boolean;
-    preslia: string;
-    revisors: string;
-    revisorsComment: string;
-    revisorsPrintComment: string | null;
-    revisionStatusId: number;
-    revisionStatusDescription: string;
-    publicationStatusId: number;
-    publicationStatusDescription: string;
-    lastEditTimestamp: number;
-    parentTaxonId?: number | null;
-    parentTaxonNameLat?: string | null;
-    csvMapDetailId?: number | null;
-    csvMapDetailTimestamp?: number | null;
-    hasPng: boolean;
-    currentUserIsRevisor?: boolean;
-    mapType?: number;
-}
+// sdílený model (sekce J.2/C.4): re-export kvůli existujícím importům
+export type {TaxonMapSettings} from '@/models/TaxonMapSettings';
 
 export interface StatusOption {
     id: number;

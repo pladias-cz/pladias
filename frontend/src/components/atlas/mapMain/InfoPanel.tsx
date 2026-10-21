@@ -1,77 +1,16 @@
 import {Accordion, Button} from 'react-bootstrap';
 import {useEffect, useState} from 'react';
-import {apiGet} from '@/services/apiClient';
+import {useQuery} from '@tanstack/react-query';
+import {getTaxonMapStatistics} from '@/services/taxonApi';
+import {getTaxonMapSettings} from '@/services/atlasApi';
 import {notifyApiError} from '@/stores/notificationStore';
 import RichTextMessage from '@/components/RichTextMessage';
-import type {ApiResult} from '@/models/ApiResponse';
 import {useTaxonUpdates} from '@/components/atlasAdmin/taxaList/hooks';
 import {useTranslation} from 'react-i18next';
 
 interface InfoPanelProps {
     taxonName?: string;
     taxonId?: number;
-}
-
-interface ProjectDto {
-    id: number;
-    name: string;
-    abbrev: string;
-}
-
-interface ProjectRecordCountDto {
-    project: ProjectDto;
-    recordCount: number;
-}
-
-interface UserMinimalDto {
-    id: number;
-    name: string;
-}
-
-interface TaxonStatisticsDto {
-    recordsTotal: number;
-    recordsAccepted: number;
-    recordsDeclined: number;
-    recordsUncertain: number;
-    recordsUnprocessed: number;
-    recordsIncludedInMap: number;
-    recordsCommented: number;
-    recordsUncommented: number;
-    recordsBoundToQuadrants: number;
-    recordsBoundToSquares: number;
-    recordsBoundToCoords: number;
-    recordsNotBoundToCoords: number;
-    quadrantsValidated: number;
-    quadrantsUncertain: number;
-    quadrantsDeclined: number;
-    quadrantsUnprocessed: number;
-    recordsByProject: ProjectRecordCountDto[];
-    supervisors: UserMinimalDto[];
-}
-
-interface TaxonMapSettingsData {
-    taxonId: number;
-    taxonNameLat: string;
-    taxonRankCz: string;
-    isMapped: boolean;
-    commonThreshold: number;
-    isProtected: boolean;
-    preslia: string;
-    revisors: string;
-    revisorsComment: string | null;
-    revisorsPrintComment: string | null;
-    revisionStatusId: number;
-    revisionStatusDescription: string;
-    publicationStatusId: number;
-    publicationStatusDescription: string;
-    lastEditTimestamp: number;
-    parentTaxonId?: number | null;
-    parentTaxonNameLat: string;
-    csvMapDetailId?: number | null;
-    csvMapDetailTimestamp?: number | null;
-    hasPng: boolean;
-    currentUserIsRevisor: boolean;
-    mapType: number;
 }
 
 interface SectionProps {
@@ -106,7 +45,24 @@ const REVISION_STATUS_CLOSED = 6;
 
 export function InfoPanel({taxonName, taxonId}: InfoPanelProps) {
     const { t } = useTranslation();
-    const [statistics, setStatistics] = useState<TaxonStatisticsDto | null>(null);
+
+    // statistiky taxonu – jen pro zobrazení (bez cache, sekce J)
+    const statisticsQuery = useQuery({
+        queryKey: ['taxonMapStatistics', taxonId],
+        queryFn: () => getTaxonMapStatistics(taxonId!),
+        enabled: taxonId !== undefined,
+    });
+    const statistics = statisticsQuery.data ?? null;
+
+    // nastavení mapy taxonu – inicializuje editovatelná pole panelu
+    const settingsQuery = useQuery({
+        queryKey: ['taxonMapSettings', taxonId],
+        queryFn: () => getTaxonMapSettings(taxonId!),
+        enabled: taxonId !== undefined,
+    });
+
+    // editovatelná pole (form state) naplněná z načteného nastavení; mutace
+    // (useTaxonUpdates) zůstávají imperativní a timestamp si drží lokálně
     const [currentUserIsRevisor, setCurrentUserIsRevisor] = useState<boolean>(false);
     const [revisorsComment, setRevisorsComment] = useState<string>('');
     const [revisorsPrintMapComment, setRevisorsPrintMapComment] = useState<string>('');
@@ -116,51 +72,32 @@ export function InfoPanel({taxonName, taxonId}: InfoPanelProps) {
     const [revisionStatusId, setRevisionStatusId] = useState<number>(0);
     const [revisionUpdating, setRevisionUpdating] = useState<boolean>(false);
     const [revisionStatusError, setRevisionStatusError] = useState<string | null>(null);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
 
     const {updateRevisorsComment, updateRevisorsPrintMapComment, updateMapType, updateRevisionStatusForTaxon} = useTaxonUpdates();
 
     useEffect(() => {
-        if (!taxonId) {
+        const data = settingsQuery.data;
+        if (!data) {
             return;
         }
+        setCurrentUserIsRevisor(data.currentUserIsRevisor ?? false);
+        setRevisorsComment(data.revisorsComment ?? '');
+        setRevisorsPrintMapComment(data.revisorsPrintComment ?? '');
+        setMapType(data.mapType ?? 1);
+        setLastEditTimestamp(data.lastEditTimestamp);
+        setIsMapped(data.isMapped);
+        setRevisionStatusId(data.revisionStatusId);
+    }, [settingsQuery.data]);
 
-        setLoading(true);
-        setError(null);
+    // chyby: statistiky se zobrazí inline, nastavení notifikací (jako dřív)
+    const loading = statisticsQuery.isPending || settingsQuery.isPending;
+    const error = statisticsQuery.error ? t("atlas.mapMain.infoPanel.loadingStatistics") : null;
 
-        // Fetch taxon statistics
-        apiGet<ApiResult<TaxonStatisticsDto>>(`/api/react/taxonStatistics/${taxonId}`)
-            .then(payload => {
-                if (payload.data) {
-                    setStatistics(payload.data);
-                }
-            })
-            .catch(() => {
-                setError(t("atlas.mapMain.infoPanel.loadingStatistics"));
-            });
-
-        // Fetch taxon map settings to get currentUserIsRevisor and comments
-        apiGet<ApiResult<TaxonMapSettingsData>>(`/api/react/atlas/taxonMapSettings/${taxonId}`)
-            .then(payload => {
-                if (payload.data) {
-                    const data = payload.data;
-                    setCurrentUserIsRevisor(data.currentUserIsRevisor);
-                    setRevisorsComment(data.revisorsComment ?? '');
-                    setRevisorsPrintMapComment(data.revisorsPrintComment ?? '');
-                    setMapType(data.mapType ?? 1);
-                    setLastEditTimestamp(data.lastEditTimestamp);
-                    setIsMapped(data.isMapped);
-                    setRevisionStatusId(data.revisionStatusId);
-                }
-            })
-            .catch(err => {
-                notifyApiError(err, t("atlas.mapMain.infoPanel.loadError"));
-            })
-            .finally(() => {
-                setLoading(false);
-            });
-    }, [taxonId, t]);
+    useEffect(() => {
+        if (settingsQuery.error) {
+            notifyApiError(settingsQuery.error, t("atlas.mapMain.infoPanel.loadError"));
+        }
+    }, [settingsQuery.error, t]);
 
     const handleRevisorsCommentChange = async (value: string) => {
         setRevisorsComment(value);

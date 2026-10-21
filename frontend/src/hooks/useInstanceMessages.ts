@@ -1,21 +1,22 @@
 /**
  * Heartbeat zpráv o stavu instance.
  *
- * Jediný majitel pollingu `GET /api/react/infoGlobal`:
- *  - **Respekt k viditelnosti:** při `document.hidden` se čekání pozastaví;
- *    návrat do záložky provede ihned jeden tik.
+ * Jediný majitel pollingu `GET /api/react/infoGlobal` (přes useQuery):
+ *  - **Respekt k viditelnosti:** skrytá záložka nepolluje (brána focusManageru),
+ *    návrat do záložky provede ihned jeden dotaz (`refetchOnWindowFocus`).
  *  - **Exponenciální backoff:** po selhání se interval prodlužuje
- *    (30 s → 1 min → 2 min → 5 min strop), po úspěchu reset na 30 s.
+ *    (60 s → 2 min → 5 min strop), po úspěchu reset na 30 s.
  *  - **Selhání nemaže zprávy:** poslední známé zprávy zůstávají v UI;
  *    až po třech po sobě jdoucích selháních se ukáže varování o nedostupnosti.
  *  - **401:** vypršení session řeší apiClient (přesměrování na /login).
  */
 
-import {useEffect, useState} from "react";
+import {useRef} from "react";
+import {useQuery} from "@tanstack/react-query";
 import {loadInstanceMessages} from "@/services/instanceApi";
 import type {InstanceMessage} from "@/models/InstanceMessage";
 
-/** Čekání před dalším tikem podle počtu po sobě jdoucích selhání (index 0 = po úspěchu). */
+/** Čekání před dalším dotazem podle počtu po sobě jdoucích selhání (index 0 = po úspěchu). */
 const FAILURE_DELAYS_MS = [30_000, 60_000, 120_000, 300_000] as const;
 
 /** Po tolika po sobě jdoucích selháních se zobrazí „zprávy jsou nedostupné“. */
@@ -28,79 +29,45 @@ export interface InstanceMessagesState {
 }
 
 export function useInstanceMessages(): InstanceMessagesState {
-    const [messages, setMessages] = useState<InstanceMessage[]>([]);
-    const [unavailable, setUnavailable] = useState(false);
+    // Po sobě jdoucí selhání nelze číst z `state.fetchFailureCount` – ten se
+    // resetuje při každém startu fetche (počítá retry v rámci jednoho dotazu).
+    // Místo toho sledujeme monotónní čítače dotazu (`errorUpdateCount` roste
+    // o 1 s každým selháním a nerezetuje se startem fetche, `dataUpdateCount`
+    // s každým úspěchem). Callback `refetchInterval` běží při každé změně
+    // stavu dotazu (start fetche, úspěch, selhání), takže značky drží krok.
+    const lastDataUpdateCountRef = useRef(-1);
+    const errorsAtLastSuccessRef = useRef(0);
+    const consecutiveFailuresRef = useRef(0);
 
-    useEffect(() => {
-        let cancelled = false;
-        let timeoutId: number | undefined;
-        let failures = 0;
-        let tickInFlight = false;
-
-        const schedule = (delayMs: number) => {
-            timeoutId = window.setTimeout(() => {
-                void tick();
-            }, delayMs);
-        };
-
-        const tick = async () => {
-            if (cancelled || tickInFlight) {
-                return;
+    const {data} = useQuery({
+        queryKey: ["instanceMessages"],
+        // čtení `signal` zajišťuje zrušení rozjetého dotazu po odmontování
+        queryFn: ({signal}) => loadInstanceMessages({signal}),
+        // Kadence podle počtu po sobě jdoucích selhání (po úspěchu reset na 30 s).
+        refetchInterval: (query) => {
+            const {dataUpdateCount, errorUpdateCount} = query.state;
+            if (dataUpdateCount > lastDataUpdateCountRef.current) {
+                // přišla nová data → reset kadence i počítadla selhání
+                lastDataUpdateCountRef.current = dataUpdateCount;
+                errorsAtLastSuccessRef.current = errorUpdateCount;
+                consecutiveFailuresRef.current = 0;
+                return FAILURE_DELAYS_MS[0];
             }
-            // Skrytá záložka nepolluje – pozastavení řeší visibilitychange,
-            // návrat do záložky tik spustí ihned.
-            if (document.hidden) {
-                return;
-            }
+            const failures = errorUpdateCount - errorsAtLastSuccessRef.current;
+            consecutiveFailuresRef.current = failures;
+            return FAILURE_DELAYS_MS[Math.min(failures, FAILURE_DELAYS_MS.length - 1)];
+        },
+        // Skrytá záložka intervalovým dotazům brání (refetchIntervalInBackground
+        // zůstává false), návrat do záložky hned dotáhne – přebíjí klientský default.
+        refetchOnWindowFocus: true,
+        // Re-render po každé změně výsledku pollu (i při opakované stejné chybě,
+        // kdy se instance chyby ani data nemusejí změnit) – `unavailable` se
+        // jinak nemuselo přepočítat.
+        notifyOnChangeProps: "all",
+    });
 
-            tickInFlight = true;
-            try {
-                const loaded = await loadInstanceMessages();
-                if (cancelled) {
-                    return;
-                }
-                failures = 0;
-                setUnavailable(false);
-                setMessages(loaded);
-                schedule(FAILURE_DELAYS_MS[0]);
-            } catch (err) {
-                if (cancelled) {
-                    return;
-                }
-                failures += 1;
-                setUnavailable(failures >= UNAVAILABLE_AFTER_FAILURES);
-                console.error("Načtení zpráv o stavu instance selhalo:", err);
-                schedule(FAILURE_DELAYS_MS[Math.min(failures, FAILURE_DELAYS_MS.length - 1)]);
-            } finally {
-                tickInFlight = false;
-            }
-        };
-
-        const handleVisibilityChange = () => {
-            if (cancelled) {
-                return;
-            }
-            if (timeoutId !== undefined) {
-                window.clearTimeout(timeoutId);
-                timeoutId = undefined;
-            }
-            if (!document.hidden) {
-                // návrat do záložky – okamžitý tik (ať už čekal cokoliv)
-                void tick();
-            }
-        };
-
-        document.addEventListener("visibilitychange", handleVisibilityChange);
-        void tick();
-
-        return () => {
-            cancelled = true;
-            document.removeEventListener("visibilitychange", handleVisibilityChange);
-            if (timeoutId !== undefined) {
-                window.clearTimeout(timeoutId);
-            }
-        };
-    }, []);
-
-    return {messages, unavailable};
+    return {
+        messages: data ?? [],
+        unavailable: consecutiveFailuresRef.current >= UNAVAILABLE_AFTER_FAILURES,
+    };
 }

@@ -6,24 +6,13 @@
  * Integrates with the layer management system for visibility control.
  */
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { WMSTileLayer } from 'react-leaflet';
 import type { WMSParams } from 'leaflet';
-import {apiGet} from '@/services/apiClient';
-import type {ApiResult} from '@/models/ApiResponse';
+import {useQuery} from '@tanstack/react-query';
+import {getTaxonRecordsByProject} from '@/services/taxonApi';
 import { useLayerState } from '../store/layerStore';
 import { PROJECT_LAYER_TEMPLATE } from '../registry/groups/projectLayers';
-
-interface TaxonStatisticsDto {
-    recordsByProject: ProjectRecordCountDto[];
-}
-
-interface ProjectRecordCountDto {
-    project: {
-        id: number;
-    };
-    recordCount: number;
-}
 
 export interface ProjectLayersProps {
     taxonId?: number;
@@ -40,24 +29,13 @@ interface GeoServerWMSParams extends WMSParams {
  * and manages their visibility through the layer store
  */
 export function ProjectLayers({ taxonId, mapName }: ProjectLayersProps) {
-    const [projects, setProjects] = useState<ProjectRecordCountDto[]>([]);
-
-    // Fetch projects when taxonId changes
-    useEffect(() => {
-        if (!taxonId) {
-            setProjects([]);
-            return;
-        }
-
-        apiGet<ApiResult<TaxonStatisticsDto>>(`/api/react/taxonStatistics/${taxonId}`)
-            .then(payload => {
-                setProjects(payload.data?.recordsByProject || []);
-            })
-            .catch(err => {
-                console.error('Failed to load taxon projects:', err);
-                setProjects([]);
-            });
-    }, [taxonId]);
+    // projekty taxonu pro dynamické WMS vrstvy – bez cache (sekce J)
+    const {data} = useQuery({
+        queryKey: ['taxonRecordsByProject', taxonId],
+        queryFn: () => getTaxonRecordsByProject(taxonId!),
+        enabled: taxonId !== undefined,
+    });
+    const projects = data ?? [];
 
     // Build WMS configs for each project - memoized to prevent re-renders
     const layerConfigs = useMemo(() => {

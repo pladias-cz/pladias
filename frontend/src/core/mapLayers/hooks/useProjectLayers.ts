@@ -1,12 +1,13 @@
 /**
  * useProjectLayers Hook
- * 
+ *
  * Manages dynamic project layers for a map instance.
  * Fetches projects for the current taxon and registers them as layers.
  * Returns the list of project layer IDs for use with LayerSwitcher.
  */
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
+import {useQuery} from '@tanstack/react-query';
 import { useLayerStore, getVisibilityStorageKey } from '../store/layerStore';
 import {getTaxonRecordsByProject, type TaxonProjectRecords} from '@/services/taxonApi';
 import {getUserSetting} from '@/services/settingsApi';
@@ -31,52 +32,32 @@ export function useProjectLayers(
     taxonId?: number
 ): UseProjectLayersReturn {
     const { addLayer } = useLayerStore();
-    const [projects, setProjects] = useState<TaxonProjectRecords[]>([]);
-    const [savedVisibility, setSavedVisibility] = useState<Set<string> | null>(null);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
 
-    // Fetch projects when taxonId changes
-    useEffect(() => {
-        if (!taxonId) {
-            setProjects([]);
-            return;
-        }
+    // projekty taxonu – bez cache (sekce J), načtení při mountu
+    const projectsQuery = useQuery({
+        queryKey: ['taxonRecordsByProject', taxonId],
+        queryFn: () => getTaxonRecordsByProject(taxonId!),
+        enabled: taxonId !== undefined,
+    });
+    const projects: TaxonProjectRecords[] = projectsQuery.data ?? [];
 
-        setLoading(true);
-        setError(null);
-
-        getTaxonRecordsByProject(taxonId)
-            .then(records => {
-                setProjects(records);
-            })
-            .catch(err => {
-                console.error('Failed to load taxon projects:', err);
-                setError('Failed to load projects');
-                setProjects([]);
-            })
-            .finally(() => {
-                setLoading(false);
-            });
-    }, [taxonId]);
-
-    // Load saved visibility BEFORE adding layers
-    useEffect(() => {
-        if (!taxonId) return;
-
-        const loadSavedVisibility = async () => {
+    // Load saved visibility BEFORE adding layers; selhání tichý fallback na
+    // prázdnou množinu jako dřív (vrstvy začí s výchozí viditelností)
+    const visibilityKey = getVisibilityStorageKey(mapName);
+    const visibilityQuery = useQuery({
+        queryKey: ['userSetting', visibilityKey],
+        queryFn: async () => {
             try {
                 // `null` = uživatel nemá uloženou viditelnost → výchozí hodnoty vrstev
-                const value = await getUserSetting(getVisibilityStorageKey(mapName));
-                setSavedVisibility(value ? new Set(JSON.parse(value) as string[]) : new Set());
-            } catch (err) {
-                console.error('Failed to load saved visibility:', err);
-                setSavedVisibility(new Set());
+                const value = await getUserSetting(visibilityKey);
+                return value ? new Set(JSON.parse(value) as string[]) : new Set<string>();
+            } catch {
+                return new Set<string>();
             }
-        };
-
-        loadSavedVisibility();
-    }, [mapName, taxonId]);
+        },
+        enabled: taxonId !== undefined,
+    });
+    const savedVisibility = visibilityQuery.data ?? null;
 
     // Register project layers only after we have saved visibility
     useEffect(() => {
@@ -110,8 +91,8 @@ export function useProjectLayers(
 
     return {
         projectLayerIds,
-        loading,
-        error,
+        loading: projectsQuery.isPending,
+        error: projectsQuery.error ? 'Failed to load projects' : null,
     };
 }
 

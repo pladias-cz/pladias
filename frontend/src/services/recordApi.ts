@@ -102,6 +102,27 @@ export async function patchRecordField(
     };
 }
 
+/**
+ * Pole záznamu měněná kaskádově po rychlých úpravách v mapě (validace, originalita,
+ * zařazení do mapy). Používá je imperativní refresh po mutaci (`useRecordQuickUpdates`),
+ * proto zůstává mimo TanStack Query.
+ */
+export interface RecordMapFields {
+    id: number;
+    validationStatusId: number;
+    originalityStatusId: number;
+    herbariumQuality: boolean;
+    includedInMap: boolean;
+    lastEditTimestampNum: number;
+    canEditCommonFields: boolean;
+    canEditValidationFields: boolean;
+}
+
+/** GET /api/react/atlas/record/{id}/mapFields – aktuální hodnoty rychlých editací záznamu. */
+export async function getRecordMapFields(recordId: number): Promise<RecordMapFields> {
+    return apiGet(`/api/react/atlas/record/${recordId}/mapFields`);
+}
+
 /** POST /api/react/atlas/record/moveCoordinates – přesun záznamu na nové souřadnice. */
 export async function moveRecordCoordinates(
     recordId: number,

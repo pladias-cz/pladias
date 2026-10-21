@@ -1,7 +1,7 @@
-import { useMemo, useEffect, useState, useRef } from 'react';
+import { useMemo, useEffect, useRef } from 'react';
 import { useMap } from 'react-leaflet';
-import {apiGet} from '@/services/apiClient';
-import type {ApiResult} from '@/models/ApiResponse';
+import {useQuery} from '@tanstack/react-query';
+import {getSquareInfo, type SquareValidationStatus, type CurrentSquareInfo} from '@/services/atlasApi';
 import { useNavigate } from 'react-router-dom';
 
 import { useLayerManager, MapCanvas, MapLayer } from '@/core/mapLayers';
@@ -45,33 +45,9 @@ function MapUpdater({ center, maxBounds }: { center: [number, number]; maxBounds
 }
 
 /**
- * Square validation status DTO from backend
+ * Square info types are owned by `@/services/atlasApi`; re-exported for local use.
  */
-export interface SquareValidationStatus {
-    direction: string;      // e.g., "north", "northeast", "east", etc.
-    squareCode: number;       // The ID of the square in that direction
-    text: string;           // Validation status text
-    color: string;          // Validation status color (RGB hex)
-}
-
-/**
- * Current square information from backend
- */
-export interface CurrentSquareInfo {
-    squareCode: number;     // The square code
-    latitude: number;       // Centroid latitude (WGS84)
-    longitude: number;      // Centroid longitude (WGS84)
-    statusText: string;     // Validation status text for current square
-    statusColor: string;    // Validation status color for current square
-}
-
-/**
- * Response from the square info API endpoint
- */
-export interface SquareInfoResponse {
-    neighbors: SquareValidationStatus[];
-    currentSquare: CurrentSquareInfo;
-}
+export type {SquareValidationStatus, CurrentSquareInfo, SquareInfoResponse} from '@/services/atlasApi';
 
 import type { RecordsByProject, RecordsByProjectMinimal } from '@/models/AtlasRecords';
 import RecordMarkers from './RecordMarkers';
@@ -270,10 +246,6 @@ export function MapComponent({
     onRecordHover,
     centerOnRecord,
 }: MapComponentProps) {
-    const [mapCenter, setMapCenter] = useState<[number, number] | null>(null);
-    const [maxBounds, setMaxBounds] = useState<[[number, number], [number, number]] | null>(null);
-    const [neighbors, setNeighbors] = useState<SquareValidationStatus[]>([]);
-    const [currentSquare, setCurrentSquare] = useState<CurrentSquareInfo | null>(null);
     const mapRef = useRef<L.Map | null>(null);
 
     const allLayerIds = useMemo(() => {
@@ -282,37 +254,23 @@ export function MapComponent({
 
     useLayerManager(mapName, MAP_MAIN_LAYERS, MAP_MAIN_DEFAULTS);
 
-    useEffect(() => {
-        if (!taxonId || !squareId) {
-            return;
-        }
+    // informace o kvadrantu (centroid, stav ověření, sousedé) – bez cache (sekce J)
+    const squareCode = parseInt(squareId, 10);
+    const {data: squareInfo} = useQuery({
+        queryKey: ['squareInfo', squareCode, taxonId],
+        queryFn: () => getSquareInfo(squareCode, taxonId!),
+        enabled: taxonId !== undefined && !isNaN(squareCode),
+    });
 
-        const squareCode = parseInt(squareId, 10);
-        if (isNaN(squareCode)) {
-            return;
-        }
+    const currentSquare = squareInfo?.currentSquare ?? null;
+    const neighbors = squareInfo?.neighbors ?? [];
+    const mapCenter = useMemo<[number, number] | null>(() => (
+        currentSquare ? [currentSquare.latitude, currentSquare.longitude] : null
+    ), [currentSquare]);
+    const maxBounds = useMemo(() => (
+        mapCenter ? calculateMaxBounds(mapCenter, MAX_EXTENT_KM) : null
+    ), [mapCenter]);
 
-        apiGet<ApiResult<SquareInfoResponse>>(`/api/react/atlas/squareInfo/${squareCode}/${taxonId}`)
-            .then(payload => {
-                if (payload.success && payload.data) {
-                    const data: SquareInfoResponse = payload.data;
-                    
-                    if (data.currentSquare) {
-                        const center: [number, number] = [data.currentSquare.latitude, data.currentSquare.longitude];
-                        setMapCenter(center);
-                        setMaxBounds(calculateMaxBounds(center, MAX_EXTENT_KM));
-                        setCurrentSquare(data.currentSquare);
-                    }
-                    
-                    if (data.neighbors) {
-                        setNeighbors(data.neighbors);
-                    }
-                }
-            })
-            .catch(error => {
-                console.error('Failed to fetch square validation info:', error);
-            });
-    }, [taxonId, squareId]);
 
     // Center map on specific record when requested (respecting bounds)
     useEffect(() => {

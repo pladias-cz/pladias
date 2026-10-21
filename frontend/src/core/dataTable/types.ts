@@ -2,6 +2,7 @@
  * Core types for the enterprise DataTable component
  */
 
+import type {SetStateAction} from 'react';
 import type {ColumnSort} from '@tanstack/react-table';
 
 /**
@@ -262,8 +263,9 @@ export interface UseTableDataReturn<T> {
     totalCount: number;
     filteredCount: number;
     loading: boolean;
-    fetchData: () => Promise<void>;
-    refresh: () => Promise<void>;
+    refresh: () => void;
+    /** Optimistic update of the rendered rows (discarded by the next server response) */
+    setData: (updater: SetStateAction<T[]>) => void;
 }
 
 /**

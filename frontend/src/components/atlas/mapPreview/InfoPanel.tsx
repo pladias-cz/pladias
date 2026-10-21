@@ -1,8 +1,6 @@
 import type {MapPreviewType} from '@/pages/atlas/MapPreview';
-import {useEffect, useState} from 'react';
-import {apiGet} from '@/services/apiClient';
-import type {ApiResult} from '@/models/ApiResponse';
-import type {TaxonMapSettings} from '@/components/atlas/taxaList/types';
+import {useQuery} from '@tanstack/react-query';
+import {getTaxonMapSettings} from '@/services/atlasApi';
 import RichTextMessage from '@/components/RichTextMessage';
 import {useTranslation} from 'react-i18next';
 
@@ -14,9 +12,13 @@ interface InfoPanelProps {
 
 export function InfoPanel({type = 1, taxonId, taxonName}: InfoPanelProps) {
     const { t } = useTranslation();
-    const [mapSettings, setMapSettings] = useState<TaxonMapSettings | null>(null);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+
+    // nastavení mapy taxonu pro legendu – bez cache (sekce J), read-only
+    const {data: mapSettings, isPending: loading, error} = useQuery({
+        queryKey: ['taxonMapSettings', taxonId],
+        queryFn: () => getTaxonMapSettings(taxonId!),
+        enabled: taxonId !== undefined,
+    });
 
     // Get translated map type content
     const translatedContent = {
@@ -48,27 +50,8 @@ export function InfoPanel({type = 1, taxonId, taxonName}: InfoPanelProps) {
         }
     };
 
-    useEffect(() => {
-        if (!taxonId) {
-            return;
-        }
-
-        setLoading(true);
-        setError(null);
-
-        apiGet<ApiResult<TaxonMapSettings>>(`/api/react/atlas/taxonMapSettings/${taxonId}`)
-            .then(payload => {
-                if (payload.data) {
-                    setMapSettings(payload.data);
-                }
-            })
-            .catch(() => {
-                setError(t('atlas.mapPreview.loading'));
-            })
-            .finally(() => {
-                setLoading(false);
-            });
-    }, [taxonId, t]);
+    // chyba načtení nastavení – stejná hláška jako dřív
+    const loadError = error ? t("atlas.mapPreview.loading") : null;
 
     return (
         <div className="d-flex flex-column h-100 overflow-hidden">
@@ -87,8 +70,8 @@ export function InfoPanel({type = 1, taxonId, taxonName}: InfoPanelProps) {
             <div className="flex-grow-1 overflow-auto p-3">
                 <h5>{t("atlas.mapPreview.mapAuthorsNote")}</h5>
                 {loading && <p className="text-muted">{t("atlas.mapPreview.loading")}</p>}
-                {error && <p className="text-danger">{error}</p>}
-                {!loading && !error && mapSettings && (
+                {loadError && <p className="text-danger">{loadError}</p>}
+                {!loading && !loadError && mapSettings && (
                     <>
                         <p className={`bg-info bg-opacity-10 p-2`}>{mapSettings.revisorsComment || t("atlas.mapPreview.noComment")}</p>
                         {mapSettings.revisorsPrintComment && (

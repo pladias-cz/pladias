@@ -3,7 +3,7 @@ import { usePageTitle } from "@/hooks/usePageTitle";
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router-dom";
 import { useEffect, useState, useMemo } from "react";
-import type { TaxonId } from "@/models/TaxonId";
+import {useQuery} from "@tanstack/react-query";
 import {getTaxon} from "@/services/taxonApi";
 import {notifyApiError} from "@/stores/notificationStore";
 import { MapComponent } from "@/components/atlas/mapPreview/MapComponent";
@@ -14,7 +14,6 @@ export type MapPreviewType = 1 | 2 | 3 | 4;
 export default function MapPreview() {
     const { t } = useTranslation();
     const { taxonId: taxonIdParam, type } = useParams<{ taxonId: string; type: string }>();
-    const [taxon, setTaxon] = useState<TaxonId | null>(null);
     const [mapType, setMapType] = useState<MapPreviewType>(1);
 
     usePageTitle(t("atlas.mapPreview.title"));
@@ -35,16 +34,19 @@ export default function MapPreview() {
         }
     }, [type]);
 
-    // Fetch additional taxon data asynchronously (for display purposes only)
+    // taxon jen pro zobrazení názvu v panelu – bez cache (sekce J), načtení při mountu
+    const {data: taxon, error} = useQuery({
+        queryKey: ["taxon", taxonId],
+        queryFn: () => getTaxon(taxonId!),
+        enabled: taxonId !== undefined,
+    });
+
+    // chybu načtení ohlásíme notifikací jako dřív (náhled zůstane použitelný)
     useEffect(() => {
-        if (taxonId) {
-            getTaxon(taxonId)
-                .then(taxon => {
-                    setTaxon({id: taxon.id, nameLat: taxon.nameLat, nameHtml: taxon.nameHtml});
-                })
-                .catch(e => notifyApiError(e, t("atlas.taxonLoadFailed")));
+        if (error) {
+            notifyApiError(error, t("atlas.taxonLoadFailed"));
         }
-    }, [taxonId, t]);
+    }, [error, t]);
 
     return (
         <Container fluid className="px-0">

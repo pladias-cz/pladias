@@ -216,7 +216,7 @@ Celý modul `/measurements/*` je chráněn **modulem instance**; u write operac�
 | `Export` | komplexní export | `POST /api/react/measurement/complexExport` | per-trait práva ke stažení (`isElligibleForTraitDownload`) | – (per-trait práva na serveru) |
 | `Settings` (uživatelské) | substituce traitů | `PUT /api/react/user/settings/:key` | přihlášený; sekce substitucí je ve FE zobrazena jen `isTraitAdmin` | `isTraitAdmin` |
 
-**Související akce:** po importu datové řady se tabulka řad reloadne; po smazání se znovu načte (mazání může změnit výchozí řadu); upload formulář nabízí výběr vlastníka (defaultně aktuální uživatel) ze seznamu `GET /api/react/users-minimal` – záměrně bez validace, vlastník je jen metadata (viz [intentional_quirks.md](./intentional_quirks.md)).
+**Související akce:** po importu datové řady se tabulka řad reloadne; po smazání se znovu načte (mazání může změnit výchozí řadu); upload formulář nabízí výběr vlastníka (defaultně aktuální uživatel) ze seznamu `GET /api/react/users-minimal` – záměrně bez validace, vlastník je jen metadata (viz [gotchas.md](./gotchas.md)).
 
 **Read autorizace:** odkazy „stáhnout data“ / „detailní export“ u datových řad se řídí příznaky `canDownload`/`canExport` od serveru; datové řady s omezenou viditelností tak uživatel bez práv vidí, ale nemůže stahovat. (Historicky chybějící FE kontrola rolí byla opravena příznakem `canAdminister` a gatem na `isTraitAdmin`.)
 

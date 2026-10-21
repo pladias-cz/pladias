@@ -1,6 +1,7 @@
 import {useEffect, useState, type SyntheticEvent} from "react";
 import {useTranslation} from "react-i18next";
 import {Alert, Button, Form} from "react-bootstrap";
+import {useQuery} from "@tanstack/react-query";
 import {getPlayMessagesForLanguage, savePlayMessages, type PlayMessageEntry} from "@/services/playMessageApi";
 import {apiErrorMessage} from "@/services/apiClient";
 
@@ -15,39 +16,29 @@ export default function PlayMessagesEditor() {
     const {t} = useTranslation();
     const [language, setLanguage] = useState<string>("cs");
     const [entries, setEntries] = useState<PlayMessageEntry[]>([]);
-    const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
 
+    // konstanty zvoleného jazyka – bez cache (sekce J), načtení při mountu
+    // i po přepnutí jazyka; editovatelné hodnoty zůstávají lokální (jako
+    // formulář nastavení v Settings)
+    const {data: loadedEntries, isPending: loading, error: loadError} = useQuery({
+        queryKey: ["playMessages", language],
+        queryFn: () => getPlayMessagesForLanguage(language),
+    });
+
     useEffect(() => {
-        let cancelled = false;
-        setLoading(true);
+        if (loadedEntries) {
+            setEntries(loadedEntries);
+        }
+    }, [loadedEntries]);
+
+    const handleLanguageChange = (lang: string) => {
+        setLanguage(lang);
         setError(null);
         setSuccess(null);
-
-        getPlayMessagesForLanguage(language)
-            .then((loaded) => {
-                if (cancelled) {
-                    return;
-                }
-                setEntries(loaded);
-            })
-            .catch((err) => {
-                if (!cancelled) {
-                    setError(apiErrorMessage(err, t("user.playMessages.error")));
-                }
-            })
-            .finally(() => {
-                if (!cancelled) {
-                    setLoading(false);
-                }
-            });
-
-        return () => {
-            cancelled = true;
-        };
-    }, [language, t]);
+    };
 
     const handleChange = (key: string, value: string) => {
         setEntries((prev) => prev.map((entry) => (entry.key === key ? {...entry, value} : entry)));
@@ -80,7 +71,7 @@ export default function PlayMessagesEditor() {
                 <Form.Label>{t("user.playMessages.language")}</Form.Label>
                 <Form.Select
                     value={language}
-                    onChange={(event) => setLanguage(event.target.value)}
+                    onChange={(event) => handleLanguageChange(event.target.value)}
                     className="w-auto"
                 >
                     {LANGUAGES.map((lang) => (
@@ -90,6 +81,7 @@ export default function PlayMessagesEditor() {
             </Form.Group>
 
             {success && <Alert variant="success">{success}</Alert>}
+            {loadError && <Alert variant="danger">{apiErrorMessage(loadError, t("user.playMessages.error"))}</Alert>}
             {error && <Alert variant="danger">{error}</Alert>}
 
             {entries.map((entry) => (

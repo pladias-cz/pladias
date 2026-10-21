@@ -9,6 +9,7 @@
 import {act, cleanup, fireEvent, render, screen, waitFor, within} from "@testing-library/react";
 import {afterEach, describe, expect, it, vi} from "vitest";
 import {DataTable} from "./DataTable";
+import {withQueryClient} from "@/test/withQueryClient";
 import type {DataTableColumnDef} from "./types";
 import "@/i18n/i18n";
 
@@ -109,7 +110,7 @@ afterEach(() => {
 describe("DataTable", () => {
     it("vykreslí hlavičky, buňky všech typů sloupců a požádá fetcher o první stránku", async () => {
         const fetcher = vi.fn(async () => ({data: rows, totalCount: 2}));
-        render(<DataTable endpoint="/test" columns={makeColumns(vi.fn(async () => undefined))} fetchData={fetcher}/>);
+        render(withQueryClient(<DataTable endpoint="/test" columns={makeColumns(vi.fn(async () => undefined))} fetchData={fetcher}/>));
 
         expect(await screen.findByText("Vřesovec pleterný")).toBeInTheDocument();
         expect(fetcher).toHaveBeenCalledWith(expect.objectContaining({
@@ -160,7 +161,7 @@ describe("DataTable", () => {
         const fetcher = vi.fn(() => new Promise<{data: TestRow[]; totalCount: number}>((resolve) => {
             resolveFetch = resolve;
         }));
-        render(<DataTable endpoint="/test" columns={makeColumns(vi.fn(async () => undefined))} fetchData={fetcher}/>);
+        render(withQueryClient(<DataTable endpoint="/test" columns={makeColumns(vi.fn(async () => undefined))} fetchData={fetcher}/>));
 
         expect(screen.getByRole("status")).toBeInTheDocument();
 
@@ -172,7 +173,7 @@ describe("DataTable", () => {
 
     it("odešle textový filtr, resetuje stránku na 1 a nabídne vymazání filtrů", async () => {
         const fetcher = vi.fn(async () => ({data: rows, totalCount: 45}));
-        render(<DataTable endpoint="/test" columns={makeColumns(vi.fn(async () => undefined))} fetchData={fetcher}/>);
+        render(withQueryClient(<DataTable endpoint="/test" columns={makeColumns(vi.fn(async () => undefined))} fetchData={fetcher}/>));
 
         expect(await screen.findByText("Vřesovec pleterný")).toBeInTheDocument();
         expect(screen.queryByText("Vymazat filtry")).not.toBeInTheDocument();
@@ -201,7 +202,7 @@ describe("DataTable", () => {
 
     it("boolean filtr i textový sloupec s filterOptions se renderují jako select", async () => {
         const fetcher = vi.fn(async () => ({data: rows, totalCount: 2}));
-        render(<DataTable endpoint="/test" columns={makeColumns(vi.fn(async () => undefined))} fetchData={fetcher}/>);
+        render(withQueryClient(<DataTable endpoint="/test" columns={makeColumns(vi.fn(async () => undefined))} fetchData={fetcher}/>));
 
         expect(await screen.findByText("Vřesovec pleterný")).toBeInTheDocument();
 
@@ -226,7 +227,7 @@ describe("DataTable", () => {
 
     it("řazení přepíná vzestupně → sestupně → zrušeno a vždy refetchne", async () => {
         const fetcher = vi.fn(async () => ({data: rows, totalCount: 2}));
-        render(<DataTable endpoint="/test" columns={makeColumns(vi.fn(async () => undefined))} fetchData={fetcher}/>);
+        render(withQueryClient(<DataTable endpoint="/test" columns={makeColumns(vi.fn(async () => undefined))} fetchData={fetcher}/>));
 
         expect(await screen.findByText("Vřesovec pleterný")).toBeInTheDocument();
 
@@ -248,7 +249,7 @@ describe("DataTable", () => {
 
     it("paginace mění stránku i velikost stránky a přepočítává rozsah řádků", async () => {
         const fetcher = vi.fn(async () => ({data: rows, totalCount: 45}));
-        render(<DataTable endpoint="/test" columns={makeColumns(vi.fn(async () => undefined))} fetchData={fetcher}/>);
+        render(withQueryClient(<DataTable endpoint="/test" columns={makeColumns(vi.fn(async () => undefined))} fetchData={fetcher}/>));
 
         expect(await screen.findByText(/Zobrazeno od 1 do 20 z 45/)).toBeInTheDocument();
 
@@ -280,12 +281,14 @@ describe("DataTable", () => {
         const onRowUpdate = vi.fn(async () => undefined);
         const fetcher = vi.fn(async () => ({data: rows, totalCount: 2}));
         render(
-            <DataTable
-                endpoint="/test"
-                columns={makeColumns(onToggle)}
-                fetchData={fetcher}
-                onRowUpdate={onRowUpdate}
-            />
+            withQueryClient(
+                <DataTable
+                    endpoint="/test"
+                    columns={makeColumns(onToggle)}
+                    fetchData={fetcher}
+                    onRowUpdate={onRowUpdate}
+                />
+            )
         );
 
         const checkbox = (await screen.findAllByRole("checkbox"))[0];
@@ -316,12 +319,14 @@ describe("DataTable", () => {
         const onRowUpdate = vi.fn(async () => undefined);
         const fetcher = vi.fn(async () => ({data: rows, totalCount: 2}));
         render(
-            <DataTable
-                endpoint="/test"
-                columns={makeColumns(onToggle)}
-                fetchData={fetcher}
-                onRowUpdate={onRowUpdate}
-            />
+            withQueryClient(
+                <DataTable
+                    endpoint="/test"
+                    columns={makeColumns(onToggle)}
+                    fetchData={fetcher}
+                    onRowUpdate={onRowUpdate}
+                />
+            )
         );
 
         const checkbox = (await screen.findAllByRole("checkbox"))[1];

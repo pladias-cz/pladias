@@ -1,5 +1,6 @@
 import { AsyncTypeahead } from 'react-bootstrap-typeahead';
-import {useEffect, useRef, useState} from 'react';
+import {useState} from 'react';
+import {useQuery} from '@tanstack/react-query';
 import {useTranslation} from 'react-i18next';
 import type { AutocompleteProvider } from './AutocompleteProvider';
 import type { Option } from 'react-bootstrap-typeahead/types/types';
@@ -23,40 +24,37 @@ export function Autocomplete<T extends Option>({
     onSelect,
 }: Props<T>) {
     const {t} = useTranslation();
-    const [options, setOptions] = useState<T[]>([]);
-    const [isLoading, setIsLoading] = useState(false);
+    const [query, setQuery] = useState('');
     const [selected, setSelected] = useState<T[]>([]);
-    const abortRef = useRef<AbortController | null>(null);
+    const minLength = provider.minLength ?? 2;
 
-    useEffect(() => {
-        setOptions([]);
-    }, [cacheKey, provider]);
-
-    // zruší hledání, které běží v okamžiku odmontování komponenty
-    useEffect(() => () => abortRef.current?.abort(), []);
-
-    const handleSearch = async (query: string) => {
-        if (query.length < (provider.minLength ?? 2)) return;
-
-        // typeahead: nové hledání ruší předchozí – pomalé zastaralé odpovědi
-        // nesmí přepsat výsledky novějšího dotazu (závodí při pomalém API)
-        abortRef.current?.abort();
-        const controller = new AbortController();
-        abortRef.current = controller;
-
-        setIsLoading(true);
-        try {
-            setOptions(await provider.search(query, controller.signal));
-        } catch (err) {
-            if (!isAbortError(err)) {
-                notifyApiError(err, t("common.autocomplete.searchFailed"));
+    // Hledání deklarativně (sekce J): dotaz klíčovaný zadaným textem. Čtení
+    // `signal` v queryFn zajišťuje zrušení zastaralých hledání i rozjetého
+    // dotazu po odmontování (odhlášení posledního observeru abortuje fetch).
+    const {data, isFetching} = useQuery({
+        queryKey: ['autocomplete', provider.placeholder, cacheKey, query],
+        queryFn: async ({signal}) => {
+            try {
+                return await provider.search(query, signal);
+            } catch (err) {
+                // přerušené hledání (novější text / unmount) není chyba
+                if (!isAbortError(err)) {
+                    notifyApiError(err, t("common.autocomplete.searchFailed"));
+                }
+                throw err;
             }
-        } finally {
-            if (!controller.signal.aborted) {
-                setIsLoading(false);
-            }
-        }
-    };
+        },
+        enabled: query.length >= minLength,
+        placeholderData: (previous, previousQuery) => {
+            // Výsledky předchozího hledání zůstávají v nabídce, dokud nové
+            // nedoběhne (jako dřív); po přepnutí kontextu (jiný cacheKey /
+            // provider) se nabídka zahodí.
+            return previousQuery?.queryKey[1] === provider.placeholder
+                && previousQuery.queryKey[2] === cacheKey
+                ? previous
+                : undefined;
+        },
+    });
 
     const handleChange = (selections: Option[]) => {
         const value = (selections[0] as T) ?? null;
@@ -73,10 +71,10 @@ export function Autocomplete<T extends Option>({
         <AsyncTypeahead
             id="autocomplete"
             useCache={false}
-            isLoading={isLoading}
-            minLength={provider.minLength ?? 2}
-            onSearch={handleSearch}
-            options={options}
+            isLoading={isFetching}
+            minLength={minLength}
+            onSearch={setQuery}
+            options={data ?? []}
             labelKey={(o) => provider.label(o as T)}
             onChange={handleChange}
             selected={selected}

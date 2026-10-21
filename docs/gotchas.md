@@ -6,16 +6,8 @@ Known pitfalls, non-obvious behaviours, and lessons learned. Read this before ma
 
 ## Architecture & Migration
 
-### Legacy vs React Confusion
-- **Don't mix rendering modes**: A feature should be either fully legacy (Scala.html) or fully React. Don't try to embed React in Scala.html templates or vice versa.
-- **Check existing routes first**: Before adding a new controller, verify if one already exists in `app/controllers/` for React features.
-- **Route prefixes matter**:
-  - `/*` → React SPA pages
-  - `/api/react/*` → JSON API endpoints
-  - `/` → Legacy server-rendered pages
-
 ### API Response Format
-All JSON responses must use `JsonResult` wrapper:
+All JSON responses use legacy `JsonResult` wrapper, when working on code, refactor it to standard http code responses.
 ```java
 // ✅ Correct
 return ok(JsonResult.buildSuccess(data));
@@ -24,7 +16,7 @@ return ok(JsonResult.buildSuccess(data));
 return ok(data);
 ```
 
-Known exceptions (do not copy, frontend has to tolerate them):
+Known exceptions:
 - `TraitsController.delete` and `TraitsController.importResult` return a bare JSON **string**
   (`ok(Json.toJson(message))`) with HTTP 200 on success instead of `JsonResult`; errors use
   `notFound(JsonResult.error(...))`. Frontend code therefore checks `res.ok` and reads either
@@ -40,16 +32,9 @@ Known exceptions (do not copy, frontend has to tolerate them):
   therefore pushes them as rich-text notifications (`html`) – rendered by `RichTextMessage`,
   the only component allowed to use `dangerouslySetInnerHTML`.
 
-### Server-injected flash (`window.__FLASH__`)
-- The backend boot template `app/views/react/index.scala.html` injects `window.__FLASH__`
-  (`{success?: string, error?: string}`) after legacy-server redirects into the SPA –
-  `FeatureDetail` reads it on mount and pushes it into the notification store.
-- The content is backend rich-text (may contain the import-workbook link above), so it goes
-  through the `html` notification variant – do not render it as plain text, the link would break.
-- Flash messages of the **legacy** pages (server-rendered) use a different mechanism
-  (`flash` in Play templates) – unrelated to this global.
 
 ### File Downloads vs JSON Errors
+- if possible, refactor to more standard behaviour
 - `TraitExportController.complexExportResult` answers with a **file stream**
   (`application/x-download` + `Content-disposition`) on success and with `JsonResult.error(...)`
   on failure, so `Export.tsx` has to branch on `res.ok` **and** on `content-type` before reading
@@ -71,7 +56,7 @@ Known exceptions (do not copy, frontend has to tolerate them):
 ## Permissions
 
 ### Record edit permissions are backend-owned
-- The `canEdit` boolean was removed from `RecordPladias*` DTOs. The backend computes
+- The backend computes
   `canEditCommonFields` / `canEditValidationFields` (and `canResolveComments` in the full DTO)
   in a single place - `app/service/records/RecordEditPermissions.java` - and the frontend only
   mirrors these flags (`useRecordPermissions`). Never re-derive editing rights in FE code.
@@ -121,6 +106,32 @@ Known exceptions (do not copy, frontend has to tolerate them):
   and must not spam toasts.
 - `danger` notifications are sticky on purpose (no auto-dismiss); a toast that closes itself
   before the user reads it is worse than none.
+
+
+## sekce atlas
+
+### Komentáře u atlas.record
+Uživatel nemůže svůj komentář editovat aby nedocházelo k nejasnostem s ohledem na to že není verzován. Pouze osobám s vyšším oprváněním je tato možnost o pravena aby mohli např. smazat nevhodné výrazy.
+
+### mutující GET při mazání dávky
+
+Zbytkové (akceptované) omezení: `GET /atlasadmin/deleteBatch/:batchId/password/:password` zůstává mutující GET s kódem v URL – odkaz z e-mailu totiž nelze spustit jinou metodou než GET; riziko je mírněno vazbou kódu na committera a konkrétní dávku.
+
+### mazání dávky
+
+Mazání dávky (`completeDeletion`) maže i komentáře a historii záznamů od ostatních uživatelů (by design, ale bez dodatečných kontrol oprávnění nad komentáři).
+
+### Editace komentářů bez explicitní concurrency kontroly
+
+Komentářové endpointy (PUT/DELETE/resolve) nekontrolují žádný `lastEditTimestamp` od klienta – klient verzi komentáře vůbec neposílá. Jedinou ochranu proti souběžné editaci je `@Version` na `RecordComment` (editace zastaralé verze selže DB výjimkou, kterou controller vrátí jako obecnou chybu). U `DELETE /atlas/record/comment-assoc/:commentId/linked-user/:boundUserId` se asociace maže raw SQL zcela bez jakékoliv kontroly verze.
+
+## sekce measurements
+
+### výběr vlastníka při uploadu traitů
+
+Upload formulář datové řady (`TraitUpload` na `FeatureDetail`) nabízí výběr vlastníka z kompletního seznamu uživatelů (`GET /api/react/users-minimal`, default = aktuální uživatel) každému, kdo smí importovat (traitAdmin / admin vlastnosti). Backend (`TraitUploadService.upload`) volbu nijak nevaliduje – zvolené `owner` se uloží beze změny. Záměr: admin často nahrává data „za někoho“ (delegace atribuce), proto volba cizího vlastníka není chyba, ale feature. Vlastník je přitom čistě prezentční metadata (zobrazuje se jen jeho jméno v tabulkách); oprávnění se počítají výhradně z rolí (`supervises(feature)`, `isTraitAdmin()`), takže volbou vlastníka nikdo nezíská žádná práva.
+
+
 
 ---
 

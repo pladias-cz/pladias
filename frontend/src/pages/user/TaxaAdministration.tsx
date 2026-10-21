@@ -1,8 +1,9 @@
 import {useEffect, useState} from "react";
 import {useParams} from "react-router-dom";
-import {Col, Form, Row, Spinner} from "react-bootstrap";
+import {Alert, Col, Form, Row, Spinner} from "react-bootstrap";
+import {useQuery} from "@tanstack/react-query";
 import {usePageTitle} from "@/hooks/usePageTitle";
-import {createTaxaAllProvider } from '@/components/autocomplete/TaxaAllProvider';
+import {createTaxaAllProvider} from '@/components/autocomplete/TaxaAllProvider';
 import {Autocomplete} from '@/components/autocomplete/Autocomplete';
 import TaxonDetail from "@/components/taxonAdmin/TaxonDetail";
 import TaxonEditCard from "@/components/taxonAdmin/TaxonEditCard";
@@ -13,7 +14,7 @@ import {type Taxon} from '@/models/Taxon';
 import {type TaxonId} from '@/models/TaxonId';
 import TaxonSynonyms from "@/components/taxonAdmin/TaxonSynonyms";
 import {getTaxon} from "@/services/taxonApi";
-import {notifyApiError} from "@/stores/notificationStore";
+import {apiErrorMessage} from "@/services/apiClient";
 import { useTranslation } from 'react-i18next';
 
 export default function TaxaAdministration() {
@@ -21,49 +22,37 @@ export default function TaxaAdministration() {
     usePageTitle(t("taxon.administration.pageTitle"));
 
     const {taxonId} = useParams<{ taxonId: string }>(); // ← parametr z URL
-    const [selectedTaxon, setSelectedTaxon] = useState<Taxon | null>(null);
-    const [loading, setLoading] = useState(false);
+    const [selectedTaxonId, setSelectedTaxonId] = useState<number | null>(null);
     const [taxonVersion, setTaxonVersion] = useState(0);
-
-
-    // --- načtení plného taxonu podle id ---
-    async function loadTaxon(id: number) {
-        setLoading(true);
-        try {
-            setSelectedTaxon(await getTaxon(id));
-        } catch (e) {
-            notifyApiError(e, t("taxon.administration.loadTaxonError"));
-            setSelectedTaxon(null);
-        } finally {
-            setLoading(false);
-        }
-    }
-
 
     // --- handler pro autocomplete ---
     function handleAutocompleteSelect(reduced: TaxonId | null) {
-        if (reduced) {
-            loadTaxon(reduced.id); // načteme plný Taxon
-        } else {
-            setSelectedTaxon(null);
-        }
+        setSelectedTaxonId(reduced?.id ?? null);
     }
 
     // --- callback pro pesimistický reload ---
     function refreshSelectedTaxon(updated: Taxon) {
-        setSelectedTaxon(updated);           // aktualizujeme stav
-        setTaxonVersion(v => v + 1);   // <<< invalidace cache
-        loadTaxon(updated.id);               // znovu načteme z backendu
+        // verze invaliduje autocomplete, karty dětí i query samotného taxonu
+        setSelectedTaxonId(updated.id);
+        setTaxonVersion(v => v + 1);
     }
 
-    // --- efekt pro načtení taxonu z URL při mountu ---
+    // --- načtení taxonu z URL při mountu i při změně parametru ---
     useEffect(() => {
-        if (taxonId) {
-            const id = parseInt(taxonId, 10);
-            if (!isNaN(id)) loadTaxon(id);
+        const id = parseInt(taxonId ?? "", 10);
+        if (!isNaN(id)) {
+            setSelectedTaxonId(id);
         }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- loadTaxon není memoizované; načítá se jen při změně taxonId z URL, závislost by smyčila render
     }, [taxonId]);
+
+    // --- plný taxon podle id (bez cache, sekce J) ---
+    const {data: selectedTaxon, isPending, error} = useQuery({
+        queryKey: ["taxonAdminTaxon", selectedTaxonId, taxonVersion],
+        queryFn: () => getTaxon(selectedTaxonId!),
+        enabled: selectedTaxonId !== null,
+    });
+    const loading = selectedTaxonId !== null && isPending;
+    const loadError = error ? apiErrorMessage(error, t("taxon.administration.loadTaxonError")) : null;
 
     return (
         <>
@@ -86,6 +75,14 @@ export default function TaxaAdministration() {
                     </Form>
                 </Col>
             </Row>
+
+            {loadError && (
+                <Row>
+                    <Col md={{span: 4, offset: 4}}>
+                        <Alert variant="danger">{loadError}</Alert>
+                    </Col>
+                </Row>
+            )}
 
             {/* --- Detail vybraného taxonu --- */}
             <Row>

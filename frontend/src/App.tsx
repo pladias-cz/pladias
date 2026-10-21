@@ -1,12 +1,13 @@
-import {lazy, Suspense, useEffect, useState} from "react";
+import {lazy, Suspense, useEffect} from "react";
 import {BrowserRouter, Route, Routes} from "react-router-dom";
+import {useQuery} from "@tanstack/react-query";
 import Layout from "./Layout";
 import ErrorBoundary from "./components/ErrorBoundary";
 import {InstanceConfigProvider} from "./context/InstanceConfigContext";
 import {UserProvider} from "./context/UserContext";
 import {ProjectNameProvider} from "./context/ProjectNameContext";
 import i18n, {changeLanguage} from "./i18n/i18n";
-import {loadReactConfig, type ReactConfig} from "./services/userApi";
+import {loadReactConfig} from "./services/userApi";
 import {setForbiddenHandler, setNetworkErrorHandler} from "./services/apiClient";
 import {pushNotification} from "./stores/notificationStore";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -59,7 +60,6 @@ const PlayMessages = lazy(() => import("./pages/user/PlayMessages"));
 const Docs = lazy(() => import("./pages/user/Docs"));
 
 export default function App() {
-    const [config, setConfig] = useState<ReactConfig | null>(null);
 
     useEffect(() => {
         // Centrální notifikace z apiClientu (sekce F): 403 a síťové chyby se
@@ -75,17 +75,19 @@ export default function App() {
         };
     }, []);
 
+    // Konfigurace instance + přihlášený uživatel – deklarativně (sekce J);
+    // App se mountuje jednou, refetch ani sdílená cache nepřicházejí v úvahu.
+    const {data: config} = useQuery({
+        queryKey: ["reactConfig"],
+        queryFn: loadReactConfig,
+    });
+
+    // Set the language from config
     useEffect(() => {
-        loadReactConfig()
-            .then((data) => {
-                setConfig(data);
-                // Set the language from config
-                if (data.language) {
-                    changeLanguage(data.language);
-                }
-            })
-            .catch((err) => console.error("Failed to load config", err));
-    }, []);
+        if (config?.language) {
+            changeLanguage(config.language);
+        }
+    }, [config?.language]);
 
     if (!config) return <div>Loading...</div>;
 

@@ -3,7 +3,8 @@ import {useTranslation} from "react-i18next";
 import {getRecordComments, createComment, updateComment, resolveComment, deleteComment} from "@/services/recordApi";
 import {apiErrorMessage} from "@/services/apiClient";
 import type { RecordComment } from '@/models/RecordComment';
-import {useState, useEffect} from "react";
+import {useState} from "react";
+import {useQuery, useQueryClient} from "@tanstack/react-query";
 import {useConfirm} from "@/hooks/useConfirm";
 import {useUser} from "@/context/UserContext";
 
@@ -16,31 +17,22 @@ export default function RecordComments({recordId, canResolveComments}: RecordCom
     const {t} = useTranslation();
     const user = useUser();
     const {confirm, dialog} = useConfirm();
-    const [comments, setComments] = useState<RecordComment[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+    const queryClient = useQueryClient();
     const [showModal, setShowModal] = useState(false);
     const [editingComment, setEditingComment] = useState<RecordComment | null>(null);
     const [newComment, setNewComment] = useState("");
     const [submitting, setSubmitting] = useState(false);
     const [actionError, setActionError] = useState<string | null>(null);
 
-    useEffect(() => {
-        setLoading(true);
-        setError(null);
-        
-        getRecordComments(recordId)
-            .then(data => {
-                setComments(data);
-                setLoading(false);
-            })
-            .catch(err => {
-                setError(apiErrorMessage(err, t("record.commentsLoadFailed")));
-                setLoading(false);
-            });
-    }, [recordId, t]);
+    // komentáře záznamu – bez cache (sekce J), načtení při mountu; po mutacích
+    // se seznam obnoví invalidací stejného klíče
+    const {data: comments, isPending: loading, error} = useQuery({
+        queryKey: ["recordComments", recordId],
+        queryFn: () => getRecordComments(recordId),
+    });
+    const loadError = error ? apiErrorMessage(error, t("record.commentsLoadFailed")) : null;
 
-    const nonDeletedComments = comments.filter(c => !c.deleted);
+    const nonDeletedComments = (comments ?? []).filter(c => !c.deleted);
 
     // Permission checks (matching backend logic)
     const canEditComments = !!user;
@@ -84,9 +76,8 @@ export default function RecordComments({recordId, canResolveComments}: RecordCom
             setNewComment("");
             setEditingComment(null);
             setShowModal(false);
-            // Refresh comments
-            const data = await getRecordComments(recordId);
-            setComments(data);
+            // Refresh comments – invalidace spustí refetch query
+            await queryClient.invalidateQueries({queryKey: ["recordComments", recordId]});
         } catch (err) {
             setActionError(apiErrorMessage(err, t("record.commentActionFailed")));
         } finally {
@@ -109,9 +100,8 @@ export default function RecordComments({recordId, canResolveComments}: RecordCom
     const handleResolveComment = async (commentId: number) => {
         try {
             await resolveComment(commentId);
-            // Refresh comments
-            const data = await getRecordComments(recordId);
-            setComments(data);
+            // Refresh comments – invalidace spustí refetch query
+            await queryClient.invalidateQueries({queryKey: ["recordComments", recordId]});
         } catch (err) {
             setActionError(apiErrorMessage(err, t("record.commentActionFailed")));
         }
@@ -127,9 +117,8 @@ export default function RecordComments({recordId, canResolveComments}: RecordCom
 
         try {
             await deleteComment(commentId);
-            // Refresh comments
-            const data = await getRecordComments(recordId);
-            setComments(data);
+            // Refresh comments – invalidace spustí refetch query
+            await queryClient.invalidateQueries({queryKey: ["recordComments", recordId]});
         } catch (err) {
             setActionError(apiErrorMessage(err, t("record.commentActionFailed")));
         }
@@ -151,13 +140,13 @@ export default function RecordComments({recordId, canResolveComments}: RecordCom
         );
     }
 
-    if (error) {
+    if (loadError) {
         return (
             <Row className="mb-3">
                 <Col>
                     <Card border="danger">
                         <Card.Body className="text-center py-4">
-                            <span className="text-danger">{t("common.error")}: {error}</span>
+                            <span className="text-danger">{t("common.error")}: {loadError}</span>
                         </Card.Body>
                     </Card>
                 </Col>
@@ -172,7 +161,7 @@ export default function RecordComments({recordId, canResolveComments}: RecordCom
                     <Card.Header className="d-flex justify-content-between align-items-center">
                         <strong>
                             {t("record.comments")}{' '}
-                            ({comments.filter(c => !c.deleted && c.resolved === false).length} {t("record.unresolved")})
+                            ({nonDeletedComments.filter(c => c.resolved === false).length} {t("record.unresolved")})
                         </strong>
                         {canEditComments && (
                             <Button 

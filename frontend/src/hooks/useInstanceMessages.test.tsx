@@ -1,6 +1,9 @@
 import {act, cleanup, renderHook} from "@testing-library/react";
+import {useState, type ReactNode} from "react";
+import {QueryClientProvider, notifyManager} from "@tanstack/react-query";
 import {afterEach, beforeEach, describe, expect, it, vi} from "vitest";
 import {useInstanceMessages} from "./useInstanceMessages";
+import {createQueryClient} from "@/query/queryClient";
 
 /**
  * Testy heartbeatu: visibility, exponenciální
@@ -23,10 +26,19 @@ const jsonResponse = (payload: unknown, status = 200) =>
 const respondWith = (payload: unknown) =>
     fetchMock.mockImplementation(async () => jsonResponse(payload));
 
-/** Skrytá/viditelná záložka – document.hidden je v jsdom read-only proto přes getter. */
+/**
+ * Skrytá/viditelná záložka – jsdom property jsou read-only proto přes getter.
+ * focusManager v TanStack Query čte `document.visibilityState` (ne `hidden`).
+ */
 let hidden = false;
 
-/** Nechá doběhnout celý async řetězec ticku (fetch → json → setState → schedule). */
+/** Každý renderHook dostane vlastního klienta s produkční konfigurací. */
+function QueryClientWrapper({children}: {children?: ReactNode}) {
+    const [client] = useState(() => createQueryClient());
+    return <QueryClientProvider client={client}>{children}</QueryClientProvider>;
+}
+
+/** Nechá doběhnout celý async řetězec dotazu (fetch → json → setState → interval). */
 const flush = async () => {
     await act(async () => {
         for (let i = 0; i < 10; i++) {
@@ -46,7 +58,9 @@ const advance = async (ms: number) => {
 
 const setHidden = async (value: boolean) => {
     hidden = value;
-    document.dispatchEvent(new Event("visibilitychange"));
+    // focusManager naslouchá na window; událost z document by tam
+    // neprošla vždy spolehlivě, proto cílíme přímo na window
+    window.dispatchEvent(new Event("visibilitychange"));
     await flush();
 };
 
@@ -55,13 +69,20 @@ beforeEach(() => {
     fetchMock.mockReset();
     vi.stubGlobal("fetch", fetchMock);
     hidden = false;
-    Object.defineProperty(document, "hidden", {configurable: true, get: () => hidden});
+    Object.defineProperty(document, "visibilityState", {
+        configurable: true,
+        get: () => (hidden ? "hidden" : "visible"),
+    });
+    // Notifikace dotazů synchronně – výchozí dávka přes setTimeout(0) by na
+    // fake timerech čekala na posun času a mount asserty by neviděly výsledky.
+    notifyManager.setScheduler((callback) => callback());
 });
 
 afterEach(() => {
     // Vitest bez globals: true nespouští auto-cleanup – renderHook instance by
     // jinak přežívaly mezi testy a jejich listenery jištěly cizí asserty.
     cleanup();
+    notifyManager.setScheduler((callback) => setTimeout(callback, 0));
     vi.unstubAllGlobals();
     vi.useRealTimers();
 });
@@ -69,7 +90,7 @@ afterEach(() => {
 describe("useInstanceMessages", () => {
     it("loads messages on mount and polls every 30 s while visible", async () => {
         respondWith([{type: "warning", text: "Údržba"}]);
-        const {result} = renderHook(() => useInstanceMessages());
+        const {result} = renderHook(() => useInstanceMessages(), {wrapper: QueryClientWrapper});
 
         await flush();
         expect(fetchMock).toHaveBeenCalledTimes(1);
@@ -86,7 +107,7 @@ describe("useInstanceMessages", () => {
 
     it("stops polling while the tab is hidden and ticks immediately on return", async () => {
         respondWith([]);
-        renderHook(() => useInstanceMessages());
+        renderHook(() => useInstanceMessages(), {wrapper: QueryClientWrapper});
         await flush();
         expect(fetchMock).toHaveBeenCalledTimes(1);
 
@@ -102,7 +123,7 @@ describe("useInstanceMessages", () => {
         fetchMock
             .mockImplementationOnce(async () => jsonResponse([{type: "info", text: "zpráva"}]))
             .mockRejectedValue(new TypeError("Failed to fetch"));
-        const {result} = renderHook(() => useInstanceMessages());
+        const {result} = renderHook(() => useInstanceMessages(), {wrapper: QueryClientWrapper});
         await flush();
         expect(result.current.messages).toEqual([{type: "info", text: "zpráva"}]);
 
@@ -132,7 +153,7 @@ describe("useInstanceMessages", () => {
             .mockRejectedValueOnce(new TypeError("Failed to fetch")) // t=30 – selhání → 60 s
             .mockImplementationOnce(async () => jsonResponse([])) // t=90 – úspěch → 30 s
             .mockImplementationOnce(async () => jsonResponse([])); // t=120
-        renderHook(() => useInstanceMessages());
+        renderHook(() => useInstanceMessages(), {wrapper: QueryClientWrapper});
         await flush();
 
         await advance(30_000); // 1. selhání → 60 s
@@ -147,7 +168,7 @@ describe("useInstanceMessages", () => {
 
     it("stops polling after unmount", async () => {
         respondWith([]);
-        const {unmount} = renderHook(() => useInstanceMessages());
+        const {unmount} = renderHook(() => useInstanceMessages(), {wrapper: QueryClientWrapper});
         await flush();
 
         unmount();

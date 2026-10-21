@@ -2,10 +2,10 @@ import { Container, Row, Col } from "react-bootstrap";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router-dom";
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useMemo, useState, useRef, useCallback } from "react";
+import {useQuery, useQueryClient} from "@tanstack/react-query";
 import type { RecordPladias } from "@/models";
 import type {RecordsByProject, RecordsByProjectMinimal} from "@/models/AtlasRecords";
-import type { TaxonId } from "@/models/TaxonId";
 import {
     getNearbyExternalRecords,
     getNearbyPladiasRecords,
@@ -18,20 +18,76 @@ import { MapComponent } from "@/components/atlas/mapDetail/MapComponent";
 import { InfoPanel } from "@/components/atlas/mapDetail/InfoPanel";
 import RichTextMessage from "@/components/RichTextMessage";
 
+/** Data mapy (minimal) a tabulky (full) kvadrantu – jeden query, jeden loading. */
+interface SquareRecords {
+    mapRecords: RecordsByProjectMinimal;
+    tableRecords: RecordsByProject;
+}
+
+const EMPTY_RECORDS: RecordsByProjectMinimal = { pladias: [], gbif: [], inaturalist: [] };
+
 export default function MapDetail() {
     const { t } = useTranslation();
     const { taxonId, squareId } = useParams<{ taxonId: string; squareId: string }>();
-    const [taxon, setTaxon] = useState<TaxonId | null>(null);
-    // Two separate states: minimal data for map, full data for table
-    const [mapRecords, setMapRecords] = useState<RecordsByProjectMinimal>({ pladias: [], gbif: [], inaturalist: [] });
-    const [tableRecords, setTableRecords] = useState<RecordsByProject>({ pladias: [], gbif: [], inaturalist: [] });
-    const [recordsLoading, setRecordsLoading] = useState(false);
+    const queryClient = useQueryClient();
     const [highlightedRecordId, setHighlightedRecordId] = useState<number | null>(null);
     const [centerOnRecord, setCenterOnRecord] = useState<{ latitude: number; longitude: number } | null>(null);
     const tableScrollFnsRef = useRef<{ pladias?: ((recordId: number) => void); gbif?: ((recordId: number) => void); inaturalist?: ((recordId: number) => void) }>({});
     const hoverLockRef = useRef<{ recordId: number | null; timeoutId: NodeJS.Timeout | null }>({ recordId: null, timeoutId: null });
 
     usePageTitle(t("atlas.mapDetail.title"));
+
+    const id = useMemo(() => {
+        const parsed = parseInt(taxonId ?? "", 10);
+        return isNaN(parsed) ? null : parsed;
+    }, [taxonId]);
+
+    // taxon pro hlávčku – bez cache (sekce J), načtení při mountu
+    const {data: taxon, error: taxonError} = useQuery({
+        queryKey: ["taxon", id],
+        queryFn: () => getTaxon(id!),
+        enabled: id !== null,
+    });
+
+    useEffect(() => {
+        if (taxonError) {
+            notifyApiError(taxonError, t("atlas.taxonLoadFailed"));
+        }
+    }, [taxonError, t]);
+
+    // záznamy všech tří projektů – minimální data pro mapu (okolní kvadranty)
+    // a plná pro tabulku (aktuální kvadrant) se načítají společně jako dřív
+    const recordsKey = useMemo(() => ["squareRecords", squareId, id] as const, [squareId, id]);
+    const recordsQuery = useQuery({
+        queryKey: recordsKey,
+        queryFn: async (): Promise<SquareRecords> => {
+            const [
+                mapPladias, mapGbif, mapInaturalist,
+                tablePladias, tableGbif, tableInaturalist
+            ] = await Promise.all([
+                getNearbyPladiasRecords(squareId!, id!),
+                getNearbyExternalRecords(squareId!, id!, "gbif"),
+                getNearbyExternalRecords(squareId!, id!, "inaturalist"),
+                getSquarePladiasRecords(squareId!, id!),
+                getSquareExternalRecords(squareId!, id!, "gbif"),
+                getSquareExternalRecords(squareId!, id!, "inaturalist"),
+            ]);
+            return {
+                mapRecords: { pladias: mapPladias, gbif: mapGbif, inaturalist: mapInaturalist },
+                tableRecords: { pladias: tablePladias, gbif: tableGbif, inaturalist: tableInaturalist },
+            };
+        },
+        enabled: id !== null && squareId !== undefined,
+    });
+    const mapRecords = recordsQuery.data?.mapRecords ?? EMPTY_RECORDS;
+    const tableRecords = recordsQuery.data?.tableRecords ?? { pladias: [], gbif: [], inaturalist: [] };
+    const recordsLoading = recordsQuery.isPending;
+
+    useEffect(() => {
+        if (recordsQuery.error) {
+            notifyApiError(recordsQuery.error, t("atlas.mapDetail.loadRecordsFailed"));
+        }
+    }, [recordsQuery.error, t]);
 
     // Handle hover from map - triggers scroll in table with debounce
     const handleMapRecordHover = (recordId: number | null) => {
@@ -76,85 +132,36 @@ export default function MapDetail() {
         }
     };
 
-    // Fetch taxon info
-    useEffect(() => {
-        if (taxonId) {
-            const id = parseInt(taxonId, 10);
-            if (!isNaN(id)) {
-                getTaxon(id)
-                    .then(taxon => {
-                        setTaxon({id: taxon.id, nameLat: taxon.nameLat, nameHtml: taxon.nameHtml});
-                    })
-                    .catch(e => notifyApiError(e, t("atlas.taxonLoadFailed")));
-            }
-        }
-    }, [taxonId, t]);
-
-    // Fetch records for all three projects - minimal data for map, full data for table
-    useEffect(() => {
-        if (!taxonId || !squareId) {
-            setMapRecords({ pladias: [], gbif: [], inaturalist: [] });
-            setTableRecords({ pladias: [], gbif: [], inaturalist: [] });
-            return;
-        }
-
-        const id = parseInt(taxonId, 10);
-        if (isNaN(id)) {
-            return;
-        }
-
-        setRecordsLoading(true);
-
-        // Fetch both map and table data in parallel
-        // (map: surrounding squares, minimal DTOs; table: current square, full data)
-        Promise.all([
-            getNearbyPladiasRecords(squareId, id),
-            getNearbyExternalRecords(squareId, id, "gbif"),
-            getNearbyExternalRecords(squareId, id, "inaturalist"),
-            getSquarePladiasRecords(squareId, id),
-            getSquareExternalRecords(squareId, id, "gbif"),
-            getSquareExternalRecords(squareId, id, "inaturalist"),
-        ])
-            .then(([
-                mapPladias, mapGbif, mapInaturalist,
-                tablePladias, tableGbif, tableInaturalist
-            ]) => {
-                setMapRecords({ pladias: mapPladias, gbif: mapGbif, inaturalist: mapInaturalist });
-                setTableRecords({ pladias: tablePladias, gbif: tableGbif, inaturalist: tableInaturalist });
-            })
-            .catch(e => {
-                notifyApiError(e, t("atlas.mapDetail.loadRecordsFailed"));
-                setMapRecords({ pladias: [], gbif: [], inaturalist: [] });
-                setTableRecords({ pladias: [], gbif: [], inaturalist: [] });
-            })
-            .finally(() => {
-                setRecordsLoading(false);
-            });
-    }, [taxonId, squareId, t]);
-
     // Handle record update from quick actions (validation status, etc.)
     const handleRecordUpdated = useCallback((updatedRecord: RecordPladias) => {
-        // Update both map and table records
-        setTableRecords(prev => ({
-            ...prev,
-            pladias: prev.pladias.map(r => r.id === updatedRecord.id ? updatedRecord : r)
-        }));
-        // Also update map records with minimal data
-        setMapRecords(prev => ({
-            ...prev,
-            pladias: prev.pladias.map(r => r.id === updatedRecord.id ? {
-                id: updatedRecord.id,
-                latitude: updatedRecord.latitude,
-                longitude: updatedRecord.longitude,
-                gpsPrecision: updatedRecord.gpsPrecision,
-                year: updatedRecord.year,
-                recordedBy: updatedRecord.recordAuthorsNames,
-                validationStatusId: updatedRecord.validationStatusId,
-                validationStatusColor: updatedRecord.validationStatusColor,
-                computedSquareCode: updatedRecord.computedSquareCode
-            } : r)
-        }));
-    }, []);
+        // Update both map and table records in the query cache
+        queryClient.setQueryData<SquareRecords>(recordsKey, prev => {
+            if (!prev) {
+                return prev;
+            }
+            return {
+                // Also update map records with minimal data
+                mapRecords: {
+                    ...prev.mapRecords,
+                    pladias: prev.mapRecords.pladias.map(r => r.id === updatedRecord.id ? {
+                        id: updatedRecord.id,
+                        latitude: updatedRecord.latitude,
+                        longitude: updatedRecord.longitude,
+                        gpsPrecision: updatedRecord.gpsPrecision,
+                        year: updatedRecord.year,
+                        recordedBy: updatedRecord.recordAuthorsNames,
+                        validationStatusId: updatedRecord.validationStatusId,
+                        validationStatusColor: updatedRecord.validationStatusColor,
+                        computedSquareCode: updatedRecord.computedSquareCode
+                    } : r)
+                },
+                tableRecords: {
+                    ...prev.tableRecords,
+                    pladias: prev.tableRecords.pladias.map(r => r.id === updatedRecord.id ? updatedRecord : r)
+                },
+            };
+        });
+    }, [queryClient, recordsKey]);
 
     if (!taxonId || !squareId) {
         return null;

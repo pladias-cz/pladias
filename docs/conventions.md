@@ -22,17 +22,6 @@ This document defines coding standards and patterns for both legacy MVC and mode
 
 ### Controller Patterns
 
-#### Legacy Controllers (Server-Side Rendering)
-```java
-public Result index(...) {
-    // Fetch data
-    List<Taxon> taxons = Taxon.find.all();
-    // Render Scala.html template
-    return ok(views.atlas.index.render(taxons));
-}
-```
-
-#### React API Controllers (JSON Responses)
 ```java
 @Authorized  // Session-based authentication
 public class TaxonController extends ControllerBase {
@@ -53,12 +42,7 @@ public class TaxonController extends ControllerBase {
 ### Authentication Decorators
 - `@Authorized`: Session-based authentication (for React controllers)
 - `@TokenAuthenticated`: Token-based authentication (for public APIs)
-
-### DTO Best Practices
-- Keep DTOs flat and simple
-- Convert entities to DTOs before returning JSON
-- Use DTOs to hide internal entity structure
-
+ 
 ---
 
 ## TypeScript (Frontend)
@@ -139,8 +123,23 @@ function useAtlasSearch(params) {
   client is configured WITHOUT cache (`staleTime: 0`, `gcTime: 0`, `refetchOnMount: "always"`) –
   catalogs are dynamic data and every mount refetches (decision, refactor.md section J).
   Components in tests are wrapped with `withQueryClient()` from `src/test/`.
+- Mutations stay imperative (`await service(...)` inside a handler). On success they refresh the
+  affected query via `queryClient.invalidateQueries({queryKey: [...]})` with the same key the
+  `useQuery` uses (`Settings`, `RecordComments`), or write the response straight into the cache
+  via `setQueryData` when it already is the fresh value (`Record`, `MapDetail`). Editable forms
+  keep their draft in local state initialized from query data (`Settings`, `PlayMessagesEditor`).
+- **Typeahead search** (`Autocomplete`, `ParentMapAutocomplete`): `useQuery` with the term in
+  `queryKey`, `enabled: query.length >= minLength`, `queryFn` reads `signal` (a stale request is
+  cancelled), and `placeholderData` keeping previous options only while the context key
+  (provider / parent taxon) matches. A context switch bumps a `cacheKey` counter in the key
+  instead of clearing options in an effect.
+- **Polling with backoff** (`useInstanceMessages`): `state.fetchFailureCount` resets to 0 at
+  every fetch start (it counts retries within one fetch), so consecutive-failure backoff is
+  derived from the monotonic `errorUpdateCount`/`dataUpdateCount` inside the `refetchInterval`
+  callback; `notifyOnChangeProps: "all"` re-renders on every poll result even when the error
+  instance is identical.
 - The `cancelled`-flag pattern below applies only to the remaining manual imperative loads
-  (user-triggered flows: search submit, exports, mutations, heartbeat):
+  (user-triggered flows: search submit, exports, mutations):
 ```typescript
 useEffect(() => {
     let cancelled = false;

@@ -1,5 +1,6 @@
 import {useEffect, useState} from "react";
 import {Alert, Col, Row} from "react-bootstrap";
+import {useQuery, useQueryClient} from "@tanstack/react-query";
 import {usePageTitle} from "@/hooks/usePageTitle";
 import {useTranslation} from "react-i18next";
 import ResetSettings from "@/components/settings/ResetSettings";
@@ -12,10 +13,58 @@ import {getUserSetting, isBooleanSetting, mapBackendKeyToStateKey, resetUserSett
 import {apiErrorMessage} from "@/services/apiClient";
 import type {UserSettingsState} from "@/components/settings/types";
 
+/** Trait nastavení spravovaná trait adminem (backend klíče). */
+const TRAIT_SETTING_KEYS = [
+    "traits_substitute_false",
+    "traits_substitute_true",
+    "traits_substitute_null",
+    "traits_substitute_unmeasurable",
+    "traits_substitute_percentasinteger",
+    "traits_substitute_english"
+] as const;
+
+/**
+ * Načte všechna uživatelská nastavení do stavu formuláře.
+ * Čistá funkce pro queryFn – bez vedlejších efektů na UI stav.
+ */
+async function fetchUserSettings(language: string, isTraitAdmin: boolean): Promise<UserSettingsState> {
+    // Initialize with default values
+    const settings: UserSettingsState = {
+        applicationLanguage: language || "cs",
+        traitsSubstituteFalse: "",
+        traitsSubstituteTrue: "",
+        traitsSubstituteNull: "",
+        traitsSubstituteUnmeasurable: "",
+        traitsSubstitutePercentInteger: false,
+        traitsSubstituteInEnglish: false
+    };
+
+    // Load application language setting
+    const appLanguage = await getUserSetting("application_language");
+    if (appLanguage !== null) {
+        settings.applicationLanguage = appLanguage;
+    }
+
+    if (isTraitAdmin) {
+        // zápis přes keyof union TS neumožňuje, použijeme Record pohled na stejný objekt
+        const settingsRecord = settings as Record<string, string | boolean>;
+        for (const key of TRAIT_SETTING_KEYS) {
+            const value = await getUserSetting(key);
+            if (value !== null) {
+                const stateKey = mapBackendKeyToStateKey(key) as keyof UserSettingsState;
+                settingsRecord[stateKey] = isBooleanSetting(key) ? value === "true" : value;
+            }
+        }
+    }
+
+    return settings;
+}
+
 export default function Settings() {
     const {t} = useTranslation();
     usePageTitle(t("user.settings.title"));
     const {isTraitAdmin, language} = useUser();
+    const queryClient = useQueryClient();
 
     const [userSettings, setUserSettings] = useState<UserSettingsState>({
         applicationLanguage: language || "cs",
@@ -27,13 +76,12 @@ export default function Settings() {
         traitsSubstituteInEnglish: false
     });
 
-    // Use the reusable user settings hook
+    // Use the reusable user settings hook (mutations stay imperative – sekce J)
     const {
-        loading,
+        loading: savingLoading,
         message,
         error,
         saveSetting,
-        setLoading,
         setMessage,
         setError
     } = useUserSettings((_key, value, stateKey) => {
@@ -44,68 +92,28 @@ export default function Settings() {
         }));
     });
 
-    // Load user settings on component mount
+    // Load user settings on component mount (declarative, bez cache – sekce J)
+    const {
+        data: loadedSettings,
+        isFetching: loadingSettings,
+        error: settingsError,
+    } = useQuery({
+        queryKey: ["userSettings", isTraitAdmin],
+        queryFn: () => fetchUserSettings(language || "cs", isTraitAdmin),
+    });
+
     useEffect(() => {
-        loadUserSettings();
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- načtení jednou při mountu; loadUserSettings není memoizované, jeho závislost by smyčila render
-    }, []);
-
-    const loadUserSettings = async (): Promise<void> => {
-        setLoading(true);
-        try {
-            // Initialize with default values
-            const newSettings: UserSettingsState = {
-                applicationLanguage: language || "cs",
-                traitsSubstituteFalse: "",
-                traitsSubstituteTrue: "",
-                traitsSubstituteNull: "",
-                traitsSubstituteUnmeasurable: "",
-                traitsSubstitutePercentInteger: false,
-                traitsSubstituteInEnglish: false
-            };
-
-            // Load application language setting
-            const appLanguage = await getUserSetting("application_language");
-            if (appLanguage !== null) {
-                newSettings.applicationLanguage = appLanguage;
-            }
-
-            if (isTraitAdmin) {
-                // zápis přes keyof union TS neumožňuje, použijeme Record pohled na stejný objekt
-                const newSettingsRecord = newSettings as Record<string, string | boolean>;
-                const settingsToLoad = [
-                    "traits_substitute_false",
-                    "traits_substitute_true",
-                    "traits_substitute_null",
-                    "traits_substitute_unmeasurable",
-                    "traits_substitute_percentasinteger",
-                    "traits_substitute_english"
-                ];
-
-                // Load all trait settings
-                for (const key of settingsToLoad) {
-                    const value = await getUserSetting(key);
-                    if (value !== null) {
-                        const stateKey = mapBackendKeyToStateKey(key) as keyof UserSettingsState;
-                        newSettingsRecord[stateKey] = isBooleanSetting(key) ? value === "true" : value;
-                    }
-                }
-            }
-
-            // Update state with all loaded settings at once
-            setUserSettings(newSettings);
-
+        if (loadedSettings) {
+            setUserSettings(loadedSettings);
             // Update i18n language if it was loaded
-            if (newSettings.applicationLanguage) {
-                changeLanguage(newSettings.applicationLanguage);
-            }
-        } catch (err) {
-            console.error(err);
-            setError(t("user.settings.networkError"));
-        } finally {
-            setLoading(false);
+            changeLanguage(loadedSettings.applicationLanguage);
         }
-    };
+    }, [loadedSettings]);
+
+    // Formuláře jsou blokované při načítání i ukládání (jako dřív sdílený loading)
+    const loading = loadingSettings || savingLoading;
+    const loadError = settingsError ? apiErrorMessage(settingsError, t("user.settings.networkError")) : null;
+    const displayError = error ?? loadError;
 
     const handleInputChange = (key: string, value: string | boolean): void => {
         setUserSettings(prev => ({
@@ -124,20 +132,16 @@ export default function Settings() {
     };
 
     const handleResetSettings = async (keyPrefix: string): Promise<void> => {
-        setLoading(true);
         setError(null);
         setMessage(null);
 
         try {
             await resetUserSettings(keyPrefix);
-            // Reload settings after reset
-            await loadUserSettings();
+            // Reload settings after reset – invalidace spustí refetch query
+            await queryClient.invalidateQueries({queryKey: ["userSettings"]});
             setMessage(t("user.settings.success"));
         } catch (err) {
-            console.error(err);
             setError(apiErrorMessage(err, t("user.settings.networkError")));
-        } finally {
-            setLoading(false);
         }
     };
 
@@ -146,7 +150,7 @@ export default function Settings() {
             <Col xs={12} md={{span: 10, offset: 1}} lg={{span: 6, offset: 2}}>
                 <h2>{t("user.settings.title")}</h2>
 
-                {error && <Alert variant="danger">{error}</Alert>}
+                {displayError && <Alert variant="danger">{displayError}</Alert>}
                 {message && <Alert variant="success">{message}</Alert>}
 
                 {/* Reset default settings section */}

@@ -2,8 +2,8 @@ import { Container, Row, Col } from "react-bootstrap";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router-dom";
-import { useEffect, useState } from "react";
-import type { TaxonId } from "@/models/TaxonId";
+import { useEffect, useMemo } from "react";
+import {useQuery} from "@tanstack/react-query";
 import {getTaxon} from "@/services/taxonApi";
 import {notifyApiError} from "@/stores/notificationStore";
 import { MapComponent } from "@/components/atlas/mapMain/MapComponent";
@@ -12,22 +12,27 @@ import { InfoPanel } from "@/components/atlas/mapMain/InfoPanel";
 export default function MapMain() {
     const { t } = useTranslation();
     const { taxonId } = useParams<{ taxonId: string }>();
-    const [taxon, setTaxon] = useState<TaxonId | null>(null);
 
     usePageTitle(t("atlas.mapMain.title"));
 
+    const id = useMemo(() => {
+        const parsed = parseInt(taxonId ?? "", 10);
+        return isNaN(parsed) ? null : parsed;
+    }, [taxonId]);
+
+    // taxon pro mapu i info panel – bez cache (sekce J), načtení při mountu
+    const {data: taxon, error} = useQuery({
+        queryKey: ["taxon", id],
+        queryFn: () => getTaxon(id!),
+        enabled: id !== null,
+    });
+
+    // chybu načtení ohlásíme notifikací jako dřív (mapa zůstane použitelná)
     useEffect(() => {
-        if (taxonId) {
-            const id = parseInt(taxonId, 10);
-            if (!isNaN(id)) {
-                getTaxon(id)
-                    .then(taxon => {
-                        setTaxon({id: taxon.id, nameLat: taxon.nameLat, nameHtml: taxon.nameHtml});
-                    })
-                    .catch(e => notifyApiError(e, t("atlas.taxonLoadFailed")));
-            }
+        if (error) {
+            notifyApiError(error, t("atlas.taxonLoadFailed"));
         }
-    }, [taxonId, t]);
+    }, [error, t]);
 
     return (
         <Container fluid className="px-0">
@@ -37,9 +42,9 @@ export default function MapMain() {
                 </Col>
                 <Col lg={4} className="h-100 overflow-hidden">
                     <div className="h-100 p-3">
-                        <InfoPanel 
-                            taxonName={taxon?.nameHtml} 
-                            taxonId={taxon?.id} 
+                        <InfoPanel
+                            taxonName={taxon?.nameHtml}
+                            taxonId={taxon?.id}
                         />
                     </div>
                 </Col>

@@ -4,7 +4,8 @@
  */
 
 import {useState, useCallback} from 'react';
-import {apiGet, apiPatch} from '@/services/apiClient';
+import {apiPatch} from '@/services/apiClient';
+import {getRecordMapFields, type RecordMapFields} from '@/services/recordApi';
 import type {ApiResult} from '@/models/ApiResponse';
 import type { RecordPladias } from '@/models';
 import {ValidationStatusId, ValidationStatusMeta} from '@/core/validationStatus';
@@ -16,16 +17,12 @@ interface UpdateResult {
     error?: string;
 }
 
-interface RecordMapFields {
-    id: number;
-    validationStatusId: number;
-    originalityStatusId: number;
-    herbariumQuality: boolean;
-    includedInMap: boolean;
-    lastEditTimestampNum: number;
-    canEditCommonFields: boolean;
-    canEditValidationFields: boolean;
-}
+/**
+ * Hook pro rychlé uživatelsky spouštěné úpravy záznamů v mapě (sekce J.2):
+ * mutace zůstávají imperativní přes service vrstvu; GET /mapFields se také
+ * volá imperativně po mutaci (obnova kaskádových polí), proto vede přes
+ * `recordApi.getRecordMapFields` a ne přes useQuery.
+ */
 
 /**
  * Odpověď PATCH /atlas/record/:recordId – data přichází v obálce (`data`),
@@ -80,7 +77,7 @@ export function useRecordQuickUpdates() {
      */
     const fetchRecordMapFields = useCallback(async (recordId: number): Promise<RecordMapFields | null> => {
         try {
-            return await apiGet<RecordMapFields>(`/api/react/atlas/record/${recordId}/mapFields`);
+            return await getRecordMapFields(recordId);
         } catch (error) {
             console.error(`Error fetching map fields for record ${recordId}:`, error);
             return null;

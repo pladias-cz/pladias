@@ -2,7 +2,8 @@ import {Row, Col, Container, Spinner, Alert, Button} from "react-bootstrap";
 import {usePageTitle} from "@/hooks/usePageTitle";
 import {useTranslation} from "react-i18next";
 import {useParams} from "react-router-dom";
-import {useEffect, useState, useCallback, useRef} from "react";
+import {useCallback, useState} from "react";
+import {useQuery, useQueryClient} from "@tanstack/react-query";
 import {
     RecordLocation,
     RecordRemarks,
@@ -23,54 +24,32 @@ interface ProposedLocation {
 export default function Record() {
     const {recordId} = useParams<{ recordId: string }>();
     const {t} = useTranslation();
-    const [record, setRecord] = useState<RecordPladiasFull | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+    const queryClient = useQueryClient();
     const [proposedLocation, setProposedLocation] = useState<ProposedLocation | undefined>(undefined);
     const [moving, setMoving] = useState(false);
     const [moveError, setMoveError] = useState<string | null>(null);
-    
-    // Ref to always access the latest record value without closure issues
-    const recordRef = useRef<RecordPladiasFull | null>(null);
 
     usePageTitle(`${t("record.titles.detail")} ${recordId ? ` ${recordId}` : ''}`);
 
-    useEffect(() => {
-        if (!recordId) {
-            setError(t("record.noRecordId"));
-            setLoading(false);
-            return;
-        }
-
-        setLoading(true);
-        setError(null);
-
-        getRecordFull(parseInt(recordId))
-            .then((data) => {
-                setRecord(data);
-            })
-            .catch((err) => {
-                setError(apiErrorMessage(err, t("record.loadFailed")));
-            })
-            .finally(() => {
-                setLoading(false);
-            });
-    }, [recordId, t]);
-
-    // Sync ref with record state whenever it changes
-    useEffect(() => {
-        recordRef.current = record;
-    }, [record]);
+    // záznam se všemi relacemi – bez cache (sekce J), načtení při mountu
+    const {data: record, isPending: loading, error} = useQuery({
+        queryKey: ["recordFull", recordId],
+        queryFn: () => getRecordFull(parseInt(recordId!, 10)),
+        enabled: recordId !== undefined,
+    });
+    const loadError = !recordId
+        ? t("record.noRecordId")
+        : error ? apiErrorMessage(error, t("record.loadFailed")) : null;
 
     // Handle field updates from child components - update timestamp for conflict detection
     const handleFieldUpdated = useCallback((newTimestamp?: number) => {
-        if (newTimestamp && recordRef.current) {
-            setRecord(prev => prev ? ({
+        if (newTimestamp && recordId) {
+            queryClient.setQueryData<RecordPladiasFull>(["recordFull", recordId], prev => prev ? ({
                 ...prev,
                 lastEditTimestampNum: newTimestamp
-            }) : null);
+            }) : prev);
         }
-    }, []);
+    }, [queryClient, recordId]);
 
     const handleReverseGeocode = useCallback((lat: number, lng: number, data: ReverseGeocodingResponse) => {
         setProposedLocation({
@@ -81,8 +60,7 @@ export default function Record() {
     }, []);
 
     const handleConfirmMove = async () => {
-        const currentRecord = recordRef.current;
-        if (!proposedLocation || !currentRecord) {
+        if (!proposedLocation || !record) {
             return;
         }
 
@@ -91,11 +69,11 @@ export default function Record() {
 
         try {
             await moveRecordCoordinates(
-                currentRecord.id,
+                record.id,
                 proposedLocation.coordinates[0],
                 proposedLocation.coordinates[1],
                 proposedLocation.gpsPrecision,
-                currentRecord.lastEditTimestampNum || 0,
+                record.lastEditTimestampNum || 0,
             );
 
             // Reload the page to show updated data
@@ -123,13 +101,13 @@ export default function Record() {
         );
     }
 
-    if (error || !record) {
+    if (loadError || !record) {
         return (
             <Container className="py-4">
                 <Row>
                     <Col>
                         <Alert variant="danger">
-                            {error || t("record.notFound")}
+                            {loadError || t("record.notFound")}
                         </Alert>
                     </Col>
                 </Row>

@@ -3,11 +3,11 @@ import {type Taxon} from '@/models/Taxon';
 import {type Option} from '@/models/Option';
 import TaxonTraitCount from "@/components/taxonAdmin/TaxonTraitCount";
 import TaxonStats from "@/components/taxonAdmin/TaxonStats";
-import {useEffect, useState} from "react";
+import {useMemo} from "react";
 import InlineField from '@/components/edit/TaxonInlineField';
 import {useTranslation} from 'react-i18next';
 import {getTaxonRanks} from "@/services/taxonApi";
-import {notifyApiError} from "@/stores/notificationStore";
+import {useCatalogQuery} from '@/query/useCatalogQuery';
 
 interface Props {
     taxon: Taxon;
@@ -18,19 +18,16 @@ interface Props {
 export default function TaxonEditCard({taxon, onTaxonChange}: Props) {
     const {t} = useTranslation();
 
-    const [rankOptions, setRankOptions] = useState<Option[]>([]);
-
-    useEffect(() => {
-        getTaxonRanks()
-            .then(ranks =>
-                ranks.map(r => ({
-                    value: r.id,
-                    label: `${r.nameEng} – ${r.nameCz}`
-                }))
-            )
-            .then(setRankOptions)
-            .catch(e => notifyApiError(e, t("taxon.create.loadRanksError")));
-    }, [t]);
+    // číselník ranků – bez cache (sekce J); při selhání zůstane select prázdný
+    // (403 a síťové chyby hlásí centrálně apiClient)
+    const ranks = useCatalogQuery(["taxonRanks"], getTaxonRanks);
+    const rankOptions = useMemo<Option[]>(
+        () => ranks.map(r => ({
+            value: r.id,
+            label: `${r.nameEng} – ${r.nameCz}`
+        })),
+        [ranks]
+    );
 
     const rankLabel = rankOptions.find(o => o.value === taxon.rank)?.label;
 

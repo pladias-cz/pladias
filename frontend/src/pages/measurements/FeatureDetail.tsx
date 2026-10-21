@@ -1,9 +1,9 @@
 import {Col, Row} from "react-bootstrap";
 import {usePageTitle} from "@/hooks/usePageTitle";
 import {NavLink, useParams} from "react-router-dom";
-import type {Feature} from "@/models/Feature";
 import {useEffect, useState, type FormEvent} from "react";
 import {useTranslation} from "react-i18next";
+import {useQuery} from "@tanstack/react-query";
 import TraitTable from "@/components/measurement/TraitTable";
 import FeatureDescription from "@/components/measurement/FeatureDescription";
 import TraitUpload from "@/components/measurement/TraitUpload";
@@ -15,11 +15,17 @@ export default function FeatureDetail() {
     const {t} = useTranslation();
     usePageTitle(t("trait.featureDetail.title"));
     const {featureId} = useParams<{ featureId: string }>();
-    const [selectedFeature, setSelectedFeature] = useState<Feature | null>(null);
     const [submitting, setSubmitting] = useState(false);
     // po úspěšném importu je třeba znovu načíst tabulku datových řad
     const [traitsRefreshKey, setTraitsRefreshKey] = useState(0);
     const {push} = useNotifications();
+
+    // vlastnost k zobrazení – bez cache (sekce J), načtení při mountu
+    const {data: selectedFeature} = useQuery({
+        queryKey: ["feature", featureId],
+        queryFn: () => getFeature(parseInt(featureId!, 10)),
+        enabled: featureId !== undefined,
+    });
 
     useEffect(() => {
         // hlášku po přesměrování z legacy stránky injectuje backend do
@@ -34,20 +40,6 @@ export default function FeatureDetail() {
             push({type: "danger", html: flash.error});
         }
     }, [push]);
-
-    async function loadFeature(id: number) {
-        try {
-            setSelectedFeature(await getFeature(id));
-        } catch (e) {
-            console.error(e);
-        }
-    }
-
-    useEffect(() => {
-        if (!featureId) return;
-        const id = parseInt(featureId, 10);
-        if (!isNaN(id)) loadFeature(id);
-    }, [featureId]);
 
     async function uploadTrait(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();

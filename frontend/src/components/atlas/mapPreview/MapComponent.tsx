@@ -1,9 +1,8 @@
 import type { MapPreviewType } from '@/pages/atlas/MapPreview';
 import { useLayerManager, Layer, MapCanvas } from '@/core/mapLayers';
-import { useEffect, useState, useMemo } from 'react';
-import {apiGet} from '@/services/apiClient';
-import type {ApiResult} from '@/models/ApiResponse';
-import type { TaxonMapSettings } from '@/components/atlas/taxaList/types';
+import { useMemo } from 'react';
+import {useQuery} from '@tanstack/react-query';
+import {getTaxonMapSettings} from '@/services/atlasApi';
 
 interface MapComponentProps {
     type?: MapPreviewType;
@@ -112,26 +111,12 @@ export function MapComponent({ type = 1, taxonId }: MapComponentProps) {
     const center: [number, number] = [49.8, 15.7];
     const initialZoom = 7.5;
 
-    const [mapSettings, setMapSettings] = useState<TaxonMapSettings | null>(null);
-
-    // Fetch taxon map settings when taxonId changes
-    useEffect(() => {
-        if (!taxonId) {
-            setMapSettings(null);
-            return;
-        }
-
-        apiGet<ApiResult<TaxonMapSettings>>(`/api/react/atlas/taxonMapSettings/${taxonId}`)
-            .then(payload => {
-                if (payload.data) {
-                    setMapSettings(payload.data);
-                }
-            })
-            .catch(err => {
-                console.error('Failed to load taxon map settings:', err);
-                setMapSettings(null);
-            });
-    }, [taxonId]);
+    // nastavení mapy taxonu – bez cache (sekce J), read-only (commonThreshold)
+    const {data: mapSettings} = useQuery({
+        queryKey: ['taxonMapSettings', taxonId],
+        queryFn: () => getTaxonMapSettings(taxonId!),
+        enabled: taxonId !== undefined,
+    });
 
     // Get base layers for map type
     const baseLayers = useMemo(() => getLayersForType(type), [type]);

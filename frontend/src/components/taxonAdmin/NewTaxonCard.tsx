@@ -1,10 +1,11 @@
 import { Button, Card, Form, Spinner } from "react-bootstrap";
-import { useEffect, useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { type Taxon } from "@/models/Taxon";
 import { type Option } from "@/models/Option";
 import { useTranslation } from "react-i18next";
 import {createTaxon, getTaxonRanks} from "@/services/taxonApi";
+import {useCatalogQuery} from '@/query/useCatalogQuery';
 import {notifyApiError} from "@/stores/notificationStore";
 
 interface Props {
@@ -16,24 +17,19 @@ export default function NewTaxonCard({ taxon }: Props) {
 
     const [nameLat, setNameLat] = useState("");
     const [rankId, setRankId] = useState<number>(28);
-    const [rankOptions, setRankOptions] = useState<Option[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-
-    useEffect(() => {
-        getTaxonRanks()
-            .then(ranks =>
-                ranks.map(r => ({
-                    value: r.id,
-                    label: `${r.nameEng} – ${r.nameCz}`,
-                }))
-            )
-            .then(setRankOptions)
-            .catch(e =>
-                notifyApiError(e, t("taxon.create.loadRanksError"))
-            );
-    }, [t]);
+    // číselník ranků – bez cache (sekce J); při selhání zůstane select prázdný
+    // (403 a síťové chyby hlásí centrálně apiClient)
+    const ranks = useCatalogQuery(["taxonRanks"], getTaxonRanks);
+    const rankOptions = useMemo<Option[]>(
+        () => ranks.map(r => ({
+            value: r.id,
+            label: `${r.nameEng} – ${r.nameCz}`,
+        })),
+        [ranks]
+    );
 
     const handleAdd = async () => {
         if (!nameLat.trim()) {

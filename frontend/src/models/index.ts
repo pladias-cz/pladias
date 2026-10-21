@@ -21,6 +21,9 @@ export type { QuadrantDetail, DistrictDetail } from './GeoTypes';
 // Record comment types
 export type { RecordComment, RecordCommentsResponse } from './RecordComment';
 
+// Taxon map settings types
+export type { TaxonMapSettings } from './TaxonMapSettings';
+
 // Record history types
 export type { RecordHistoryEntry, RecordHistoryResponse } from './RecordHistory';
 

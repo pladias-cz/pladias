@@ -4,7 +4,7 @@ import {apiGet} from '@/services/apiClient';
 import {notifyApiError} from '@/stores/notificationStore';
 import RichTextMessage from '@/components/RichTextMessage';
 import type {ApiResult} from '@/models/ApiResponse';
-import {useTaxonUpdates} from '../../atlasAdmin/taxaList/hooks';
+import {useTaxonUpdates} from '@/components/atlasAdmin/taxaList/hooks';
 import {useTranslation} from 'react-i18next';
 
 interface InfoPanelProps {

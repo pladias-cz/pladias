@@ -1,5 +1,5 @@
 /**
- * Testy potvrzovacího flow hromadných úprav (F.3 z refactor.md) na sekci
+ * Testy potvrzovacího flow hromadných úprav na sekci
  * semaforu: validace bez výběru, zrušení dialogu, potvrzení a proběhnutí
  * dávky (načtení kandidátů + PATCH per záznam + souhrn + onBulkEditComplete).
  *

@@ -1,6 +1,7 @@
-# TODOs
+# TODOs - NOT for agents!
 
 This document serve to humans, do not use for agents.
+---
 
 ## now:
 
@@ -12,16 +13,12 @@ This document serve to humans, do not use for agents.
 
 ---
 
-po velkém refactoringu frontendu některé sekce nefungují tak jak by měly. Postupně je budu hlásit, oprav je. Není-li uvedeno jinak, tak se nejedná o chyby z refactoringu, byly tam již předtím. Změny necommituj.
-
-Pokud se chyba dotýká komunikace s backendem a bude nutné to opravit, můžeš sáhnout i na backend a zrušit JsonResult wrapper pro danou routu (nahradit standardní REST http code response) - JsonResult je pozůstatek legacy aplikace.
-
-3) /measurements/export - první podkomponenta se seznamem skupin, features a traitů by potřebovala refactoring.  Je to hierarchická struktura s omezenou hloubkou a bylo by potřeba aby uživatel mohl snadno vybrat i zrušit jendotlivé položky (celou skupinu, celou feature nebo dílčí trait). K tomu je nutné poskytnout vizuální podporu (nadřazená položka s alespon jednou vybranou podpoložkou je zvýrazněná, její vybrání vybere vše podřízené, zrušení zruší i pořízené, zrušení poslední pořízené zruší nadřízenou...) - prostě klasický treeview
-4) /atlasAdmin/listOfUsers - změna přiřazeného taoxnu nebo projektu se vizuálně neprojeví - týká se přidání i odebrání - je potřeba aby bylo ihned viditelné (změna se uloží, po refresh je vidět platný stav)
-5) /atlasAdmin/listOfTaxa - mám práva mapAdmina a přitom mi neprojde editace isProtected, Preslia, stav revize...
-6) LayerSwitcher (užitý např na /atlas/mapMain/1489) má nepříjemný vizuál - měla by být viditelná jen poloprůhledná ikonka v levém horním rohu mapy která při click/hover expanduje. Při opuštění se pak zase minimalizuje jen do ikony (ted zůstane roztáhnutá na výšku jakou má skrytý tree dostupných vrstev)
-7) tamtéž výpis projektových vrstev v LayerSwitcher ukazuje "Projddect 22" namísto i18n termínu "projekt" a název daného projektu
-8) /atlas/mapMain/1489 po refactoringu přestala fungovat vrstvy ze sekce GBIF a Projects - tj. jejich zaškrtnutí je nezobrazí
+/measurements/export - první podkomponenta se seznamem skupin, features a traitů by potřebovala refactoring.  Je to hierarchická struktura s omezenou hloubkou a bylo by potřeba aby uživatel mohl snadno vybrat i zrušit jendotlivé položky (celou skupinu, celou feature nebo dílčí trait). K tomu je nutné poskytnout vizuální podporu (nadřazená položka s alespon jednou vybranou podpoložkou je zvýrazněná, její vybrání vybere vše podřízené, zrušení zruší i pořízené, zrušení poslední pořízené zruší nadřízenou...) - prostě klasický treeview, je přípustné k tomu použít i nějaký externí knihovnu
+1) /atlasAdmin/listOfUsers - provedení změny, tj. např jméno nově přiřazeného taxonu nebo projektu se vizuálně neprojeví - týká se přidání i odebrání - je potřeba aby bylo ihned viditelné (změna se ale nyní uloží, až po refresh je vidět platný stav)
+2) /atlasAdmin/listOfTaxa - mám práva mapAdmina a přitom mi neprojde editace polí isProtected, Preslia, stav revize... - zřejmě omezení na backendu ?
+3) LayerSwitcher (užitý např na /atlas/mapMain/:taxonId) má nepříjemný vizuál který překrývá příliš velkou plochu - měla by být viditelná jen poloprůhledná ikonka v levém horním rohu mapy která při click/hover expanduje. Při opuštění se pak zase minimalizuje jen do ikony (ted bohužel zůstane roztáhnutá na výšku jakou má skrytý tree dostupných vrstev). Rovněž jeho vnitřní design neodpovídá Bootstrap stylu okolní stránky - je potřeba kompaktní ale přehledné řešení dvouúrovnového stormu (kategorie + konkrétní vrstva)
+4) LayerSwitcher (užitý např na /atlas/mapMain/:taxonId) u projektových vrstev ukazuje "Projddect 22" namísto i18n termínu "Projekt" a název daného projektu
+5) /atlas/mapMain/1489 po refactoringu přestala fungovat vrstvy ze sekce GBIF a Projects - tj. jejich zaškrtnutí je nezobrazí
 ---
 
 ## next:

@@ -1,5 +1,5 @@
 /**
- * Vyhledávací formulář atlasu (E.1 z refactor.md) – tenká koordinační
+ * Vyhledávací formulář atlasu – tenká koordinační
  * komponenta: filtry (useSearchFilters), číselníky (useSearchOptions),
  * dotaz (useSearchQuery) a layout polí. Bez přímého fetche.
  */

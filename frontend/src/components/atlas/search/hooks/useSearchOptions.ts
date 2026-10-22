@@ -1,5 +1,5 @@
 /**
- * Číselníky vyhledávacího formuláře (E.1 z refactor.md) – načtení přes
+ * Číselníky vyhledávacího formuláře – načtení přes
  * service vrstvu a normalizace na TypeaheadOption pro selecty.
  */
 

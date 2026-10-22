@@ -1,5 +1,5 @@
 /**
- * Testy čistých parserů vstupů hromadných úprav (F.3 z refactor.md):
+ * Testy čistých parserů vstupů hromadných úprav:
  * souřadnice (desetinné i DMS, hemisféry, unicode varianty úhlů) a data.
  */
 import {describe, expect, it} from "vitest";

@@ -1,5 +1,5 @@
 /**
- * Zobrazení výsledků vyhledávání (E.1 z refactor.md): paginace, řazení
+ * Zobrazení výsledků vyhledávání: paginace, řazení
  * a tabulka záznamů. BulkEdit se vkládá jako children (jen pro editory).
  */
 

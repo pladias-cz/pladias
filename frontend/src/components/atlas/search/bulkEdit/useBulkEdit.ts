@@ -1,5 +1,5 @@
 /**
- * Veškerá logika hromadných úprav záznamů (E.3 z refactor.md): stav polí
+ * Veškerá logika hromadných úprav záznamů: stav polí
  * jednotlivých akcí, číselníky (fytochoriony, nálezci, semafor, taxony),
  * guardy dávky (limit záznamů, naplněné vyhledávání), potvrzovací dialogy
  * a průběh + souhrn dávky.

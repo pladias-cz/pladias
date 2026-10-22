@@ -1,5 +1,5 @@
 /**
- * Hromadné úpravy záznamů z výsledků vyhledávání (E.3 z refactor.md) –
+ * Hromadné úpravy záznamů z výsledků vyhledávání –
  * tenká kompozice: logiku (validace, guardy dávky, confirm dialogy, číselníky)
  * vlastní `bulkEdit/useBulkEdit`, sekce polí `bulkEdit/components/*`, síťová
  * volání `services/bulkEditApi`. Flow: hledání → SearchResultsView předá

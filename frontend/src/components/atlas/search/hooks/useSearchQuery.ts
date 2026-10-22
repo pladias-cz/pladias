@@ -1,5 +1,5 @@
 /**
- * Dotaz vyhledávání přes service vrstvu (E.1 z refactor.md): stránkování,
+ * Dotaz vyhledávání přes service vrstvu: stránkování,
  * řazení, Excel export a hlášky o výsledcích.
  */
 

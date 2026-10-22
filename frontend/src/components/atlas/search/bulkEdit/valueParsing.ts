@@ -1,5 +1,5 @@
 /**
- * Čisté parsery vstupů hromadných úprav (E.3 z refactor.md): souřadnice
+ * Čisté parsery vstupů hromadných úprav: souřadnice
  * (desetinné i DMS, prefixy/suffixy hemisfér) a validace data.
  * Bez Reactu – testovatelné samostatně (valueParsing.test.ts).
  */

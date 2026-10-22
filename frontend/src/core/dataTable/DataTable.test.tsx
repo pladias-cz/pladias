@@ -1,5 +1,5 @@
 /**
- * Testy jádrové komponenty DataTable (F.1 z refactor.md):
+ * Testy jádrové komponenty DataTable:
  * render sloupců všech typů, filter row, řazení, paginace
  * a optimistic update checkboxů přes onToggle/onRowUpdate.
  *

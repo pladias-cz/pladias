@@ -1,5 +1,5 @@
 /**
- * TanStack Query (sekce J refactor.md) – jednotný data-fetching aplikace.
+ * TanStack Query jednotný data-fetching aplikace.
  *
  * Rozhodnutí (21. 10. 2026): enterprise varianta, ale BEZ CACHE – všechna
  * data včetně číselníků jsou dynamická a načítají se při každém mountu

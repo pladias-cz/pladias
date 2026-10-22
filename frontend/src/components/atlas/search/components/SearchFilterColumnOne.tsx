@@ -1,5 +1,5 @@
 /**
- * Levý sloupec polí vyhledávacího formuláře (E.1 z refactor.md):
+ * Levý sloupec polí vyhledávacího formuláře:
  * taxon, lokalita, fytochorion, substráty apod.
  */
 

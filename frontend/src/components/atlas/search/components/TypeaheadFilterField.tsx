@@ -1,5 +1,5 @@
 /**
- * Řádek vyhledávacího formuláře s typeaheadem (E.1 z refactor.md) –
+ * Řádek vyhledávacího formuláře s typeaheadem –
  * skrytý input(y) drží vybranou hodnotu pro FormData submit.
  */
 

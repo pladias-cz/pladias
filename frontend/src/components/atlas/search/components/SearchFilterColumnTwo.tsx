@@ -1,5 +1,5 @@
 /**
- * Pravý sloupec polí vyhledávacího formuláře (E.1 z refactor.md):
+ * Pravý sloupec polí vyhledávacího formuláře:
  * herbář, instituce, projekty, zpracovatel, data, licence, Pladias ID.
  */
 

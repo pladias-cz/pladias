@@ -1,5 +1,5 @@
 /**
- * Stav kontrolovaných filtrů vyhledávacího formuláře (E.1 z refactor.md).
+ * Stav kontrolovaných filtrů vyhledávacího formuláře.
  *
  * Většina polí formuláře je nekontrolovaná (čte se až ze submitu přes
  * FormData); kontrolované jsou typeaheady, Pladias ID a podtaxony.

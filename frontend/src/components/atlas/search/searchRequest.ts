@@ -1,5 +1,5 @@
 /**
- * Čisté sestavení dotazu vyhledávání (E.1 z refactor.md) – bez Reactu,
+ * Čisté sestavení dotazu vyhledávání – bez Reactu,
  * testovatelné samostatně (F.3).
  *
  * Formulář je převážně nekontrolovaný: hodnoty filtrů čteme až ze submitu

@@ -1,5 +1,5 @@
 /**
- * Testy čistého sestavení dotazu vyhledávání (F.3 z refactor.md):
+ * Testy čistého sestavení dotazu vyhledávání:
  * export_type, FormData + řazení, velikost stránky a matematika paginace.
  */
 

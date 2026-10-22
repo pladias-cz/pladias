@@ -1,0 +1,81 @@
+// Treeview výběru vlastností komplexního exportu (skupina → vlastnost → datová
+// řada). Řádek uzlu s alespoň jednou vybranou podpoložkou je zvýrazněný
+// (__row--selected), podstromy se odsazují s vodicí linkou (__children).
+// Celá komponenta má mírně kontrastní podklad – vymezuje interaktivní oblast
+// stromu; defaultní bootstrapí okraj checkboxu (--bs-border-color) je na něm i
+// na bílém pozadí stránky téměř neviditelný, proto se nezaškrtnutým polím
+// ztmavuje okraj.
+
+.export-tree {
+    padding: 0.5rem 0.75rem;
+    background-color: var(--bs-secondary-bg);
+    border-radius: 0.375rem;
+
+    // tmavší okraj nezaškrtnutých checkboxů (zaškrtnuté a indeterminate si
+    // nechávají bootstrapí modrou), jinak by bílá políčka splývala s pozadím
+    .form-check-input:not(:checked):not(:indeterminate) {
+        border-color: var(--bs-secondary-color);
+    }
+
+    &__node {
+        margin-bottom: 0.2rem;
+
+        &--group {
+            margin-bottom: 0.75rem;
+        }
+    }
+
+    &__row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0.1rem 0.35rem;
+        border-radius: 0.25rem;
+
+        // uzel s alespoň jednou vybranou podpoložkou (u řady: vybraná řada)
+        &--selected {
+            background-color: var(--bs-success-bg-subtle);
+        }
+    }
+
+    &__toggle {
+        flex: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 1.1rem;
+        height: 1.1rem;
+        padding: 0;
+        border: 0;
+        background: none;
+        color: var(--bs-secondary-color);
+        font-size: 0.8rem;
+
+        &:hover,
+        &:focus {
+            color: var(--bs-body-color);
+        }
+    }
+
+    // checkbox řady nemá rozbalovací tlačítko – mezera pro zarovnání
+    &__spacer {
+        flex: none;
+        width: 1.1rem;
+    }
+
+    &__label {
+        cursor: pointer;
+    }
+
+    &__children {
+        margin-left: 0.6rem;
+        padding-left: 0.6rem;
+        // na šedém podkladu komponenty by defaultní --bs-border-color zmizel
+        border-left: 1px solid var(--bs-tertiary-color);
+    }
+
+    &__spinner {
+        flex: none;
+    }
+}

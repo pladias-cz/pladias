@@ -1060,7 +1060,10 @@
     "deleteFailed": "Nepodařilo se smazat datovou řadu",
     "deleted": "Datová řada byla smazána",
     "export": {
+      "collapse": "Zabalit {{name}}",
+      "expand": "Rozbalit {{name}}",
       "failed": "Export se nezdařil. Zkuste to prosím znovu.",
+      "loadFailed": "Nepodařilo se načíst vlastnosti pro export.",
       "placeholder": "Zde vkopírujte seznam požadovaných taxonů v podobě latinských jmen na jednotlivých řádcích.",
       "submit": "Exportovat",
       "suppressed": "Zahrnout potlačené",

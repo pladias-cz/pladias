@@ -952,7 +952,7 @@
       "latinNameRequired": "Zadejte latinské jméno",
       "loadRanksError": "Nepodařilo se načíst seznam ranků",
       "rank": "Rank",
-      "title": "Nový taxon pod {name}",
+      "title": "Nový taxon pod {{name}}",
       "unexpectedError": "Neočekávaná chyba"
     },
     "detail": {
@@ -972,7 +972,7 @@
     },
     "move": {
       "deleteButton": "Smazat",
-      "deleteConfirm": "Opravdu chcete smazat taxon \"{name}\"?\n\nTato akce je nevratná.",
+      "deleteConfirm": "Opravdu chcete smazat taxon \"{{name}}\"?\n\nTato akce je nevratná.",
       "deleteDescription": "Můžete také taxon smazat – tedy pokud se jedná o list stromu (nemá podřízené taxony) a není referencován nikde kromě materialized pohledu ",
       "deleteFailed": "Smazání taxonu se nezdařilo",
       "deleting": "Mažu…",
@@ -980,7 +980,7 @@
       "moveFailed": "Přesun se nezdařil",
       "moving": "Přesouvám…",
       "newParent": "Nový rodič",
-      "title": "Přesun taxonu {name}"
+      "title": "Přesun taxonu {{name}}"
     },
     "ordering": {
       "loadFailed": "Nepodařilo se načíst potomky taxonu",
@@ -996,13 +996,13 @@
       "autocomplete": "Autocomplete",
       "deleteConfirm": "Opravdu smazat synonymum?",
       "deleteError": "Došlo k chybě při mazání",
-      "deleteFailed": "Mazání selhalo ({status})",
+      "deleteFailed": "Mazání selhalo ({{status}})",
       "loadFailed": "Nepodařilo se načíst synonyma",
       "nameHtml": "Název (HTML)",
       "nameLatin": "Název (lat)",
       "publication": "Publikace",
       "saveError": "Došlo k chybě při ukládání",
-      "saveFailed": "Uložení selhalo ({status})",
+      "saveFailed": "Uložení selhalo ({{status}})",
       "saved": "Uloženo",
       "suffix": "Suffix",
       "title": "Synonyma"

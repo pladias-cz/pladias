@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This document defines coding standards and patterns for both legacy MVC and modern React components. Follow these conventions to maintain consistency across the codebase.
+This document defines coding standards and patterns. Follow these conventions to maintain consistency across the codebase.
 
 ---
 
@@ -14,7 +14,6 @@ This document defines coding standards and patterns for both legacy MVC and mode
 - **`app/controllers`**: Thin request handlers - routing, parameter/form binding and mapping of
   service results to `Result`; the processing itself belongs to `app/service`
   - `app/controllers/api/`: Token-authenticated public APIs
-  - Other controllers: Legacy server-side rendering controllers
 - **`app/dto`**: Data Transfer Objects for API responses
 - **`app/service`**: Business logic layer (reusable services)
 - **`app/repositories`**: Data access layer (complex queries)
@@ -22,27 +21,10 @@ This document defines coding standards and patterns for both legacy MVC and mode
 
 ### Controller Patterns
 
-```java
-@Authorized  // Session-based authentication
-public class TaxonController extends ControllerBase {
-
-    @Inject
-    private ITaxonService taxonService;
-
-    public Result getTaxon(long id) {
-        TaxonDto taxon = TaxonSearchService.getTaxonDto(id);
-        if (taxon == null) {
-            return notFound(JsonResult.error("Taxon not found"));
-        }
-        return ok(JsonResult.buildSuccess(taxon));
-    }
-}
-```
-
 ### Authentication Decorators
 - `@Authorized`: Session-based authentication (for React controllers)
 - `@TokenAuthenticated`: Token-based authentication (for public APIs)
- 
+
 ---
 
 ## TypeScript (Frontend)

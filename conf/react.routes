@@ -136,6 +136,9 @@ DELETE /taxon/:id                       controllers.taxon.TaxonManagerController
 POST   /taxon/moveBeforeSibling         controllers.taxon.TaxonManagerController.moveBeforeSibling(request: Request)
 
 GET   /downloads                        controllers.common.DownloadsController.getAll(request: Request)
+GET   /downloads/taxa                   controllers.common.DownloadsController.exportTaxons(request: Request)
+GET   /downloads/herbaria               controllers.common.DownloadsController.exportHerbariums(request: Request)
+GET   /downloads/finders                controllers.common.DownloadsController.exportFinders(request: Request)
 GET   /tempfiles/:fileId                controllers.common.TemporaryFilesProviderController.download(request: Request, fileId: Integer)
 
 # Measurements - data of the measurement module

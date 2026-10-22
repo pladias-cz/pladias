@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Table, Spinner, Alert } from "react-bootstrap";
-import {getDownloads} from "@/services/downloadApi";
+import { Table, Spinner, Alert, Button } from "react-bootstrap";
+import {downloadDynamicFile, getDownloads} from "@/services/downloadApi";
+import {downloadBlob} from "@/core/dataTable/export";
+import {notifyApiError} from "@/stores/notificationStore";
 import type {DownloadDto} from "@/models/Download";
 
 export default function DownloadsTable() {
@@ -10,6 +12,8 @@ export default function DownloadsTable() {
     const [downloads, setDownloads] = useState<DownloadDto[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    /** indexy právě stahovaných dynamických exportů; blokuje se jen kliknuté tlačítko (proti dvojkliku), exporty můžou běžet souběžně */
+    const [downloading, setDownloading] = useState<Set<number>>(new Set());
 
     useEffect(() => {
         const load = async () => {
@@ -24,6 +28,27 @@ export default function DownloadsTable() {
 
         load();
     }, []);
+
+    /**
+     * Dynamický export (xlsx) – na rozdíl od statických odkazů jde o fetch přes
+     * apiClient, aby chybu HTTP 500/401 šlo zobrazit Toast notifikací místo
+     * uložení JSON/HTML jako souboru.
+     */
+    const handleDynamicDownload = async (download: DownloadDto, index: number) => {
+        setDownloading((prev) => new Set(prev).add(index));
+        try {
+            const file = await downloadDynamicFile(download);
+            downloadBlob(file.blob, file.filename);
+        } catch (e) {
+            notifyApiError(e, t("download.downloadFailed"));
+        } finally {
+            setDownloading((prev) => {
+                const next = new Set(prev);
+                next.delete(index);
+                return next;
+            });
+        }
+    };
 
     if (loading) {
         return (
@@ -58,9 +83,27 @@ export default function DownloadsTable() {
                     <td>{d.manager}</td>
                     <td>{d.version}</td>
                     <td>
-                        <a href={d.url} target="_blank" rel="noopener noreferrer">
-                            {t("download.download")}
-                        </a>
+                        {d.dynamic ? (
+                            <Button
+                                variant="link"
+                                className="p-0"
+                                disabled={downloading.has(i)}
+                                onClick={() => handleDynamicDownload(d, i)}
+                            >
+                                {downloading.has(i) ? (
+                                    <>
+                                        <Spinner as="span" size="sm" animation="border" className="me-1" />
+                                        {t("download.download")}
+                                    </>
+                                ) : (
+                                    t("download.download")
+                                )}
+                            </Button>
+                        ) : (
+                            <a href={d.url} target="_blank" rel="noopener noreferrer">
+                                {t("download.download")}
+                            </a>
+                        )}
                     </td>
                 </tr>
             ))}

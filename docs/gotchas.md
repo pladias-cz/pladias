@@ -24,6 +24,14 @@ Known exceptions:
 - `ConfigController.infoGlobal` returns a bare JSON **array** of maintenance messages
   (`ok(Json.toJson(messages))`) – no `JsonResult` wrapper. The frontend tolerates it in
   `services/instanceApi.ts` (`parseInstanceMessages` drops invalid entries).
+- `DownloadsController.getAll` (`GET /api/react/downloads`) returns a bare JSON **array** of
+  download items (`ok(Json.toJson(dtos))`), each with a `dynamic` flag; `services/downloadApi.ts`
+  validates `Array.isArray`. Its dynamic XLSX exports (`/downloads/taxa|herbaria|finders`) answer
+  `application/x-download` + `Content-disposition` on success and HTTP 500 with
+  `{"error": ...}` JSON on failure; the controller is guarded by `AuthorizedApi`, which answers
+  HTTP 401 JSON instead of a login redirect (a `fetch` download would store the login page HTML
+  as a file – `DownloadsTable` renders dynamic rows as buttons and reports failures via
+  `notifyApiError`).
 - The project name (`/api/react/playmessage/project_name`) carries a rich-text value –
   `loadProjectName` strips HTML tags via a DOM element (trusted backend input, no sanitizer
   dependency).

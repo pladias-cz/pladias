@@ -734,6 +734,7 @@
   "download": {
     "description": "Popis",
     "download": "download",
+    "downloadFailed": "Stažení souboru selhalo.",
     "manager": "Odpovědná osoba",
     "version": "Datum verze"
   },

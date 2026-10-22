@@ -1,22 +1,2 @@
 {
-  "common": {
-    "close": "Close",
-    "confirm": {
-      "title": "Confirm action"
-    },
-    "errorBoundary": {
-      "message": "A part of the application stopped working. Try reloading the page; if the error persists, contact the administrator.",
-      "reload": "Reload page",
-      "title": "An unexpected error occurred"
-    },
-    "instanceMessages": {
-      "unavailable": "Instance status messages are currently unavailable."
-    },
-    "notification": {
-      "networkError": "Connection to the server failed – check your internet connection."
-    }
-  },
-  "trait": {
-    "deleteConfirm": "Are you sure you want to delete this data series?"
-  }
 }

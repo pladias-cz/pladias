@@ -7,7 +7,7 @@ The application serves as a botanical information system (Pladias) with modules 
 ### Key Architectural Characteristics
 
 - **Backend**: Java Play! Framework with Ebean ORM, PostgreSQL database
-- **Frontend**:  React 18 + TypeScript
+- **Frontend**:  React 19 + TypeScript
 - **API Layer**: RESTful JSON APIs for React frontend (`/api/react/*`)
 - **Build System**: SBT (Scala Build Tool) for backend, Vite for frontend
 
@@ -17,7 +17,7 @@ The application serves as a botanical information system (Pladias) with modules 
 
 | Layer | Technology                                   |
 |-------|----------------------------------------------|
-| UI framework | React 18 + TypeScript   (`/frontend`)        |
+| UI framework | React 19 + TypeScript   (`/frontend`)        |
 | Build tool | Vite 7                                       |
 | Routing | React Router v7                              |
 | Styling | SCSS + Bootstrap 5                           |

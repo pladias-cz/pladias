@@ -1,22 +1,2 @@
 {
-  "common": {
-    "close": "Zamknij",
-    "confirm": {
-      "title": "Potwierdzenie działania"
-    },
-    "errorBoundary": {
-      "message": "Część aplikacji przestała działać. Spróbuj odświeżyć stronę; jeśli błąd się powtarza, skontaktuj się z administratorem.",
-      "reload": "Odśwież stronę",
-      "title": "Wystąpił nieoczekiwany błąd"
-    },
-    "instanceMessages": {
-      "unavailable": "Komunikaty o stanie instancji są obecnie niedostępne."
-    },
-    "notification": {
-      "networkError": "Połączenie z serwerem nie powiodło się – sprawdź połączenie z internetem."
-    }
-  },
-  "trait": {
-    "deleteConfirm": "Czy na pewno chcesz usunąć tę serię danych?"
-  }
 }

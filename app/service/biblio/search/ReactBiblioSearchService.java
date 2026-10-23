@@ -4,17 +4,21 @@ import dto.BibliographyDto;
 import io.ebean.*;
 import models.biblio.Bibliography;
 import org.apache.commons.lang3.StringUtils;
-import utils.SqlUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
  * Service for React frontend providing server-side pagination, sorting, and filtering.
- * This service does NOT modify the original BiblioSearchService.
+ *
+ * All form values are bound as named parameters of the Ebean query and are never
+ * concatenated into the SQL text itself (prevention of SQL injection, security
+ * audit finding C2 in docs/security.md).
  */
 public class ReactBiblioSearchService {
 
@@ -22,9 +26,7 @@ public class ReactBiblioSearchService {
      * Search results with pagination support
      */
     public SearchResult search(BiblioSearchForm form, int page, int pageSize, String sortBy, String sortOrder) {
-        sanitize(form);
-        String query = buildQuery(form);
-        List<Bibliography> allResults = executeQuery(query);
+        List<Bibliography> allResults = findBibliographies(form);
 
         // Apply sorting
         if (StringUtils.isNotBlank(sortBy)) {
@@ -66,9 +68,7 @@ public class ReactBiblioSearchService {
                                           String authorsFilter, String titleFilter,
                                           String journalFilter, String yearFilter,
                                           String excerptedFilter, String etcFilter) {
-        sanitize(form);
-        String query = buildQuery(form);
-        List<Bibliography> allResults = executeQuery(query);
+        List<Bibliography> allResults = findBibliographies(form);
 
         // Apply column filters
         allResults = applyColumnFilters(allResults, authorsFilter, titleFilter, journalFilter,
@@ -106,58 +106,94 @@ public class ReactBiblioSearchService {
         return new SearchResult(dtos, totalCount);
     }
 
-    private void sanitize(BiblioSearchForm form) {
-        form.author = SqlUtils.sanitize(form.author);
-        form.etc = SqlUtils.sanitize(form.etc);
-        form.excerpted = SqlUtils.sanitize(form.excerpted);
-        form.journal = SqlUtils.sanitize(form.journal);
-        form.maxYear = SqlUtils.sanitize(form.maxYear);
-        form.minYear = SqlUtils.sanitize(form.minYear);
-        form.title = SqlUtils.sanitize(form.title);
+    /**
+     * Finds bibliography entries matching the form filters. All form values are
+     * bound as named query parameters (see {@link QueryParameters}).
+     */
+    List<Bibliography> findBibliographies(BiblioSearchForm form) {
+        QueryParameters parameters = new QueryParameters();
+        String query = buildQuery(form, parameters);
+        return executeQuery(query, parameters);
     }
 
-    private List<Bibliography> executeQuery(String query) {
+    private List<Bibliography> executeQuery(String query, QueryParameters parameters) {
         RawSql rawSql = RawSqlBuilder.parse(query).create();
         Query<Bibliography> sqlQuery = DB.find(Bibliography.class);
         sqlQuery.setRawSql(rawSql);
+        parameters.applyTo(sqlQuery);
         return sqlQuery.findList();
     }
 
-    private String buildQuery(BiblioSearchForm form) {
+    String buildQuery(BiblioSearchForm form, QueryParameters parameters) {
         StringBuilder builder = new StringBuilder();
         builder.append("SELECT id FROM ").append(Bibliography.QualifiedTableName);
         builder.append(" WHERE TRUE AND ");
 
         if (StringUtils.isNotBlank(form.title)) {
-            String title = form.title.replace("*", "%");
-            builder.append(" title LIKE '").append(title).append("' AND ");
+            String param = parameters.bind("title", form.title.replace("*", "%"));
+            builder.append(" title LIKE ").append(param).append(" AND ");
         }
         if (StringUtils.isNotBlank(form.author)) {
-            String author = form.author.replace("*", "%");
-            builder.append(" lower(authors) LIKE '").append(author.toLowerCase()).append("' AND ");
+            String param = parameters.bind("author", form.author.replace("*", "%").toLowerCase());
+            builder.append(" lower(authors) LIKE ").append(param).append(" AND ");
         }
         if (StringUtils.isNotBlank(form.etc)) {
-            String etc = form.etc.replace("*", "%");
-            builder.append(" etc LIKE '").append(etc).append("' AND ");
+            String param = parameters.bind("etc", form.etc.replace("*", "%"));
+            builder.append(" etc LIKE ").append(param).append(" AND ");
         }
-        if (StringUtils.isNotBlank(form.minYear)) {
-            builder.append(" year >= ").append(form.minYear).append(" AND ");
+        if (form.minYear != null) {
+            String param = parameters.bind("minYear", form.minYear);
+            builder.append(" year >= ").append(param).append(" AND ");
         }
-        if (StringUtils.isNotBlank(form.maxYear)) {
-            builder.append(" year <= ").append(form.maxYear).append(" AND ");
+        if (form.maxYear != null) {
+            String param = parameters.bind("maxYear", form.maxYear);
+            builder.append(" year <= ").append(param).append(" AND ");
         }
         if (StringUtils.isNotBlank(form.excerpted)) {
             String excerptedLowercase = form.excerpted.toLowerCase();
             if ("true".equals(excerptedLowercase) || "false".equals(excerptedLowercase)) {
-                builder.append(" excerpted = ").append(excerptedLowercase).append(" AND ");
+                String param = parameters.bind("excerpted", Boolean.parseBoolean(excerptedLowercase));
+                builder.append(" excerpted = ").append(param).append(" AND ");
             }
         }
         if (StringUtils.isNotBlank(form.journal) && !"all".equals(form.journal)) {
-            builder.append(" journal= '").append(form.journal).append("' AND ");
+            String param = parameters.bind("journal", form.journal);
+            builder.append(" journal= ").append(param).append(" AND ");
         }
 
         builder.append(" TRUE ");
         return builder.toString();
+    }
+
+    /**
+     * Collects named parameters of the built SQL so that all values (especially
+     * text inputs of the search form) are bound via PreparedStatement and are
+     * never concatenated into the SQL text itself (prevention of SQL injection).
+     */
+    static class QueryParameters {
+        private final Map<String, Object> parameters = new LinkedHashMap<>();
+
+        /**
+         * Registers the value under a unique name and returns the placeholder
+         * {@code :name} to be put into the SQL being built.
+         */
+        String bind(String name, Object value) {
+            if (parameters.containsKey(name)) {
+                throw new IllegalStateException("Duplicate query parameter '" + name + "'");
+            }
+            parameters.put(name, value);
+            return ":" + name;
+        }
+
+        Map<String, Object> asMap() {
+            return parameters;
+        }
+
+        void applyTo(Query<?> query) {
+            for (Map.Entry<String, Object> entry : parameters.entrySet()) {
+                query.setParameter(entry.getKey(), entry.getValue());
+            }
+        }
     }
 
     private void sortResults(List<Bibliography> results, String sortBy, String sortOrder) {

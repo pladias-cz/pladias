@@ -1,2 +1,0 @@
-- never use Docker
-- do not attempt to test Java build, leave it to user

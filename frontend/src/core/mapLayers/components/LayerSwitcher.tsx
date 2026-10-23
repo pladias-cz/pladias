@@ -1,14 +1,24 @@
 /**
- * LayerSwitcher Component - Redesigned with Bootstrap 5
- * 
- * Supports multiple groups:
- * - mutuallyExclusive groups (radio buttons) - e.g., Base Maps
- * - non-mutuallyExclusive groups (checkboxes) - e.g., Administrative, Occurrences, Projects
- * 
- * Also supports dynamic layers (e.g., project layers) that are not in the static registry.
+ * LayerSwitcher Component
+ *
+ * Přepínač vrstev mapy. Sbalený zabírá jen malou poloprůhlednou ikonku v levém
+ * horním rohu mapy; panel se stromem vrstev (skupina → vrstva) se rozbalí při
+ * najetí myší, kliknutím na ikonku nebo získáním fokusu a po opuštění myší
+ * (fokusem mimo) se vždy zase sbalí. Panel je podmíněně vykreslený, takže
+ * sbalený přepínač nezabírá žádnou plochu mapy (dříve zůstával roztáhnutý
+ * na výšku skrytého stromu).
+ *
+ * Podporuje skupiny vrstev:
+ * - mutuallyExclusive (radio) – např. Base Maps
+ * - ostatní (checkbox) – např. Occurrences, Projects
+ * - dynamické vrstvy (project_*) mimo statický registr
+ *
+ * Skupina s alespoň jednou zapnutou vrstvou je zvýrazněná barvou (obdoba
+ * ExportTraitList); jako celek se zaškrtnout nedá.
  */
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, type FocusEvent } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useLayerManager, type LayerDefinition, layerGroups, getLayerDefinition, useLayerStore } from '../index';
 
 interface LayerSwitcherProps {
@@ -27,11 +37,14 @@ interface LayerGroupItem {
 }
 
 export function LayerSwitcher({ mapName, layerIds, defaultVisibility }: LayerSwitcherProps) {
+    const { t } = useTranslation();
     const layerManager = useLayerManager(mapName, layerIds, defaultVisibility);
     const [isExpanded, setIsExpanded] = useState(false);
-    const getLayerState = useLayerStore(state => state.getLayerState);
-    // Subscription kvůli re-renderu při změně stavů vrstev (např. titulků) – hodnota se nečte
-    useLayerStore(state => state.layers[mapName]);
+    // Stavy vrstev dané mapy: titulky dynamických vrstev (project_*) se do store
+    // dostanou až asynchronně (useProjectLayers je registruje v effectu), proto
+    // hodnotu čteme přímo – musí být i v deps groupItems mema, aby se změna
+    // store (nový titulek) projevila v panelu, nejen vyvolala re-render.
+    const layerStates = useLayerStore(state => state.layers[mapName]);
     
     // Initialize open groups based on layerGroups config
     const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() => {
@@ -61,15 +74,18 @@ export function LayerSwitcher({ mapName, layerIds, defaultVisibility }: LayerSwi
             if (staticDef) return staticDef;
             
             // For dynamic layers (e.g., project_*), get title from layer state
-            const layerState = getLayerState(mapName, id);
-            let title = layerState?.title;
-            
-            // Fallback: derive title from ID
-            if (!title && id.startsWith('project_')) {
-                const projectId = id.replace('project_', '');
-                title = `Projddect ${projectId}`;
-            } else if (!title) {
-                title = id;
+            // (registered asynchronously by useProjectLayers once projects load)
+            const stateTitle = layerStates?.[id]?.title;
+            let title: string;
+
+            if (id.startsWith('project_')) {
+                // Titulek projektové vrstvy: i18n termín „Projekt“ + název projektu
+                // (a počet záznamů) ze stavu vrstvy. Dokud useProjectLayers vrstvu
+                // ve store nezaregistrovalo, fallback na ID projektu.
+                const name = stateTitle ?? id.replace('project_', '');
+                title = `${t('atlas.layerSwitcher.project')} ${name}`;
+            } else {
+                title = stateTitle ?? id;
             }
             
             // Create minimal layer definition for dynamic layers
@@ -129,7 +145,7 @@ export function LayerSwitcher({ mapName, layerIds, defaultVisibility }: LayerSwi
                 };
             })
             .filter(group => group.children.length > 0); // Only show groups with layers
-    }, [layerIds, mapName, getLayerState]);
+    }, [layerIds, layerStates, t]);
 
     const toggleGroup = (groupId: string) => {
         setOpenGroups(prev => ({ ...prev, [groupId]: !prev[groupId] }));
@@ -141,33 +157,31 @@ export function LayerSwitcher({ mapName, layerIds, defaultVisibility }: LayerSwi
         layerManager.saveState();
     }, [layerManager]);
 
+    // Focus zůstal uvnitř přepínače (např. přechod z ikonky do panelu) – panel necháme otevřený.
+    const handleBlur = (event: FocusEvent<HTMLDivElement>) => {
+        if (event.currentTarget.contains(event.relatedTarget)) return;
+        setIsExpanded(false);
+    };
+
     const renderLayerItem = (layer: LayerDefinition, groupId: string, isMutuallyExclusive: boolean = false) => {
         const isVisible = layerManager.isLayerVisible(layer.id);
-        const inputType = isMutuallyExclusive ? "radio" : "checkbox";
-        const groupName = isMutuallyExclusive ? `group-${groupId}` : undefined;
 
         return (
-            <div key={layer.id} className="d-flex align-items-center gap-2 py-2 border-bottom border-light-subtle">
-                <div className="form-check mb-0" style={{ minWidth: '24px' }}>
-                    <input
-                        type={inputType}
-                        className="form-check-input"
-                        id={`layer-${layer.id}`}
-                        name={groupName}
-                        checked={isVisible}
-                        onChange={() => handleLayerToggle(layer.id)}
-                        style={{ cursor: 'pointer' }}
-                    />
-                </div>
-                <label 
-                    htmlFor={`layer-${layer.id}`} 
-                    className="flex-grow-1 mb-0 small text-truncate"
-                    style={{ cursor: 'pointer', fontSize: '12px' }}
-                    title={layer.title}
-                >
+            <label
+                key={layer.id}
+                className={`layer-switcher__layer${isVisible ? ' layer-switcher__layer--selected' : ''}`}
+            >
+                <input
+                    type={isMutuallyExclusive ? 'radio' : 'checkbox'}
+                    className="form-check-input"
+                    name={isMutuallyExclusive ? `layer-switcher-${mapName}-${groupId}` : undefined}
+                    checked={isVisible}
+                    onChange={() => handleLayerToggle(layer.id)}
+                />
+                <span className="layer-switcher__layer-title" title={layer.title}>
                     {layer.title}
-                </label>
-            </div>
+                </span>
+            </label>
         );
     };
 
@@ -175,21 +189,25 @@ export function LayerSwitcher({ mapName, layerIds, defaultVisibility }: LayerSwi
         const isOpen = openGroups[group.id] ?? group.defaultExpanded ?? false;
         if (group.children.length === 0) return null;
 
+        // Skupina s alespoň jednou zapnutou vrstvou je zvýrazněná barvou
+        // (obdoba ExportTraitList); jako celek se zaškrtnout nedá.
+        const hasActiveLayer = group.children.some(layer => layerManager.isLayerVisible(layer.id));
+
         return (
-            <div key={group.id} className="layer-group border rounded mb-2 overflow-hidden">
-                <div 
-                    className="layer-group-header d-flex align-items-center px-3 py-2 bg-light"
+            <div key={group.id} className="layer-switcher__group">
+                <button
+                    type="button"
+                    className={`layer-switcher__group-header${hasActiveLayer ? ' layer-switcher__group-header--selected' : ''}`}
                     onClick={() => toggleGroup(group.id)}
-                    style={{ cursor: 'pointer' }}
+                    aria-expanded={isOpen}
+                    title={group.description ?? group.title}
                 >
-                    <span className={`group-arrow me-2 ${isOpen ? 'open' : ''}`}>
-                        <i className="bi bi-chevron-right" aria-hidden="true"></i>
-                    </span>
-                    <span className="group-title small fw-semibold">{group.title}</span>
-                </div>
+                    <i className="bi bi-chevron-right layer-switcher__chevron" aria-hidden="true"></i>
+                    <span className="layer-switcher__group-title">{group.title}</span>
+                </button>
                 {isOpen && (
-                    <div className="layer-group-content px-2">
-                        {group.children.map(layer => 
+                    <div className="layer-switcher__layers">
+                        {group.children.map(layer =>
                             renderLayerItem(layer, group.id, group.mutuallyExclusive)
                         )}
                     </div>
@@ -200,22 +218,27 @@ export function LayerSwitcher({ mapName, layerIds, defaultVisibility }: LayerSwi
 
     return (
         <div
-            className={`layer-switcher shadow-sm ${isExpanded ? 'expanded' : 'collapsed'}`}
+            className={`layer-switcher${isExpanded ? ' layer-switcher--expanded' : ''}`}
             onMouseEnter={() => setIsExpanded(true)}
             onMouseLeave={() => setIsExpanded(false)}
+            onFocus={() => setIsExpanded(true)}
+            onBlur={handleBlur}
         >
-            <div 
-                className="layer-switcher-toggle d-flex align-items-center justify-content-center"
-                onClick={() => setIsExpanded(!isExpanded)}
+            <button
+                type="button"
+                className="layer-switcher__toggle"
+                onClick={() => setIsExpanded(true)}
+                aria-expanded={isExpanded}
+                aria-label={t('atlas.layerSwitcher.toggle')}
+                title={t('atlas.layerSwitcher.toggle')}
             >
-                {isExpanded ? <i className="bi bi-chevron-left" aria-hidden="true"></i> : <i className="bi bi-stack" aria-hidden="true"></i>}
-            </div>
-            <div className="layer-switcher-content">
-                <h6 className="layer-switcher-title small fw-bold">Map Layers</h6>
-                <div className="layer-switcher-groups">
+                <i className="bi bi-stack" aria-hidden="true"></i>
+            </button>
+            {isExpanded && (
+                <div className="layer-switcher__panel">
                     {groupItems.map(renderGroupItem)}
                 </div>
-            </div>
+            )}
         </div>
     );
 }

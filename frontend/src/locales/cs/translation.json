@@ -160,6 +160,10 @@
     "importsList": {
       "title": "Seznam importů"
     },
+    "layerSwitcher": {
+      "project": "Projekt",
+      "toggle": "Vrstvy mapy"
+    },
     "mapDetail": {
       "addComment": "přidat komentář",
       "altitude": "nadmořská výška",

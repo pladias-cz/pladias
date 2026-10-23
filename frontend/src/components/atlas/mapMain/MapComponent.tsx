@@ -58,7 +58,7 @@ export function MapComponent({
     const mapContext = useMemo(() => (taxonId ? { taxonId } : {}), [taxonId]);
 
     return (
-        <div className="h-100 w-100">
+        <div className="h-100 w-100 position-relative">
             <MapCanvas
                 center={center}
                 zoom={initialZoom}

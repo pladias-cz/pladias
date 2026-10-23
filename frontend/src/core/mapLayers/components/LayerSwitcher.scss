@@ -1,141 +1,145 @@
 /**
- * LayerSwitcher Styles - Redesigned with Bootstrap 5
+ * LayerSwitcher Styles
+ *
+ * Přepínač vrstev mapy – sbalený je vidět jen malá poloprůhledná ikonka;
+ * rozbalený panel je absolutně pozicovaný pod ní, takže sbalený přepínač
+ * nezabírá žádnou plochu mapy (dříve zůstával roztáhnutý na výšku stromu).
+ * Dvouúrovňový strom „skupina → vrstva“ vizuálně navazuje na ExportTraitList
+ * (vodítko odsazení, zvýraznění výběru zelenou). Používají se jen Bootstrap
+ * CSS proměnné – vendor SCSS se importuje pouze v entry pointu (index.tsx).
  */
 
 .layer-switcher {
+    // vlevo nahoře vedle leaflet zoom controlu (ten zabírá cca 10–36 px)
     position: absolute;
-    top: 10px;
-    left: 10px;
+    top: 0.625rem;
+    left: 3rem;
     z-index: 1000;
-    display: flex;
-    flex-direction: row;
-    border-radius: 8px;
-    overflow: hidden;
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
-    transition: all 0.3s ease;
 
-    &.collapsed {
-        .layer-switcher-toggle {
-            background: rgba(0, 0, 0, 0.6);
-            color: white;
-            cursor: pointer;
-            padding: 8px 12px;
-            font-size: 14px;
-            user-select: none;
-            transition: background 0.2s;
+    &__toggle {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.125rem;
+        height: 2.125rem;
+        padding: 0;
+        border: 0;
+        border-radius: 0.375rem;
+        background-color: rgba(255, 255, 255, 0.65);
+        backdrop-filter: blur(4px);
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+        color: var(--bs-body-color);
+        font-size: 1rem;
+        cursor: pointer;
+        transition: background-color 0.15s ease-in-out;
 
-            &:hover {
-                background: rgba(0, 0, 0, 0.8);
-            }
-        }
-
-        .layer-switcher-content {
-            width: 0;
-            opacity: 0;
-            overflow: hidden;
+        &:hover,
+        &:focus-visible {
+            background-color: rgba(255, 255, 255, 0.95);
         }
     }
 
-    &.expanded {
-        .layer-switcher-toggle {
-            background: rgba(0, 0, 0, 0.6);
-            color: white;
-            cursor: pointer;
-            padding: 8px 12px;
-            font-size: 14px;
-            border-right: 1px solid rgba(0, 0, 0, 0.1);
-            user-select: none;
-            transition: background 0.2s;
-
-            &:hover {
-                background: rgba(0, 0, 0, 0.8);
-            }
-        }
-
-        .layer-switcher-content {
-            width: 320px;
-            opacity: 1;
-            overflow-x: hidden;
-            overflow-y: auto;
-            max-height: 70vh;
+    &--expanded {
+        .layer-switcher__toggle {
+            background-color: rgba(255, 255, 255, 0.95);
         }
     }
-}
 
-.layer-switcher-toggle {
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    // velikosti fontových ikon (bi-*) – stejné jako dřívější react-icons (14/16 px)
-    .bi {
-        font-size: 14px;
+    &__panel {
+        position: absolute;
+        // Panel musí navazovat na ikonku těsně – jakákoli mezera by byla mrtvá
+        // zóna, jejímž přejetím by se spustil mouseleave na kontejneru a panel
+        // by se zavřel dřív, než na něj kurzor dojede.
+        top: 100%;
+        left: 0;
+        width: 16rem;
+        max-height: min(26rem, 70vh);
+        overflow-y: auto;
+        padding: 0.375rem;
+        border-radius: 0.375rem;
+        background-color: rgba(255, 255, 255, 0.92);
+        backdrop-filter: blur(4px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
     }
 
-    .bi-stack {
-        font-size: 16px;
+    &__group + &__group {
+        margin-top: 0.25rem;
+    }
+
+    &__group-header {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        width: 100%;
+        padding: 0.25rem 0.5rem;
+        border: 0;
+        border-radius: 0.25rem;
+        background: none;
+        color: var(--bs-body-color);
+        font-size: 0.8125rem;
+        font-weight: 600;
+        text-align: left;
+        cursor: pointer;
+
+        &:hover {
+            background-color: var(--bs-tertiary-bg);
+        }
+
+        // skupina s alespoň jednou zapnutou vrstvou (obdoba ExportTraitList)
+        &--selected {
+            background-color: var(--bs-success-bg-subtle);
+        }
+    }
+
+    &__chevron {
+        flex: none;
+        font-size: 0.7rem;
+        color: var(--bs-secondary-color);
+        transition: transform 0.15s ease-in-out;
+    }
+
+    &__group-title {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    // vodicí linka vrstev pod skupinou (stejný vzor jako ExportTraitList)
+    &__layers {
+        margin: 0.125rem 0 0.25rem 1.125rem;
+        padding-left: 0.5rem;
+        border-left: 1px solid var(--bs-tertiary-color);
+    }
+
+    &__layer {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.125rem 0.375rem 0.125rem 0.5rem;
+        border-radius: 0.25rem;
+        font-size: 0.8125rem;
+        cursor: pointer;
+
+        &--selected {
+            background-color: var(--bs-success-bg-subtle);
+        }
+    }
+
+    &__layer-title {
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    // nezaškrtnuté přepínače by na poloprůhledném pozadí mapy ztrácely okraj
+    .form-check-input:not(:checked) {
+        border-color: var(--bs-secondary-color);
     }
 }
 
-.layer-switcher-content {
-    padding: 12px;
-    background: transparent;
-}
-
-.layer-switcher-title {
-    margin: 0 0 10px 0;
-    font-size: 12px;
-    color: #495057;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.layer-switcher-groups {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.layer-group {
-    border: 1px solid rgba(0, 0, 0, 0.1) !important;
-    border-radius: 6px;
-    overflow: hidden;
-    background: white;
-}
-
-.layer-group-header {
-    display: flex;
-    align-items: center;
-    padding: 8px 12px;
-    background: #f8f9fa;
-    cursor: pointer;
-    user-select: none;
-    transition: background 0.2s;
-
-    &:hover {
-        background: #e9ecef;
-    }
-}
-
-.group-arrow {
-    display: inline-block;
-    transition: transform 0.2s;
-    // velikost šipky skupiny – stejné jako dřívější react-icons (10 px)
-    font-size: 10px;
-
-    &.open {
-        transform: rotate(90deg);
-    }
-}
-
-.group-title {
-    font-size: 12px;
-    color: #495057;
-}
-
-.layer-group-content {
-    padding: 4px 8px;
-    background: white;
+// rotace šipky u rozbalené skupiny
+.layer-switcher__group-header[aria-expanded="true"] .layer-switcher__chevron {
+    transform: rotate(90deg);
 }

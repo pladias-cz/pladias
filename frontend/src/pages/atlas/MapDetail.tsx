@@ -17,6 +17,8 @@ import {notifyApiError} from "@/stores/notificationStore";
 import { MapComponent } from "@/components/atlas/mapDetail/MapComponent";
 import { InfoPanel } from "@/components/atlas/mapDetail/InfoPanel";
 import RichTextMessage from "@/components/RichTextMessage";
+import {useRecordSourceVisibility} from "@/components/atlas/mapDetail/hooks/useRecordSourceVisibility";
+import {filterRecordsByVisibility} from "@/components/atlas/mapDetail/recordSources";
 
 /** Data mapy (minimal) a tabulky (full) kvadrantu – jeden query, jeden loading. */
 interface SquareRecords {
@@ -34,6 +36,8 @@ export default function MapDetail() {
     const [centerOnRecord, setCenterOnRecord] = useState<{ latitude: number; longitude: number } | null>(null);
     const tableScrollFnsRef = useRef<{ pladias?: ((recordId: number) => void); gbif?: ((recordId: number) => void); inaturalist?: ((recordId: number) => void) }>({});
     const hoverLockRef = useRef<{ recordId: number | null; timeoutId: NodeJS.Timeout | null }>({ recordId: null, timeoutId: null });
+    // viditelnost skupin záznamů na mapě (checkboxy v InfoPanelu), perzistováno v user settings
+    const { visibleProjects, toggleProjectVisibility } = useRecordSourceVisibility();
 
     usePageTitle(t("atlas.mapDetail.title"));
 
@@ -82,6 +86,11 @@ export default function MapDetail() {
     const mapRecords = recordsQuery.data?.mapRecords ?? EMPTY_RECORDS;
     const tableRecords = recordsQuery.data?.tableRecords ?? { pladias: [], gbif: [], inaturalist: [] };
     const recordsLoading = recordsQuery.isPending;
+    // markery na mapě odpovídají zaškrtnutým skupinám – tabulky zůstávají kompletní
+    const visibleMapRecords = useMemo(
+        () => filterRecordsByVisibility(mapRecords, visibleProjects),
+        [mapRecords, visibleProjects],
+    );
 
     useEffect(() => {
         if (recordsQuery.error) {
@@ -185,7 +194,7 @@ export default function MapDetail() {
 
                         taxonId={taxon?.id ?? undefined}
                         squareId={squareId}
-                        records={mapRecords}
+                        records={visibleMapRecords}
                         highlightedRecordId={highlightedRecordId}
                         onRecordHover={handleMapRecordHover}
                         centerOnRecord={centerOnRecord}
@@ -194,8 +203,6 @@ export default function MapDetail() {
                 <Col lg={7} xl={8} className="h-100 overflow-hidden">
                     <div className="h-100 p-3">
                         <InfoPanel
-                            taxonName={taxon?.nameHtml}
-                            taxonId={taxon?.id ?? undefined}
                             records={tableRecords}
                             recordsLoading={recordsLoading}
                             highlightedRecordId={highlightedRecordId}
@@ -212,6 +219,8 @@ export default function MapDetail() {
                                 inaturalist: (scrollFn) => { tableScrollFnsRef.current.inaturalist = scrollFn; }
                             }}
                             onRecordUpdated={handleRecordUpdated}
+                            visibleProjects={visibleProjects}
+                            onToggleProjectVisibility={toggleProjectVisibility}
                         />
                     </div>
                 </Col>

@@ -1,15 +1,15 @@
 import type { RecordPladias } from '@/models';
-import type {RecordsByProject} from '@/models/AtlasRecords';
+import type {ProjectType, RecordsByProject} from '@/models/AtlasRecords';
 import {useTranslation} from 'react-i18next';
 import {PladiasRecordsTable} from './PladiasRecordsTable';
 import {ExternalRecordsTable} from './ExternalRecordsTable';
-import {Accordion} from "react-bootstrap";
+import {Tabs, Tab} from "react-bootstrap";
 import {useState} from "react";
+import {RECORD_SOURCES, type RecordSourceVisibility} from './recordSources';
+import {RecordSourceTabTitle} from './RecordSourceTabTitle';
 import './InfoPanel.scss';
 
 interface InfoPanelProps {
-    taxonName?: string;
-    taxonId?: number;
     records?: RecordsByProject;
     recordsLoading?: boolean;
     highlightedRecordId?: number | null;
@@ -22,6 +22,9 @@ interface InfoPanelProps {
         inaturalist?: (scrollFn: (recordId: number) => void) => void
     };
     onRecordUpdated?: (record: RecordPladias) => void;
+    /** Viditelnost skupin záznamů na mapě (checkboxy v hlavičkách tabů). */
+    visibleProjects: RecordSourceVisibility;
+    onToggleProjectVisibility: (project: ProjectType) => void;
 }
 
 export function InfoPanel({
@@ -32,88 +35,73 @@ export function InfoPanel({
                               onRecordCenter,
                               registerScrollFns,
                               currentSquareCode,
-                              onRecordUpdated
+                              onRecordUpdated,
+                              visibleProjects,
+                              onToggleProjectVisibility
                           }: InfoPanelProps) {
     const {t} = useTranslation();
 
-    const pladiasRecords = records.pladias;
-    const gbifRecords = records.gbif;
-    const inaturalistRecords = records.inaturalist;
-    const [activeKey, setActiveKey] = useState<string>("0");
+    const [activeKey, setActiveKey] = useState<ProjectType>("pladias");
 
     return (
         <div className="d-flex flex-column h-100 overflow-hidden">
-            <div className="flex-grow-1 overflow-auto">
-                {recordsLoading && (
-                    <div className="d-flex justify-content-center py-4">
-                        <div className="spinner-border text-primary" role="status">
-                            <span className="visually-hidden">Loading...</span>
-                        </div>
+            {recordsLoading ? (
+                <div className="d-flex justify-content-center py-4">
+                    <div className="spinner-border text-primary" role="status">
+                        <span className="visually-hidden">Loading...</span>
                     </div>
-                )}
-
-                {!recordsLoading && (
-                    <div className="h-100 d-flex flex-column">
-                        <Accordion
-                            activeKey={activeKey}
-                            onSelect={(k) => typeof k === 'string' && setActiveKey(k)}
-                            alwaysOpen={false}
-                            className="fill-accordion"
-                        >
-                            <Accordion.Item eventKey="0">
-                                <Accordion.Header>
-                                    PLADIAS <span className="text-muted small ms-2">({pladiasRecords.length})</span>
-                                </Accordion.Header>
-                                <Accordion.Body>
-                                    <PladiasRecordsTable
-                                        key={`pladias-table-${currentSquareCode}`}
-                                        records={pladiasRecords}
-                                        highlightedRecordId={highlightedRecordId}
-                                        onRecordHover={onRecordHover}
-                                        onRecordCenter={onRecordCenter}
-                                        registerScrollFn={registerScrollFns?.pladias}
-                                        onRecordUpdated={onRecordUpdated}
+                </div>
+            ) : (
+                <div className="fill-tabs flex-grow-1">
+                    {/* Tab musí být přímým potomkem Tabs – react-bootstrap čte jeho
+                        props (eventKey/title) a obalující komponentu by převedl
+                        na pouhý tab-pane bez hlavičky. */}
+                    <Tabs
+                        activeKey={activeKey}
+                        onSelect={(k) => k && setActiveKey(k as ProjectType)}
+                    >
+                        {RECORD_SOURCES.map(source => (
+                            <Tab
+                                key={source.id}
+                                eventKey={source.id}
+                                title={(
+                                    <RecordSourceTabTitle
+                                        source={source}
+                                        count={records[source.id].length}
+                                        visible={visibleProjects[source.id]}
+                                        onToggleVisibility={onToggleProjectVisibility}
                                     />
-                                    {pladiasRecords.length === 0 && (
-                                        <p className="text-muted small">{t("atlas.mapDetail.noRecords")}</p>
-                                    )}
-                                </Accordion.Body>
-                            </Accordion.Item>
-
-                            <Accordion.Item eventKey="1">
-                                <Accordion.Header>
-                                    GBIF <span className="text-muted small ms-2">({gbifRecords.length})</span>
-                                </Accordion.Header>
-                                <Accordion.Body>
+                                )}
+                            >
+                                {source.id === "pladias" ? (
+                                    <>
+                                        <PladiasRecordsTable
+                                            key={`pladias-table-${currentSquareCode}`}
+                                            records={records.pladias}
+                                            highlightedRecordId={highlightedRecordId}
+                                            onRecordHover={onRecordHover}
+                                            onRecordCenter={onRecordCenter}
+                                            registerScrollFn={registerScrollFns?.pladias}
+                                            onRecordUpdated={onRecordUpdated}
+                                        />
+                                        {records.pladias.length === 0 && (
+                                            <p className="text-muted small">{t("atlas.mapDetail.noRecords")}</p>
+                                        )}
+                                    </>
+                                ) : (
                                     <ExternalRecordsTable
-                                        key={`gbif-table-${currentSquareCode}`}
-                                        records={gbifRecords}
+                                        key={`${source.id}-table-${currentSquareCode}`}
+                                        records={records[source.id]}
                                         highlightedRecordId={highlightedRecordId}
                                         onRecordHover={onRecordHover}
-                                        registerScrollFn={registerScrollFns?.gbif}
+                                        registerScrollFn={registerScrollFns?.[source.id]}
                                     />
-                                </Accordion.Body>
-                            </Accordion.Item>
-
-                            <Accordion.Item eventKey="2">
-                                <Accordion.Header>
-                                    iNaturalist <span className="text-muted small ms-2">({inaturalistRecords.length})</span>
-                                </Accordion.Header>
-                                <Accordion.Body>
-                                    <ExternalRecordsTable
-                                        key={`inat-table-${currentSquareCode}`}
-                                        records={inaturalistRecords}
-                                        highlightedRecordId={highlightedRecordId}
-                                        onRecordHover={onRecordHover}
-                                        registerScrollFn={registerScrollFns?.inaturalist}
-                                    />
-                                </Accordion.Body>
-                            </Accordion.Item>
-                        </Accordion>
-                    </div>
-
-                )}
-            </div>
+                                )}
+                            </Tab>
+                        ))}
+                    </Tabs>
+                </div>
+            )}
         </div>
     );
 }

@@ -204,6 +204,7 @@
       "recordIdLabel": "ID záznamu",
       "records": "Záznamy",
       "revisedHerbariumLabel": "Revidovaný herbář",
+      "showOnMap": "Zobrazit {{source}} na mapě",
       "source": "Zdroj",
       "sourceLower": "pramen",
       "square": "čtverec",

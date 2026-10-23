@@ -1,5 +1,6 @@
 import {afterEach, beforeEach, describe, expect, it, vi} from "vitest";
 import {ApiError} from "@/services/apiClient";
+import {getRecentLogEntries, resetLogger} from "@/services/logger";
 import {notifyApiError, pushNotification, useNotificationStore} from "./notificationStore";
 
 /**
@@ -13,6 +14,7 @@ const notifications = () => useNotificationStore.getState().notifications;
 beforeEach(() => {
     vi.useFakeTimers();
     useNotificationStore.getState().clear();
+    resetLogger();
 });
 
 afterEach(() => {
@@ -100,5 +102,15 @@ describe("notifyApiError", () => {
         notifyApiError(new DOMException("Aborted", "AbortError"), "Fallback");
 
         expect(notifications()).toHaveLength(0);
+        expect(getRecentLogEntries()).toHaveLength(0);
+    });
+
+    it("logs the error through the central logger before the dedup check", () => {
+        notifyApiError(new Error("boom"), "Uložení selhalo");
+
+        expect(getRecentLogEntries()[0]).toMatchObject({
+            message: "boom",
+            context: {source: "notifyApiError", fallback: "Uložení selhalo"},
+        });
     });
 });

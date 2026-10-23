@@ -14,6 +14,7 @@
  */
 
 import { useEffect, useState } from 'react';
+import { logWarn } from '@/services/logger';
 import { getLayerDefinition } from '../registry/layerRegistry';
 import type { LayerParams } from '../types';
 import { SquaresOverlay } from './SquaresOverlay';
@@ -49,7 +50,7 @@ export function Layer({ layerId, params = {}, visible = true, onSquareDoubleClic
     const definition = getLayerDefinition(layerId);
 
     if (!definition || !definition.service) {
-        console.warn(`Layer definition not found: ${layerId}`);
+        logWarn('Layer definition not found', {source: 'Layer', layerId});
         return null;
     }
 
@@ -97,7 +98,7 @@ export function Layer({ layerId, params = {}, visible = true, onSquareDoubleClic
             return null;
         }
         default:
-            console.warn(`Unsupported service type: ${definition.service.type}`);
+            logWarn('Unsupported service type', {source: 'Layer', type: definition.service.type});
             return null;
     }
 }

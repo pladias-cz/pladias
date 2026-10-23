@@ -2,9 +2,10 @@
  * Jediný HTTP klient aplikace.
  *
  * Centralizuje: fetch volání, query parametry, parsování odpovědí, reakci na
- * 401 (přesměrování na /login), 403 (injectable handler – sekce F) a síťové
- * chyby (injectable handler, `silent` pro background požadavky), HTTP chyby
- * a známé backendové gotchasy (docs/gotchas.md):
+ * 401 (přesměrování na /login), 403 (injectable handler – sekce F), síťové
+ * chyby (injectable handler, `silent` pro background požadavky), centrální
+ * logování všech ApiError přes `services/logger` (sekce F – observability),
+ * HTTP chyby a známé backendové gotchasy (docs/gotchas.md):
  *  - obálka `JsonResult` se parsuje na jednom místě; širší odpovědi (tabulky,
  *    user settings) typují service moduly přes `ApiResult<T>`,
  *  - `apiPostFormUrlencoded` – taxon seznamy se posílají urlencoded; backend
@@ -20,6 +21,7 @@
  */
 
 import type {ApiResult} from "@/models/ApiResponse";
+import {logError} from "./logger";
 
 /** Chyba HTTP komunikace – včetně 401/403 a chybových obálek `JsonResult`. */
 export class ApiError extends Error {
@@ -69,8 +71,9 @@ let forbiddenHandler: ((message: string) => void) | null = null;
 let networkErrorHandler: ((error: ApiError) => void) | null = null;
 
 /**
- * Centrální reakce na 403. Výchozí stav jen loguje; notifikační store (sekce F,
- * fáze 4) se zapojuje přes `setForbiddenHandler` bez zásahu do volajících.
+ * Centrální reakce na 403. Chyba se vždy loguje (`services/logger`); notifikační
+ * store (sekce F, fáze 4) se zapojuje přes `setForbiddenHandler` bez zásahu do
+ * volajících.
  */
 export function setForbiddenHandler(handler: ((message: string) => void) | null): void {
     forbiddenHandler = handler;
@@ -115,6 +118,18 @@ function handleUnauthorized(): never {
     throw new ApiError("Neautentizovaný požadavek (401) – přesměrování na přihlášení.", 401);
 }
 
+/**
+ * Vytvoří ApiError, zaloguje ji centrálním loggerem a vrátí k vyhození –
+ * invariant: každou ApiError vzniklou v apiClientu vidí i log (sekce F).
+ * Výjimka: 401 z `handleUnauthorized` (expirovaná session je očekávaný tok
+ * s redirectem, ne běhová chyba).
+ */
+function loggedApiError(message: string, status?: number, payload?: unknown, context?: Record<string, unknown>): ApiError {
+    const error = new ApiError(message, status, payload);
+    logError(error, context);
+    return error;
+}
+
 /** Společné pro všechny metody: fetch, 401/403, HTTP chyby s hláškou z těla. */
 async function performRequest(
     url: string,
@@ -135,6 +150,16 @@ async function performRequest(
     } catch (err) {
         if (isAbortError(err)) throw err;
         const apiError = new ApiError(err instanceof Error ? err.message : "Síťová chyba.", undefined);
+        // silent potlačuje jen uživatelskou notifikaci, ne log – z kontextu je
+        // vidět, že jde o background požadavek (heartbeat offline generuje
+        // hluk záměrně; HTTP transport si ho umí odfiltrovat)
+        logError(apiError, {
+            source: "apiClient",
+            kind: "network",
+            method,
+            url: requestUrl,
+            silent: options.silent ?? false,
+        });
         if (!options.silent && networkErrorHandler) {
             networkErrorHandler(apiError);
             apiError.notified = true;
@@ -151,20 +176,19 @@ async function performRequest(
         const message = extractErrorMessage(payload) ?? "K operaci nemáte oprávnění.";
         if (forbiddenHandler) {
             forbiddenHandler(message);
-        } else {
-            console.error(`[apiClient] ${message}`);
         }
-        const error = new ApiError(message, 403, payload);
+        const error = loggedApiError(message, 403, payload, {source: "apiClient", method, url: requestUrl});
         error.notified = forbiddenHandler !== null;
         throw error;
     }
 
     if (!response.ok) {
         const payload = await parseBody(response);
-        throw new ApiError(
+        throw loggedApiError(
             extractErrorMessage(payload) ?? options.errorMessage ?? `Požadavek selhal (HTTP ${response.status}).`,
             response.status,
             payload,
+            {source: "apiClient", method, url: requestUrl},
         );
     }
 
@@ -291,10 +315,11 @@ export async function apiDownload(url: string, options: DownloadOptions = {}): P
 
     if (contentType.includes("application/json")) {
         const payload = await parseBody(response);
-        throw new ApiError(
+        throw loggedApiError(
             extractErrorMessage(payload) ?? options.errorMessage ?? "Stažení souboru selhalo.",
             response.status,
             payload,
+            {source: "apiClient", method: options.method ?? "GET", url},
         );
     }
 
@@ -323,7 +348,12 @@ export function resolveFilename(contentDisposition: string | null, fallback: str
  */
 export function ensureSuccess<T extends ApiResult>(payload: T, fallbackMessage = "Požadavek selhal."): T {
     if (payload?.success !== true) {
-        throw new ApiError(extractErrorMessage(payload) ?? fallbackMessage, undefined, payload);
+        throw loggedApiError(
+            extractErrorMessage(payload) ?? fallbackMessage,
+            undefined,
+            payload,
+            {source: "apiClient", kind: "envelope"},
+        );
     }
     return payload;
 }
@@ -335,7 +365,7 @@ export function ensureSuccess<T extends ApiResult>(payload: T, fallbackMessage =
  */
 export function requireEnvelope(payload: unknown, fallbackMessage: string): ApiResult {
     if (typeof payload !== "object" || payload === null) {
-        throw new ApiError(fallbackMessage);
+        throw loggedApiError(fallbackMessage, undefined, undefined, {source: "apiClient", kind: "envelope"});
     }
     return ensureSuccess(payload as ApiResult, fallbackMessage);
 }
@@ -347,7 +377,7 @@ export function requireEnvelope(payload: unknown, fallbackMessage: string): ApiR
 export function requireData<T>(payload: unknown, fallbackMessage: string): T {
     const envelope = requireEnvelope(payload, fallbackMessage) as ApiResult<T>;
     if (envelope.data === undefined) {
-        throw new ApiError(fallbackMessage);
+        throw loggedApiError(fallbackMessage, undefined, undefined, {source: "apiClient", kind: "envelope"});
     }
     return envelope.data;
 }

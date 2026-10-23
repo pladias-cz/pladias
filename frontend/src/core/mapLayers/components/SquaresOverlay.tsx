@@ -19,6 +19,7 @@ import { useMap } from 'react-leaflet';
 import * as L from 'leaflet';
 import { useEffect, useRef, useCallback } from 'react';
 import {fetchWfsGeoJson} from '@/services/mapApi';
+import {logError} from '@/services/logger';
 import type {LayerParams} from '../types';
 import { useNavigate } from 'react-router-dom';
 import type { LatLngExpression, Popup } from 'leaflet';
@@ -446,7 +447,7 @@ export function SquaresOverlay({ visible, minZoom = 8, params, onSquareDoubleCli
                 map.on('click', handleMapBackgroundClick);
 
             } catch (error) {
-                console.error('[SquaresOverlay] Failed to load WFS data:', error);
+                logError(error, {source: 'SquaresOverlay'});
             }
         };
 

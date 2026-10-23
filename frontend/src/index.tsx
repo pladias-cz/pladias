@@ -11,10 +11,13 @@ import "./i18n/i18n";
 import "./styles/global.scss";
 import App from "./App";
 import {createQueryClient} from "./query/queryClient";
+import {installGlobalErrorHandlers} from "./services/logger";
 
 const root = document.getElementById("react-app");
 
 if (root) {
+    // Nezachycené výjimky a odmítnuté promisy logovat centrálně (sekce F).
+    installGlobalErrorHandlers();
     const queryClient = createQueryClient();
 
     ReactDOM.createRoot(root).render(

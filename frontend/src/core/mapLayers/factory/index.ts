@@ -7,6 +7,7 @@ import type { LayerParams, MapContext } from '../types';
 import { getLayerDefinition } from '../registry/layerRegistry';
 import { layerCache } from '../cache/layerCache';
 import { UniversalLayerAdapter } from './adapters/universalAdapter';
+import { logWarn } from '@/services/logger';
 
 const adapters = {
     universal: new UniversalLayerAdapter(),
@@ -28,7 +29,7 @@ export function createLayer(
     const definition = getLayerDefinition(layerId);
     
     if (!definition) {
-        console.warn(`Layer definition not found: ${layerId}`);
+        logWarn('Layer definition not found', {source: 'layerFactory', layerId});
         return null;
     }
     

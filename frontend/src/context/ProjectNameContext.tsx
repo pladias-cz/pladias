@@ -2,6 +2,7 @@ import React, {createContext, useContext, useEffect, useState} from "react";
 import {useTranslation} from "react-i18next";
 import {isAbortError} from "@/services/apiClient";
 import {loadProjectName} from "@/services/instanceApi";
+import {logError} from "@/services/logger";
 
 interface ProjectNameContextValue {
     projectName: string;
@@ -42,7 +43,7 @@ export const ProjectNameProvider: React.FC<Props> = ({children}) => {
                 if (isAbortError(err)) {
                     return;
                 }
-                console.error("Failed to load project name:", err);
+                logError(err, {source: "ProjectNameContext"});
                 setError(err instanceof Error ? err : new Error(String(err)));
             })
             .finally(() => {

@@ -23,6 +23,7 @@ import type {DataTableConfig, DataTableColumnDef} from './types';
 import {canSort} from './utils';
 import styles from './DataTable.module.scss';
 import {notifyApiError} from '@/stores/notificationStore';
+import {logError} from '@/services/logger';
 
 export function DataTable<T extends object>(config: DataTableConfig<T>) {
     const {
@@ -208,7 +209,7 @@ export function DataTable<T extends object>(config: DataTableConfig<T>) {
                                 // The optimistic update provides instant feedback.
                                 // Data consistency will be ensured on next full refresh (page change, filter change, etc.)
                             } catch (error) {
-                                console.error('Checkbox toggle failed:', error);
+                                logError(error, {source: 'DataTable', action: 'checkboxToggle'});
                                 // Rollback the optimistic update - revert to original value
                                 setLocalData((prevData: T[]) => 
                                     prevData.map((item: T) => 

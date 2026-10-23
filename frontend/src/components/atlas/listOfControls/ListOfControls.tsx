@@ -8,6 +8,7 @@
 import {useState, useMemo, useCallback} from "react";
 import {useTranslation} from "react-i18next";
 import {apiDelete} from "@/services/apiClient";
+import {logError} from "@/services/logger";
 import {
     DataTable,
     type DataTableColumnDef,
@@ -59,7 +60,7 @@ export default function ListOfControls() {
             // Note: DataTable will automatically refresh on next interaction
             // or user can manually refresh the page
         } catch (error) {
-            console.error("Delete failed:", error);
+            logError(error, {source: "ListOfControls", action: "deleteImportControl"});
             
             // Show error message
             showFlash('danger', t("atlas.admin.importsList.deleteError"));

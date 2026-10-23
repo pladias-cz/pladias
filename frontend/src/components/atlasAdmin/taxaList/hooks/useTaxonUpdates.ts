@@ -4,6 +4,7 @@
 
 import {useState, useCallback} from 'react';
 import {apiPost, ensureSuccess} from '@/services/apiClient';
+import {logError} from '@/services/logger';
 import type {TaxonMapSettings} from '../types';
 
 /**
@@ -340,7 +341,7 @@ export function useTaxonUpdates() {
             const newTimestamp = await updateSetting(taxonId, 'REVISORSCOMMENT', newValue, timestamp);
             return newTimestamp;
         } catch (error) {
-            console.error('Failed to update revisors comment:', error);
+            logError(error, {source: 'useTaxonUpdates', action: 'revisorsComment'});
             throw error;
         } finally {
             setUpdatingTaxonId(null);
@@ -358,7 +359,7 @@ export function useTaxonUpdates() {
             const newTimestamp = await updateSetting(taxonId, 'REVISORSPRINTMAPCOMMENT', newValue, timestamp);
             return newTimestamp;
         } catch (error) {
-            console.error('Failed to update revisors print map comment:', error);
+            logError(error, {source: 'useTaxonUpdates', action: 'revisorsPrintMapComment'});
             throw error;
         } finally {
             setUpdatingTaxonId(null);
@@ -376,7 +377,7 @@ export function useTaxonUpdates() {
             const newTimestamp = await updateSetting(taxonId, 'MAPTYPE', newValue, timestamp);
             return newTimestamp;
         } catch (error) {
-            console.error('Failed to update map type:', error);
+            logError(error, {source: 'useTaxonUpdates', action: 'mapType'});
             throw error;
         } finally {
             setUpdatingTaxonId(null);
@@ -394,7 +395,7 @@ export function useTaxonUpdates() {
             const newTimestamp = await updateSetting(taxonId, 'REVISIONSTATUS', newValue, timestamp);
             return newTimestamp;
         } catch (error) {
-            console.error('Failed to update revision status:', error);
+            logError(error, {source: 'useTaxonUpdates', action: 'revisionStatus'});
             throw error;
         } finally {
             setUpdatingTaxonId(null);

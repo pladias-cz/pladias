@@ -7,6 +7,7 @@
 
 import L from 'leaflet';
 import {fetchWfsGeoJson} from '@/services/mapApi';
+import {logError, logInfo, logWarn} from '@/services/logger';
 import type { 
     LayerDefinition, 
     LayerParams,
@@ -136,8 +137,7 @@ export class UniversalLayerAdapter {
     private createWfsLayer(baseUrl: string, queryParams: Record<string, unknown>): L.Layer {
         const url = this.buildQueryUrl(baseUrl, queryParams);
         
-        console.log('[UniversalAdapter.createWfsLayer] Creating WFS layer with URL:', url);
-        console.log('[UniversalAdapter.createWfsLayer] Query params:', queryParams);
+        logInfo('Creating WFS layer', {source: 'universalAdapter', url, queryParams});
         
         const geoJsonLayer = L.geoJSON(undefined, {
             pointToLayer: (_feature, latlng) => L.circleMarker(latlng, {
@@ -162,8 +162,7 @@ export class UniversalLayerAdapter {
                 }
             })
             .catch(error => {
-                console.error('[UniversalAdapter.createWfsLayer] Failed to load WFS data:', error);
-                console.error('[UniversalAdapter.createWfsLayer] URL was:', url);
+                logError(error, {source: 'universalAdapter', url});
             });
 
         return geoJsonLayer;
@@ -224,12 +223,12 @@ export class UniversalLayerAdapter {
      * Placeholder methods for other layer types
      */
     private createApiLayer(_definition: LayerDefinition, _baseUrl: string, _config: ApiConfig['config'], _params: LayerParams): L.Layer {
-        console.warn('API layers not yet implemented');
+        logWarn('API layers not yet implemented', {source: 'universalAdapter'});
         return L.geoJSON();
     }
 
     private createStaticLayer(_definition: LayerDefinition, _url: string, _config: StaticConfig['config'], _params: LayerParams): L.Layer {
-        console.warn('Static layers not yet implemented');
+        logWarn('Static layers not yet implemented', {source: 'universalAdapter'});
         return L.geoJSON();
     }
 

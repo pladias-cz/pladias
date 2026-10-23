@@ -1,6 +1,7 @@
 import {cleanup, fireEvent, render, screen} from "@testing-library/react";
 import {afterEach, describe, expect, it, vi} from "vitest";
 import ErrorBoundary from "./ErrorBoundary";
+import {getRecentLogEntries, resetLogger} from "@/services/logger";
 import "@/i18n/i18n";
 
 /**
@@ -12,8 +13,12 @@ const Thrower = (): never => {
     throw new Error("boom");
 };
 
-// Vitest bez globals: true nespouští auto-cleanup, proto ručně.
-afterEach(cleanup);
+// Vitest bez globals: true nespouští auto-cleanup, proto ručně (logger se
+// resetuje kvůli asercím přes getRecentLogEntries).
+afterEach(() => {
+    cleanup();
+    resetLogger();
+});
 
 describe("ErrorBoundary", () => {
     it("renders fallback UI with reload button instead of crashing the tree", () => {
@@ -53,12 +58,12 @@ describe("ErrorBoundary", () => {
             </ErrorBoundary>,
         );
 
-        expect(consoleError).toHaveBeenCalled();
-        // Reakce Reactu i naše boundary logují – hledáme záznam z componentDidCatch
-        const logged = consoleError.mock.calls
-            .map((call) => String(call[0]))
-            .some((message) => message.includes("ErrorBoundary"));
-        expect(logged).toBe(true);
+        // componentDidCatch → centrální log s componentStackem (sekce F);
+        // React sám loguje do console.error, proto spy výše drží test tichý
+        const logged = getRecentLogEntries();
+        expect(logged).toHaveLength(1);
+        expect(logged[0]).toMatchObject({message: "boom", context: {source: "errorBoundary"}});
+        expect(logged[0].context?.componentStack).toEqual(expect.any(String));
 
         consoleError.mockRestore();
     });

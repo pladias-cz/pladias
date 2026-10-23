@@ -9,6 +9,7 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { useLayerStore } from '../store/layerStore';
 import { createLayer } from '../factory';
+import { logError } from '@/services/logger';
 import type { MapContext, LayerState } from '../types';
 import type { Layer as LeafletLayer } from 'leaflet';
 
@@ -65,7 +66,7 @@ export function useMapLayers(
                 try {
                     return createLayer(layerId, layerState.params);
                 } catch (error) {
-                    console.error(`Failed to create layer ${layerId}:`, error);
+                    logError(error, { source: 'useMapLayers', layerId });
                     return null;
                 }
             })

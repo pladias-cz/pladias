@@ -1,5 +1,6 @@
-import {describe, expect, it, vi} from "vitest";
+import {beforeEach, describe, expect, it} from "vitest";
 import {isUserRole, parseRoles, USER_ROLES} from "./UserRole";
+import {getRecentLogEntries, resetLogger} from "@/services/logger";
 
 describe("USER_ROLES", () => {
     it("mirrors the backend enum app/models/UserRole.java 1:1", () => {
@@ -30,23 +31,22 @@ describe("isUserRole", () => {
 });
 
 describe("parseRoles", () => {
-    it("keeps known roles and drops unknown ones with a console warning (BE↔FE drift)", () => {
-        const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    beforeEach(() => {
+        resetLogger();
+    });
 
+    it("keeps known roles and drops unknown ones with a logger warning (BE↔FE drift)", () => {
         expect(parseRoles(["mapAdmin", "futureRole"])).toEqual(["mapAdmin"]);
-        expect(warn).toHaveBeenCalledTimes(1);
-        expect(warn.mock.calls[0][0]).toContain("futureRole");
 
-        warn.mockRestore();
+        const logged = getRecentLogEntries();
+        expect(logged).toHaveLength(1);
+        expect(logged[0].level).toBe("warn");
+        expect(logged[0].context).toEqual({role: "futureRole"});
     });
 
     it("handles missing payloads", () => {
-        const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
-
         expect(parseRoles(undefined)).toEqual([]);
         expect(parseRoles(null)).toEqual([]);
-        expect(warn).not.toHaveBeenCalled();
-
-        warn.mockRestore();
+        expect(getRecentLogEntries()).toHaveLength(0);
     });
 });

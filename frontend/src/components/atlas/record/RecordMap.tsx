@@ -10,6 +10,7 @@ import markerShadow from 'leaflet/dist/images/marker-shadow.png';
 import type { RecordPladiasFull } from '@/models/RecordPladiasFull';
 import type { ReverseGeocodingResponse } from '@/models/ReverseGeocoding';
 import {reverseGeocode} from "@/services/recordApi";
+import {logError, logInfo} from "@/services/logger";
 import {useRecordPermissions} from "./";
 
 // Create a red marker icon for proposed location
@@ -87,12 +88,12 @@ export default function RecordMap({record, onLocationSelectWithGeocode, hasPropo
                 onLocationSelectWithGeocode(lat, lng, mergedData);
             }
         } catch (error) {
-            console.error('Failed to fetch reverse geocoding:', error);
+            logError(error, {source: 'RecordMap', action: 'reverseGeocoding'});
         }
     }, [onLocationSelectWithGeocode]);
 
     const handleLocationSelect = useCallback((lat: number, lng: number) => {
-        console.log('Location selected:', lat, lng);
+        logInfo('Location selected', {source: 'RecordMap', lat, lng});
         setClickDetected(true);
         setSelectedLocation([lat, lng]);
         fetchReverseGeocoding(lat, lng);

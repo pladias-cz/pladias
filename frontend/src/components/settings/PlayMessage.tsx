@@ -2,6 +2,7 @@ import { useTranslation } from "react-i18next";
 import {useQuery} from "@tanstack/react-query";
 import RichTextMessage from "@/components/RichTextMessage";
 import {getPlayMessage} from "@/services/playMessageApi";
+import {logError} from "@/services/logger";
 
 interface PlayMessageProps {
     messageKey: string;
@@ -46,7 +47,7 @@ export default function PlayMessage({ messageKey, fallback = "", className = "",
     }
 
     if (error) {
-        console.error("Failed to load PlayMessage:", error);
+        logError(error, {source: "PlayMessage", messageKey});
         return children || <span>{fallback}</span>;
     }
 

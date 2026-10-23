@@ -20,6 +20,7 @@
 
 import {create} from "zustand";
 import {ApiError, apiErrorMessage, isAbortError} from "@/services/apiClient";
+import {logError} from "@/services/logger";
 
 export type NotificationType = "success" | "danger" | "warning" | "info";
 
@@ -101,12 +102,17 @@ export function pushNotification(input: NotificationInput): number {
 }
 
 /**
- * Chyba z user akce → danger notifikace s hláškou z backendu nebo fallbackem.
- * Chyby už centrálně oznámené apiClientem (403, síťová chyba – `ApiError.notified`)
- * se nepřehrávají podruhé; přerušené requesty (AbortController) se ignorují.
+ * Chyba z user akce → danger notifikace s hláškou z backendu nebo fallbackem
+ * + centrální log (`services/logger`). Chyby už centrálně oznámené apiClientem
+ * (403, síťová chyba – `ApiError.notified`) se nepřehrávají podruhé; přerušené
+ * requesty (AbortController) se ignorují.
  */
 export function notifyApiError(err: unknown, fallback: string): void {
     if (isAbortError(err)) return;
+    // Centrální log i pro chyby vzniklé mimo apiClient (custom throw v catchi);
+    // ApiError z apiClientu už je zalogovaná – logError je idempotentní
+    // per instance (WeakSet v loggeru).
+    logError(err, {source: "notifyApiError", fallback});
     if (err instanceof ApiError && err.notified) return;
     pushNotification({type: "danger", message: apiErrorMessage(err, fallback)});
 }

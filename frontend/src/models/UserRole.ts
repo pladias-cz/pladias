@@ -7,6 +7,8 @@
  * varování o driftu BE ↔ FE.
  */
 
+import {logWarn} from "@/services/logger";
+
 export const USER_ROLES = [
     "mapAdmin",
     "bulkEditor",
@@ -27,8 +29,8 @@ export function isUserRole(value: string): value is UserRole {
 }
 
 /**
- * Runtime kontrola driftu BE ↔ FE: neznámou roli zaloguje do konzole a zahodí
- * (route se jen zavře, ale vývojář ve startovní konzoli vidí příčinu).
+ * Runtime kontrola driftu BE ↔ FE: neznámou roli zaloguje centrálním loggerem
+ * a zahodí (route se jen zavře, ale ve startovním logu je vidět příčina).
  */
 export function parseRoles(raw: readonly string[] | undefined | null): UserRole[] {
     const parsed: UserRole[] = [];
@@ -36,8 +38,9 @@ export function parseRoles(raw: readonly string[] | undefined | null): UserRole[
         if (isUserRole(role)) {
             parsed.push(role);
         } else {
-            console.warn(
-                `Neznámá role z backendu: „${role}“ (FE union v src/models/UserRole.ts nedrží krok s app/models/UserRole.java).`,
+            logWarn(
+                "Neznámá role z backendu – FE union v src/models/UserRole.ts nedrží krok s app/models/UserRole.java.",
+                {role},
             );
         }
     }

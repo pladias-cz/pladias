@@ -16,6 +16,7 @@ import {createQueryClient} from "@/query/queryClient";
 import type {DataTableColumnDef} from "./types";
 import {useNotificationStore} from "@/stores/notificationStore";
 import {ApiError} from "@/services/apiClient";
+import {getRecentLogEntries} from "@/services/logger";
 import "@/i18n/i18n";
 
 interface TestRow {
@@ -319,7 +320,6 @@ describe("DataTable", () => {
     });
 
     it("checkbox: rollback a toast při selhání onToggle", async () => {
-        const consoleError = vi.spyOn(console, "error").mockImplementation(() => undefined);
         const onToggle = vi.fn(async () => {
             // reálné service hážou ApiError s payloadem (obálka success:false)
             throw new ApiError("Konflikt při ukládání", undefined, {success: false});
@@ -352,7 +352,13 @@ describe("DataTable", () => {
         });
         expect(screen.getAllByRole("checkbox")[1]).toBeChecked();
         expect(onRowUpdate).not.toHaveBeenCalled();
-        expect(consoleError).toHaveBeenCalled();
+        // selhání akce loguje DataTable centrálním loggerem (sekce F)
+        const logged = getRecentLogEntries().filter((entry) => entry.context?.source === "DataTable");
+        expect(logged).toHaveLength(1);
+        expect(logged[0]).toMatchObject({
+            message: "Konflikt při ukládání",
+            context: {source: "DataTable", action: "checkboxToggle"},
+        });
     });
 
     it("refreshKey: změna hodnoty vynutí znovunačtení stejné stránky (mutace mimo tabulku)", async () => {

@@ -1,6 +1,7 @@
 import React from "react";
 import {useTranslation} from "react-i18next";
 import {Alert, Button} from "react-bootstrap";
+import {logError} from "@/services/logger";
 
 /**
  * Globální error boundary.
@@ -46,8 +47,9 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
     }
 
     componentDidCatch(error: Error, info: React.ErrorInfo): void {
-        // Vývojářská stopa do konzole; uživatelská zpětná vazba je fallback UI.
-        console.error("Neočekávaná chyba UI zachycená ErrorBoundary:", error, info.componentStack);
+        // Vývojářská stopa do centrálního logu (sekce F); uživatelská zpětná
+        // vazba je fallback UI.
+        logError(error, {source: "errorBoundary", componentStack: info.componentStack});
     }
 
     private readonly handleReload = (): void => {

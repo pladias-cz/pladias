@@ -13,6 +13,7 @@ import { useMap } from 'react-leaflet';
 import * as L from 'leaflet';
 import { useEffect, useRef, useState, useMemo } from 'react';
 import { fetchWfsGeoJson } from '@/services/mapApi';
+import { logError, logInfo } from '@/services/logger';
 import type { LayerParams, WfsStyleOptions } from '../../types';
 import type { GeoServerConfig } from '../../types/serviceConfig';
 import { getBboxWithBuffer, shouldReloadBbox } from './wfsBounds';
@@ -133,7 +134,7 @@ export function WfsLayerView({ id, service, zIndex, wfsStyle, params, visible }:
 
             // Check if bounds changed significantly
             if (lastBboxRef.current === null || shouldReloadBbox(lastBboxRef.current, newBbox)) {
-                console.log('[WfsLayer] Bounds changed significantly, reloading data...');
+                logInfo('Bounds changed significantly, reloading data', {source: 'WfsLayerView'});
                 lastBboxRef.current = newBbox;
 
                 // Remove existing layer and trigger reload by updating a state or ref
@@ -277,8 +278,7 @@ export function WfsLayerView({ id, service, zIndex, wfsStyle, params, visible }:
                 setLoaded(true);
 
             } catch (error) {
-                console.error('[WfsLayer] Failed to load WFS data:', error);
-                console.error('[WfsLayer] URL was:', wfsUrl);
+                logError(error, {source: 'WfsLayerView', url: wfsUrl});
             }
         };
 

@@ -11,6 +11,7 @@ import {
     setForbiddenHandler,
     setNetworkErrorHandler,
 } from "./apiClient";
+import {getRecentLogEntries, resetLogger} from "./logger";
 
 /**
  * Testy apiClientu: parsování obálky, 401/403
@@ -31,6 +32,7 @@ let assignMock: ReturnType<typeof vi.fn>;
 beforeEach(() => {
     fetchMock.mockReset();
     vi.stubGlobal("fetch", fetchMock);
+    resetLogger();
     // jsdom neumí navigaci – location se stubuje, apiClient na 401 přesměrovává
     assignMock = vi.fn();
     Object.defineProperty(window, "location", {
@@ -117,6 +119,8 @@ describe("HTTP error branches", () => {
 
         await expect(apiGet("/api/react/atlasadmin/imports")).rejects.toBeInstanceOf(ApiError);
         expect(assignMock).toHaveBeenCalledWith("/login");
+        // 401 = expirovaná session s redirectem (očekávaný tok) – do logu nepatří
+        expect(getRecentLogEntries()).toHaveLength(0);
     });
 
     it("calls the forbidden handler and throws ApiError on 403", async () => {
@@ -127,6 +131,14 @@ describe("HTTP error branches", () => {
         const promise = apiGet("/api/react/atlasadmin/imports");
         await expect(promise).rejects.toMatchObject({status: 403, message: "Nedostatečná oprávnění"});
         expect(handler).toHaveBeenCalledWith("Nedostatečná oprávnění");
+        // každou ApiError z apiClientu vidí i centrální log (sekce F)
+        const logged = getRecentLogEntries();
+        expect(logged).toHaveLength(1);
+        expect(logged[0]).toMatchObject({
+            status: 403,
+            message: "Nedostatečná oprávnění",
+            context: {source: "apiClient", method: "GET", url: "/api/react/atlasadmin/imports"},
+        });
     });
 
     it("throws ApiError with the message from the error payload on HTTP 400", async () => {
@@ -151,6 +163,14 @@ describe("HTTP error branches", () => {
         fetchMock.mockRejectedValue(new TypeError("Failed to fetch"));
 
         await expect(apiGet("/x")).rejects.toBeInstanceOf(ApiError);
+        // síťové chyby loguje apiClient v místě vzniku (url, metoda, silent)
+        expect(getRecentLogEntries()[0].context).toEqual({
+            source: "apiClient",
+            kind: "network",
+            method: "GET",
+            url: "/x",
+            silent: false,
+        });
     });
 
     it("reports network failures to the central handler and marks the error notified (section F)", async () => {
@@ -170,6 +190,8 @@ describe("HTTP error branches", () => {
 
         await expect(apiGet("/api/react/infoGlobal", {silent: true})).rejects.toMatchObject({notified: false});
         expect(handler).not.toHaveBeenCalled();
+        // silent potlačuje jen notifikaci – v logu je záznam s příznakem
+        expect(getRecentLogEntries()[0].context).toMatchObject({silent: true});
     });
 
     it("marks 403 as centrally notified when a forbidden handler is wired", async () => {

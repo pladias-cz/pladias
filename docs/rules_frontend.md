@@ -55,7 +55,7 @@ Nesplnění → přesměrování na `/unauthorized`.
 | Route | Modul | Role (ProtectedRoute) |
 |---|---|---|
 | `/` (Home), `/unauthorized`, `/user/docs` | – | přihlášený |
-| `/atlas/newComments`, `/atlas/search`, `/atlas/listOfControls`, `/atlas/listOfImports`, `/atlas/listOfTaxa`, `/atlas/import`, `/atlas/importCSV`, `/atlas/mapMain/:taxonId`, `/atlas/mapPreview/:taxonId`, `/atlas/mapDetail/:taxonId/:squareId`, `/atlas/record/:recordId` | atlas | **žádná role** – každý přihlášený |
+| `/atlas/newComments`, `/atlas/search`, `/atlas/listOfControls`, `/atlas/listOfImports`, `/atlas/listOfTaxa`, `/atlas/import`, `/atlas/importCSV`, `/atlas/mapMain/:taxonId`, `/atlas/mapPreview/:taxonId/:type`, `/atlas/mapDetail/:taxonId/:squareId`, `/atlas/record/:recordId` | atlas | **žádná role** – každý přihlášený |
 | `/atlasAdmin/listOfImports`, `/atlasAdmin/listOfUsers`, `/atlasAdmin/listOfTaxa` | atlas | `isMapAdmin` |
 | `/biblio/search` | biblio | žádná role |
 | `/measurements/general`, `/datatypes`, `/aggregationTypes`, `/data`, `/export`, `/backup`, `/features/:featureId` | measurements | **žádná role** – každý přihlášený |
@@ -64,8 +64,9 @@ Nesplnění → přesměrování na `/unauthorized`.
 | `/user/usersAdministration` | – | `isSysAdmin` |
 | `/user/taxaAdministration/:taxonId?` | – | `isTaxonAdmin` |
 | `/user/addUser` | – | `isSysAdmin` |
+| `/user/playMessages` | – | `isSysAdmin` |
 
-Hlavní menu (`MainMenu.tsx`) nabízí odkazy konzistentně s routami: správa uživatelů i přidání uživatele jen `isSysAdmin`, správa taxonů jen `isTaxonAdmin`; zbytek atlasového a biblio menu vidí všichni uživatelé s daným modulem. Výjimky: v atlas menu se CSV import (`/atlas/importCSV`) zobrazí jen pro `isAsyncImporter || isMapAdmin` – samotná routa ale žádnou roli nevyžaduje (jen modul atlas), autorizaci dělá až backend (`canContributeInto`); v measurements menu je záloha (`/measurements/backup`) jen pro `isTraitAdmin` (shodné s routou).
+Hlavní menu (`MainMenu.tsx`) nabízí odkazy konzistentně s routami: správa uživatelů, přidání uživatele i texty UI (PlayMessages) jen `isSysAdmin`, správa taxonů jen `isTaxonAdmin`; zbytek atlasového a biblio menu vidí všichni uživatelé s daným modulem. Výjimky: v atlas menu se CSV import (`/atlas/importCSV`) zobrazí jen pro `isAsyncImporter || isMapAdmin` – samotná routa ale žádnou roli nevyžaduje (jen modul atlas), autorizaci dělá až backend (`canContributeInto`); v measurements menu je záloha (`/measurements/backup`) jen pro `isTraitAdmin` (shodné s routou).
 
 ---
 
@@ -202,7 +203,9 @@ Editační tabulka nastavení taxonů (`useTaxonUpdates`): `ISMAPPED`, `SETCOMMO
 - Stejný endpoint používá i mapMain InfoPanel pro revizorské klíče – gate ve FE je `currentUserIsRevisor` (z `GET /atlas/taxonMapSettings/:taxonId`), které pokrývá i MAPTYPE radia.
 - Změny `PUBLICATIONSTATUS`/`REVISIONSTATUS` na backendu spouštějí přechody stavů a e-mailové notifikace – frontend po nich jen refetchuje data.
 - Řádky tabulky (`TaxonMapSettings` z `GET /api/react/atlasadmin/taxa`) nesou `id` = PK `atlas.taxon_mapsettings` (u 1:1 relace s taxonem totožné s `taxonId`); DataTable ho používá k párování řádků v optimistické vrstvě checkboxů. Nové tabulky nad sdíleným DataTable musí identitu (`id`) v DTO/fetch vrstvě také dodávat – bez `id` se optimistický flip páruje jen referenčně.
-- Checkbox `isProtected` (a `preslia`) po mutaci refetchují tabulku (`refreshKey`) – jednak kvůli čerstvému `lastEditTimestamp` (optimistická konkurence), jednak aby selhání vrátilo checkbox na pravdu serveru; checkbox řádku je při běžícím POSTu disabled (`isDisabled` přes `updatingTaxonId`).
+- Checkbox `isProtected` (a `preslia`) po mutaci refetchují tabulku (`refreshKey`, ať mutace uspěje či ne) – jednak kvůli čerstvému `lastEditTimestamp` (optimistická konkurence), jednak aby selhání vrátilo checkbox na pravdu serveru; ovládací prvky řádku (checkbox, preslia input, status selecty, commonThreshold) jsou při běžícím POSTu disabled (`updatingTaxonId` z `useTaxonUpdates`).
+- Všechny inline mutace (isMapped, parent map, commonThreshold, status selecty, preslia, isProtected) dělají optimistický flip přes lokální datovou vrstvu DataTable – TaxaList si u DataTable registruje optimistický updater (`onDataUpdater`, drží ho v refu, ne ve state, viz [gotchas.md](./gotchas.md)), který změnu aplikuje na vykreslené řádky bez refetche; po úspěchu se do řádku zapíše nový `lastEditTimestamp` z odpovědi serveru, při chybě se flip vrací zpět. Stejně se po uploadu/odstranění PNG mapy optimisticky aktualizuje `hasPng`.
+- Chyby mutací reportuje centralizovaný notifikační store (`notifyApiError` – toast s hláškou backendu z `ApiError.payload`, např. concurrency konflikt či neplatný přechod statusu), ne lokální error state.
 
 ---
 
@@ -237,6 +240,10 @@ Celý modul `/measurements/*` je chráněn **modulem instance**; u write operac�
 - Vytvoření uživatele: `POST /api/react/users`; shodné s backendem (sysAdmin).
 - Přidělování projektů zde není – projekty přiděluje výhradně mapAdmin v MapUsers (`/api/react/atlasadmin/users/:userId/projects`).
 
+### PlayMessages (`/user/playMessages`) – role `isSysAdmin`
+
+- Editor textů lokalizace UI (`PlayMessagesEditor`): pro zvolený jazyk (`cs`/`en`/`sk`/`pl`) načte konstanty `PlayMessage` s hodnotami přes `GET /api/react/playmessage/admin/all?lang=` a hromadně je ukládá přes `PUT /api/react/playmessage/admin/save` (body `{lang, values}`); chybějící jazykové varianty se ukládají jako nové řádky. Shodné s backendem (sysAdmin).
+
 ### Vlastní účet (`/user/changePassword`, `/user/changeEmail`, `/user/settings`)
 
 - `POST /api/react/user/changePassword` (vyžaduje staré heslo), `POST /api/react/user/createToken` (API token), `POST /api/react/user/changeEmail` (vyžaduje heslo; mění se okamžitě, ale s kontrolou unikátnosti 409 a notifikací na starou adresu), `PUT/DELETE /api/react/user/settings/...`.
@@ -249,6 +256,7 @@ Celý modul `/measurements/*` je chráněn **modulem instance**; u write operac�
 | Data | Kde se ve frontendu získávají | Odpovídající gate |
 |---|---|---|
 | Seznam uživatelů s e-maily a rolemi (`GET /api/react/users`) | UsersAdministration | route `isSysAdmin` |
+| Texty lokalizace UI (`GET /api/react/playmessage/admin/all`) | PlayMessages | route `isSysAdmin` |
 | Seznam uživatelů bez rolí (`GET /api/react/atlasadmin/users`) | MapUsers | route `isMapAdmin` |
 | Seznam uživatelů – jména (`GET /api/react/users-minimal`) | formulář uploadu traitů, hledání (nálezce/autoři) | **žádný** – každý přihlášený |
 | Data traitů (`/measurement/trait/download/...`) | odkazy v TraitTable | server flag `canDownload` |

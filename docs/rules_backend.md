@@ -26,9 +26,10 @@ Tento dokument popisuje chování aplikace při editaci dat v databázi. Jsou zd
 10. [Uživatelé](#uživatelé)
 11. [Map Reports](#map-reports)
 12. [PNG mapy](#png-mapy)
-13. [Přehled rolí](#přehled-rolí)
-14. [Zjištěné problémy s oprávněními a nesoulady](#zjištěné-problémy-s-oprávněními-a-nesoulady)
-15. [Poznámky](#poznámky)
+13. [PlayMessage (texty lokalizace UI)](#playmessage-texty-lokalizace-ui)
+14. [Přehled rolí](#přehled-rolí)
+15. [Zjištěné problémy s oprávněními a nesoulady](#zjištěné-problémy-s-oprávněními-a-nesoulady)
+16. [Poznámky](#poznámky)
 
 ---
 
@@ -458,6 +459,7 @@ Třída `SynonymController` je anotována `@Security.Authenticated(AuthorizedAsT
 - Přechod na `Assigned`, `Review` nebo `Completing` vyžaduje mapAdmin
 - Ostatní přechody: non-mapAdmin (tedy revizor) smí jen o jeden krok vpřed (`oldStatus + 1 == newStatus`) a pouze u taxonu, který revizuje (kontrola revizorské role v `verifyCurrentUserCanEditKey`)
 - Status `NotStarted` nelze nastavit, má-li taxon přiřazené revizory
+- Řádky s `NULL` v `revision_status`/`publication_status` (starší/importovaná data) se při čtení starého statusu normalizují na entitu `StatusNotStarted` (id 0) – bez fallbacku by update nad NULL řádkem padl na NPE. Fallback je v `RevisionUpdateService` i `PublicationUpdateService` (přechody se validují jako ze stavu 0); `RevisorService` při auto-přechodu na `Assigned` bere NULL stejně jako stav 0 (viz [gotchas.md](gotchas.md) → „NULL statusy map")
 
 **Podmínky editace (všechny klíče):**
 - Optimistická konkurence přes `timestamp` – pokud si kdokoli mezitím změnil nastavení, endpoint vrátí chybu „novější verze existuje"
@@ -467,7 +469,7 @@ Třída `SynonymController` je anotována `@Security.Authenticated(AuthorizedAsT
 - Změna `REVISIONSTATUS` na `Submitted`/`Completing`/`Closed` odesílá e-maily adminům/revizorům
 - Aktualizace `lastEditTimestamp` a `editCount` v nastavení taxonu
 
-> Dříve většina klíčů neměla žádnou kontrolu oprávnění – viz [problém č. 1](#1-post-atlasadmintaxonmapsettings--většina-polí-bez-kontroly-oprávnění) (vyřešeno).
+> Dříve většina klíčů neměla žádnou kontrolu oprávnění (vyřešeno – dnes vše prochází `verifyCurrentUserCanEditKey`).
 
 ---
 
@@ -517,7 +519,7 @@ Třída `SynonymController` je anotována `@Security.Authenticated(AuthorizedAsT
 
 **Kdo smí provést:** sysAdmin (anotace + vnitřní kontrola)
 
-**Související akce:** aktualizace údajů uživatele (jméno, e-mail, organizace, projekty, role)
+**Související akce:** aktualizace údajů uživatele (jméno, příjmení, e-mail, role `mapAdmin`/`traitAdmin`/`sysAdmin`/`biblioAdmin`/`taxonAdmin`, příznak `deleted`). Organizace ani projekty se přes tento endpoint měnit nedají – projekty přiděluje výhradně mapAdmin přes `POST /atlasadmin/users/:userId/projects`
 
 ---
 
@@ -531,7 +533,7 @@ Třída `SynonymController` je anotována `@Security.Authenticated(AuthorizedAsT
 
 ### POST `/users/rights/edit` – Editace práv uživatele (`editUserRightsField`)
 
-**Kdo smí provést:** sysAdmin (anotace + vnitřní kontrola)
+**Kdo smí provést:** sysAdmin – jen vnitřní kontrola `isSysAdmin()` (metoda na rozdíl od `createUser`/`updateUser`/`resetUserPassword` nemá anotaci `AuthorizedAsSysAdmin`, jen třídní `Authorized` + interní kontrolu). Frontend endpoint nepoužívá – role edituje přes `PUT /users/:id`
 
 **Související akce:**
 - Aktualizace rolí (klíče `MapAdmin`, `BiblioAdmin`, `TraitAdmin`, `SysAdmin`, `TaxonAdmin`; role `bulkEditor`/`asyncImporter` se přímo nastavit nedají – bulkEditor je speciální uživatel `user.BulkImporter`, asyncImporter se konfiguruje přes `AsyncImportersEmail`)
@@ -607,6 +609,20 @@ Třída `SynonymController` je anotována `@Security.Authenticated(AuthorizedAsT
 - Uložení/aktualizace `PdfMap` záznamu (typ `PngType`)
 - Notifikace revizorů a adminů e-mailem
 - Aktualizace publication status na `StatusPreview`
+
+---
+
+## PlayMessage (texty lokalizace UI)
+
+### PUT `/playmessage/admin/save` – Uložení textů lokalizace (`PlayMessageController.save`)
+
+**Kdo smí provést:** `@Security.Authenticated(AuthorizedAsSysAdmin.class)` – sysAdmin
+
+**Související akce:**
+- Body: `{"lang": "cs", "values": [{"key": "...", "value": "..."}]}` – hromadný upsert hodnot konstant `PlayMessage` pro jeden jazyk (jeden jazyk per request)
+- Ukládají se jen známé klíče konstant (`PlayMessage.getConstantKeys`), prázdné hodnoty se odmítají; chybějící jazykové varianty se zakládají jako nové řádky
+
+**GET přehled:** `GET /playmessage/:key` (povinný query parametr `lang`, s fallbackem na češtinu), `GET /playmessage/all` (povinný `lang`, bez fallbacku) a `GET /playmessage/all/all-languages` – každý přihlášený; `GET /playmessage/admin/all` (konstanty včetně hodnot `null` u jazyků, které v DB dosud nejsou) – sysAdmin.
 
 ---
 

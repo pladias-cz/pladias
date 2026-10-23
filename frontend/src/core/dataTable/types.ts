@@ -246,6 +246,11 @@ export interface DataTableConfig<T> {
         columnFilters: Array<{id: string; value: string}>;
         additionalParams: Record<string, string>;
     }) => Record<string, unknown>;
+    /**
+     * Změna hodnoty vynutí znovunačtení aktuální stránky – pro mutace provedené
+     * mimo tabulku (např. add/remove v modale), aby se nový stav projevil ihned.
+     */
+    refreshKey?: number;
     /** External state control for controlled component usage */
     externalState?: ExternalTableState;
     /** Custom filter row renderer - receives columnFilters and setColumnFilters */

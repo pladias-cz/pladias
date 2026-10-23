@@ -1,15 +1,18 @@
 /**
  * Testy jádrové komponenty DataTable:
- * render sloupců všech typů, filter row, řazení, paginace
- * a optimistic update checkboxů přes onToggle/onRowUpdate.
+ * render sloupců všech typů, filter row, řazení, paginace,
+ * optimistic update checkboxů přes onToggle/onRowUpdate
+ * a refetch aktuální stránky přes refreshKey.
  *
  * Data se podávají výhradně přes custom fetcher (bez síťových volání).
  */
 
 import {act, cleanup, fireEvent, render, screen, waitFor, within} from "@testing-library/react";
 import {afterEach, describe, expect, it, vi} from "vitest";
+import {QueryClientProvider} from "@tanstack/react-query";
 import {DataTable} from "./DataTable";
 import {withQueryClient} from "@/test/withQueryClient";
+import {createQueryClient} from "@/query/queryClient";
 import type {DataTableColumnDef} from "./types";
 import "@/i18n/i18n";
 
@@ -342,5 +345,37 @@ describe("DataTable", () => {
         expect(screen.getAllByRole("checkbox")[1]).toBeChecked();
         expect(onRowUpdate).not.toHaveBeenCalled();
         expect(consoleError).toHaveBeenCalled();
+    });
+
+    it("refreshKey: změna hodnoty vynutí znovunačtení stejné stránky (mutace mimo tabulku)", async () => {
+        const fetcher = vi.fn(async () => ({data: rows, totalCount: 2}));
+        const columns = makeColumns(vi.fn(async () => undefined));
+        // jeden klient pro oba rendery – rerender nesmí rozbít cache, jinak by se
+        // fetch spustil kvůli novému klientovi, ne kvůli refreshKey
+        const client = createQueryClient();
+        const renderWithKey = (key: number) => (
+            <QueryClientProvider client={client}>
+                <DataTable endpoint="/test" columns={columns} fetchData={fetcher} refreshKey={key}/>
+            </QueryClientProvider>
+        );
+        const {rerender} = render(renderWithKey(0));
+
+        // mount: právě jedno načtení první stránky
+        expect(await screen.findByText("Vřesovec pleterný")).toBeInTheDocument();
+        expect(fetcher).toHaveBeenCalledTimes(1);
+
+        // změna klíče = refetch stejné stránky (přesně jedno další zavolání)
+        rerender(renderWithKey(1));
+        await waitFor(() => {
+            expect(fetcher).toHaveBeenCalledTimes(2);
+        });
+        expect(fetcher).toHaveBeenLastCalledWith(expect.objectContaining({page: 1}));
+
+        // beze změny klíče se už nic nenačítá
+        rerender(renderWithKey(1));
+        await act(async () => {
+            await new Promise((resolve) => setTimeout(resolve, 50));
+        });
+        expect(fetcher).toHaveBeenCalledTimes(2);
     });
 });

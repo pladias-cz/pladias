@@ -5,7 +5,7 @@
  * to efficiently load users and their rights (projects, taxa) on demand.
  */
 
-import {useCallback, useMemo} from "react";
+import {useCallback, useMemo, useState} from "react";
 import {useTranslation} from "react-i18next";
 import {DataTable, type DataTableColumnDef, createActionColumn, createTextColumn} from "@/core/dataTable";
 import {
@@ -32,6 +32,11 @@ export default function MapUsers() {
     const showFlash = useCallback((type: 'success' | 'danger', message: string) => {
         push({type, message});
     }, [push]);
+
+    // Po každé úspěšné změně práv (přidání/odebrání projektu či taxonu) se zvýší
+    // klíč a DataTable znovu načte aktuální stránku – nový stav je ihned viditelný.
+    const [rightsRefreshKey, setRightsRefreshKey] = useState(0);
+    const bumpRightsRefresh = useCallback(() => setRightsRefreshKey(key => key + 1), []);
     
     // Data fetching hook
     const {fetchUsersWithRights} = useMapUsersData({
@@ -51,7 +56,7 @@ export default function MapUsers() {
         handleAddProject,
         handleRemoveProject,
         setSelectedProjectId,
-    } = useMapUsersProjects(showFlash, t);
+    } = useMapUsersProjects(showFlash, t, bumpRightsRefresh);
     
     // Taxa hook
     const {
@@ -66,18 +71,19 @@ export default function MapUsers() {
         handleOpenAddTaxonModal,
         handleCloseTaxonModal,
         handleSelectTaxon,
-    } = useMapUsersTaxa(showFlash, t);
+    } = useMapUsersTaxa(showFlash, t, bumpRightsRefresh);
     
     // Handler to convert taxon selection to remove operation
     const handleRemoveTaxonFromCell = useCallback((userId: number, taxonId: number) => {
         removeUserTaxonFromUser(userId, taxonId)
             .then(() => {
                 showFlash('success', t("user.usersAdministration.taxonRemoved"));
+                bumpRightsRefresh();
             })
             .catch(err => {
                 showFlash('danger', apiErrorMessage(err, t("user.usersAdministration.error")));
             });
-    }, [showFlash, t]);
+    }, [showFlash, t, bumpRightsRefresh]);
     
     // Column definitions
     const columns = useMemo<DataTableColumnDef<MapUserTableRow>[]>(() => [
@@ -121,6 +127,7 @@ export default function MapUsers() {
                 fetchData={fetchUsersWithRights}
                 initialPageSize={20}
                 pageSizeOptions={[10, 20, 50, 100]}
+                refreshKey={rightsRefreshKey}
             />
             
             <MapUsersAddProjectModal

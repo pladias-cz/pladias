@@ -13,8 +13,7 @@ This document serve to humans, do not use for agents.
 
 ---
 
-1) /atlasAdmin/listOfUsers - provedení změny, tj. např jméno nově přiřazeného taxonu nebo projektu se vizuálně neprojeví - týká se přidání i odebrání - je potřeba aby bylo ihned viditelné (změna se ale nyní uloží, až po refresh je vidět platný stav)
-2) /atlasAdmin/listOfTaxa - mám práva mapAdmina a přitom mi neprojde editace polí isProtected, Preslia, stav revize... - zřejmě omezení na backendu ?
+  /atlasAdmin/listOfTaxa - při editaci polí isProtected, Preslia, stav revize je nějaký bug - u Preslia se požadavek  provádí dvakrát - první projde, ale druhý spadne na timestamp (concurrence protection), u stavu revize se provede, vrátí ok ale v ui se neprojeví ani po refresh - proveď celkovou kontrolu interakce FE+BE.
 
 
 ## next:

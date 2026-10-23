@@ -2,7 +2,7 @@
  * Enterprise-grade DataTable component with server-side pagination, sorting, and filtering
  */
 
-import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {Card, Table, Form, Alert} from 'react-bootstrap';
 import {useTranslation} from 'react-i18next';
 import {
@@ -37,6 +37,7 @@ export function DataTable<T extends object>(config: DataTableConfig<T>) {
         method = 'GET',
         fetchData: customFetcher,
         transformRequest,
+        refreshKey,
         onRowUpdate,
         renderCustomFilters,
         externalState: _externalState,
@@ -84,6 +85,7 @@ export function DataTable<T extends object>(config: DataTableConfig<T>) {
         filteredCount,
         loading,
         setData: setLocalData,
+        refresh,
     } = useTableData<T>({
         endpoint,
         page,
@@ -95,6 +97,16 @@ export function DataTable<T extends object>(config: DataTableConfig<T>) {
         fetchData: customFetcher,
         transformRequest,
     });
+
+    // Změna refreshKey vynutí refetch aktuální stránky (mutace mimo tabulku,
+    // např. add/remove v modale). První render se přeskočí – data se právě načítají.
+    const prevRefreshKeyRef = useRef(refreshKey);
+    useEffect(() => {
+        if (prevRefreshKeyRef.current !== refreshKey) {
+            prevRefreshKeyRef.current = refreshKey;
+            refresh();
+        }
+    }, [refreshKey, refresh]);
 
     // Update pagination totals when data changes
     useEffect(() => {

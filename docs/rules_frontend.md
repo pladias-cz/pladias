@@ -191,6 +191,7 @@ Celý prefix `/atlasAdmin/*` je chráněn rolí `isMapAdmin` (a modulem atlas).
 - **Přidání revizora taxonu:** přes `useMapUsersTaxa` → `POST /api/react/atlasadmin/assignUserTaxon` (backend: mapAdmin).
 - **Odebrání revizora:** `DELETE /api/react/atlasadmin/removeUserTaxon/user/:userId/taxon/:taxonId` (backend: mapAdmin).
 - Všechny operace stránky jsou na backendu pod mapAdminem.
+- Po každé úspěšné mutaci (přidání/odebrání projektu i taxonu) se zvýší `refreshKey` `DataTable` (callbacky `onProjectChange`/`onTaxonChange` hooků), takže tabulka znovu načte aktuální stránku a nový stav je viditelný ihned bez refreshi prohlížeče.
 
 ### ListOfTaxa – nastavení map taxonů (TaxonMapSettings)
 

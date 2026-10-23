@@ -378,4 +378,70 @@ describe("DataTable", () => {
         });
         expect(fetcher).toHaveBeenCalledTimes(2);
     });
+
+    it("checkbox: řádky bez id – optimistic flip přepne jen kliknutý řádek", async () => {
+        // Regrese: řádky bez pole `id` (identita undefined) nesmí fallback na id
+        // nic matchnout (undefined === undefined) – kdysi se přepnuly všechny
+        // checkboxy tabulky najednou.
+        const noIdRows = [
+            {taxonId: 101, name: "Vřesovec pleterný", published: false},
+            {taxonId: 102, name: "Bělomech sivý", published: false},
+        ];
+        const onToggle = vi.fn(async () => undefined);
+        const columns: DataTableColumnDef<(typeof noIdRows)[number]>[] = [
+            {type: "text", id: "name", accessor: "name", header: "Název"},
+            {type: "checkbox", id: "published", accessor: "published", header: "Publikováno", onToggle},
+        ];
+        const fetcher = vi.fn(async () => ({data: noIdRows, totalCount: 2}));
+        render(
+            withQueryClient(
+                <DataTable endpoint="/test" columns={columns} fetchData={fetcher}/>
+            )
+        );
+
+        const checkbox = (await screen.findAllByRole("checkbox"))[0];
+        expect(checkbox).not.toBeChecked();
+
+        fireEvent.click(checkbox);
+
+        // přepne se jen kliknutý řádek, druhý zůstává nedotčený
+        expect(screen.getAllByRole("checkbox")[0]).toBeChecked();
+        expect(screen.getAllByRole("checkbox")[1]).not.toBeChecked();
+        expect(onToggle).toHaveBeenCalledWith(noIdRows[0], true);
+    });
+
+    it("refreshKey: po refetchi se zahodí optimistická vrstva i při nezměněných datech", async () => {
+        const onToggle = vi.fn(async () => undefined);
+        const fetcher = vi.fn(async () => ({data: rows, totalCount: 2}));
+        const columns = makeColumns(onToggle);
+        // jeden klient pro oba rendery – refetch vrací tatáž data (structural
+        // sharing zachová referenci queryData), optimistic vrstva musí padnout
+        const client = createQueryClient();
+        const renderWithKey = (key: number) => (
+            <QueryClientProvider client={client}>
+                <DataTable endpoint="/test" columns={columns} fetchData={fetcher} refreshKey={key}/>
+            </QueryClientProvider>
+        );
+        const {rerender} = render(renderWithKey(0));
+
+        const checkbox = (await screen.findAllByRole("checkbox"))[0];
+        expect(checkbox).not.toBeChecked();
+
+        // optimistický flip (onToggle resolve, refetch zatím neproběhl)
+        fireEvent.click(checkbox);
+        await waitFor(() => {
+            expect(onToggle).toHaveBeenCalledWith(rows[0], true);
+        });
+        expect(screen.getAllByRole("checkbox")[0]).toBeChecked();
+
+        // refreshKey refetchne tutáž data – optimistická vrstva se zahodí
+        // a checkbox hlásí pravdu serveru
+        rerender(renderWithKey(1));
+        await waitFor(() => {
+            expect(fetcher).toHaveBeenCalledTimes(2);
+        });
+        await waitFor(() => {
+            expect(screen.getAllByRole("checkbox")[0]).not.toBeChecked();
+        });
+    });
 });

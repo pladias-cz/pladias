@@ -58,6 +58,20 @@ Known exceptions:
   the XLSX export gets all filtered rows). `useExcelExport` reads the response as a blob, so it has to
   check `content-type` before storing the file - failures still arrive as JSON (`message`/`error`).
 
+### DataTable – optimistická vrstva checkboxů páruje řádky podle `id`
+
+Checkboxové sloupce sdíleného `DataTable` přepínají hodnotu optimisticky (lokální vrstva v `useTableData`)
+a řádek v ní párují referenčně, případně podle `row.id` (stejný fallback používá i rollback po selhání
+`onToggle`). Řádky **bez** `id` smí matchnout jen reference – dřívější fallback bez podmínky pároval
+`undefined === undefined`, takže jeden klik přepnul checkboxy **všech** řádků tabulky (regrese na
+`/atlasAdmin/listOfTaxa`; `UsersTable` to neměla, protože `UserTableRow` `id` nese). Proto:
+- každý endpoint alimentující DataTable se sloupcem typu `checkbox` musí v DTO vracet `id` (PK záznamu) –
+  u `TaxonMapSettings` je to PK `atlas.taxon_mapsettings`, u 1:1 relace s taxonem totožný s `taxonId`;
+- optimistická vrstva žije jen do nejbližší odpovědi serveru; `refresh()` ji zahodí i tehdy, když refetch
+  vrátí nezměněná data (React Query structural sharing by jinak zachoval původní referenci `queryData`
+  a efekt na její změnu by se neprovedl);
+- po checkboxové mutaci tabulku refetchujeme (`refreshKey`) – selhání tak vrátí checkbox na pravdu
+  serveru a obnoví se `lastEditTimestamp` pro optimistickou konkurenci.
 
 ---
 

@@ -6,6 +6,8 @@ import java.sql.Timestamp;
 import java.util.List;
 
 public record TaxonMapSettingsDto(
+    /** PK atlas.taxon_mapsettings; u 1:1 relace s taxonem totožné s taxonId. */
+    Long id,
     Long taxonId,
     String taxonNameLat,
     String taxonRankCz,

@@ -4,6 +4,8 @@
  * `components/atlas/taxaList/types`, kam se re-exportuje).
  */
 export interface TaxonMapSettings {
+    /** PK atlas.taxon_mapsettings – u 1:1 relace s taxonem totožné s taxonId. */
+    id: number;
     taxonId: number;
     taxonNameLat: string;
     taxonRankCz: string;

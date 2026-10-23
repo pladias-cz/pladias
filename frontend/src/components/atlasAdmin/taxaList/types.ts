@@ -3,6 +3,9 @@
  */
 
 export interface TaxonMapSettings {
+    /** PK atlas.taxon_mapsettings – u 1:1 relace s taxonem totožné s taxonId;
+     *  DataTable optimistická vrstva checkboxů podle něj matchuje řádky. */
+    id: number;
     taxonId: number;
     taxonNameLat: string;
     taxonRankCz: string;

@@ -104,7 +104,7 @@ export function DataTable<T extends object>(config: DataTableConfig<T>) {
     useEffect(() => {
         if (prevRefreshKeyRef.current !== refreshKey) {
             prevRefreshKeyRef.current = refreshKey;
-            refresh();
+            void refresh();
         }
     }, [refreshKey, refresh]);
 
@@ -155,8 +155,13 @@ export function DataTable<T extends object>(config: DataTableConfig<T>) {
                 // Checkbox columns always have an onToggle handler
                 const isChecked = row[column.accessor] as boolean;
                 const isDisabled = column.isDisabled?.(row) ?? false;
-                // Řádky se porovnávají referenčně, případně podle `id` (optimistická aktualizace).
+                // Řádky se porovnávají referenčně, případně podle `id` (optimistická
+                // aktualizace i rollback). Bez `id` (rowId === undefined) smí matchnout
+                // jen reference – fallback nesmí matchnout řádky bez identity,
+                // undefined === undefined by jinak přepnul všechny řádky tabulky.
                 const rowId = (row as {id?: unknown}).id;
+                const isTargetRow = (item: T): boolean =>
+                    item === row || (rowId !== undefined && rowId === (item as {id?: unknown}).id);
                 return (
                     <Form.Check
                         type="checkbox"
@@ -168,7 +173,7 @@ export function DataTable<T extends object>(config: DataTableConfig<T>) {
                             // Optimistically update the local data first for instant UI feedback
                             setLocalData((prevData: T[]) => 
                                 prevData.map((item: T) => 
-                                    item === row || (item as {id?: unknown}).id === rowId
+                                    isTargetRow(item)
                                         ? { ...item, [column.accessor]: newValue } as T
                                         : item
                                 )
@@ -189,7 +194,7 @@ export function DataTable<T extends object>(config: DataTableConfig<T>) {
                                 // Rollback the optimistic update - revert to original value
                                 setLocalData((prevData: T[]) => 
                                     prevData.map((item: T) => 
-                                        item === row || (item as {id?: unknown}).id === rowId
+                                        isTargetRow(item)
                                             ? { ...item, [column.accessor]: !newValue } as T
                                             : item
                                     )

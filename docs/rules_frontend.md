@@ -201,6 +201,8 @@ Editační tabulka nastavení taxonů (`useTaxonUpdates`): `ISMAPPED`, `SETCOMMO
 - **Kdo smí na backendu:** mapAdmin všechny klíče; revizor taxonu (vč. nadřazených) jen `MAPTYPE`, `REVISIONSTATUS`, `REVISORSCOMMENT`, `REVISORSPRINTMAPCOMMENT`; ostatní uživatelé nic (centrální kontrola `verifyCurrentUserCanEditKey`).
 - Stejný endpoint používá i mapMain InfoPanel pro revizorské klíče – gate ve FE je `currentUserIsRevisor` (z `GET /atlas/taxonMapSettings/:taxonId`), které pokrývá i MAPTYPE radia.
 - Změny `PUBLICATIONSTATUS`/`REVISIONSTATUS` na backendu spouštějí přechody stavů a e-mailové notifikace – frontend po nich jen refetchuje data.
+- Řádky tabulky (`TaxonMapSettings` z `GET /api/react/atlasadmin/taxa`) nesou `id` = PK `atlas.taxon_mapsettings` (u 1:1 relace s taxonem totožné s `taxonId`); DataTable ho používá k párování řádků v optimistické vrstvě checkboxů. Nové tabulky nad sdíleným DataTable musí identitu (`id`) v DTO/fetch vrstvě také dodávat – bez `id` se optimistický flip páruje jen referenčně.
+- Checkbox `isProtected` (a `preslia`) po mutaci refetchují tabulku (`refreshKey`) – jednak kvůli čerstvému `lastEditTimestamp` (optimistická konkurence), jednak aby selhání vrátilo checkbox na pravdu serveru; checkbox řádku je při běžícím POSTu disabled (`isDisabled` přes `updatingTaxonId`).
 
 ---
 

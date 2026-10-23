@@ -406,7 +406,9 @@ public class TaxonMapSettingsController extends ControllerBase {
                 String parentTaxonNameLat = row.getString("parent_name_lat");
 
                 boolean currentUserIsRevisor = taxonService.getInheritedRevisors(taxon).contains(currentUser);
+                // id = PK tabulky (taxon_id) – u 1:1 relace s taxonem totožné s taxonId
                 TaxonMapSettingsDto dto = new TaxonMapSettingsDto(
+                    taxonId,
                     taxonId,
                     taxonNameLat != null ? taxonNameLat : "",
                     taxonRankCz,
@@ -415,8 +417,8 @@ public class TaxonMapSettingsController extends ControllerBase {
                     row.getBoolean("is_protected"),
                     preslia,
                     revisors,
-                    revisorsPrintComment,
                     revisorsComment,
+                    revisorsPrintComment,
                     revisionStatusId != null ? revisionStatusId : 0,
                     revisionStatusDescription,
                     publicationStatusId != null ? publicationStatusId : 0,
@@ -687,7 +689,9 @@ public class TaxonMapSettingsController extends ControllerBase {
 
                 boolean currentUserIsRevisor = taxonService.getInheritedRevisors(taxon).contains(currentUser);
 
+                // id = PK tabulky (taxon_id) – u 1:1 relace s taxonem totožné s taxonId
                 TaxonMapSettingsDto dto = new TaxonMapSettingsDto(
+                    taxonId,
                     taxonId,
                     taxonNameLat != null ? taxonNameLat : "",
                     taxonRankCz,
@@ -812,6 +816,7 @@ public class TaxonMapSettingsController extends ControllerBase {
 
             boolean currentUserIsRevisor = taxonService.getInheritedRevisors(taxon).contains(currentUser);
             TaxonMapSettingsDto dto = new TaxonMapSettingsDto(
+                settings.getId(),
                 taxonId,
                 taxonNameLat,
                 taxonRankCz,

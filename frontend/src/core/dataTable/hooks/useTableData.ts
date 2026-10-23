@@ -168,10 +168,14 @@ export function useTableData<T>(options: UseTableDataOptions<T>) {
     );
 
     /**
-     * Manual refresh trigger
+     * Manual refresh trigger. Po dokončení refetche zahodí optimistickou vrstvu –
+     * odpověď serveru je autoritativní i tehdy, když refetch vrátí nezměněná
+     * data a React Query (structural sharing) zachová původní referenci
+     * (efekt na queryData by se v takovém případě neprovedl).
      */
-    const refresh = useCallback(() => {
-        void refetch();
+    const refresh = useCallback(async () => {
+        await refetch();
+        setLocalData(null);
     }, [refetch]);
 
     /**

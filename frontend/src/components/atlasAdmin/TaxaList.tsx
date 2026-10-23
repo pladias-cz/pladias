@@ -30,6 +30,10 @@ export default function TaxaList() {
     const [error, setError] = useState<string | null>(null);
     const [localDataUpdater, _setLocalDataUpdater] = useState<((updater: (prev: TaxonMapSettings[]) => TaxonMapSettings[]) => void) | null>(null);
 
+    // Vynucení refetche dat tabulky po mutacích mimo DataTable (uložení
+    // Preslia apod.) – viz refreshKey v DataTable.
+    const [tableRefreshKey, setTableRefreshKey] = useState(0);
+
     // číselníky statusů – bez cache (sekce J); při selhání zůstane filtr
     // prázdný (stejně jako dřív – chybu jen logoval)
     const revisionStatusOptions = useCatalogQuery(["revisionStatuses"], getRevisionStatuses);
@@ -55,6 +59,10 @@ export default function TaxaList() {
     const showError = useCallback((message: string) => {
         setError(message);
         setTimeout(() => setError(null), 5000);
+    }, []);
+
+    const refreshTable = useCallback(() => {
+        setTableRefreshKey(key => key + 1);
     }, []);
 
     const updateLocalData = useCallback((updater: (prev: TaxonMapSettings[]) => TaxonMapSettings[]) => {
@@ -90,12 +98,28 @@ export default function TaxaList() {
     }, [updateCommonThreshold, updateLocalData, showError]);
 
     const handleIsProtectedChange = useCallback(async (row: TaxonMapSettings) => {
-        await updateIsProtected(row, updateLocalData, showError);
-    }, [updateIsProtected, updateLocalData, showError]);
+        try {
+            await updateIsProtected(row, updateLocalData, showError);
+        } finally {
+            // jako u Preslia: refetch po úspěchu (nová hodnota + čerstvý
+            // lastEditTimestamp, další editace téhož řádku nespadne na
+            // concurrency kontrole) i selhání (resynchronizace řádku s DB –
+            // optimisticky přepnutý checkbox se vrátí na pravdu serveru)
+            refreshTable();
+        }
+    }, [updateIsProtected, updateLocalData, showError, refreshTable]);
 
     const handlePresliaChange = useCallback(async (row: TaxonMapSettings, newValue: string) => {
-        await updatePreslia(row, newValue, updateLocalData, showError);
-    }, [updatePreslia, updateLocalData, showError]);
+        try {
+            await updatePreslia(row, newValue, updateLocalData, showError);
+        } finally {
+            // Refetch po úspěchu i selhání: po úspěchu se v tabulce projeví nová
+            // hodnota i čerstvý lastEditTimestamp (další editace téhož řádku
+            // nespadne na concurrency kontrole); po selhání se řádek
+            // resynchronizuje s DB a další pokus použije platný timestamp.
+            refreshTable();
+        }
+    }, [updatePreslia, updateLocalData, showError, refreshTable]);
 
     const handleRevisionStatusChange = useCallback(async (row: TaxonMapSettings, newValue: number) => {
         await updateRevisionStatus(row, newValue, updateLocalData, showError);
@@ -152,6 +176,7 @@ export default function TaxaList() {
         }, {
             enableSorting: true,
             enableFiltering: true,
+            isDisabled: (row) => updatingTaxonId === row.taxonId,
         }),
         createTextColumn<TaxonMapSettings>('preslia', t("atlas.admin.taxaList.preslia"), {
             enableSorting: true,
@@ -238,6 +263,7 @@ export default function TaxaList() {
                 pageSizeOptions={[10, 20, 50, 100]}
                 hasExcelExport
                 buildExportFilterParams={extractTaxaFilters}
+                refreshKey={tableRefreshKey}
             />
         </div>
     );

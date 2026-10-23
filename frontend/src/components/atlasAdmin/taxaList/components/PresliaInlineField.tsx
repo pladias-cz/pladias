@@ -1,4 +1,4 @@
-import {useEffect, useState} from 'react';
+import {useEffect, useRef, useState} from 'react';
 import {Form, Spinner} from 'react-bootstrap';
 import {useTranslation} from 'react-i18next';
 
@@ -20,6 +20,13 @@ export function PresliaInlineField({
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
+    // Zámek proti dvojitému odeslání: Enter nastaví saving=true, input se
+    // zablokuje a prohlížeč na něm vystřelí blur, který by handleSave spustil
+    // znovu (druhý POST se stejným timestampem pak selže na concurrency
+    // kontrole). Ref místo state v closure – blur může proběhnout dřív,
+    // než React commitne nový render se saving=true.
+    const saveLockRef = useRef(false);
+
     useEffect(() => {
         if (!editing) {
             setDraft(value || '');
@@ -27,11 +34,16 @@ export function PresliaInlineField({
     }, [value, editing]);
 
     const handleSave = async () => {
+        if (saveLockRef.current) {
+            return;
+        }
+
         if (draft === value) {
             setEditing(false);
             return;
         }
 
+        saveLockRef.current = true;
         setSaving(true);
         setError(null);
 
@@ -40,6 +52,7 @@ export function PresliaInlineField({
             setEditing(false);
         } catch (e) {
             setError(e instanceof Error ? e.message : t("common.inlineField.saveFailed"));
+            saveLockRef.current = false; // umožnit opravu a opakování
         } finally {
             setSaving(false);
         }
@@ -52,6 +65,14 @@ export function PresliaInlineField({
             setDraft(value || '');
             setEditing(false);
         }
+    };
+
+    const handleEdit = () => {
+        if (disabled) {
+            return;
+        }
+        saveLockRef.current = false; // nová editační relace
+        setEditing(true);
     };
 
     if (editing) {
@@ -77,7 +98,7 @@ export function PresliaInlineField({
         <span
             className="editable-value"
             style={{cursor: 'pointer'}}
-            onClick={() => !disabled && setEditing(true)}
+            onClick={handleEdit}
             title={disabled ? 'Saving...' : t("common.inlineField.edit")}
         >
             {value || <span className="text-muted">—</span>}

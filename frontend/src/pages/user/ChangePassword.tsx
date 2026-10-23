@@ -3,7 +3,7 @@ import {Alert, Button, Col, Form, Row} from "react-bootstrap";
 import {usePageTitle} from "@/hooks/usePageTitle";
 import {useTranslation} from "react-i18next";
 import {changePassword, createApiToken} from "@/services/userApi";
-import {apiErrorMessage} from "@/services/apiClient";
+import {notifyApiError, useNotifications} from "@/stores/notificationStore";
 
 interface ChangePasswordFormData {
     originalPassword: string;
@@ -22,22 +22,19 @@ export default function ChangePassword() {
     });
 
     const [loading, setLoading] = useState(false);
-    const [message, setMessage] = useState<string | null>(null);
-    const [error, setError] = useState<string | null>(null);
+    const {push} = useNotifications();
 
     const [token, setToken] = useState<string | null>(null);
     const [tokenLoading, setTokenLoading] = useState(false);
 
     const handleCreateToken = async (): Promise<void> => {
         setTokenLoading(true);
-        setError(null);
-        setMessage(null);
         setToken(null);
 
         try {
             setToken(await createApiToken());
         } catch (err) {
-            setError(apiErrorMessage(err, t("user.changePassword.tokenError")));
+            notifyApiError(err, t("user.changePassword.tokenError"));
         } finally {
             setTokenLoading(false);
         }
@@ -54,12 +51,10 @@ export default function ChangePassword() {
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setLoading(true);
-        setError(null);
-        setMessage(null);
 
         try {
             const successMessage = await changePassword(formData);
-            setMessage(successMessage || t("user.changePassword.success"));
+            push({type: "success", message: successMessage || t("user.changePassword.success")});
             // Clear form
             setFormData({
                 originalPassword: "",
@@ -67,7 +62,7 @@ export default function ChangePassword() {
                 confirmNewPassword: ""
             });
         } catch (err) {
-            setError(apiErrorMessage(err, t("user.changePassword.networkError")));
+            notifyApiError(err, t("user.changePassword.networkError"));
         } finally {
             setLoading(false);
         }
@@ -79,8 +74,6 @@ export default function ChangePassword() {
                 <h3>{t("user.changePassword.title")}</h3>
                 <p>{t("user.changePassword.description")}</p>
 
-                {error && <Alert variant="danger">{error}</Alert>}
-                {message && <Alert variant="success">{message}</Alert>}
                 {token && (
                     <Alert variant="info" dismissible onClose={() => setToken(null)}>
                         {t("user.changePassword.tokenCreated")}

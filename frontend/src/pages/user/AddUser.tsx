@@ -1,9 +1,9 @@
 import React, {useState} from "react";
-import {Alert, Button, Col, Form, Row} from "react-bootstrap";
+import {Button, Col, Form, Row} from "react-bootstrap";
 import {usePageTitle} from "@/hooks/usePageTitle";
 import {useTranslation} from "react-i18next";
 import {addUser} from "@/services/userApi";
-import {apiErrorMessage} from "@/services/apiClient";
+import {notifyApiError, useNotifications} from "@/stores/notificationStore";
 
 interface AddUserFormData {
     name: string;
@@ -21,8 +21,7 @@ export default function AddUser() {
     });
 
     const [loading, setLoading] = useState(false);
-    const [message, setMessage] = useState<string | null>(null);
-    const [error, setError] = useState<string | null>(null);
+    const {push} = useNotifications();
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const {name, value} = e.target;
@@ -35,12 +34,10 @@ export default function AddUser() {
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setLoading(true);
-        setError(null);
-        setMessage(null);
 
         try {
             const successMessage = await addUser(formData);
-            setMessage(successMessage || t("user.addUser.success"));
+            push({type: "success", message: successMessage || t("user.addUser.success")});
 
             // Clear form
             setFormData({
@@ -49,7 +46,7 @@ export default function AddUser() {
                 email: ""
             });
         } catch (err) {
-            setError(apiErrorMessage(err, t("user.addUser.networkError")));
+            notifyApiError(err, t("user.addUser.networkError"));
         } finally {
             setLoading(false);
         }
@@ -59,9 +56,6 @@ export default function AddUser() {
         <Row>
             <Col sm={12} md={8} lg={6} xl={4} className="mx-auto">
                 <h3>{t("user.addUser.title")}</h3>
-
-                {error && <Alert variant="danger">{error}</Alert>}
-                {message && <Alert variant="success">{message}</Alert>}
 
                 <Form onSubmit={handleSubmit}>
                     <Form.Group className="mb-3" controlId="name">

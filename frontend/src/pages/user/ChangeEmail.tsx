@@ -3,7 +3,7 @@ import {Alert, Button, Col, Form, Row} from "react-bootstrap";
 import {usePageTitle} from "@/hooks/usePageTitle";
 import {useTranslation} from "react-i18next";
 import {changeEmail} from "@/services/userApi";
-import {apiErrorMessage} from "@/services/apiClient";
+import {notifyApiError, useNotifications} from "@/stores/notificationStore";
 
 interface ChangeEmailFormData {
     password: string;
@@ -22,8 +22,9 @@ export default function ChangeEmail() {
     });
 
     const [loading, setLoading] = useState(false);
-    const [message, setMessage] = useState<string | null>(null);
-    const [error, setError] = useState<string | null>(null);
+    // form validace zůstává inline; feedback akcí jde do globálních notifikací
+    const [validationError, setValidationError] = useState<string | null>(null);
+    const {push} = useNotifications();
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const {name, value} = e.target;
@@ -35,21 +36,21 @@ export default function ChangeEmail() {
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        setValidationError(null);
+
+        if (formData.newEmail !== formData.confirmNewEmail) {
+            setValidationError(t("user.changeEmail.emailsDoNotMatch"));
+            return;
+        }
+
         setLoading(true);
-        setError(null);
-        setMessage(null);
 
         try {
-            if (formData.newEmail !== formData.confirmNewEmail) {
-                setError(t("user.changeEmail.emailsDoNotMatch"));
-                return;
-            }
-
             const successMessage = await changeEmail({
                 password: formData.password,
                 newEmail: formData.newEmail
             });
-            setMessage(successMessage || t("user.changeEmail.success"));
+            push({type: "success", message: successMessage || t("user.changeEmail.success")});
             // Clear form
             setFormData({
                 password: "",
@@ -57,7 +58,7 @@ export default function ChangeEmail() {
                 confirmNewEmail: ""
             });
         } catch (err) {
-            setError(apiErrorMessage(err, t("user.changeEmail.networkError")));
+            notifyApiError(err, t("user.changeEmail.networkError"));
         } finally {
             setLoading(false);
         }
@@ -69,8 +70,7 @@ export default function ChangeEmail() {
                 <h3>{t("user.changeEmail.title")}</h3>
                 <p>{t("user.changeEmail.description")}</p>
 
-                {error && <Alert variant="danger">{error}</Alert>}
-                {message && <Alert variant="success">{message}</Alert>}
+                {validationError && <Alert variant="danger">{validationError}</Alert>}
 
                 <Form onSubmit={handleSubmit}>
                     <Form.Group className="mb-3" controlId="password">

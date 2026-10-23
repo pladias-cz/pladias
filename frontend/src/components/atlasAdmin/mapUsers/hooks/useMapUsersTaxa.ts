@@ -6,6 +6,7 @@ import {useCallback, useState, useEffect, useRef} from 'react';
 import {searchTaxaByPrefix} from '@/services/taxonApi';
 import {assignUserTaxon} from '@/services/mapAdminApi';
 import {apiErrorMessage} from '@/services/apiClient';
+import {notifyApiError} from '@/stores/notificationStore';
 import type {TFunction} from 'i18next';
 import type {SupervisedTaxon} from '../types';
 
@@ -43,11 +44,11 @@ export function useMapUsersTaxa(
         try {
             setTaxa(await searchTaxaByPrefix(searchTerm));
         } catch (err) {
-            console.error("Error fetching taxa:", err);
+            notifyApiError(err, t("common.autocomplete.searchFailed"));
         } finally {
             setTaxaLoading(false);
         }
-    }, []);
+    }, [t]);
 
     // Debounced taxon search
     useEffect(() => {

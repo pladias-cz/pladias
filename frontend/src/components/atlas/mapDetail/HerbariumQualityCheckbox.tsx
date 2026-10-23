@@ -25,9 +25,8 @@ export function HerbariumQualityCheckbox({record, onRecordUpdated}: HerbariumQua
                 // Propagate updated record with new timestamp to parent
                 onRecordUpdated?.(updatedRecord);
             },
-            (error) => {
-                // Revert on error
-                console.error(error);
+            () => {
+                // Revert on error – chybu ohlásí notifikační store (updateField v hooku)
                 setIsChecked(!newValue);
             }
         );

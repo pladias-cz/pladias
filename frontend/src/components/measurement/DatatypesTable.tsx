@@ -1,43 +1,35 @@
 import { useEffect, useState } from "react";
-import { Table, Spinner, Alert } from "react-bootstrap";
+import { Table, Spinner } from "react-bootstrap";
 import { useTranslation } from "react-i18next";
 import type { TraitDatatype } from "@/models/TraitDatatype";
 import {getTraitDatatypes} from "@/services/traitApi";
+import {notifyApiError} from "@/stores/notificationStore";
 
 export default function DatatypesTable() {
     const { t } = useTranslation();
 
     const [datatypes, setDatatypes] = useState<TraitDatatype[]>([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         const load = async () => {
             try {
                 setDatatypes(await getTraitDatatypes());
             } catch (e) {
-                setError(e instanceof Error ? e.message : "Unknown error");
+                notifyApiError(e, t("common.loadFailed"));
             } finally {
                 setLoading(false);
             }
         };
 
         load();
-    }, []);
+    }, [t]);
 
     if (loading) {
         return (
             <div className="text-center my-4">
                 <Spinner animation="border" />
             </div>
-        );
-    }
-
-    if (error) {
-        return (
-            <Alert variant="danger" className="my-3">
-                {t("common.error")}: {error}
-            </Alert>
         );
     }
 

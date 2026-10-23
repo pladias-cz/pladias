@@ -9,6 +9,8 @@ import {getRecordMapFields, type RecordMapFields} from '@/services/recordApi';
 import type {ApiResult} from '@/models/ApiResponse';
 import type { RecordPladias } from '@/models';
 import {ValidationStatusId, ValidationStatusMeta} from '@/core/validationStatus';
+import {notifyApiError, pushNotification} from '@/stores/notificationStore';
+import i18n from '@/i18n/i18n';
 
 interface UpdateResult {
     success: boolean;
@@ -61,12 +63,14 @@ export function useRecordQuickUpdates() {
                     record: updatedRecord,
                 };
             } else if (payload?.error) {
+                pushNotification({type: "danger", message: payload.error});
                 return {success: false, error: payload.error};
             } else {
+                pushNotification({type: "danger", message: i18n.t("common.table.updateFailed")});
                 return {success: false, error: 'Unknown error'};
             }
         } catch (error) {
-            console.error(`Error updating ${field}:`, error);
+            notifyApiError(error, i18n.t("common.table.updateFailed"));
             const errorMsg = error instanceof Error ? error.message : 'Network error';
             return {success: false, error: errorMsg};
         }
@@ -79,7 +83,8 @@ export function useRecordQuickUpdates() {
         try {
             return await getRecordMapFields(recordId);
         } catch (error) {
-            console.error(`Error fetching map fields for record ${recordId}:`, error);
+            // obnova kaskádových polí po mutaci – selhání jen oznámíme, uložené zůstává
+            notifyApiError(error, i18n.t("record.loadFailed"));
             return null;
         }
     }, []);

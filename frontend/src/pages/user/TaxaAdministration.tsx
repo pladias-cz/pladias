@@ -1,6 +1,6 @@
 import {useEffect, useState} from "react";
 import {useParams} from "react-router-dom";
-import {Alert, Col, Form, Row, Spinner} from "react-bootstrap";
+import {Col, Form, Row, Spinner} from "react-bootstrap";
 import {useQuery} from "@tanstack/react-query";
 import {usePageTitle} from "@/hooks/usePageTitle";
 import {createTaxaAllProvider} from '@/components/autocomplete/TaxaAllProvider';
@@ -14,7 +14,7 @@ import {type Taxon} from '@/models/Taxon';
 import {type TaxonId} from '@/models/TaxonId';
 import TaxonSynonyms from "@/components/taxonAdmin/TaxonSynonyms";
 import {getTaxon} from "@/services/taxonApi";
-import {apiErrorMessage} from "@/services/apiClient";
+import {notifyApiError} from "@/stores/notificationStore";
 import { useTranslation } from 'react-i18next';
 
 export default function TaxaAdministration() {
@@ -52,7 +52,13 @@ export default function TaxaAdministration() {
         enabled: selectedTaxonId !== null,
     });
     const loading = selectedTaxonId !== null && isPending;
-    const loadError = error ? apiErrorMessage(error, t("taxon.administration.loadTaxonError")) : null;
+
+    // chyba načtení taxonu – globální notifikace (jako InfoPanel/MapDetail)
+    useEffect(() => {
+        if (error) {
+            notifyApiError(error, t("taxon.administration.loadTaxonError"));
+        }
+    }, [error, t]);
 
     return (
         <>
@@ -75,14 +81,6 @@ export default function TaxaAdministration() {
                     </Form>
                 </Col>
             </Row>
-
-            {loadError && (
-                <Row>
-                    <Col md={{span: 4, offset: 4}}>
-                        <Alert variant="danger">{loadError}</Alert>
-                    </Col>
-                </Row>
-            )}
 
             {/* --- Detail vybraného taxonu --- */}
             <Row>

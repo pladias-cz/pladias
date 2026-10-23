@@ -83,6 +83,7 @@ export function DataTable<T extends object>(config: DataTableConfig<T>) {
         totalCount,
         filteredCount,
         loading,
+        error,
         setData: setLocalData,
         refresh,
     } = useTableData<T>({
@@ -116,6 +117,14 @@ export function DataTable<T extends object>(config: DataTableConfig<T>) {
             void refresh();
         }
     }, [refreshKey, refresh]);
+
+    // chyba načtení řádků – globální notifikace (custom fetchery si chyby hlásí
+    // samy a vracejí prázdná data, query pak error nemá)
+    useEffect(() => {
+        if (error) {
+            notifyApiError(error, t("common.table.loadFailed"));
+        }
+    }, [error, t]);
 
     // Update pagination totals when data changes
     useEffect(() => {

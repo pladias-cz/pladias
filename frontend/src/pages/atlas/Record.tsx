@@ -1,8 +1,8 @@
-import {Row, Col, Container, Spinner, Alert, Button} from "react-bootstrap";
+import {Row, Col, Container, Spinner, Button} from "react-bootstrap";
 import {usePageTitle} from "@/hooks/usePageTitle";
 import {useTranslation} from "react-i18next";
 import {useParams} from "react-router-dom";
-import {useCallback, useState} from "react";
+import {useCallback, useEffect, useState} from "react";
 import {useQuery, useQueryClient} from "@tanstack/react-query";
 import {
     RecordLocation,
@@ -13,7 +13,7 @@ import {
 } from "@/components/atlas/record";
 import type { RecordPladiasFull, ReverseGeocodingResponse } from "@/models";
 import {getRecordFull, moveRecordCoordinates} from "@/services/recordApi";
-import {apiErrorMessage} from "@/services/apiClient";
+import {notifyApiError, pushNotification} from "@/stores/notificationStore";
 
 interface ProposedLocation {
     coordinates: [number, number];
@@ -27,7 +27,6 @@ export default function Record() {
     const queryClient = useQueryClient();
     const [proposedLocation, setProposedLocation] = useState<ProposedLocation | undefined>(undefined);
     const [moving, setMoving] = useState(false);
-    const [moveError, setMoveError] = useState<string | null>(null);
 
     usePageTitle(`${t("record.titles.detail")} ${recordId ? ` ${recordId}` : ''}`);
 
@@ -37,9 +36,14 @@ export default function Record() {
         queryFn: () => getRecordFull(parseInt(recordId!, 10)),
         enabled: recordId !== undefined,
     });
-    const loadError = !recordId
-        ? t("record.noRecordId")
-        : error ? apiErrorMessage(error, t("record.loadFailed")) : null;
+    // chyby načtení – globální notifikace; render pak jen skryje obsah stránky
+    useEffect(() => {
+        if (!recordId) {
+            pushNotification({type: "danger", message: t("record.noRecordId")});
+        } else if (error) {
+            notifyApiError(error, t("record.loadFailed"));
+        }
+    }, [recordId, error, t]);
 
     // Handle field updates from child components - update timestamp for conflict detection
     const handleFieldUpdated = useCallback((newTimestamp?: number) => {
@@ -65,7 +69,6 @@ export default function Record() {
         }
 
         setMoving(true);
-        setMoveError(null);
 
         try {
             await moveRecordCoordinates(
@@ -79,15 +82,18 @@ export default function Record() {
             // Reload the page to show updated data
             window.location.reload();
         } catch (err) {
-            setMoveError(apiErrorMessage(err, t("record.moveFailed")));
+            notifyApiError(err, t("record.moveFailed"));
             setMoving(false);
         }
     };
 
     const handleCancelMove = () => {
         setProposedLocation(undefined);
-        setMoveError(null);
     };
+
+    if (!recordId) {
+        return null;
+    }
 
     if (loading) {
         return (
@@ -101,18 +107,8 @@ export default function Record() {
         );
     }
 
-    if (loadError || !record) {
-        return (
-            <Container className="py-4">
-                <Row>
-                    <Col>
-                        <Alert variant="danger">
-                            {loadError || t("record.notFound")}
-                        </Alert>
-                    </Col>
-                </Row>
-            </Container>
-        );
+    if (!record) {
+        return null;
     }
 
     return (
@@ -163,7 +159,6 @@ export default function Record() {
                                             />
                                         </div>
                                         <div className="ms-auto d-flex gap-2">
-                                            {moveError && <span className="text-danger me-2">{moveError}</span>}
                                             <Button
                                                 variant="success"
                                                 size="sm"

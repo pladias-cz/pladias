@@ -6,6 +6,7 @@ import {useCallback, useState} from 'react';
 import {getProjects} from '@/services/searchApi';
 import {assignProjectToUser, removeProjectFromUser} from '@/services/mapAdminApi';
 import {apiErrorMessage} from '@/services/apiClient';
+import {notifyApiError} from '@/stores/notificationStore';
 import type {TFunction} from 'i18next';
 import type {Project} from '../types';
 
@@ -39,11 +40,11 @@ export function useMapUsersProjects(
         try {
             setProjects(await getProjects());
         } catch (err) {
-            console.error("Error fetching projects:", err);
+            notifyApiError(err, t("common.loadFailed"));
         } finally {
             setProjectsLoading(false);
         }
-    }, []);
+    }, [t]);
 
     const handleOpenAddModal = useCallback((userId: number) => {
         setSelectedUserId(userId);

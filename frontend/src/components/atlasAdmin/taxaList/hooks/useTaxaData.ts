@@ -3,7 +3,9 @@
  */
 
 import {useCallback} from 'react';
-import {apiGet, isAbortError} from '@/services/apiClient';
+import {apiGet} from '@/services/apiClient';
+import {notifyApiError} from '@/stores/notificationStore';
+import i18n from '@/i18n/i18n';
 import type {ApiResult} from '@/models/ApiResponse';
 import type {TaxonMapSettings} from '../types';
 
@@ -81,11 +83,8 @@ export function useTaxaData(options?: UseTaxaDataOptions) {
                 };
             }
         } catch (err) {
-            if (isAbortError(err)) {
-                // Aborted - ignore
-            } else {
-                console.error('Error fetching taxa:', err);
-            }
+            // aborted i centrálně ohlášené chyby notifyApiError tiše ignoruje
+            notifyApiError(err, i18n.t("common.loadFailed"));
             return {
                 data: [],
                 totalCount: 0,

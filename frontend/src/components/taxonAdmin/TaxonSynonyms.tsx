@@ -1,5 +1,5 @@
 import {useCallback, useEffect, useMemo, useState} from 'react';
-import {Card, Spinner, Button, Form, Alert, Table} from 'react-bootstrap';
+import {Card, Spinner, Button, Form, Table} from 'react-bootstrap';
 import {
     flexRender,
     getCoreRowModel,
@@ -18,7 +18,7 @@ import {
     getTaxonSynonyms,
     saveTaxonSynonym,
 } from '@/services/taxonApi';
-import {notifyApiError} from '@/stores/notificationStore';
+import {notifyApiError, useNotifications} from '@/stores/notificationStore';
 
 interface Props {
     taxon: Taxon;
@@ -28,6 +28,7 @@ interface Props {
 export default function TaxonSynonyms({taxon, cacheKey}: Props) {
     const {t} = useTranslation();
     const {confirm, dialog} = useConfirm();
+    const {push} = useNotifications();
 
     const [synonyms, setSynonyms] = useState<TaxonSynonym[]>([]);
     const [publications, setPublications] = useState<TaxonPublication[]>([]);
@@ -95,9 +96,10 @@ export default function TaxonSynonyms({taxon, cacheKey}: Props) {
         try {
             await saveTaxonSynonym(syn);
 
-            setSuccessId(syn.id);
+            push({type: "success", message: t("taxon.synonyms.saved")});
 
-            // po 2s schovej success
+            // highlight uloženého řádku – po 2s schovej
+            setSuccessId(syn.id);
             setTimeout(() => setSuccessId(null), 2000);
 
         } catch (e) {
@@ -105,19 +107,7 @@ export default function TaxonSynonyms({taxon, cacheKey}: Props) {
         } finally {
             setSavingId(null);
         }
-    }, [t]);
-
-    const renderAlert = () => {
-        if (successId) {
-            return (
-                <Alert variant="success">
-                    {t("taxon.synonyms.saved")}
-                </Alert>
-            );
-        }
-
-        return null;
-    };
+    }, [t, push]);
 
     const deleteRow = useCallback(async (id: number) => {
         if (!(await confirm({
@@ -236,7 +226,6 @@ export default function TaxonSynonyms({taxon, cacheKey}: Props) {
                     <Button size="sm" onClick={addRow}>{t("taxon.synonyms.addButton")}</Button>
                 </div>
 
-                {renderAlert()}
                 {loading && <Spinner animation="border" />}
 
                 {!loading && (

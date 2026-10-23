@@ -148,7 +148,7 @@ export function useTableData<T>(options: UseTableDataOptions<T>) {
         };
     }, [endpoint, page, pageSize, sorting, columnFilters, additionalParams, method, customFetcher, transformRequest]);
 
-    const {data: queryData, isPending, isFetching, refetch} = useQuery({
+    const {data: queryData, isPending, isFetching, refetch, error} = useQuery({
         queryKey,
         queryFn,
         // Rows of the previous page/filters stay visible while the next ones load (as before)
@@ -201,6 +201,7 @@ export function useTableData<T>(options: UseTableDataOptions<T>) {
         totalCount: queryData?.totalCount ?? 0,
         filteredCount: queryData?.filteredCount ?? 0,
         loading: isPending || isFetching,
+        error,
         refresh,
         setData,
     };

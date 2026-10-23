@@ -1,43 +1,35 @@
 import { useEffect, useState } from "react";
-import { Table, Spinner, Alert } from "react-bootstrap";
+import { Table, Spinner } from "react-bootstrap";
 import { useTranslation } from "react-i18next";
 import type { TraitBackup } from "@/models/TraitBackup";
 import {getTraitBackups} from "@/services/traitApi";
+import {notifyApiError} from "@/stores/notificationStore";
 
 export default function BackupTable() {
     const { t } = useTranslation();
 
     const [backups, setBackups] = useState<TraitBackup[]>([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         const load = async () => {
             try {
                 setBackups(await getTraitBackups());
             } catch (e) {
-                setError(e instanceof Error ? e.message : "Unknown error");
+                notifyApiError(e, t("common.loadFailed"));
             } finally {
                 setLoading(false);
             }
         };
 
         load();
-    }, []);
+    }, [t]);
 
     if (loading) {
         return (
             <div className="text-center my-4">
                 <Spinner animation="border" />
             </div>
-        );
-    }
-
-    if (error) {
-        return (
-            <Alert variant="danger" className="my-3">
-                {t("trait.backup.error")}: {error}
-            </Alert>
         );
     }
 

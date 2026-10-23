@@ -6,6 +6,8 @@ import type {EnumerateValue} from "@/models/EnumerateValue";
 import {DatatypeDescriptionPopover} from "@/components/measurement/DatatypeDescriptionPopover";
 import RichTextMessage from "@/components/RichTextMessage";
 import {getEnumerateValues, getTraitAggregationTypes, getTraitDatatypes} from "@/services/traitApi";
+import {notifyApiError} from "@/stores/notificationStore";
+import {useTranslation} from "react-i18next";
 
 function BoolIcon({value}: { value: boolean }) {
     return value ? (
@@ -20,6 +22,7 @@ interface Props {
 }
 
 export default function FeatureDatatypeFlags({feature}: Props) {
+    const {t} = useTranslation();
     const [datatype, setDatatype] = useState<TraitDatatype | null>(null);
     const [inheritance, setInheritance] = useState<TraitAggregationType | null>(null);
     const [enumerate, setEnumerate] = useState<EnumerateValue[] | null>(null);
@@ -50,7 +53,7 @@ export default function FeatureDatatypeFlags({feature}: Props) {
                     setEnumerate(enumerates);
                 }
             } catch (e) {
-                console.error(e);
+                notifyApiError(e, t("common.loadFailed"));
             } finally {
                 if (!cancelled) setLoading(false);
             }
@@ -60,7 +63,7 @@ export default function FeatureDatatypeFlags({feature}: Props) {
         return () => {
             cancelled = true;
         };
-    }, [feature.id, feature.datatype, feature.inheritance, feature.enumerate]);
+    }, [feature.id, feature.datatype, feature.inheritance, feature.enumerate, t]);
 
     if (loading) {
         return <p className="ms-3 text-muted">loading…</p>;

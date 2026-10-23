@@ -8,6 +8,7 @@ import {useUser} from "@/context/UserContext";
 import {useTranslation} from "react-i18next";
 import {getUsersMinimal} from "@/services/userApi";
 import {getTraitDatatypes, getTraitVisibilityStatuses} from "@/services/traitApi";
+import {notifyApiError} from "@/stores/notificationStore";
 
 interface Props {
     feature: Feature;
@@ -40,14 +41,14 @@ export default function TraitUpload({feature, submitting = false}: Props) {
                     datatypes.find(d => d.id === feature.datatype) ?? null
                 );
             } catch (e) {
-                console.error(e);
+                notifyApiError(e, t("common.loadFailed"));
             } finally {
                 setLoading(false);
             }
         }
 
         load();
-    }, [feature.datatype]);
+    }, [feature.datatype, t]);
 
     if (!feature || loading) return null;
 

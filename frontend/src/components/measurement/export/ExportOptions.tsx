@@ -4,6 +4,7 @@ import type {TraitEntryType} from "@/models/TraitEntryType";
 import type {TaxonRankId} from "@/models/TaxonRankId";
 import {getExportableTaxonRanks} from "@/services/taxonApi";
 import {getTraitEntryTypes} from "@/services/traitApi";
+import {notifyApiError} from "@/stores/notificationStore";
 
 export default function ExportOptions() {
     const { t } = useTranslation();
@@ -13,17 +14,14 @@ export default function ExportOptions() {
     useEffect(() => {
         getExportableTaxonRanks()
             .then(setRank)
-            .catch(e => console.error("Failed to load exportable taxon ranks:", e));
-    }, []);
-
+            .catch(e => notifyApiError(e, t("trait.export.loadFailed")));
+    }, [t]);
 
     useEffect(() => {
         getTraitEntryTypes()
             .then(setEntryTypes)
-            .catch(err => {
-                console.error("Failed to load trait entry types:", err);
-            });
-    }, []);
+            .catch(e => notifyApiError(e, t("trait.export.loadFailed")));
+    }, [t]);
     return (
         <>
             <h4>{t("trait.export.valueTypes")}</h4>

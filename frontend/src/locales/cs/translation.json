@@ -678,6 +678,7 @@
     "instanceMessages": {
       "unavailable": "Zprávy o stavu instance jsou momentálně nedostupné."
     },
+    "loadFailed": "Načtení dat se nezdařilo.",
     "loading": "Načítám...",
     "manager": "Odpovědná osoba",
     "multiValueEdit": {
@@ -721,6 +722,7 @@
         "number": "Číslo",
         "yes": "Ano"
       },
+      "loadFailed": "Načtení tabulky se nezdařilo.",
       "no": "Ne",
       "noData": "Nebyly nalezeny žádné údaje",
       "rowsPerPage": "Řádků na stránku",

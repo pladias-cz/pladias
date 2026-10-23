@@ -71,7 +71,6 @@ export function InfoPanel({taxonName, taxonId}: InfoPanelProps) {
     const [isMapped, setIsMapped] = useState<boolean>(false);
     const [revisionStatusId, setRevisionStatusId] = useState<number>(0);
     const [revisionUpdating, setRevisionUpdating] = useState<boolean>(false);
-    const [revisionStatusError, setRevisionStatusError] = useState<string | null>(null);
 
     const {updateRevisorsComment, updateRevisorsPrintMapComment, updateMapType, updateRevisionStatusForTaxon} = useTaxonUpdates();
 
@@ -140,13 +139,12 @@ export function InfoPanel({taxonName, taxonId}: InfoPanelProps) {
             return;
         }
         setRevisionUpdating(true);
-        setRevisionStatusError(null);
         try {
             const newTimestamp = await updateRevisionStatusForTaxon(taxonId, newStatus, lastEditTimestamp);
             setLastEditTimestamp(newTimestamp);
             setRevisionStatusId(newStatus);
         } catch (err) {
-            setRevisionStatusError(err instanceof Error ? err.message : 'Failed to update revision status');
+            notifyApiError(err, t("atlas.mapMain.infoPanel.saveError"));
         } finally {
             setRevisionUpdating(false);
         }
@@ -277,7 +275,6 @@ export function InfoPanel({taxonName, taxonId}: InfoPanelProps) {
                                     </Button>
                                 </>
                             )}
-                            {revisionStatusError && <span className="text-danger d-block">{revisionStatusError}</span>}
                         </p>
                         <p>{t("atlas.mapMain.infoPanel.mapTypeDescription")}</p>
                         {taxonId && (

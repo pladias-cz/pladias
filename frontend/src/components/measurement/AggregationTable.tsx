@@ -1,44 +1,36 @@
 import { useEffect, useState } from "react";
-import { Table, Spinner, Alert } from "react-bootstrap";
+import { Table, Spinner } from "react-bootstrap";
 import { useTranslation } from "react-i18next";
 import type { TraitAggregationType } from "@/models/TraitAggregationType";
 import {getTraitAggregationTypes} from "@/services/traitApi";
 import RichTextMessage from "@/components/RichTextMessage";
+import {notifyApiError} from "@/stores/notificationStore";
 
 export default function AggregationTable() {
     const { t } = useTranslation();
 
     const [types, setTypes] = useState<TraitAggregationType[]>([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         const load = async () => {
             try {
                 setTypes(await getTraitAggregationTypes());
             } catch (e) {
-                setError(e instanceof Error ? e.message : "Unknown error");
+                notifyApiError(e, t("common.loadFailed"));
             } finally {
                 setLoading(false);
             }
         };
 
         load();
-    }, []);
+    }, [t]);
 
     if (loading) {
         return (
             <div className="text-center my-4">
                 <Spinner animation="border" />
             </div>
-        );
-    }
-
-    if (error) {
-        return (
-            <Alert variant="danger" className="my-3">
-                {t("common.error")}: {error}
-            </Alert>
         );
     }
 

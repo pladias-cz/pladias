@@ -16,6 +16,14 @@ export interface ServerSideDataResponse<T> {
 }
 
 /**
+ * Optimistický updater řádků tabulky: funkce, kterou DataTable přes konfiguraci
+ * `onDataUpdater` předá rodiči. Aplikuje updater na vykreslované řádky
+ * (useTableData.setData) bez refetche; vrstva změn žije do nejbližší odpovědi
+ * serveru. Pro vlastní cellRenderery (status selecty atlasAdmin TaxaList).
+ */
+export type TableDataUpdater<T> = (updater: (prev: T[]) => T[]) => void;
+
+/**
  * Sort configuration for server-side sorting
  */
 export interface SortConfig {
@@ -221,6 +229,17 @@ export interface DataTableConfig<T> {
     pageSizeOptions?: number[];
     /** Callback when row data changes */
     onRowUpdate?: (row: T, field: keyof T, value: unknown) => Promise<void>;
+    /**
+     * Po mountu dostane rodič optimistický updater řádků (useTableData.setData,
+     * stabilní identita), při unmountu null. Vlastní cellRenderery (status
+     * selecty atlasAdmin) s ním mění řádky okamžitě bez refetche.
+     *
+     * Pozor na ukládání do React state: setState považuje funkční argument za
+     * funkční updater – `setState(updater)` by zavolal updater místo jeho
+     * uložení. Držte updater v refu (viz TaxaList) nebo použijte lazy tvar
+     * `setState(() => updater)`.
+     */
+    onDataUpdater?: (updater: TableDataUpdater<T> | null) => void;
     /** Additional query params to send with requests */
     additionalParams?: Record<string, string>;
     /** Custom class names */

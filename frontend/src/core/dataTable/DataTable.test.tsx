@@ -14,6 +14,8 @@ import {DataTable} from "./DataTable";
 import {withQueryClient} from "@/test/withQueryClient";
 import {createQueryClient} from "@/query/queryClient";
 import type {DataTableColumnDef} from "./types";
+import {useNotificationStore} from "@/stores/notificationStore";
+import {ApiError} from "@/services/apiClient";
 import "@/i18n/i18n";
 
 interface TestRow {
@@ -108,6 +110,8 @@ const paginationList = () => document.querySelector("ul.pagination") as HTMLElem
 afterEach(() => {
     cleanup();
     vi.restoreAllMocks();
+    // notifikační store je globální – toasty z testů nesmí vytéct do dalších
+    useNotificationStore.getState().clear();
 });
 
 describe("DataTable", () => {
@@ -314,10 +318,11 @@ describe("DataTable", () => {
         expect(screen.getAllByRole("checkbox")[0]).toBeChecked();
     });
 
-    it("checkbox: rollback a chybová hláška při selhání onToggle", async () => {
+    it("checkbox: rollback a toast při selhání onToggle", async () => {
         const consoleError = vi.spyOn(console, "error").mockImplementation(() => undefined);
         const onToggle = vi.fn(async () => {
-            throw new Error("Konflikt při ukládání");
+            // reálné service hážou ApiError s payloadem (obálka success:false)
+            throw new ApiError("Konflikt při ukládání", undefined, {success: false});
         });
         const onRowUpdate = vi.fn(async () => undefined);
         const fetcher = vi.fn(async () => ({data: rows, totalCount: 2}));
@@ -337,11 +342,14 @@ describe("DataTable", () => {
 
         fireEvent.click(checkbox);
 
-        // rollback na původní hodnotu + alert s chybou
+        // rollback na původní hodnotu + chyba jde do notifikačního store (toast),
+        // hlášku z backendu nese ApiError.payload
         await waitFor(() => {
-            expect(screen.getByRole("alert")).toBeInTheDocument();
+            const notifications = useNotificationStore.getState().notifications;
+            expect(notifications).toHaveLength(1);
+            expect(notifications[0].type).toBe("danger");
+            expect(notifications[0].message).toBe("Konflikt při ukládání");
         });
-        expect(screen.getByText("Konflikt při ukládání")).toBeInTheDocument();
         expect(screen.getAllByRole("checkbox")[1]).toBeChecked();
         expect(onRowUpdate).not.toHaveBeenCalled();
         expect(consoleError).toHaveBeenCalled();
@@ -443,5 +451,43 @@ describe("DataTable", () => {
         await waitFor(() => {
             expect(screen.getAllByRole("checkbox")[0]).not.toBeChecked();
         });
+    });
+
+    it("onDataUpdater: rodič dostane optimistický updater řádků (změna bez refetche)", async () => {
+        // Registrace musí proběhnout jednou (stabilní identita setData) a při
+        // unmountu dostane rodič null – atlasAdmin TaxaList s ní mění status
+        // selecty ve vlastních cellRendereréch okamžitě.
+        const received: Array<((updater: (prev: TestRow[]) => TestRow[]) => void) | null> = [];
+        const onDataUpdater = vi.fn((updater: ((updater: (prev: TestRow[]) => TestRow[]) => void) | null) => {
+            received.push(updater);
+        });
+        const fetcher = vi.fn(async () => ({data: rows, totalCount: 2}));
+        const {unmount} = render(
+            withQueryClient(
+                <DataTable
+                    endpoint="/test"
+                    columns={makeColumns(vi.fn(async () => undefined))}
+                    fetchData={fetcher}
+                    onDataUpdater={onDataUpdater}
+                />
+            )
+        );
+
+        expect(await screen.findByText("Vřesovec pleterný")).toBeInTheDocument();
+        expect(received).toHaveLength(1);
+        const dataUpdater = received[0];
+        expect(dataUpdater).not.toBeNull();
+        if (!dataUpdater) throw new Error("updater nebyl zaregistrován");
+
+        // optimistická změna řádku se projeví okamžitě, bez dalšího fetche
+        act(() => {
+            dataUpdater(prev => prev.map(r => (r.id === 1 ? {...r, name: "Přejmenováno"} : r)));
+        });
+        expect(screen.getByText("Přejmenováno")).toBeInTheDocument();
+        expect(fetcher).toHaveBeenCalledTimes(1);
+
+        // unmount rodiče odregistrace – updater dostane null
+        unmount();
+        expect(received[received.length - 1]).toBeNull();
     });
 });

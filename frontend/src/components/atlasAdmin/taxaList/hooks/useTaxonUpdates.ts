@@ -3,15 +3,20 @@
  */
 
 import {useState, useCallback} from 'react';
-import {apiPost} from '@/services/apiClient';
+import {apiPost, ensureSuccess} from '@/services/apiClient';
 import type {TaxonMapSettings} from '../types';
 
-interface UpdateResponse {
+/**
+ * Odpověď mutace taxonMapSettings – obálka JsonResult (success + message)
+ * plus nový lastEditTimestamp uloženého záznamu. Type alias (ne interface),
+ * aby vyhověl index-signatuře ApiResult v ensureSuccess.
+ */
+type UpdateResponse = {
     success: boolean;
-    message: string;
+    message?: string;
     text?: string;
     timestamp: string;
-}
+};
 
 export function useTaxonUpdates() {
     const [updatingTaxonId, setUpdatingTaxonId] = useState<number | null>(null);
@@ -32,9 +37,9 @@ export function useTaxonUpdates() {
         // urlencoded hlavička z původního kódu se na drátě neposílala
         const payload = await apiPost<UpdateResponse>('/api/react/atlasadmin/taxonMapSettings', formData);
 
-        if (!payload.success) {
-            throw new Error(payload.message || 'Unknown error');
-        }
+        // Neúspěch mutace (HTTP 200 + success:false) háže ApiError s hláškou
+        // backendu v message/payload – ta se přes notifyApiError dostane do toastu.
+        ensureSuccess(payload);
 
         // Parse and return the new timestamp from response
         return parseInt(payload.timestamp, 10);
@@ -43,7 +48,7 @@ export function useTaxonUpdates() {
     const updateIsMapped = useCallback(async (
         row: TaxonMapSettings,
         newDataCallback: (updater: (prev: TaxonMapSettings[]) => TaxonMapSettings[]) => void,
-        errorCallback: (message: string) => void
+        errorCallback: (error: unknown) => void
     ) => {
         const taxonId = row.taxonId;
         const currentIsMapped = row.isMapped;
@@ -64,13 +69,13 @@ export function useTaxonUpdates() {
                     t.taxonId === taxonId ? {...t, lastEditTimestamp: newTimestamp} : t
                 )
             );
-        } catch {
+        } catch (error) {
             newDataCallback(prev =>
                 prev.map(t =>
                     t.taxonId === taxonId ? {...t, isMapped: currentIsMapped} : t
                 )
             );
-            errorCallback(`Failed to update mapped status for taxon ${row.taxonNameLat}`);
+            errorCallback(error);
         } finally {
             setUpdatingTaxonId(null);
         }
@@ -81,7 +86,7 @@ export function useTaxonUpdates() {
         newParentTaxonId: number | null,
         newParentTaxonNameLat: string | null,
         newDataCallback: (updater: (prev: TaxonMapSettings[]) => TaxonMapSettings[]) => void,
-        errorCallback: (message: string) => void
+        errorCallback: (error: unknown) => void
     ) => {
         const taxonId = row.taxonId;
         const currentParentTaxonId = row.parentTaxonId;
@@ -115,7 +120,7 @@ export function useTaxonUpdates() {
                     } : t
                 )
             );
-        } catch {
+        } catch (error) {
             newDataCallback(prev =>
                 prev.map(t =>
                     t.taxonId === taxonId ? {
@@ -125,7 +130,7 @@ export function useTaxonUpdates() {
                     } : t
                 )
             );
-            errorCallback(`Failed to update parent map for taxon ${row.taxonNameLat}`);
+            errorCallback(error);
         } finally {
             setUpdatingTaxonId(null);
         }
@@ -135,7 +140,7 @@ export function useTaxonUpdates() {
         row: TaxonMapSettings,
         newValue: number,
         newDataCallback: (updater: (prev: TaxonMapSettings[]) => TaxonMapSettings[]) => void,
-        errorCallback: (message: string) => void
+        errorCallback: (error: unknown) => void
     ) => {
         const taxonId = row.taxonId;
         const currentCommonThreshold = row.commonThreshold;
@@ -160,13 +165,13 @@ export function useTaxonUpdates() {
                     } : t
                 )
             );
-        } catch {
+        } catch (error) {
             newDataCallback(prev =>
                 prev.map(t =>
                     t.taxonId === taxonId ? {...t, commonThreshold: currentCommonThreshold} : t
                 )
             );
-            errorCallback(`Failed to update commonThreshold for taxon ${row.taxonNameLat}`);
+            errorCallback(error);
         } finally {
             setUpdatingTaxonId(null);
         }
@@ -175,7 +180,7 @@ export function useTaxonUpdates() {
     const updateIsProtected = useCallback(async (
         row: TaxonMapSettings,
         newDataCallback: (updater: (prev: TaxonMapSettings[]) => TaxonMapSettings[]) => void,
-        errorCallback: (message: string) => void
+        errorCallback: (error: unknown) => void
     ) => {
         const taxonId = row.taxonId;
         const currentIsProtected = row.isProtected;
@@ -200,13 +205,13 @@ export function useTaxonUpdates() {
                     } : t
                 )
             );
-        } catch {
+        } catch (error) {
             newDataCallback(prev =>
                 prev.map(t =>
                     t.taxonId === taxonId ? {...t, isProtected: currentIsProtected} : t
                 )
             );
-            errorCallback(`Failed to update isProtected for taxon ${row.taxonNameLat}`);
+            errorCallback(error);
         } finally {
             setUpdatingTaxonId(null);
         }
@@ -216,7 +221,7 @@ export function useTaxonUpdates() {
         row: TaxonMapSettings,
         newValue: string,
         newDataCallback: (updater: (prev: TaxonMapSettings[]) => TaxonMapSettings[]) => void,
-        errorCallback: (message: string) => void
+        errorCallback: (error: unknown) => void
     ) => {
         const taxonId = row.taxonId;
         const timestamp = row.lastEditTimestamp;
@@ -235,7 +240,7 @@ export function useTaxonUpdates() {
                 )
             );
         } catch (error) {
-            errorCallback(`Failed to update preslia for taxon ${row.taxonNameLat}`);
+            errorCallback(error);
             throw error;
         } finally {
             setUpdatingTaxonId(null);
@@ -246,7 +251,7 @@ export function useTaxonUpdates() {
         row: TaxonMapSettings,
         newValue: number,
         newDataCallback: (updater: (prev: TaxonMapSettings[]) => TaxonMapSettings[]) => void,
-        errorCallback: (message: string) => void
+        errorCallback: (error: unknown) => void
     ) => {
         const taxonId = row.taxonId;
         const currentRevisionStatusId = row.revisionStatusId;
@@ -271,13 +276,13 @@ export function useTaxonUpdates() {
                     } : t
                 )
             );
-        } catch {
+        } catch (error) {
             newDataCallback(prev =>
                 prev.map(t =>
                     t.taxonId === taxonId ? {...t, revisionStatusId: currentRevisionStatusId} : t
                 )
             );
-            errorCallback(`Failed to update revision status for taxon ${row.taxonNameLat}`);
+            errorCallback(error);
         } finally {
             setUpdatingTaxonId(null);
         }
@@ -287,7 +292,7 @@ export function useTaxonUpdates() {
         row: TaxonMapSettings,
         newValue: number,
         newDataCallback: (updater: (prev: TaxonMapSettings[]) => TaxonMapSettings[]) => void,
-        errorCallback: (message: string) => void
+        errorCallback: (error: unknown) => void
     ) => {
         const taxonId = row.taxonId;
         const currentPublicationStatusId = row.publicationStatusId;
@@ -312,13 +317,13 @@ export function useTaxonUpdates() {
                     } : t
                 )
             );
-        } catch {
+        } catch (error) {
             newDataCallback(prev =>
                 prev.map(t =>
                     t.taxonId === taxonId ? {...t, publicationStatusId: currentPublicationStatusId} : t
                 )
             );
-            errorCallback(`Failed to update publication status for taxon ${row.taxonNameLat}`);
+            errorCallback(error);
         } finally {
             setUpdatingTaxonId(null);
         }

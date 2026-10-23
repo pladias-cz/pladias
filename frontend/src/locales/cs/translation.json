@@ -109,6 +109,7 @@
         "selectParentMap": "Vyberte nadřazenou mapu...",
         "showingTaxa": "Zobrazeno {{showing}} z {{total}} taxonů",
         "title": "Přehled taxonů",
+        "updateFailed": "Aktualizace nastavení taxonu se nezdařila.",
         "view": "Zobrazit"
       },
       "uploadFile": {
@@ -729,6 +730,7 @@
         "clickToSort": "Klikněte pro seřazení",
         "descending": "Seřadit sestupně"
       },
+      "updateFailed": "Aktualizace se nezdařila.",
       "yes": "Ano"
     },
     "true": "true",

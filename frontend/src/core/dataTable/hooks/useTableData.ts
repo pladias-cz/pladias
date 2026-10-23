@@ -2,7 +2,7 @@
  * Hook for fetching and managing table data with server-side pagination
  */
 
-import {useCallback, useEffect, useMemo, useState} from 'react';
+import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import type {SetStateAction} from 'react';
 import {keepPreviousData, useQuery} from '@tanstack/react-query';
 import {apiGet, apiPost} from '@/services/apiClient';
@@ -179,14 +179,22 @@ export function useTableData<T>(options: UseTableDataOptions<T>) {
     }, [refetch]);
 
     /**
+     * Aktuálně vykreslované řádky v refu: setData tak zůstává stabilní identitou
+     * (rodič si ji přes DataTable.onDataUpdater zaregistruje jednou po mountu)
+     * a přece vždy aplikuje updater na čerstvá data (base při prev === null).
+     */
+    const dataRef = useRef<T[]>([]);
+    dataRef.current = data;
+
+    /**
      * Optimistic setData (checkboxes) – functional updates over the rendered rows.
      */
     const setData = useCallback((updater: SetStateAction<T[]>) => {
         setLocalData((prev) => {
-            const base = prev ?? data;
+            const base = prev ?? dataRef.current;
             return typeof updater === 'function' ? updater(base) : updater;
         });
-    }, [data]);
+    }, []);
 
     return {
         data,

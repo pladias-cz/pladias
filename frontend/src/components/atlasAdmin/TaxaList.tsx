@@ -5,9 +5,9 @@
  * to efficiently load taxa and their map settings.
  */
 
-import {useState, useCallback, useMemo} from 'react';
+import {useState, useCallback, useMemo, useRef} from 'react';
 import {useTranslation} from 'react-i18next';
-import {DataTable, type DataTableColumnDef, createActionColumn, createCheckboxColumn, createTextColumn, createNumberColumn} from '@/core/dataTable';
+import {DataTable, type DataTableColumnDef, type TableDataUpdater, createActionColumn, createCheckboxColumn, createTextColumn, createNumberColumn} from '@/core/dataTable';
 import {
     useTaxaData,
     useTaxonUpdates,
@@ -21,14 +21,28 @@ import {
 } from './taxaList/components';
 import type {TaxonMapSettings, TaxonOption} from './taxaList/types';
 import {getPublicationStatuses, getRevisionStatuses} from '@/services/mapAdminApi';
+import {notifyApiError} from '@/stores/notificationStore';
 import {useCatalogQuery} from '@/query/useCatalogQuery';
 import {Link} from "react-router-dom";
 
 export default function TaxaList() {
     const {t} = useTranslation();
 
-    const [error, setError] = useState<string | null>(null);
-    const [localDataUpdater, _setLocalDataUpdater] = useState<((updater: (prev: TaxonMapSettings[]) => TaxonMapSettings[]) => void) | null>(null);
+    // Optimistický updater řádků tabulky – zaregistruje ho DataTable po mountu
+    // (onDataUpdater); vlastní cellRenderery (status selecty, mapování, Preslia,
+    // PNG…) s ním projeví změny okamžitě bez refetche (vrstva žije do nejbližší
+    // odpovědi serveru).
+    //
+    // Pozor: updater se drží v refu, NE ve state. React považuje funkční
+    // argument setState za funkční updater – `setState(setData)` by zavolal
+    // `setData(null)` a uložil jeho návratovou hodnotu (undefined) místo
+    // funkce samotné; registrace by se tiše ztratila a optimistická vrstva
+    // by nikdy nefungovala (viz docs/gotchas.md).
+    const localDataUpdaterRef = useRef<TableDataUpdater<TaxonMapSettings> | null>(null);
+
+    const handleDataUpdater = useCallback((updater: TableDataUpdater<TaxonMapSettings> | null) => {
+        localDataUpdaterRef.current = updater;
+    }, []);
 
     // Vynucení refetche dat tabulky po mutacích mimo DataTable (uložení
     // Preslia apod.) – viz refreshKey v DataTable.
@@ -56,20 +70,21 @@ export default function TaxaList() {
         updatePublicationStatus,
     } = useTaxonUpdates();
 
-    const showError = useCallback((message: string) => {
-        setError(message);
-        setTimeout(() => setError(null), 5000);
-    }, []);
+    // Chyby mutací reportuje globální notifikační store (toast): hláška
+    // backendu (concurrency, neplatný přechod statusu…) z ApiError.payload,
+    // lokalizovaný fallback jinak; chyby už centrálně oznámené (403, síť)
+    // notifyApiError přeskakuje.
+    const handleError = useCallback((error: unknown) => {
+        notifyApiError(error, t("atlas.admin.taxaList.updateFailed"));
+    }, [t]);
 
     const refreshTable = useCallback(() => {
         setTableRefreshKey(key => key + 1);
     }, []);
 
     const updateLocalData = useCallback((updater: (prev: TaxonMapSettings[]) => TaxonMapSettings[]) => {
-        if (localDataUpdater) {
-            localDataUpdater(updater);
-        }
-    }, [localDataUpdater]);
+        localDataUpdaterRef.current?.(updater);
+    }, []);
 
     const handlePngUploadComplete = useCallback((taxonId: number, hasPng: boolean) => {
         updateLocalData(prev =>
@@ -80,8 +95,8 @@ export default function TaxaList() {
     }, [updateLocalData]);
 
     const handleIsMappedChange = useCallback(async (row: TaxonMapSettings) => {
-        await updateIsMapped(row, updateLocalData, showError);
-    }, [updateIsMapped, updateLocalData, showError]);
+        await updateIsMapped(row, updateLocalData, handleError);
+    }, [updateIsMapped, updateLocalData, handleError]);
 
     const handleParentMapChange = useCallback(async (row: TaxonMapSettings, selected: TaxonOption | null) => {
         await updateParentMap(
@@ -89,17 +104,17 @@ export default function TaxaList() {
             selected ? selected.id : null,
             selected ? selected.nameLat : null,
             updateLocalData,
-            showError
+            handleError
         );
-    }, [updateParentMap, updateLocalData, showError]);
+    }, [updateParentMap, updateLocalData, handleError]);
 
     const handleCommonThresholdChange = useCallback(async (row: TaxonMapSettings, newValue: number) => {
-        await updateCommonThreshold(row, newValue, updateLocalData, showError);
-    }, [updateCommonThreshold, updateLocalData, showError]);
+        await updateCommonThreshold(row, newValue, updateLocalData, handleError);
+    }, [updateCommonThreshold, updateLocalData, handleError]);
 
     const handleIsProtectedChange = useCallback(async (row: TaxonMapSettings) => {
         try {
-            await updateIsProtected(row, updateLocalData, showError);
+            await updateIsProtected(row, updateLocalData, handleError);
         } finally {
             // jako u Preslia: refetch po úspěchu (nová hodnota + čerstvý
             // lastEditTimestamp, další editace téhož řádku nespadne na
@@ -107,11 +122,11 @@ export default function TaxaList() {
             // optimisticky přepnutý checkbox se vrátí na pravdu serveru)
             refreshTable();
         }
-    }, [updateIsProtected, updateLocalData, showError, refreshTable]);
+    }, [updateIsProtected, updateLocalData, handleError, refreshTable]);
 
     const handlePresliaChange = useCallback(async (row: TaxonMapSettings, newValue: string) => {
         try {
-            await updatePreslia(row, newValue, updateLocalData, showError);
+            await updatePreslia(row, newValue, updateLocalData, handleError);
         } finally {
             // Refetch po úspěchu i selhání: po úspěchu se v tabulce projeví nová
             // hodnota i čerstvý lastEditTimestamp (další editace téhož řádku
@@ -119,15 +134,15 @@ export default function TaxaList() {
             // resynchronizuje s DB a další pokus použije platný timestamp.
             refreshTable();
         }
-    }, [updatePreslia, updateLocalData, showError, refreshTable]);
+    }, [updatePreslia, updateLocalData, handleError, refreshTable]);
 
     const handleRevisionStatusChange = useCallback(async (row: TaxonMapSettings, newValue: number) => {
-        await updateRevisionStatus(row, newValue, updateLocalData, showError);
-    }, [updateRevisionStatus, updateLocalData, showError]);
+        await updateRevisionStatus(row, newValue, updateLocalData, handleError);
+    }, [updateRevisionStatus, updateLocalData, handleError]);
 
     const handlePublicationStatusChange = useCallback(async (row: TaxonMapSettings, newValue: number) => {
-        await updatePublicationStatus(row, newValue, updateLocalData, showError);
-    }, [updatePublicationStatus, updateLocalData, showError]);
+        await updatePublicationStatus(row, newValue, updateLocalData, handleError);
+    }, [updatePublicationStatus, updateLocalData, handleError]);
 
     const columns = useMemo<DataTableColumnDef<TaxonMapSettings>[]>(() => [
         createTextColumn<TaxonMapSettings>('taxonNameLat', t("atlas.admin.taxaList.latinName"), {
@@ -248,13 +263,6 @@ export default function TaxaList() {
 
     return (
         <div className="container-fluid">
-            {error && (
-                <div className="alert alert-danger alert-dismissible fade show" role="alert">
-                    {error}
-                    <button type="button" className="btn-close" onClick={() => setError(null)}></button>
-                </div>
-            )}
-
             <DataTable<TaxonMapSettings>
                 endpoint="/api/react/atlasadmin/taxa"
                 columns={columns}
@@ -264,6 +272,7 @@ export default function TaxaList() {
                 hasExcelExport
                 buildExportFilterParams={extractTaxaFilters}
                 refreshKey={tableRefreshKey}
+                onDataUpdater={handleDataUpdater}
             />
         </div>
     );

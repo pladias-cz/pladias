@@ -48,8 +48,10 @@ public class RevisorService implements IRevisorService {
 
     private void updateRevisionUpdateService(User currentUser, Taxon t, Messages messages) throws NotEligibleException {
         TaxonMapSettings taxonMapSettings = TaxonMapSettings.find().byId(t.getId());
+        // NULL revisionStatus chápeme jako StatusNotStarted (viz RevisionUpdateService)
         if (taxonMapSettings != null &&
-            taxonMapSettings.getRevisionStatus().getId() == RevisionStatus.StatusNotStarted) {
+            (taxonMapSettings.getRevisionStatus() == null ||
+                taxonMapSettings.getRevisionStatus().getId() == RevisionStatus.StatusNotStarted)) {
             RevisionUpdateService service = new RevisionUpdateService(currentUser, taxonService, configService, messages);
             service.update(taxonMapSettings, RevisionStatus.StatusAssigned);
         }

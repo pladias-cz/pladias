@@ -2,8 +2,8 @@
  * Enterprise-grade DataTable component with server-side pagination, sorting, and filtering
  */
 
-import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {Card, Table, Form, Alert} from 'react-bootstrap';
+import React, {useCallback, useEffect, useMemo, useRef} from 'react';
+import {Card, Table, Form} from 'react-bootstrap';
 import {useTranslation} from 'react-i18next';
 import {
     useTableFilters,
@@ -22,6 +22,7 @@ import {ExcelExportButtons} from './export';
 import type {DataTableConfig, DataTableColumnDef} from './types';
 import {canSort} from './utils';
 import styles from './DataTable.module.scss';
+import {notifyApiError} from '@/stores/notificationStore';
 
 export function DataTable<T extends object>(config: DataTableConfig<T>) {
     const {
@@ -39,6 +40,7 @@ export function DataTable<T extends object>(config: DataTableConfig<T>) {
         transformRequest,
         refreshKey,
         onRowUpdate,
+        onDataUpdater,
         renderCustomFilters,
         externalState: _externalState,
     } = config;
@@ -48,9 +50,6 @@ export function DataTable<T extends object>(config: DataTableConfig<T>) {
     const resolvedAdditionalParams = additionalParams ?? defaultAdditionalParams;
 
     const {t} = useTranslation();
-
-    // Error state for displaying error messages
-    const [error, setError] = useState<string | null>(null);
 
     const {
         columnFilters,
@@ -97,6 +96,16 @@ export function DataTable<T extends object>(config: DataTableConfig<T>) {
         fetchData: customFetcher,
         transformRequest,
     });
+
+    // Rodič se přes onDataUpdater napojuje na optimistickou vrstvu řádků
+    // (useTableData.setData): vlastní cellRenderery (status selecty atlasAdmin)
+    // pak mění řádky okamžitě bez refetche. Identita setData je stabilní,
+    // registrace proto proběhne jednou po mountu; při unmountu dostane rodič null.
+    useEffect(() => {
+        if (!onDataUpdater) return;
+        onDataUpdater(setLocalData);
+        return () => onDataUpdater(null);
+    }, [onDataUpdater, setLocalData]);
 
     // Změna refreshKey vynutí refetch aktuální stránky (mutace mimo tabulku,
     // např. add/remove v modale). První render se přeskočí – data se právě načítají.
@@ -199,10 +208,9 @@ export function DataTable<T extends object>(config: DataTableConfig<T>) {
                                             : item
                                     )
                                 );
-                                // Show error message to user
-                                setError(error instanceof Error ? error.message : 'Failed to update');
-                                // Clear error after 5 seconds
-                                setTimeout(() => setError(null), 5000);
+                                // Chyba akce jde do globálního notifikačního store
+                                // (toast) – hlášku z backendu nese ApiError.payload
+                                notifyApiError(error, t("common.table.updateFailed"));
                             }
                         }}
                     />
@@ -259,13 +267,6 @@ export function DataTable<T extends object>(config: DataTableConfig<T>) {
     return (
         <Card className={className}>
             <Card.Body>
-                {/* Error message display */}
-                {error && (
-                    <Alert variant="danger" className="mb-3">
-                        {error}
-                    </Alert>
-                )}
-                
                 {showPagination && (
                     <DataTablePagination
                         page={page}

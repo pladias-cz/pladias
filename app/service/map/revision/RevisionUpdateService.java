@@ -33,7 +33,17 @@ public class RevisionUpdateService extends MapStatusUpdateService {
         }
         Taxon taxon = Taxon.find().byId(settings.getId());
         RevisionStatus oldStatus = settings.getRevisionStatus();
-        oldStatus.refresh();
+        if (oldStatus == null) {
+            // NULL v DB chápeme jako StatusNotStarted (id 0): DTO ho FE mapuje na 0,
+            // TaxonUpdaterService ho novým taxonům nastavuje explicitně. Bez fallbacku
+            // padal update statusu u starších řádků s NULL na NPE.
+            oldStatus = RevisionStatus.find().byId(RevisionStatus.StatusNotStarted);
+            if (oldStatus == null) {
+                throw new IllegalArgumentException(messages.at("MapStatusUpdateService.invalidStatus"));
+            }
+        } else {
+            oldStatus.refresh();
+        }
         verifyTransitionIsFeasible(oldStatus, newStatus, taxon);
 
         settings.setRevisionStatus(newStatus);

@@ -53,7 +53,7 @@ describe("PresliaInlineField", () => {
         expect(onSave).toHaveBeenCalledTimes(1);
     });
 
-    it("po selhání ukládání zobrazí chybu a umožní opakovat uložení", async () => {
+    it("po selhání ukládání zůstává editace otevřená a umožňuje opakovat uložení", async () => {
         const onSave = vi.fn()
             .mockRejectedValueOnce(new Error("konflikt verzí"))
             .mockResolvedValueOnce(undefined);
@@ -65,9 +65,10 @@ describe("PresliaInlineField", () => {
             fireEvent.keyDown(input, {key: "Enter"});
         });
 
-        // první pokus selhal – inline chyba, editace zůstává otevřená
-        await waitFor(() => expect(screen.getByText("konflikt verzí")).toBeInTheDocument());
+        // první pokus selhal – chybu hlásí rodič notifikačním storem (toast),
+        // editace zůstává otevřená s rozpracovanou hodnotou
         expect(screen.getByRole("textbox")).toBeInTheDocument();
+        expect(input.value).toBe("nová");
 
         // retry – tentokrát úspěšně
         await act(async () => {

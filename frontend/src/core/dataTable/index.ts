@@ -9,6 +9,7 @@ export type { default as DefaultDataTable } from './DataTable';
 export type {
     DataTableConfig,
     DataTableColumnDef,
+    TableDataUpdater,
     TextColumnDef,
     BooleanColumnDef,
     CheckboxColumnDef,

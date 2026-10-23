@@ -72,6 +72,19 @@ a řádek v ní párují referenčně, případně podle `row.id` (stejný fallb
   a efekt na její změnu by se neprovedl);
 - po checkboxové mutaci tabulku refetchujeme (`refreshKey`) – selhání tak vrátí checkbox na pravdu
   serveru a obnoví se `lastEditTimestamp` pro optimistickou konkurenci.
+- rodič se na optimistickou vrstvu napojuje přes `DataTable.onDataUpdater` (po mountu dostane stabilní
+  `useTableData.setData`, při unmountu null): atlasAdmin `TaxaList` s ní mění status selecty i další
+  vlastní cellRenderery okamžitě bez refetche. Bez tohoto napojení se změna na server uložila, ale
+  controlled select se po re-renderu vrátil na původní hodnotu – upravený řádek byl vidět až po refetchi.
+  - past uvnitř: updater je funkce a React `setState` považuje funkční argument za *funkční updater* –
+    `onDataUpdater={setLocalDataUpdater}` by tedy zavolal `setData(null)` a do state uložil jeho
+    návratovou hodnotu (`undefined`), nikoli funkci samotnou. Registrace se tiše ztratila (mutace na
+    serveru proběhla, toast fungoval, ale UI se neaktualizovalo až do refresh). Proto `TaxaList`
+    drží updater v `useRef` (regresní test `TaxaList.test.tsx`); alternativou je lazy tvar
+    `setState(() => updater)`.
+- chyby mutací (checkboxy i vlastní cellRenderery rodiče) reportuje notifikační store (`notifyApiError`,
+  toast): hlášku backendu nese `ApiError.payload` (obálka `success:false` z `ensureSuccess`), lokální
+  Bootstrap alerty v komponentách tabulek už se nepoužívají.
 
 ---
 
@@ -149,6 +162,10 @@ Mazání dávky (`completeDeletion`) maže i komentáře a historii záznamů od
 ### Editace komentářů bez explicitní concurrency kontroly
 
 Komentářové endpointy (PUT/DELETE/resolve) nekontrolují žádný `lastEditTimestamp` od klienta – klient verzi komentáře vůbec neposílá. Jedinou ochranu proti souběžné editaci je `@Version` na `RecordComment` (editace zastaralé verze selže DB výjimkou, kterou controller vrátí jako obecnou chybu). U `DELETE /atlas/record/comment-assoc/:commentId/linked-user/:boundUserId` se asociace maže raw SQL zcela bez jakékoliv kontroly verze.
+
+### NULL statusy map (`revision_status` / `publication_status`) ≡ StatusNotStarted (0)
+
+Sloupce `atlas.taxon_mapsettings.revision_status` / `publication_status` jsou nullable, u starších/importovaných řádků bývají NULL. Celá aplikace NULL chápe jako „nezapočato" (`StatusNotStarted`, id 0): DTO v `getTaxa`/`getTaxaForUser` mapuje NULL na 0, FE `StatusSelect` na 0 defaultuje, `TaxonUpdaterService` novým taxonům status id 0 nastavuje explicitně. `RevisionUpdateService`/`PublicationUpdateService` proto při update starého statusu NULL normalizují na entitu StatusNotStarted (fallback `find().byId(0)`; přechody se validují jako ze stavu 0) a `RevisorService` při přiřazení revisora bere NULL stejně jako stav 0 (auto-přechod na Assigned). Bez toho padaly změny statusů selectem u NULL řádků na NPE.
 
 ## sekce measurements
 

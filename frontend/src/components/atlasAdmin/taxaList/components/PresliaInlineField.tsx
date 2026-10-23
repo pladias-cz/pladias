@@ -18,7 +18,6 @@ export function PresliaInlineField({
     const [editing, setEditing] = useState(false);
     const [draft, setDraft] = useState(value || '');
     const [saving, setSaving] = useState(false);
-    const [error, setError] = useState<string | null>(null);
 
     // Zámek proti dvojitému odeslání: Enter nastaví saving=true, input se
     // zablokuje a prohlížeč na něm vystřelí blur, který by handleSave spustil
@@ -45,13 +44,13 @@ export function PresliaInlineField({
 
         saveLockRef.current = true;
         setSaving(true);
-        setError(null);
 
         try {
             await onSave(draft);
             setEditing(false);
-        } catch (e) {
-            setError(e instanceof Error ? e.message : t("common.inlineField.saveFailed"));
+        } catch {
+            // Chybu hlásí rodič přes notifikační store (toast); pole zůstává
+            // otevřené s rozpracovanou hodnotou pro opravu a opakování.
             saveLockRef.current = false; // umožnit opravu a opakování
         } finally {
             setSaving(false);
@@ -89,7 +88,6 @@ export function PresliaInlineField({
                     style={{width: '120px', display: 'inline-block'}}
                 />
                 {saving && <Spinner size="sm" className="ms-1"/>}
-                {error && <span className="text-danger ms-1 small">{error}</span>}
             </>
         );
     }

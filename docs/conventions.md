@@ -34,6 +34,15 @@ This document defines coding standards and patterns. Follow these conventions to
 - All files use `.tsx` (components) or `.ts` (hooks, services, types). No `.js` files.
 - Strict mode is on (`tsconfig.json`). No `any` unless absolutely unavoidable.
 - Interfaces over type aliases for object shapes; type aliases for unions and primitives.
+- ESM only – `require()` is forbidden anywhere in `src/` (enforced by ESLint `@typescript-eslint/no-require-imports`).
+
+### Quotes
+
+Single quotes in TypeScript code, double quotes in JSX attributes (`prefer-double`); `avoidEscape` allows double quotes for a string containing an apostrophe. Enforced by ESLint (`quotes`, `jsx-quotes` in `frontend/eslint.config.js`).
+
+### API Models
+
+Request/response interfaces for the backend live in `src/models/` (imported as `@/models`) – e.g. `ApiResult`, `RecordPladias`, `TaxonId`. Never duplicate an API model with a local interface in a component or service; import it from `@/models` instead.
 
 ### Path Aliases
 
@@ -82,8 +91,9 @@ export default function AtlasSearch() {
 ### Hooks
 
 #### Location & Naming
-- Custom hooks live in `src/hooks/`. File name = hook name (camelCase).
-- Example: `useAtlasSearch.ts`, `useTaxonData.ts`
+- Hooks used across features live in `src/hooks/` (the shared layer); single-feature hooks live in the feature's own directory (e.g. `components/atlas/search/hooks/`). A hook another feature imports belongs in `src/hooks/` – never import from inside another feature's internals.
+- File name = hook name (camelCase).
+- Examples: `useTaxonUpdates.ts` (shared, `src/hooks/`), `useSearchQuery.ts` (feature-local)
 
 #### Return Value Pattern
 - Hooks return a plain object (not an array) so callers can destructure by name:
@@ -101,7 +111,8 @@ function useAtlasSearch(params) {
 
 #### Async Safety
 - Declarative data loading (anything a component renders from the server on mount) goes through
-  TanStack Query via `src/query/` (`useCatalogQuery` for catalogs, `useQuery` elsewhere). The
+  TanStack Query via `src/query/` (`useCatalogQuery` for catalogs, `useQuery` elsewhere) – loading
+  API data manually with `useEffect` + `setState` is forbidden. The
   client is configured WITHOUT cache (`staleTime: 0`, `gcTime: 0`, `refetchOnMount: "always"`) –
   catalogs are dynamic data and every mount refetches (decision, refactor.md section J).
   Components in tests are wrapped with `withQueryClient()` from `src/test/`.
@@ -142,6 +153,7 @@ All HTTP communication goes through `src/services/apiClient.ts` – one place fo
 - **Envelope:** the `JsonResult` shape (`ApiResult<T>` from `@/models/ApiResponse`) is interpreted by domain service modules (`src/services/*Api.ts`) – a component calls `addUser(input)` or `loadTraits(ids, {signal})` and never parses `{success, data|message|error}` itself. HTTP 200 with `success: false` is visible to the service (user settings use it as "value not set"); `ensureSuccess` throws for endpoints where it means an error.
 - **Errors:** HTTP failures (including 401 → redirect to `/login`, 403 → central handler, network failures → central handler; both wired by section F) are thrown as `ApiError`; `apiErrorMessage(err, fallback)` picks the backend message or a localized fallback for the UI. `ApiError.notified` marks errors already shown to the user centrally (403, network) – `notifyApiError` then skips them, so the same message is never toasted twice. Background requests with graceful fallback (heartbeat, project name) pass `silent: true` to suppress the central network-error notification.
 - **Named gotcha helpers** (docs/gotchas.md): `apiPostFormUrlencoded` (LF semantics of taxon lists), `apiGetLegacyString` (TraitsController bare string response), `apiDownload` (JSON error inside a file stream, Content-Type check).
+- **Downloads** always go through `apiDownload` + `downloadBlob` (`src/core/dataTable/export/`) – no local `URL.createObjectURL` + `a.click()` copies in components. `resolveFilename` (Content-Disposition parsing) lives in `apiClient.ts` – import it, never copy it.
 - **Multipart:** `FormData` is passed to `apiPost` without a Content-Type header – the browser adds the multipart boundary.
 - **Cancellation:** `isAbortError(err)` detects aborted requests (fetch throws a DOMException with `name === "AbortError"`).
 
@@ -179,6 +191,11 @@ One-off user feedback (action success/failure) goes through the global notificat
 - **Catches are never mute:** a `catch` of an apiClient-based call always ends with `notifyApiError(err, fallback)` (or an equivalent notification) – `console.*` alone is not error handling. Inline error state is reserved for form field validation; failed actions and loads go through the notification store.
 - **Rich-text (`html`)** is reserved for trusted backend content (import messages with links, `window.__FLASH__`); plain text uses `message`. `<Toasts />` (`Layout.tsx`, outside `ErrorBoundary`) renders the stack.
 - **Trusted HTML renders only via `RichTextMessage`** (`components/RichTextMessage.tsx`, section K): the single component allowed to use `dangerouslySetInnerHTML`. The only exceptions are map popup templates (OpenLayers). Never pass user-composed strings to it; sanitization is deliberately not a dependency (backend-generated content).
+
+### Tables
+
+- Data tables use `DataTable` (`src/core/dataTable/`) – server-side pagination, sorting and filter rows come with it. Do not build tables from raw react-bootstrap `<Table>` markup in feature code.
+- Exception: a fully static table (no server data, no sorting/pagination) may use plain markup – leave a comment explaining why.
 
 ### Styling
 

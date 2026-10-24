@@ -155,6 +155,8 @@ Stávajících 272 testů prochází a jsou kvalitní, ale pokrytí je koncentro
 
 ## 4. Návrh nových pravidel do conventions.md
 
+*Přeneseno do `conventions.md` 24. 10. 2026 (Tables, Quotes, API Models, výslovný zákaz `useEffect`+`setState` loadů, Downloads, umístění hooků); zákaz `require()` navíc vynucen ESLint pravidlem `@typescript-eslint/no-require-imports`.*
+
 1. **Tabulky vždy přes `DataTable`** – žádné ruční `<Table>` z react-bootstrap (výjimky jen pro zcela statické tabulky, s komentářem).
 2. **Deklarativní loady výhradně React Query** – doplnit výslovně „žádné `useEffect` + `setState` pro data z API“.
 3. **Zákaz `require()` v `src/`** – ESLint `no-restricted-syntax` (ESM-only kód).

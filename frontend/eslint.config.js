@@ -31,6 +31,8 @@ export default tseslint.config([
       // dvojité uvozovky pro řetězce obsahující apostrof.
       'quotes': ['error', 'single', {avoidEscape: true}],
       'jsx-quotes': ['error', 'prefer-double'],
+      // Zákaz require() v src/ (improvements.md §4) – kód je ESM-only.
+      '@typescript-eslint/no-require-imports': 'error',
     },
   },
   {

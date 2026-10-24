@@ -28,16 +28,18 @@ export default function FeatureDetail() {
     });
 
     useEffect(() => {
-        // hlášku po přesměrování z legacy stránky injectuje backend do
-        // window.__FLASH__ (app/views/react/index.scala.html) – gotchas.md
-        const flash = (window as { __FLASH__?: { success?: string; error?: string } }).__FLASH__;
-        if (!flash) return;
+        // hlášku po přesměrování z legacy stránky injectuje backend do data-flash-*
+        // atributů #react-app (app/views/react/index.scala.html) – gotchas.md;
+        // dříve inline script window.__FLASH__, nahrazeno kvůli CSP script-src 'self'
+        const flash = document.getElementById('react-app')?.dataset;
+        const success = flash?.flashSuccess;
+        const error = flash?.flashError;
 
         // obsah může nést HTML s odkazem na sešit s chybami importu
-        if (flash.success) {
-            push({type: 'success', html: flash.success});
-        } else if (flash.error) {
-            push({type: 'danger', html: flash.error});
+        if (success) {
+            push({type: 'success', html: success});
+        } else if (error) {
+            push({type: 'danger', html: error});
         }
     }, [push]);
 

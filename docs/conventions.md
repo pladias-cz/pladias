@@ -194,7 +194,7 @@ One-off user feedback (action success/failure) goes through the global notificat
 - **Who may push:** a component/service right after finishing a user action (success and contextual errors), and `apiClient` centrally for 403 + network failures (handlers wired in `App.tsx`). 401 redirects; everything else is the caller's business.
 - **No duplicates:** in a `catch` of an apiClient-based call use `notifyApiError(err, fallback)` – it skips errors with `ApiError.notified` (already centrally shown) and aborted requests. Raw-`fetch` legacy code (still being migrated, docs/todo.md) pushes directly – it never sees `ApiError`.
 - **Catches are never mute:** a `catch` of an apiClient-based call always ends with `notifyApiError(err, fallback)` (or an equivalent notification) – `console.*` alone is not error handling. Inline error state is reserved for form field validation; failed actions and loads go through the notification store.
-- **Rich-text (`html`)** is reserved for trusted backend content (import messages with links, `window.__FLASH__`); plain text uses `message`. `<Toasts />` (`Layout.tsx`, outside `ErrorBoundary`) renders the stack.
+- **Rich-text (`html`)** is reserved for trusted backend content (import messages with links, backend flash via `data-flash-*` attributes on `#react-app`); plain text uses `message`. `<Toasts />` (`Layout.tsx`, outside `ErrorBoundary`) renders the stack.
 - **Trusted HTML renders only via `RichTextMessage`** (`components/RichTextMessage.tsx`, section K): the single component allowed to use `dangerouslySetInnerHTML`. The only exceptions are map popup templates (OpenLayers). Never pass user-composed strings to it; sanitization is deliberately not a dependency (backend-generated content).
 
 ### Tables

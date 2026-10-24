@@ -2,6 +2,7 @@ package controllers.atlas;
 
 import controllers.ControllerBase;
 import controllers.security.Authorized;
+import helpers.http.ContentDisposition;
 import models.User;
 import models.UserActivity;
 import org.apache.commons.lang3.StringUtils;
@@ -198,7 +199,7 @@ public class SearchController extends ControllerBase {
         String filename = String.format("PladiasExport_%s.xlsx",
             df.format(Calendar.getInstance().getTime()));
         Result response = ok(inputStream)
-            .withHeader("Content-disposition", String.format("attachment; filename=%s", filename))
+            .withHeader("Content-disposition", ContentDisposition.attachment(filename))
             .withHeader("X-Excel-Records-Exported", String.valueOf(exportedRecords))
             .as("application/x-download");
         if (totalRecords != null) {

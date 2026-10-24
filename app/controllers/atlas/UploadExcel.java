@@ -2,6 +2,7 @@ package controllers.atlas;
 
 import controllers.ControllerBase;
 import controllers.security.Authorized;
+import helpers.http.ContentDisposition;
 import models.Batch;
 import models.Excel;
 import models.User;
@@ -43,7 +44,7 @@ public class UploadExcel extends ControllerBase {
         excel.refresh();
         String filename = excel.getBatch().getImported() ? excel.getImportedFilename() : excel.getVersionDecoratedFilename();
         return ok(excel.getProcessedFileInputStream())
-            .withHeader("Content-disposition", "attachment; filename=" + filename)
+            .withHeader("Content-disposition", ContentDisposition.attachment(filename))
             .as("application/x-download");
     }
 

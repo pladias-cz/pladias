@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers.ControllerBase;
 import controllers.security.Authorized;
 import dto.ExcelBatchDto;
+import helpers.http.ContentDisposition;
 import models.Batch;
 import models.Excel;
 import models.User;
@@ -299,9 +300,8 @@ public class ImportResultsController extends ControllerBase {
             if (TableExportWriter.acceptsXlsx(request)) {
                 byte[] workbook = TableExportWriter.write(
                     "imported", ExcelBatchDto.exportColumns(), entries, getMessages(request));
-                String filename = String.format("attachment; filename=%s",
-                    "imported_" + LocalDate.now() + ".xlsx");
-                return ok(workbook).withHeader("Content-disposition", filename).as("application/x-download");
+                return ok(workbook).withHeader("Content-disposition",
+                    ContentDisposition.attachment("imported_" + LocalDate.now() + ".xlsx")).as("application/x-download");
             }
 
             // Get filtered count

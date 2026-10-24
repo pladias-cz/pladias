@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | Datum auditu | 23. 10. 2026 |
-| Revize dokumentu | 24. 10. 2026 – všechna zjištění znovu ověřena proti revizi `68a7fe1`; vyřešená zjištění z dokumentu odstraněna – tentýž den vyřešena a odstraněna zjištění L7–L9 |
+| Revize dokumentu | 24. 10. 2026 – všechna zjištění znovu ověřena proti revizi `68a7fe1`; vyřešená zjištění z dokumentu odstraněna – tentýž den vyřešena a odstraněna zjištění L2, L4, L5 a L7–L9 |
 | Rozsah | backend (Play Framework 3.0.10, Java, Ebean), frontend (React + Vite), konfigurace (`conf/*.conf`), závislosti (`build.sbt`) |
 | Metoda | statická analýza zdrojového kódu a konfigurace (code review); bez dynamického testování (penetrace) a bez revize infrastruktury |
 | Cíl | posouzení připravenosti aplikace k uvedení do produkce |
@@ -50,7 +50,7 @@ Problémy, které brání produkčnímu nasazení:
    Původní hodnoty zůstávají v git historii repozitáře, proto je nutné při nasazení
    použít **nové** (rotovat), ne historické.
 
-**Souhrn: 0 kritických, 1 vysoké, 9 středních, 5 nízkých zjištění.**
+**Souhrn: 0 kritických, 1 vysoké, 9 středních, 2 nízká zjištění.**
 
 ## 2. Klasifikace závažnosti
 
@@ -76,9 +76,6 @@ Problémy, které brání produkčnímu nasazení:
 | [M10](#m10--únik-informací-v-chybových-stavech) | Střední | Info leak | `e.getMessage()`/`e.toString()` klientům, `printStackTrace`, DEBUG log v produkci |
 | [M11](#m11--upload-bez-validace-typu-souboru) | Střední | Upload | `uploadPng` akceptuje libovolný obsah bez kontroly typu/velikosti |
 | [L1](#l1--api-tokeny-bez-expirace) | Nízká | API tokeny | Tokeny bez expirace a bez možnosti odvolání |
-| [L2](#l2--chybějící-csp-hlavička) | Nízká | Hlavičky | Content-Security-Policy není nastavena |
-| [L4](#l4--debug-flag-vypíná-kontrolu-aktivity) | Nízká | Konfigurace | `debug=true` vypíná kontrolu neaktivity uživatele |
-| [L5](#l5--filename-v-content-disposition-bez-uvozovek) | Nízká | Hlavičky | Nequotované filename v `Content-disposition` |
 | [L6](#l6--velký-limit-uploadu-400-mb) | Nízká | DoS | `maxDiskBuffer = 400MB` – diskový DoS povrch pro přihlášené |
 
 ID zachovávají číslování původního auditu (23. 10. 2026). Mezery v sekvencích
@@ -327,7 +324,8 @@ Filename z multipartu se ukládá do DB. Endpoint je gated na mapAdmina, takže 
 hardening (potenciální uložení libovolného obsahu, anomální obsah v UI).
 
 **Doporučení.** Validovat PNG signature (`\x89PNG\r\n\x1a\n`) a/nebo MIME typ u
-`FilePart`, omezit velikost; filename ošetřit (viz L5).
+`FilePart`, omezit velikost; filename sanitizovat před uložením (stažení dnes
+staví hlavičku přes helper `helpers/http/ContentDisposition.java`).
 
 ## 6. Zjištění nízké závažnosti
 
@@ -338,34 +336,6 @@ vytvoří 256bitový token (SecureRandom ✓, v DB jen SHA-256 hash ✓), ale to
 neexpiruje** a každý uživatel může mít jen jeden aktivní (nový přepíše starý – šikovné
 „odvolání", ale jen novým tokenem). Doporučení: sloupec `auth_token_expires`,
 rotace/volitelné odvolání v UI.
-
-### L2 – Chybějící CSP hlavička
-
-Play 3 default `contentSecurityPolicy = null` – aplikace CSP neposílá. FE renderuje
-backend HTML přes `dangerouslySetInnerHTML` (`RichTextMessage.tsx`, zdokumentované
-rozhodnutí – obsah generuje backend/sysAdmin). CSP (`script-src 'self'`) by jako
-defense-in-depth omezila dopad případného budoucího XSS. Doporučení nastavit
-`play.filters.headers.contentSecurityPolicy` (resp. `CspFilter`).
-
-### L4 – `debug` flag vypíná kontrolu aktivity
-
-`AuthenticatorBase.java:30` – s `debug = true` se vypíná 2h kontrola neaktivity
-(`UserActivityMap`). Produkční configy mají `debug = false` (`common.conf:60`),
-vývojové `true`. Riziko jen při chybně nasazené konfiguraci. Doporučení: při startu
-s `debug=true` logovat výrazné varování (případně produkčnímu profilu zakázat).
-
-### L5 – Filename v `Content-disposition` bez uvozovek
-
-`attachment; filename=<nazev>` – bez uvozovek/RFC 5987 encodování – posílá řada
-controllerů: `TemporaryFilesProviderController.download`, `controllers.api.Map`
-(`Map.java:38, 49, 60`), `UploadExcel.downloadDecorated` (`UploadExcel.java:46`),
-`PdfMapController` (`PdfMapController.java:81`), `MapAdminImportController` (`:92, 248`),
-`MapReportsController` (`:63, 149`), `HerbariumController` (`:26`),
-`TaxonMapSettingsController` (`:443`) a `ImportResultsController` (`:304`).
-Zalomení řádku (CRLF) do hlavičky Pekko odmítne (header injection tedy neprojde),
-ale speciální znaky rozbijí název souboru a neencodované UTF-8 znaky z DB mohou
-v některých klientech působit škody. Doporučení: `filename="..."` +
-`filename*=UTF-8''...` (FE `resolveFilename` už obojí podporuje).
 
 ### L6 – Velký limit uploadu (400 MB)
 
@@ -388,7 +358,8 @@ Při auditu se potvrdily následující silné stránky (chybí v mnoha aplikac�
   login formulář nese `@helper.CSRF.formField`, logout probíhá POSTem (pokryto
   testy `apiClient.test.ts`).
 - Server-side timeout neaktivity 2h (`UserActivityMap`) – po restartu serveru jsou
-  všichni uživatelé odhlášeni (mapa je in-memory).
+  všichni uživatelé odhlášeni (mapa je in-memory); dlouhý import se počítá jako
+  aktivita uživatele a start s `debug=true` loguje výrazné varování.
 - API tokeny: 256 bitů ze `SecureRandom`, uloženy pouze jako SHA-256 hash
   (`TokenAuthService`) – vzorově správně.
 - Neúspěšné přihlášení vrací sjednocenou hlášku „neplatné uživatelské jméno nebo heslo"
@@ -427,7 +398,7 @@ Při auditu se potvrdily následující silné stránky (chybí v mnoha aplikac�
 - Soubory ukládané do DB (bytea) – žádný filesystem path traversal; ZIP se pouze
   vytváří (nikdy nerozbaluje) – žádný zip-slip.
 - `AllowedHostsFilter` s produkčními doménami; SecurityHeadersFilter aktivní
-  (X-Frame-Options: DENY, nosniff, Referrer-Policy).
+  (X-Frame-Options: DENY, nosniff, Referrer-Policy, Content-Security-Policy).
 - API endpointy pro mapy (`/api/*`) za Bearer tokeny; `/assets` přes Play Assets
   (path-traversal safe).
 - Aktivity uživatelů auditované (`UserActivityService`, včetně GeoServer dotazů).
@@ -449,7 +420,7 @@ Minimální kroky pro bezpečné uvedení do produkce (v pořadí doporučené p
 - [ ] **M7** – whitelist GeoServer proxy cest
 - [ ] ověřit HTTPS termination, zálohy DB a monitorování (mimo rozsah auditu)
 
-Po nasazení (krátkodobý horizont): M9, M11, L1–L2, L4–L6.
+Po nasazení (krátkodobý horizont): M9, M11, L1 a L6.
 
 ## 9. Metodika, předpoklady a limity
 

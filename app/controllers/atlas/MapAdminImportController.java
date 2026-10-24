@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers.ControllerBase;
 import controllers.security.Authorized;
 import dto.ExcelBatchDto;
+import helpers.http.ContentDisposition;
 import global.ServerConstants;
 import io.ebean.DB;
 import io.ebean.SqlUpdate;
@@ -87,9 +88,8 @@ public class MapAdminImportController extends ControllerBase {
             if (TableExportWriter.acceptsXlsx(request)) {
                 byte[] workbook = TableExportWriter.write(
                     "imports", ExcelBatchDto.exportColumns(), imports, getMessages(request));
-                String filename = String.format("attachment; filename=%s",
-                    "imports_" + LocalDate.now() + ".xlsx");
-                return ok(workbook).withHeader("Content-disposition", filename).as("application/x-download");
+                return ok(workbook).withHeader("Content-disposition",
+                    ContentDisposition.attachment("imports_" + LocalDate.now() + ".xlsx")).as("application/x-download");
             }
 
             // Get number of rows matching the filters and total number of imported files
@@ -243,9 +243,8 @@ public class MapAdminImportController extends ControllerBase {
 
     private Result doDownloadBatchModifiedEntries(Messages messages, Long batchId) throws IOException {
         Workbook wb = modifiedRecordsExportService.serializeModifiedBatchEntries(batchId, messages);
-        String filename = String.format("attachment; filename=%s", String.format("Batch%d_modifikace.xls", batchId));
         return ok(ExcelUtils.toInputStream(wb))
-            .withHeader("Content-disposition", filename)
+            .withHeader("Content-disposition", ContentDisposition.attachment(String.format("Batch%d_modifikace.xls", batchId)))
             .as("application/xls");
     }
 

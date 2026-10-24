@@ -2,6 +2,7 @@ package controllers.measurement;
 
 import controllers.ControllerBase;
 import controllers.security.Authorized;
+import helpers.http.ContentDisposition;
 import exceptions.NotEligibleException;
 import models.User;
 import models.UserActivity;
@@ -225,10 +226,8 @@ public class TraitExportController extends ControllerBase {
     }
 
     private Result toResult(TraitExportResponse traitDetails) {
-        String filename = String.format("attachment; filename=%s", traitDetails.getFilename());
-
         return ok(traitDetails.getBytes())
-            .withHeader("Content-disposition", filename)
+            .withHeader("Content-disposition", ContentDisposition.attachment(traitDetails.getFilename()))
             .as("application/x-download");
     }
 }

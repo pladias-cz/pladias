@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers.ControllerBase;
 import controllers.security.Authorized;
 import geom.Coordinates;
+import helpers.http.ContentDisposition;
 import helpers.parsers.CoordinatesParser;
 import models.*;
 import org.apache.commons.lang3.tuple.Pair;
@@ -45,9 +46,8 @@ public class ModelDataSourceController extends ControllerBase {
         Messages messages = getMessages(request);
         try {
             byte[] data = TaxonSerializationService.serialize(taxons);
-            String filename = String.format("attachment; filename=%s", "taxonList.csv");
             return ok(data)
-                .withHeader("Content-disposition", filename)
+                .withHeader("Content-disposition", ContentDisposition.attachment("taxonList.csv"))
                 .as("application/x-download");
         } catch (Exception e) {
             return ok(messages.at("ModelDataSource.taxonDetailsFailed"));

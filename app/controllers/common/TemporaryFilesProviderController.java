@@ -2,6 +2,7 @@ package controllers.common;
 
 import controllers.ControllerBase;
 import controllers.security.Authorized;
+import helpers.http.ContentDisposition;
 import models.TemporaryFile;
 import play.i18n.Messages;
 import play.mvc.Http;
@@ -20,7 +21,7 @@ public class TemporaryFilesProviderController extends ControllerBase
 			byte[] data = tempFile.getData();
 			tempFile.delete();
 			return ok(data)
-				.withHeader("Content-disposition", String.format("attachment; filename=%s", tempFile.getFilename()))
+				.withHeader("Content-disposition", ContentDisposition.attachment(tempFile.getFilename()))
 				.as("application/x-download");
 		}
 		return ok(messages.at("TemporaryFilesProvider.fileDoesNotExist"));

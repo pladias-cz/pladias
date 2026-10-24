@@ -5,6 +5,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Iterators;
 import controllers.ControllerBase;
 import controllers.security.Authorized;
+import controllers.security.UserActivityMap;
 import excel.CellHelper;
 import excel.ExcelTableErrorDecorator;
 import excel.ExcelTableStyleCleaner;
@@ -122,6 +123,10 @@ public class ImportController extends ControllerBase {
             } else {
                 UserActivityService.recordActivity(request.session(), UserActivity.BatchValidation);
             }
+
+            // a long-running import counts as user activity so that a multi-hour processing
+            // of a huge file does not end with an automatic logout of the importing user (audit L4)
+            UserActivityMap.getInstance().refreshUser(currentUser);
 
             // Build JSON response
             ObjectNode result = Json.newObject();

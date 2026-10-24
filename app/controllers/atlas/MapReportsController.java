@@ -3,6 +3,7 @@ package controllers.atlas;
 import cache.TaxonCache;
 import controllers.ControllerBase;
 import controllers.security.Authorized;
+import helpers.http.ContentDisposition;
 import models.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,9 +59,8 @@ public class MapReportsController extends ControllerBase {
     public Result downloadCsvMapDetails(Integer id) {
         CsvMapDetails csvDetails = CsvMapDetails.find().byId(id);
         if (csvDetails != null) {
-            String filename = String.format("attachment; filename=%s", csvDetails.getFilename());
             return ok(csvDetails.getCsvDataInputStream())
-                .withHeader("Content-disposition", filename)
+                .withHeader("Content-disposition", ContentDisposition.attachment(csvDetails.getFilename()))
                 .as("application/x-download");
         }
         return ok("error");
@@ -144,18 +144,16 @@ public class MapReportsController extends ControllerBase {
         bos.close();
         byte[] outputBytes = bos.toByteArray();
         ByteArrayInputStream bis = new ByteArrayInputStream(outputBytes);
-        String filename = String.format("attachment; filename=%s", zipArchiveBaseName + ".zip");
         return ok(bis)
-            .withHeader("Content-disposition", filename)
+            .withHeader("Content-disposition", ContentDisposition.attachment(zipArchiveBaseName + ".zip"))
             .as("application/x-download");
     }
 
     public Result downloadCsvRenderMapDetails(Integer id) {
         CsvMapDetails csvDetails = CsvMapDetails.find().byId(id);
         if (csvDetails != null) {
-            String filename = String.format("attachment; filename=%s", "map_render_" + csvDetails.getFilename());
             return ok(csvDetails.getCsvDataMapRenderInputStream())
-                .withHeader("Content-disposition", filename)
+                .withHeader("Content-disposition", ContentDisposition.attachment("map_render_" + csvDetails.getFilename()))
                 .as("application/x-download");
         }
         return ok("error");
@@ -175,9 +173,8 @@ public class MapReportsController extends ControllerBase {
             String targetFilename = "map_render_"
                 + taxon.getNameLat().replace(' ', '_')
                 + "_map_data.csv";
-            String contents = String.format("attachment; filename=%s", targetFilename);
             return ok(data)
-                .withHeader("Content-disposition", contents)
+                .withHeader("Content-disposition", ContentDisposition.attachment(targetFilename))
                 .as("application/x-download");
         } catch (Exception e) {
             return ok("Error!");
@@ -264,9 +261,8 @@ public class MapReportsController extends ControllerBase {
 		byte[] csvData = generator.convertToCsvData(taxaList, taxonService);
 		ByteArrayInputStream bis = new ByteArrayInputStream(csvData);
 		String isoDate = java.time.LocalDate.now().toString();
-		String filename = String.format("attachment; filename=taxa_publication_%s.csv", isoDate);
 		return ok(bis)
-				.withHeader("Content-disposition", filename)
+				.withHeader("Content-disposition", ContentDisposition.attachment("taxa_publication_" + isoDate + ".csv"))
 				.as("application/x-download");
 	}
 

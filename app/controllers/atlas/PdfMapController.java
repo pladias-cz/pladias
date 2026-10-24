@@ -2,6 +2,7 @@ package controllers.atlas;
 
 import controllers.ControllerBase;
 import controllers.security.Authorized;
+import helpers.http.ContentDisposition;
 import models.*;
 import org.apache.commons.io.IOUtils;
 import org.apache.pdfbox.util.PDFMergerUtility;
@@ -76,9 +77,8 @@ public class PdfMapController extends ControllerBase {
             return notFound(JsonResult.buildError("PNG map not found for this taxon"));
         }
 
-        String filename = String.format("attachment; filename=%s", pdfMap.getFilename());
         return ok(pdfMap.getPdfMapInputStream())
-            .withHeader("Content-disposition", filename)
+            .withHeader("Content-disposition", ContentDisposition.attachment(pdfMap.getFilename()))
             .as("image/png");
     }
 

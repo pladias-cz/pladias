@@ -1,6 +1,7 @@
 package controllers.api;
 
 import controllers.ControllerBase;
+import helpers.http.ContentDisposition;
 import models.*;
 import play.mvc.Http;
 import play.mvc.Result;
@@ -33,9 +34,8 @@ public class Map extends ControllerBase {
             String targetFilename = "map_render_"
                 + taxon.getNameLat().replace(' ', '_')
                 + "_map_data.csv";
-            String contents = String.format("attachment; filename=%s", targetFilename);
             return ok(data)
-                .withHeader("Content-disposition", contents)
+                .withHeader("Content-disposition", ContentDisposition.attachment(targetFilename))
                 .as("application/x-download");
         } catch (Exception e) {
             return ok("Error!");
@@ -44,9 +44,8 @@ public class Map extends ControllerBase {
 
     public Result downloadPngMap(long taxonId) {
         PdfMap pngMap = PdfMap.find(taxonId, PdfMap.PngType);
-        String filename = String.format("attachment; filename=%s", pngMap.getFilename());
         return ok(pngMap.getPdfMapInputStream())
-            .withHeader("Content-disposition", filename)
+            .withHeader("Content-disposition", ContentDisposition.attachment(pngMap.getFilename()))
             .as("image/png");
     }
 
@@ -55,9 +54,8 @@ public class Map extends ControllerBase {
 
         if (csvDetails != null) {
             String creationTimestamp = DateTimeFormatter.ISO_INSTANT.format(csvDetails.getDatetime().toInstant());
-            String filename = String.format("attachment; filename=%s", csvDetails.getFilename());
             return ok(csvDetails.getCsvDataInputStream())
-                .withHeader("Content-disposition", filename)
+                .withHeader("Content-disposition", ContentDisposition.attachment(csvDetails.getFilename()))
                 .withHeader("Creation-Timestamp", creationTimestamp)
                 .as("application/x-download");
         }

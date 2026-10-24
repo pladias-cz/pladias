@@ -3,6 +3,7 @@ package controllers.common;
 import controllers.ControllerBase;
 import controllers.security.AuthorizedApi;
 import dto.DownloadDto;
+import helpers.http.ContentDisposition;
 import models.Author;
 import models.Downloads;
 import models.Herbarium;
@@ -134,7 +135,7 @@ public class DownloadsController extends ControllerBase {
     /** Úspěšný export – xlsx s hlavičkou Content-disposition (vzor MapAdminImportController). */
     private Result xlsx(byte[] data, String filename) {
         return ok(data)
-            .withHeader("Content-disposition", "attachment; filename=" + filename)
+            .withHeader("Content-disposition", ContentDisposition.attachment(filename))
             .as("application/x-download");
     }
 

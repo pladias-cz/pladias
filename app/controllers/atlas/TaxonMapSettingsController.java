@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers.ControllerBase;
 import controllers.security.Authorized;
 import dto.TaxonMapSettingsDto;
+import helpers.http.ContentDisposition;
 import exceptions.NotEligibleException;
 import io.ebean.DB;
 import io.ebean.SqlQuery;
@@ -438,9 +439,8 @@ public class TaxonMapSettingsController extends ControllerBase {
             if (TableExportWriter.acceptsXlsx(request)) {
                 byte[] workbook = TableExportWriter.write(
                     "taxa", TaxonMapSettingsDto.exportColumns(), taxa, getMessages(request));
-                String filename = String.format("attachment; filename=%s",
-                    "taxa_" + LocalDate.now() + ".xlsx");
-                return ok(workbook).withHeader("Content-disposition", filename).as("application/x-download");
+                return ok(workbook).withHeader("Content-disposition",
+                    ContentDisposition.attachment("taxa_" + LocalDate.now() + ".xlsx")).as("application/x-download");
             }
 
             // Get number of rows matching the filters and total number of taxa

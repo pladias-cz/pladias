@@ -5,7 +5,7 @@
 import {useState, useCallback} from 'react';
 import {apiPost, ensureSuccess} from '@/services/apiClient';
 import {logError} from '@/services/logger';
-import type {TaxonMapSettings} from '../types';
+import type {TaxonMapSettings} from '@/models/TaxonMapSettings';
 
 /**
  * Odpověď mutace taxonMapSettings – obálka JsonResult (success + message)

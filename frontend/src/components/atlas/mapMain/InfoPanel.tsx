@@ -5,7 +5,7 @@ import {getTaxonMapStatistics} from '@/services/taxonApi';
 import {getTaxonMapSettings} from '@/services/atlasApi';
 import {notifyApiError} from '@/stores/notificationStore';
 import RichTextMessage from '@/components/RichTextMessage';
-import {useTaxonUpdates} from '@/components/atlasAdmin/taxaList/hooks';
+import {useTaxonUpdates} from '@/hooks/useTaxonUpdates';
 import {useTranslation} from 'react-i18next';
 
 interface InfoPanelProps {

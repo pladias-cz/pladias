@@ -16,7 +16,7 @@ import {
     createTextColumn,
     createNumberColumn
 } from '@/core/dataTable';
-import {useTaxonUpdates} from './taxaList/hooks';
+import {useTaxonUpdates} from '@/hooks/useTaxonUpdates';
 import {useTaxaData} from '@/hooks/useTaxaData';
 import {
     StatusSelect,

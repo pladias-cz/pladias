@@ -1,7 +1,7 @@
 import React, {useRef, useState} from 'react';
 import {Alert, Button, Form, Spinner} from 'react-bootstrap';
 import {useTranslation} from 'react-i18next';
-import {useProjectsData} from '../../import/hooks/useProjectsData';
+import {useProjectsData} from '@/components/atlas/import/hooks/useProjectsData';
 import type {ImportOperation} from '../types';
 
 interface ImportCSVFormProps {

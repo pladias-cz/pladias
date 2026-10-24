@@ -54,7 +54,6 @@ export function DataTableFilterRow<T>(props: DataTableFilterRowProps<T>) {
                         minWidth: column.minWidth,
                         maxWidth: column.width,
                     }}
-                    className="table-nowrap"
                 >
                     {canFilter(column) ? (
                         column.type === 'boolean' || column.type === 'checkbox' ? (

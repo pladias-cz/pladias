@@ -1,0 +1,14 @@
+/**
+ * Styly DataTable (improvements 2.5: konverze posledního CSS modulu v aplikaci
+ * na globální SCSS s BEM názvoslovím – blok data-table).
+ *
+ * Původní .table-nowrap byla mrtvá třída – v markupu figurovala jen jako plain
+ * string (DataTableFilterRow), kterému CSS modul nikdy nestyloval; atribut jsme
+ * odstranili spolu s pravidlem.
+ */
+
+/* fixní rozvržení sloupců – šířky sloupců drží, obsah se nezvětšuje */
+.data-table--stable {
+    table-layout: fixed;
+}
+

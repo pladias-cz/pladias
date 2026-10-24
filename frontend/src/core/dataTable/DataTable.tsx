@@ -21,7 +21,7 @@ import {
 import {ExcelExportButtons} from './export';
 import type {DataTableConfig, DataTableColumnDef} from './types';
 import {canSort} from './utils';
-import styles from './DataTable.module.scss';
+import './DataTable.scss';
 import {notifyApiError} from '@/stores/notificationStore';
 import {logError} from '@/services/logger';
 
@@ -319,7 +319,7 @@ export function DataTable<T extends object>(config: DataTableConfig<T>) {
                     </div>
                 </div>
 
-                <Table striped bordered hover responsive size="sm" className={styles.tableStable}>
+                <Table striped bordered hover responsive size="sm" className="data-table--stable">
                     <thead>
                     <tr>
                         {columns.map((column) => (

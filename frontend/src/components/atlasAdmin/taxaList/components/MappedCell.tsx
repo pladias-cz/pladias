@@ -1,13 +1,14 @@
 import {Form} from 'react-bootstrap';
 import {useTranslation} from 'react-i18next';
-import type {TaxonMapSettings, TaxonOption} from '../types';
+import type {TaxonMapSettings} from '@/models/TaxonMapSettings';
+import type {TaxonId} from '@/models/TaxonId';
 import {ParentMapAutocomplete} from './ParentMapAutocomplete';
 
 interface MappedCellProps {
     row: TaxonMapSettings;
     updatingTaxonId: number | null;
     onIsMappedChange: (row: TaxonMapSettings) => void;
-    onParentMapChange: (row: TaxonMapSettings, selected: TaxonOption | null) => void;
+    onParentMapChange: (row: TaxonMapSettings, selected: TaxonId | null) => void;
 }
 
 export function MappedCell({
@@ -18,7 +19,7 @@ export function MappedCell({
                            }: MappedCellProps) {
     const {t} = useTranslation();
 
-    const handleParentMapSelect = (selected: TaxonOption | null) => {
+    const handleParentMapSelect = (selected: TaxonId | null) => {
         onParentMapChange(row, selected);
     };
 

@@ -9,13 +9,9 @@ import {useState, useCallback, useMemo, useRef} from 'react';
 import {useTranslation} from 'react-i18next';
 import {
     DataTable,
-    type DataTableColumnDef,
     type TableDataUpdater,
-    createActionColumn,
-    createCheckboxColumn,
-    createTextColumn,
-    createNumberColumn
 } from '@/core/dataTable';
+import {createTaxaColumns, type EditableTaxaCells} from '@/components/taxaList/columns';
 import {useTaxonUpdates} from '@/hooks/useTaxonUpdates';
 import {useTaxaData} from '@/hooks/useTaxaData';
 import {
@@ -24,7 +20,8 @@ import {
     ArchiveCsvCell,
     MappedCell,
 } from './taxaList/components';
-import type {TaxonMapSettings, TaxonOption} from './taxaList/types';
+import type {TaxonMapSettings} from '@/models/TaxonMapSettings';
+import type {TaxonId} from '@/models/TaxonId';
 import {getPublicationStatuses, getRevisionStatuses, extractTaxaFilters} from '@/services/mapAdminApi';
 import {notifyApiError} from '@/stores/notificationStore';
 import {useCatalogQuery} from '@/query/useCatalogQuery';
@@ -99,7 +96,7 @@ export default function TaxaList() {
         await updateIsMapped(row, updateLocalData, handleError);
     }, [updateIsMapped, updateLocalData, handleError]);
 
-    const handleParentMapChange = useCallback(async (row: TaxonMapSettings, selected: TaxonOption | null) => {
+    const handleParentMapChange = useCallback(async (row: TaxonMapSettings, selected: TaxonId | null) => {
         await updateParentMap(
             row,
             selected ? selected.id : null,
@@ -145,116 +142,68 @@ export default function TaxaList() {
         await updatePublicationStatus(row, newValue, updateLocalData, handleError);
     }, [updatePublicationStatus, updateLocalData, handleError]);
 
-    const columns = useMemo<DataTableColumnDef<TaxonMapSettings>[]>(() => [
-        createTextColumn<TaxonMapSettings>('taxonNameLat', t('atlas.admin.taxaList.latinName'), {
-            enableSorting: true,
-            enableFiltering: true,
-            filterPlaceholder: t('atlas.admin.taxaList.filterLatinName'),
-            cellRenderer: (_value, row) => (
-                <>
-                    <i>
-                        <Link to={`/atlas/mapMain/${row.taxonId}`} target="_blank"
-                              rel="noopener noreferrer">{row.taxonNameLat}</Link>
-                    </i>
-                    {row.taxonRankCz && (
-                        <small className="text-muted"> ({row.taxonRankCz})</small>
-                    )}
-                </>
-            ),
-        }),
-        createActionColumn<TaxonMapSettings>('isMapped', t('atlas.admin.taxaList.mapped'), (row) => (
+    // Editovatelné buňky pro sdílenou column factory (improvements 2.4) –
+    // komponenty admin feature (MappedCell, StatusSelect, PresliaInlineField…)
+    // injikované jako renderery, aby sdílený modul taxaList/columns
+    // neimportoval vnitřnosti admin feature.
+    const editableCells = useMemo<EditableTaxaCells>(() => ({
+        renderTaxonLink: (row) => (
+            <Link to={`/atlas/mapMain/${row.taxonId}`} target="_blank"
+                  rel="noopener noreferrer">{row.taxonNameLat}</Link>
+        ),
+        renderIsMapped: (row) => (
             <MappedCell
                 row={row}
                 updatingTaxonId={updatingTaxonId}
                 onIsMappedChange={handleIsMappedChange}
                 onParentMapChange={handleParentMapChange}
             />
-        ), {
-            minWidth: '250px',
-        }),
-        createNumberColumn<TaxonMapSettings>('commonThreshold', t('atlas.admin.taxaList.commonThreshold'), {
-            enableSorting: true,
-            enableFiltering: true,
-            cellRenderer: (_value, row) => (
-                <input
-                    type="number"
-                    min={0}
-                    max={3}
-                    value={row.commonThreshold}
-                    onChange={(e) => handleCommonThresholdChange(row, parseInt(e.target.value) || 0)}
-                    disabled={updatingTaxonId === row.taxonId}
-                    className="form-control form-control-sm"
-                    style={{width: '60px'}}
-                />
-            ),
-        }),
-        createCheckboxColumn<TaxonMapSettings>('isProtected', t('atlas.admin.taxaList.protected'), async (_row, _checked) => {
-            await handleIsProtectedChange(_row);
-        }, {
-            enableSorting: true,
-            enableFiltering: true,
-            isDisabled: (row) => updatingTaxonId === row.taxonId,
-        }),
-        createTextColumn<TaxonMapSettings>('preslia', t('atlas.admin.taxaList.preslia'), {
-            enableSorting: true,
-            enableFiltering: true,
-            filterPlaceholder: t('atlas.admin.taxaList.filterPreslia'),
-            cellRenderer: (_value, row) => (
-                <PresliaInlineField
-                    taxonId={row.taxonId}
-                    value={row.preslia}
-                    onSave={(newValue) => handlePresliaChange(row, newValue)}
-                    disabled={updatingTaxonId === row.taxonId}
-                />
-            ),
-        }),
-        createTextColumn<TaxonMapSettings>('revisors', t('atlas.admin.taxaList.revisors'), {
-            enableSorting: true,
-            enableFiltering: false,
-            filterPlaceholder: t('atlas.admin.taxaList.filterRevisors'),
-            cellRenderer: (value) => value || '-',
-        }),
-        createTextColumn<TaxonMapSettings>('revisionStatusId', t('atlas.admin.taxaList.revisionStatus'), {
-            enableSorting: true,
-            enableFiltering: true,
-            filterOptions: revisionStatusOptions.map(o => ({value: String(o.id), label: `${o.description} [${o.id}]`})),
-            cellRenderer: (_value, row) => (
-                <StatusSelect
-                    value={row.revisionStatusId}
-                    options={revisionStatusOptions}
-                    onChange={(newValue) => handleRevisionStatusChange(row, newValue)}
-                    disabled={updatingTaxonId === row.taxonId}
-                />
-            ),
-        }),
-        createTextColumn<TaxonMapSettings>('publicationStatusId', t('atlas.admin.taxaList.publicationStatus'), {
-            enableSorting: true,
-            enableFiltering: true,
-            filterOptions: publicationStatusOptions.map(o => ({
-                value: String(o.id),
-                label: `${o.description} [${o.id}]`
-            })),
-            cellRenderer: (_value, row) => (
-                <StatusSelect
-                    value={row.publicationStatusId}
-                    options={publicationStatusOptions}
-                    onChange={(newValue) => handlePublicationStatusChange(row, newValue)}
-                    disabled={updatingTaxonId === row.taxonId}
-                />
-            ),
-        }),
-        createActionColumn<TaxonMapSettings>('archiveCSV', t('atlas.admin.taxaList.archiveCSV'), (row) => (
+        ),
+        renderCommonThreshold: (row) => (
+            <input
+                type="number"
+                min={0}
+                max={3}
+                value={row.commonThreshold}
+                onChange={(e) => handleCommonThresholdChange(row, parseInt(e.target.value) || 0)}
+                disabled={updatingTaxonId === row.taxonId}
+                className="form-control form-control-sm"
+                style={{width: '60px'}}
+            />
+        ),
+        onIsProtectedToggle: handleIsProtectedChange,
+        isProtectedDisabled: (row) => updatingTaxonId === row.taxonId,
+        renderPreslia: (row) => (
+            <PresliaInlineField
+                taxonId={row.taxonId}
+                value={row.preslia}
+                onSave={(newValue) => handlePresliaChange(row, newValue)}
+                disabled={updatingTaxonId === row.taxonId}
+            />
+        ),
+        renderRevisionStatus: (row) => (
+            <StatusSelect
+                value={row.revisionStatusId}
+                options={revisionStatusOptions}
+                onChange={(newValue) => handleRevisionStatusChange(row, newValue)}
+                disabled={updatingTaxonId === row.taxonId}
+            />
+        ),
+        renderPublicationStatus: (row) => (
+            <StatusSelect
+                value={row.publicationStatusId}
+                options={publicationStatusOptions}
+                onChange={(newValue) => handlePublicationStatusChange(row, newValue)}
+                disabled={updatingTaxonId === row.taxonId}
+            />
+        ),
+        renderArchiveCsv: (row) => (
             <ArchiveCsvCell
                 row={row}
                 onPngUploadComplete={handlePngUploadComplete}
             />
-        ), {
-            minWidth: '200px',
-        }),
-    ], [
-        t,
-        revisionStatusOptions,
-        publicationStatusOptions,
+        ),
+    }), [
         updatingTaxonId,
         handleIsMappedChange,
         handleParentMapChange,
@@ -264,7 +213,16 @@ export default function TaxaList() {
         handleRevisionStatusChange,
         handlePublicationStatusChange,
         handlePngUploadComplete,
+        revisionStatusOptions,
+        publicationStatusOptions,
     ]);
+
+    // sdílená column factory (improvements 2.4) – editovatelná varianta
+    const columns = useMemo(
+        () => createTaxaColumns({t, revisionStatusOptions, publicationStatusOptions, editableCells}),
+        [t, revisionStatusOptions, publicationStatusOptions, editableCells]
+    );
+
 
     return (
         <div className="container-fluid">

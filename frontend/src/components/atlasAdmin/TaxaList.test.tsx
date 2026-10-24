@@ -19,7 +19,7 @@ import TaxaList from './TaxaList';
 import {withQueryClient} from '@/test/withQueryClient';
 import {apiGet, apiPost} from '@/services/apiClient';
 import {useNotificationStore} from '@/stores/notificationStore';
-import type {TaxonMapSettings} from './taxaList/types';
+import type {TaxonMapSettings} from '@/models/TaxonMapSettings';
 import '@/i18n/i18n';
 
 vi.mock('@/services/apiClient', async (importOriginal) => {

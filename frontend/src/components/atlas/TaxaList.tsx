@@ -7,11 +7,12 @@
 
 import {useMemo} from 'react';
 import {useTranslation} from 'react-i18next';
-import {DataTable, type DataTableColumnDef, createTextColumn, createBooleanColumn} from '@/core/dataTable';
+import {DataTable} from '@/core/dataTable';
 import {getPublicationStatuses, getRevisionStatuses} from '@/services/mapAdminApi';
 import {useCatalogQuery} from '@/query/useCatalogQuery';
 import {useTaxaData} from '@/hooks/useTaxaData';
-import type {TaxonMapSettings} from './taxaList/types';
+import {createTaxaColumns} from '@/components/taxaList/columns';
+import type {TaxonMapSettings} from '@/models/TaxonMapSettings';
 
 export default function TaxaList() {
     const {t} = useTranslation();
@@ -23,75 +24,11 @@ export default function TaxaList() {
 
     const {fetchTaxa} = useTaxaData({endpoint: '/api/react/atlasadmin/taxa/user'});
 
-    const columns = useMemo<DataTableColumnDef<TaxonMapSettings>[]>(() => [
-        // First column - keep as is with link to map
-        createTextColumn<TaxonMapSettings>('taxonNameLat', t('atlas.admin.taxaList.latinName'), {
-            enableSorting: false,
-            enableFiltering: true,
-            filterPlaceholder: t('atlas.admin.taxaList.filterLatinName'),
-            cellRenderer: (_value, row) => (
-                <>
-                    <i>
-                        <a href={`/atlas/map?taxonId=${row.taxonId}`}>
-                            <i>{row.taxonNameLat}</i>
-                        </a>
-                    </i>
-                    {row.taxonRankCz && (
-                        <small className="text-muted"> ({row.taxonRankCz})</small>
-                    )}
-                </>
-            ),
-        }),
-        // Remaining columns - simple read-only text values
-        // Use backend field names for proper filtering/sorting
-        createBooleanColumn<TaxonMapSettings>('isMapped', t('atlas.admin.taxaList.mapped'), {
-            enableSorting: false,
-            enableFiltering: true,
-            trueLabel: t('common.yes'),
-            falseLabel: t('common.no'),
-        }),
-        createTextColumn<TaxonMapSettings>('commonThreshold', t('atlas.admin.taxaList.commonThreshold'), {
-            enableSorting: false,
-            enableFiltering: true,
-            cellRenderer: (value) => value?.toString() ?? '-',
-        }),
-        createBooleanColumn<TaxonMapSettings>('isProtected', t('atlas.admin.taxaList.protected'), {
-            enableSorting: false,
-            enableFiltering: false,
-            trueLabel: t('common.yes'),
-            falseLabel: t('common.no'),
-        }),
-        createTextColumn<TaxonMapSettings>('revisors', t('atlas.admin.taxaList.revisors'), {
-            enableSorting: false,
-            enableFiltering: false,
-            filterPlaceholder: t('atlas.admin.taxaList.filterRevisors'),
-            cellRenderer: (value) => value || '-',
-        }),
-        // Use ID field for filtering/sorting, display description with ID
-        createTextColumn<TaxonMapSettings>('revisionStatusId', t('atlas.admin.taxaList.revisionStatus'), {
-            enableSorting: false,
-            enableFiltering: true,
-            filterOptions: revisionStatusOptions.map(o => ({value: String(o.id), label: `${o.description} [${o.id}]`})),
-            cellRenderer: (_value, row) => {
-                const desc = row.revisionStatusDescription || '-';
-                const id = row.revisionStatusId;
-                return desc !== '-' ? `${desc}[${id}]` : desc;
-            },
-        }),
-        createTextColumn<TaxonMapSettings>('publicationStatusId', t('atlas.admin.taxaList.publicationStatus'), {
-            enableSorting: false,
-            enableFiltering: true,
-            filterOptions: publicationStatusOptions.map(o => ({
-                value: String(o.id),
-                label: `${o.description} [${o.id}]`
-            })),
-            cellRenderer: (_value, row) => {
-                const desc = row.publicationStatusDescription || '-';
-                const id = row.publicationStatusId;
-                return desc !== '-' ? `${desc}[${id}]` : desc;
-            },
-        }),
-    ], [t, revisionStatusOptions, publicationStatusOptions]);
+    // sdílená column factory (improvements 2.4) – read-only varianta
+    const columns = useMemo(
+        () => createTaxaColumns({t, revisionStatusOptions, publicationStatusOptions}),
+        [t, revisionStatusOptions, publicationStatusOptions]
+    );
 
     return (
         <div className="container-fluid">

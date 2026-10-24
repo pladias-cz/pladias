@@ -5,11 +5,11 @@ import {useTranslation} from 'react-i18next';
 import {searchTaxaByPrefix} from '@/services/taxonApi';
 import {isAbortError} from '@/services/apiClient';
 import {notifyApiError} from '@/stores/notificationStore';
-import type {TaxonOption} from '../types';
+import type {TaxonId} from '@/models/TaxonId';
 
 interface ParentMapAutocompleteProps {
     taxonId: number;
-    onChange: (selected: TaxonOption | null) => void;
+    onChange: (selected: TaxonId | null) => void;
     updatingTaxonId: number | null;
     placeholder: string;
 }
@@ -58,16 +58,16 @@ export function ParentMapAutocomplete({
             minLength={2}
             onSearch={setQuery}
             options={data ?? []}
-            labelKey={(option) => (option as TaxonOption).nameLat}
+            labelKey={(option) => (option as TaxonId).nameLat}
             onChange={(selected) => {
-                onChange(selected[0] ? (selected[0] as TaxonOption) : null);
+                onChange(selected[0] ? (selected[0] as TaxonId) : null);
                 // zahodit výsledky hledání (nový klíč) a vypnout dotaz (prázdný text)
                 setQuery('');
                 setCacheKey(prev => prev + 1);
             }}
             placeholder={placeholder}
             renderMenuItemChildren={(option) => {
-                const taxon = option as TaxonOption;
+                const taxon = option as TaxonId;
                 return (
                     <>
                         <strong>{taxon.nameLat}</strong>

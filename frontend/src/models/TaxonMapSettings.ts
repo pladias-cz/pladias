@@ -1,7 +1,8 @@
 /**
  * Nastavení mapy taxonu – `GET /api/react/atlas/taxonMapSettings/{id}`
- * (dříve lokální DTO v komponentách mapPreview/mapMain a type v
- * `components/atlas/taxaList/types`, kam se re-exportuje).
+ * (dříve lokální DTO v komponentách mapPreview/mapMain a type v komponentách
+ * TaxaList; v rámci improvements 2.4 se duplicitní types.ts z obou variant
+ * TaxaList odstranily – importuje se odsud).
  */
 export interface TaxonMapSettings {
     /** PK atlas.taxon_mapsettings – u 1:1 relace s taxonem totožné s taxonId. */

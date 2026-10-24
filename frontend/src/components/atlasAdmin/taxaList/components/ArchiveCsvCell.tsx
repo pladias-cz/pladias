@@ -1,5 +1,5 @@
 import {useTranslation} from 'react-i18next';
-import type {TaxonMapSettings} from '../types';
+import type {TaxonMapSettings} from '@/models/TaxonMapSettings';
 import {PngUploadButton} from './PngUploadButton';
 
 interface ArchiveCsvCellProps {

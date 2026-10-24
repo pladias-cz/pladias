@@ -9,14 +9,14 @@
  * counterpart for dynamic GeoJSON with its own pane and zoom-dependent point radius.
  */
 
-import { useMap } from 'react-leaflet';
+import {useMap} from 'react-leaflet';
 import * as L from 'leaflet';
-import { useEffect, useRef, useState, useMemo } from 'react';
-import { fetchWfsGeoJson } from '@/services/mapApi';
-import { logError, logInfo } from '@/services/logger';
-import type { LayerParams, WfsStyleOptions } from '../../types';
-import type { GeoServerConfig } from '../../types/serviceConfig';
-import { getBboxWithBuffer, shouldReloadBbox } from './wfsBounds';
+import {useEffect, useRef, useState, useMemo} from 'react';
+import {fetchWfsGeoJson} from '@/services/mapApi';
+import {logError, logInfo} from '@/services/logger';
+import type {LayerParams, WfsStyleOptions} from '../../types';
+import type {GeoServerConfig} from '../../types/serviceConfig';
+import {getBboxWithBuffer, shouldReloadBbox} from './wfsBounds';
 
 export interface WfsLayerViewProps {
     /** Layer ID from the definition (basis for the pane name) */
@@ -68,7 +68,7 @@ function getRadiusForZoom(styleOptions: WfsStyleOptions | undefined, zoom: numbe
     return radius;
 }
 
-export function WfsLayerView({ id, service, zIndex, wfsStyle, params, visible }: WfsLayerViewProps) {
+export function WfsLayerView({id, service, zIndex, wfsStyle, params, visible}: WfsLayerViewProps) {
     const map = useMap();
     const layerRef = useRef<L.GeoJSON | null>(null);
     const [loaded, setLoaded] = useState(false);
@@ -83,9 +83,9 @@ export function WfsLayerView({ id, service, zIndex, wfsStyle, params, visible }:
         visibleRef.current = visible;
         if (layerRef.current) {
             if (visible) {
-                layerRef.current.setStyle({ opacity: 1, fillOpacity: 0.7 });
+                layerRef.current.setStyle({opacity: 1, fillOpacity: 0.7});
             } else {
-                layerRef.current.setStyle({ opacity: 0, fillOpacity: 0 });
+                layerRef.current.setStyle({opacity: 0, fillOpacity: 0});
             }
         }
     }, [visible]);
@@ -206,7 +206,7 @@ export function WfsLayerView({ id, service, zIndex, wfsStyle, params, visible }:
         });
 
         return url.toString();
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- getBboxWithBuffer čte stav mapy v každém renderu; závislost by přepočítávala URL při každém renderu
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- getBboxWithBuffer čte stav mapy v každém renderu; závislost by přepočítávala URL při každém renderu
     }, [config, service.baseUrl, params]);
 
     // Fetch and create GeoJSON layer - ONLY depends on wfsUrl and map
@@ -262,7 +262,7 @@ export function WfsLayerView({ id, service, zIndex, wfsStyle, params, visible }:
                 map.on('zoomend', updateRadiusOnZoom);
 
                 // Store cleanup function reference
-                (geoJsonLayer as L.GeoJSON & {_zoomHandler?: () => void})._zoomHandler = updateRadiusOnZoom;
+                (geoJsonLayer as L.GeoJSON & { _zoomHandler?: () => void })._zoomHandler = updateRadiusOnZoom;
 
                 if (data.features && data.features.length > 0) {
                     geoJsonLayer.addData(data);
@@ -270,7 +270,7 @@ export function WfsLayerView({ id, service, zIndex, wfsStyle, params, visible }:
 
                 // Apply initial visibility from ref before adding to map
                 if (!visibleRef.current) {
-                    geoJsonLayer.setStyle({ opacity: 0, fillOpacity: 0 });
+                    geoJsonLayer.setStyle({opacity: 0, fillOpacity: 0});
                 }
 
                 geoJsonLayer.addTo(map);
@@ -288,7 +288,7 @@ export function WfsLayerView({ id, service, zIndex, wfsStyle, params, visible }:
         return () => {
             if (layerRef.current) {
                 // Remove zoom listener
-                const handler = (layerRef.current as L.GeoJSON & {_zoomHandler?: () => void})._zoomHandler;
+                const handler = (layerRef.current as L.GeoJSON & { _zoomHandler?: () => void })._zoomHandler;
                 if (handler && map) {
                     map.off('zoomend', handler);
                 }

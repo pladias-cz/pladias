@@ -1,6 +1,6 @@
 // Record types
-export type { RecordPladias } from './RecordPladias';
-export type { RecordResponse } from './RecordPladiasFull';
+export type {RecordPladias} from './RecordPladias';
+export type {RecordResponse} from './RecordPladiasFull';
 
 // Extended record types
 export type {
@@ -16,17 +16,17 @@ export type {
 } from './RecordPladiasFull';
 
 // Geographic types
-export type { QuadrantDetail, DistrictDetail } from './GeoTypes';
+export type {QuadrantDetail, DistrictDetail} from './GeoTypes';
 
 // Record comment types
-export type { RecordComment, RecordCommentsResponse } from './RecordComment';
+export type {RecordComment, RecordCommentsResponse} from './RecordComment';
 
 // Taxon map settings types
-export type { TaxonMapSettings } from './TaxonMapSettings';
+export type {TaxonMapSettings} from './TaxonMapSettings';
 
 // Record history types
-export type { RecordHistoryEntry, RecordHistoryResponse } from './RecordHistory';
+export type {RecordHistoryEntry, RecordHistoryResponse} from './RecordHistory';
 
 // Reverse geocoding types
-export type { ReverseGeocodingResponse, PhytochorionEntry } from './ReverseGeocoding';
-export type { TownHierarchyEntry } from './GeoTypes';
+export type {ReverseGeocodingResponse, PhytochorionEntry} from './ReverseGeocoding';
+export type {TownHierarchyEntry} from './GeoTypes';

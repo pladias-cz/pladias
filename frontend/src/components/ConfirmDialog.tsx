@@ -39,14 +39,14 @@ interface ConfirmDialogProps extends ConfirmOptions {
 
 /** Prezentační modal – veškerá logika (promise, otevírání) je v `useConfirm`. */
 export function ConfirmDialog({
-    message,
-    title,
-    confirmLabel,
-    cancelLabel,
-    confirmVariant = "danger",
-    onConfirm,
-    onCancel,
-}: ConfirmDialogProps) {
+                                  message,
+                                  title,
+                                  confirmLabel,
+                                  cancelLabel,
+                                  confirmVariant = "danger",
+                                  onConfirm,
+                                  onCancel,
+                              }: ConfirmDialogProps) {
     const {t} = useTranslation();
 
     return (

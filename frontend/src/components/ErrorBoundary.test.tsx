@@ -23,7 +23,8 @@ afterEach(() => {
 describe("ErrorBoundary", () => {
     it("renders fallback UI with reload button instead of crashing the tree", () => {
         // React na chybu renderu sám loguje do console.error – v testu ticho
-        const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+        const consoleError = vi.spyOn(console, "error").mockImplementation(() => {
+        });
         const reload = vi.fn();
         Object.defineProperty(window, "location", {
             configurable: true,
@@ -46,7 +47,8 @@ describe("ErrorBoundary", () => {
     });
 
     it("logs the error and component stack for developers", () => {
-        const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+        const consoleError = vi.spyOn(console, "error").mockImplementation(() => {
+        });
         Object.defineProperty(window, "location", {
             configurable: true,
             value: {reload: vi.fn(), href: "http://localhost/"},

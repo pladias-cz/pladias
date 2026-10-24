@@ -29,6 +29,7 @@ interface Props {
     /** Volá se s celým aktualizovaným taxonem z backendu. */
     onUpdated: (updated: Taxon) => void;
 }
+
 export default function InlineField({
                                         label,
                                         taxonId,
@@ -94,7 +95,8 @@ export default function InlineField({
               style={{cursor: "pointer"}}
               onClick={() => setEditing(true)}
           >
-            {render ? render(value ?? null) : value || <span className="text-muted">{t("common.inlineField.add")}</span>}
+            {render ? render(value ?? null) : value ||
+                <span className="text-muted">{t("common.inlineField.add")}</span>}
           </span>
         </span>
             );

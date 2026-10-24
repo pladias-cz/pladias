@@ -41,7 +41,7 @@ export interface UserProject {
  * Gotcha: obálka nese klíč `projects` místo standardního `data`.
  */
 export async function getUserProjects(): Promise<UserProject[]> {
-    const payload = await apiGet<{success: boolean; projects?: UserProject[]}>("/api/react/projects/user");
+    const payload = await apiGet<{ success: boolean; projects?: UserProject[] }>("/api/react/projects/user");
     const projects = payload.projects;
     if (payload.success !== true || !Array.isArray(projects)) {
         throw new ApiError("Projekty se nepodařilo načíst.");

@@ -27,27 +27,27 @@ interface TypeaheadFilterFieldProps {
 }
 
 export function TypeaheadFilterField({
-    title,
-    label,
-    name,
-    value,
-    values,
-    id,
-    options,
-    selected,
-    onChange,
-    placeholder,
-    multiple,
-}: TypeaheadFilterFieldProps) {
+                                         title,
+                                         label,
+                                         name,
+                                         value,
+                                         values,
+                                         id,
+                                         options,
+                                         selected,
+                                         onChange,
+                                         placeholder,
+                                         multiple,
+                                     }: TypeaheadFilterFieldProps) {
     return (
         <tr title={title}>
             <td>{label}</td>
             <td>
                 {values
                     ? values.map((itemValue) => (
-                        <input key={`${name}-${itemValue}`} type="hidden" name={name} value={itemValue} />
+                        <input key={`${name}-${itemValue}`} type="hidden" name={name} value={itemValue}/>
                     ))
-                    : <input type="hidden" name={name} value={value ?? ""} />}
+                    : <input type="hidden" name={name} value={value ?? ""}/>}
                 <Typeahead
                     id={id}
                     labelKey="label"

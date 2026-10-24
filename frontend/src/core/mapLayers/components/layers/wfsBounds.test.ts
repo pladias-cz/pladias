@@ -1,10 +1,10 @@
-import { describe, it, expect } from 'vitest';
+import {describe, it, expect} from 'vitest';
 import * as L from 'leaflet';
-import { getBboxWithBuffer, shouldReloadBbox } from './wfsBounds';
+import {getBboxWithBuffer, shouldReloadBbox} from './wfsBounds';
 
 /** Mapa s pevnými hranicemi – netřeba reálné DOM/leaflet rozhraní */
 function mapWithBounds(west: number, south: number, east: number, north: number): L.Map {
-    return { getBounds: () => L.latLngBounds([south, west], [north, east]) } as unknown as L.Map;
+    return {getBounds: () => L.latLngBounds([south, west], [north, east])} as unknown as L.Map;
 }
 
 describe('getBboxWithBuffer', () => {

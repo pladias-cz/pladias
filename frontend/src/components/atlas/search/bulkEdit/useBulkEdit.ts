@@ -58,7 +58,7 @@ export function useBulkEdit({records, totalCount, searchPayloadEntries, onBulkEd
     // poloha + buffer (sekce 0 a 1)
     const [rawCoords, setRawCoords] = useState<string>("");
     const [rawCoordsError, setRawCoordsError] = useState<string>("");
-    const [requiredCoordErrors, setRequiredCoordErrors] = useState<{lat: boolean; lon: boolean; buffer: boolean}>({
+    const [requiredCoordErrors, setRequiredCoordErrors] = useState<{ lat: boolean; lon: boolean; buffer: boolean }>({
         lat: false,
         lon: false,
         buffer: false,
@@ -89,7 +89,7 @@ export function useBulkEdit({records, totalCount, searchPayloadEntries, onBulkEd
     // běh dávky
     const [formMessage, setFormMessage] = useState<string>("");
     const [isRunning, setIsRunning] = useState<boolean>(false);
-    const [batchProgress, setBatchProgress] = useState<{processed: number; total: number}>({processed: 0, total: 0});
+    const [batchProgress, setBatchProgress] = useState<{ processed: number; total: number }>({processed: 0, total: 0});
     const [batchSummary, setBatchSummary] = useState<BulkOperationSummary | null>(null);
 
     const recordIds = useMemo(() => records.map((record) => record.id), [records]);

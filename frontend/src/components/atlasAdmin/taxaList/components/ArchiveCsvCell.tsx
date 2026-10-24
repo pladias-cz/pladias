@@ -1,3 +1,4 @@
+import {useTranslation} from 'react-i18next';
 import type {TaxonMapSettings} from '../types';
 import {PngUploadButton} from './PngUploadButton';
 
@@ -9,6 +10,7 @@ interface ArchiveCsvCellProps {
 const PNG_UPLOAD_ELIGIBLE_STATUSES = [2, 3];
 
 export function ArchiveCsvCell({row, onPngUploadComplete}: ArchiveCsvCellProps) {
+    const {t} = useTranslation();
     const {
         csvMapDetailId,
         csvMapDetailTimestamp,
@@ -23,7 +25,7 @@ export function ArchiveCsvCell({row, onPngUploadComplete}: ArchiveCsvCellProps) 
     if (!csvMapDetailId) {
         return (
             <div className="d-flex flex-column gap-1">
-                <span className="text-muted">No CSV</span>
+                <span className="text-muted">{t('atlas.admin.taxaList.noCsv')}</span>
                 {canUploadPng && (
                     <PngUploadButton taxonId={taxonId} onUploadComplete={onPngUploadComplete}/>
                 )}
@@ -45,7 +47,7 @@ export function ArchiveCsvCell({row, onPngUploadComplete}: ArchiveCsvCellProps) 
                 <small>
                     <a
                         href={`/api/react/atlas/map-reports/download-csv/${csvMapDetailId}`}
-                        title="Download CSV"
+                        title={t('atlas.admin.taxaList.downloadCsv')}
                         className="text-decoration-none"
                     >
                         <i className="bi bi-file-earmark-spreadsheet text-success me-1"></i>
@@ -54,7 +56,7 @@ export function ArchiveCsvCell({row, onPngUploadComplete}: ArchiveCsvCellProps) 
                     <br/>
                     <a
                         href={`/api/react/atlas/map-reports/download-csv-map/${csvMapDetailId}`}
-                        title="Download CSV Map Render"
+                        title={t('atlas.admin.taxaList.downloadCsvMap')}
                         className="text-decoration-none"
                     >
                         <i className="bi bi-map text-primary me-1"></i>
@@ -65,7 +67,7 @@ export function ArchiveCsvCell({row, onPngUploadComplete}: ArchiveCsvCellProps) 
                             <hr className="my-1"/>
                             <a
                                 href={`/api/react/atlas/pngMap/taxon/${taxonId}`}
-                                title="Download PNG Map"
+                                title={t('atlas.admin.taxaList.downloadPngMap')}
                                 className="text-decoration-none"
                             >
                                 <i className="bi bi-image text-secondary me-1"></i>

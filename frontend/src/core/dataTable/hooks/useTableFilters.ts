@@ -5,14 +5,14 @@
 import {useCallback, useMemo, useState} from 'react';
 
 export interface UseTableFiltersOptions {
-    initialFilters?: Array<{id: string; value: string}>;
+    initialFilters?: Array<{ id: string; value: string }>;
     onFiltersChange?: () => void;
 }
 
 export function useTableFilters(options: UseTableFiltersOptions = {}) {
     const {initialFilters = [], onFiltersChange} = options;
-    
-    const [columnFilters, setColumnFilters] = useState<Array<{id: string; value: string}>>(initialFilters);
+
+    const [columnFilters, setColumnFilters] = useState<Array<{ id: string; value: string }>>(initialFilters);
 
     /**
      * Get filter value for a specific column

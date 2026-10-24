@@ -1,29 +1,29 @@
 /**
  * Layer Registry
- * 
+ *
  * Central registry containing all available layer definitions.
  * This is the single source of truth for map layers.
- * 
+ *
  * Map components should NEVER contain hardcoded layer URLs -
  * they should only reference layers by ID from this registry.
- * 
+ *
  * Layer groups are organized in separate files under ./groups/
  */
 
-import type { LayerDefinition, LayerGroup, LayerRegistry } from '../types';
-import { BASE_LAYERS, PREPRINT_LAYERS, OCCURRENCE_LAYERS, GENERAL_LAYERS, PROJECT_LAYERS, GBIF_LAYERS } from './groups';
+import type {LayerDefinition, LayerGroup, LayerRegistry} from '../types';
+import {BASE_LAYERS, PREPRINT_LAYERS, OCCURRENCE_LAYERS, GENERAL_LAYERS, PROJECT_LAYERS, GBIF_LAYERS} from './groups';
 
 /**
  * Complete layer registry - single source of truth
  * Combines all layer groups into a single registry object
  */
 export const layerRegistry: LayerRegistry = {
-    ...BASE_LAYERS.reduce((acc, layer) => ({ ...acc, [layer.id]: layer }), {} as LayerRegistry),
-    ...PREPRINT_LAYERS.reduce((acc, layer) => ({ ...acc, [layer.id]: layer }), {} as LayerRegistry),
-    ...OCCURRENCE_LAYERS.reduce((acc, layer) => ({ ...acc, [layer.id]: layer }), {} as LayerRegistry),
-    ...GENERAL_LAYERS.reduce((acc, layer) => ({ ...acc, [layer.id]: layer }), {} as LayerRegistry),
-    ...PROJECT_LAYERS.reduce((acc, layer) => ({ ...acc, [layer.id]: layer }), {} as LayerRegistry),
-    ...GBIF_LAYERS.reduce((acc, layer) => ({ ...acc, [layer.id]: layer }), {} as LayerRegistry),
+    ...BASE_LAYERS.reduce((acc, layer) => ({...acc, [layer.id]: layer}), {} as LayerRegistry),
+    ...PREPRINT_LAYERS.reduce((acc, layer) => ({...acc, [layer.id]: layer}), {} as LayerRegistry),
+    ...OCCURRENCE_LAYERS.reduce((acc, layer) => ({...acc, [layer.id]: layer}), {} as LayerRegistry),
+    ...GENERAL_LAYERS.reduce((acc, layer) => ({...acc, [layer.id]: layer}), {} as LayerRegistry),
+    ...PROJECT_LAYERS.reduce((acc, layer) => ({...acc, [layer.id]: layer}), {} as LayerRegistry),
+    ...GBIF_LAYERS.reduce((acc, layer) => ({...acc, [layer.id]: layer}), {} as LayerRegistry),
 };
 
 /**
@@ -93,15 +93,6 @@ export function getAllLayerDefinitions(): LayerDefinition[] {
 }
 
 /**
- * Get layers by source type
- * @param source - The layer source to filter by
- * @returns Array of layer definitions from that source
- */
-export function getLayersBySource(source: string): LayerDefinition[] {
-    return Object.values(layerRegistry).filter(layer => layer.source === source);
-}
-
-/**
  * Check if a layer exists in the registry
  * @param layerId - The layer ID to check
  * @returns True if the layer exists
@@ -128,4 +119,4 @@ export function getAllLayerGroups(): LayerGroup[] {
 }
 
 // Re-export layer groups for direct access
-export { BASE_LAYERS, PREPRINT_LAYERS, OCCURRENCE_LAYERS, GENERAL_LAYERS, PROJECT_LAYERS, GBIF_LAYERS };
+export {BASE_LAYERS, PREPRINT_LAYERS, OCCURRENCE_LAYERS, GENERAL_LAYERS, PROJECT_LAYERS, GBIF_LAYERS};

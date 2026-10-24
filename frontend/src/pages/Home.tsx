@@ -1,4 +1,3 @@
-
 import {Row} from "react-bootstrap";
 import {usePageTitle} from "@/hooks/usePageTitle";
 import {useTranslation} from "react-i18next";
@@ -9,7 +8,8 @@ export default function Home() {
     usePageTitle(t("other.pages.home.title"));
     return (
         <Row>
-            <PlayMessage messageKey="main_page_texts"><></></PlayMessage>
+            <PlayMessage messageKey="main_page_texts"><></>
+            </PlayMessage>
         </Row>
     );
 }

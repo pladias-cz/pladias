@@ -7,9 +7,9 @@
  * cancellations when toggling visibility.
  */
 
-import { TileLayer } from 'react-leaflet';
-import type { CrossOrigin } from 'leaflet';
-import type { TileConfig } from '../../types/serviceConfig';
+import {TileLayer} from 'react-leaflet';
+import type {CrossOrigin} from 'leaflet';
+import type {TileConfig} from '../../types/serviceConfig';
 
 export interface TileLayerViewProps {
     /** Service configuration – the dispatcher in Layer.tsx guarantees type: 'tile' */
@@ -22,7 +22,7 @@ export interface TileLayerViewProps {
     visible: boolean;
 }
 
-export function TileLayerView({ service, zIndex, attribution, visible }: TileLayerViewProps) {
+export function TileLayerView({service, zIndex, attribution, visible}: TileLayerViewProps) {
     const config = service.config;
 
     // Build TileLayer props - only include defined values

@@ -6,12 +6,12 @@
  * Persists user visibility choices to the backend.
  */
 
-import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
-import { useLayerStore, getVisibilityStorageKey } from '../store/layerStore';
-import { useUserSettings } from '@/hooks/useUserSettings';
+import {useState, useCallback, useEffect, useRef, useMemo} from 'react';
+import {useLayerStore, getVisibilityStorageKey} from '../store/layerStore';
+import {useUserSettings} from '@/hooks/useUserSettings';
 import {getUserSetting} from '@/services/settingsApi';
-import { getLayerGroup, getLayerDefinition, layerGroups } from '../registry/layerRegistry';
-import type { LayerParams } from '../types';
+import {getLayerGroup, getLayerDefinition, layerGroups} from '../registry/layerRegistry';
+import type {LayerParams} from '../types';
 
 export interface LayerManagerReturn {
     toggleLayer: (layerId: string) => void;
@@ -60,7 +60,7 @@ export function useLayerManager(
         getLayerState,
     } = useLayerStore();
 
-    const { saveSetting } = useUserSettings();
+    const {saveSetting} = useUserSettings();
     const [saving, setSaving] = useState(false);
     const initialized = useRef(false);
 

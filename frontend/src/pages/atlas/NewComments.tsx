@@ -25,7 +25,8 @@ export default function NewComments() {
                 <div>
                     <h3 className="mb-0">{t("atlas.newComments.title")}</h3>
                     {!isPending && !loadError && records.length > 0 && (
-                        <small className="text-muted">{t("atlas.newComments.recordsCount", {count: records.length})}</small>
+                        <small
+                            className="text-muted">{t("atlas.newComments.recordsCount", {count: records.length})}</small>
                     )}
                 </div>
                 {isPending && <span className="text-muted">{t("common.loading")}</span>}
@@ -37,7 +38,8 @@ export default function NewComments() {
                 <div className="text-muted">{t("atlas.newComments.noRecords")}</div>
             )}
 
-            {records.length > 0 && <PladiasRecordsTable records={records} showTaxonName={true} showExpandAllButton={true} />}
+            {records.length > 0 &&
+                <PladiasRecordsTable records={records} showTaxonName={true} showExpandAllButton={true}/>}
         </Row>
     );
 }

@@ -1,4 +1,4 @@
-import { useTranslation } from "react-i18next";
+import {useTranslation} from "react-i18next";
 import {useQuery} from "@tanstack/react-query";
 import RichTextMessage from "@/components/RichTextMessage";
 import {getPlayMessage} from "@/services/playMessageApi";
@@ -25,8 +25,8 @@ interface PlayMessageProps {
  * @param {string} className - Optional CSS class name for styling
  * @param {React.ReactNode} children - Optional children to render if no message is found
  */
-export default function PlayMessage({ messageKey, fallback = "", className = "", children }: PlayMessageProps) {
-    const { i18n } = useTranslation();
+export default function PlayMessage({messageKey, fallback = "", className = "", children}: PlayMessageProps) {
+    const {i18n} = useTranslation();
     // Get current language from i18n context and send it as query parameter
     const lang = i18n.language || "cs";
 

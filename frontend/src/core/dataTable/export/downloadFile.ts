@@ -2,16 +2,6 @@
  * Helpers to store a response received as a blob on the user's disk
  */
 
-export function resolveFilename(contentDisposition: string | undefined, fallback: string): string {
-    const utf8Name = contentDisposition?.match(/filename\*=UTF-8''([^;]+)/i);
-    if (utf8Name?.[1]) {
-        return decodeURIComponent(utf8Name[1]);
-    }
-
-    const simpleName = contentDisposition?.match(/filename="?([^";]+)"?/i);
-    return simpleName?.[1] ?? fallback;
-}
-
 export function downloadBlob(blob: Blob, filename: string) {
     const url = window.URL.createObjectURL(blob);
     const anchor = document.createElement('a');

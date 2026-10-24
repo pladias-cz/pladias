@@ -63,7 +63,10 @@ describe("getNearbyExternalRecords", () => {
     it("adds the project discriminator to inaturalist records", async () => {
         fetchMock.mockResolvedValue(jsonResponse({success: true, data: [{id: 12}]}));
 
-        await expect(getNearbyExternalRecords("6152", 5, "inaturalist")).resolves.toEqual([{id: 12, project: "inaturalist"}]);
+        await expect(getNearbyExternalRecords("6152", 5, "inaturalist")).resolves.toEqual([{
+            id: 12,
+            project: "inaturalist"
+        }]);
     });
 });
 
@@ -76,7 +79,11 @@ describe("getSquarePladiasRecords", () => {
 
         const records = await getSquarePladiasRecords("6152", 5);
 
-        expect(records).toEqual([{id: 1, lastEditTimestamp: "2026-02-09T10:00:00Z", lastEditTimestampNum: Date.parse("2026-02-09T10:00:00Z")}]);
+        expect(records).toEqual([{
+            id: 1,
+            lastEditTimestamp: "2026-02-09T10:00:00Z",
+            lastEditTimestampNum: Date.parse("2026-02-09T10:00:00Z")
+        }]);
         expect(fetchMock).toHaveBeenCalledWith("/api/react/atlas/records-square/6152/5/pladias", expect.anything());
     });
 

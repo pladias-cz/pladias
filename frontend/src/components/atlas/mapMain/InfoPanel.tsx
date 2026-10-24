@@ -44,7 +44,7 @@ const REVISION_STATUS_COMPLETING = 5;
 const REVISION_STATUS_CLOSED = 6;
 
 export function InfoPanel({taxonName, taxonId}: InfoPanelProps) {
-    const { t } = useTranslation();
+    const {t} = useTranslation();
 
     // statistiky taxonu – jen pro zobrazení (bez cache, sekce J)
     const statisticsQuery = useQuery({
@@ -72,7 +72,12 @@ export function InfoPanel({taxonName, taxonId}: InfoPanelProps) {
     const [revisionStatusId, setRevisionStatusId] = useState<number>(0);
     const [revisionUpdating, setRevisionUpdating] = useState<boolean>(false);
 
-    const {updateRevisorsComment, updateRevisorsPrintMapComment, updateMapType, updateRevisionStatusForTaxon} = useTaxonUpdates();
+    const {
+        updateRevisorsComment,
+        updateRevisorsPrintMapComment,
+        updateMapType,
+        updateRevisionStatusForTaxon
+    } = useTaxonUpdates();
 
     useEffect(() => {
         const data = settingsQuery.data;
@@ -294,7 +299,8 @@ export function InfoPanel({taxonName, taxonId}: InfoPanelProps) {
                                         <label className="form-check-label" htmlFor={`mapType-${mapTypeOption.id}`}>
                                             {t(mapTypeOption.key)}
                                         </label>
-                                        <a href={`/atlas/mapPreview/${taxonId}/${mapTypeOption.id}`} className="ms-2 small">
+                                        <a href={`/atlas/mapPreview/${taxonId}/${mapTypeOption.id}`}
+                                           className="ms-2 small">
                                             {t("atlas.mapMain.infoPanel.preview")}
                                         </a>
                                     </div>

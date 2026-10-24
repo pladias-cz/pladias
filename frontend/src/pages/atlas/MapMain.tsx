@@ -1,17 +1,17 @@
-import { Container, Row, Col } from "react-bootstrap";
-import { usePageTitle } from "@/hooks/usePageTitle";
-import { useTranslation } from "react-i18next";
-import { useParams } from "react-router-dom";
-import { useEffect, useMemo } from "react";
+import {Container, Row, Col} from "react-bootstrap";
+import {usePageTitle} from "@/hooks/usePageTitle";
+import {useTranslation} from "react-i18next";
+import {useParams} from "react-router-dom";
+import {useEffect, useMemo} from "react";
 import {useQuery} from "@tanstack/react-query";
 import {getTaxon} from "@/services/taxonApi";
 import {notifyApiError} from "@/stores/notificationStore";
-import { MapComponent } from "@/components/atlas/mapMain/MapComponent";
-import { InfoPanel } from "@/components/atlas/mapMain/InfoPanel";
+import {MapComponent} from "@/components/atlas/mapMain/MapComponent";
+import {InfoPanel} from "@/components/atlas/mapMain/InfoPanel";
 
 export default function MapMain() {
-    const { t } = useTranslation();
-    const { taxonId } = useParams<{ taxonId: string }>();
+    const {t} = useTranslation();
+    const {taxonId} = useParams<{ taxonId: string }>();
 
     usePageTitle(t("atlas.mapMain.title"));
 
@@ -36,9 +36,9 @@ export default function MapMain() {
 
     return (
         <Container fluid className="px-0">
-            <Row className="g-0" style={{ height: 'calc(100vh - 56px)' }}>
+            <Row className="g-0" style={{height: 'calc(100vh - 56px)'}}>
                 <Col md={12} lg={8} className="h-100">
-                    <MapComponent taxonId={taxon?.id} />
+                    <MapComponent taxonId={taxon?.id}/>
                 </Col>
                 <Col lg={4} className="h-100 overflow-hidden">
                     <div className="h-100 p-3">

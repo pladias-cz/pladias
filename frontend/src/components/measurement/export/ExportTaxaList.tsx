@@ -1,12 +1,12 @@
-import { useTranslation } from "react-i18next";
-import { Form, Button, Spinner } from "react-bootstrap";
+import {useTranslation} from "react-i18next";
+import {Form, Button, Spinner} from "react-bootstrap";
 
 interface ExportTaxaListProps {
     submitting: boolean;
 }
 
-export default function ExportTaxaList({ submitting }: ExportTaxaListProps) {
-    const { t } = useTranslation();
+export default function ExportTaxaList({submitting}: ExportTaxaListProps) {
+    const {t} = useTranslation();
 
     return (
         <>

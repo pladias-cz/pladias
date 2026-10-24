@@ -11,7 +11,7 @@ import {
     RecordMap, RecordHistory,
     RecordFloristic,
 } from "@/components/atlas/record";
-import type { RecordPladiasFull, ReverseGeocodingResponse } from "@/models";
+import type {RecordPladiasFull, ReverseGeocodingResponse} from "@/models";
 import {getRecordFull, moveRecordCoordinates} from "@/services/recordApi";
 import {notifyApiError, pushNotification} from "@/stores/notificationStore";
 
@@ -117,8 +117,8 @@ export default function Record() {
                 <Col sm={12} md={12} lg={8}>
                     <Row>
                         <Col sm={12} md={6} lg={6}>
-                            <RecordMap 
-                                record={record} 
+                            <RecordMap
+                                record={record}
                                 onLocationSelectWithGeocode={handleReverseGeocode}
                                 hasProposedLocation={proposedLocation !== undefined}
                             />
@@ -127,8 +127,8 @@ export default function Record() {
                             <RecordFloristic record={record} onFieldUpdated={handleFieldUpdated}/>
                         </Col>
                         <Col sm={12} md={12} lg={12}>
-                            <RecordLocation 
-                                record={record} 
+                            <RecordLocation
+                                record={record}
                                 proposedLocation={proposedLocation}
                             />
                         </Col>

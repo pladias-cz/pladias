@@ -7,6 +7,6 @@ export default function UsersAdministration() {
     usePageTitle(t("user.usersAdministration.title"));
 
     return (
-        <UsersTable />
+        <UsersTable/>
     );
 }

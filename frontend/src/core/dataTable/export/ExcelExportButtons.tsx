@@ -8,20 +8,20 @@ import {useExcelExport, type ExcelExportVariant} from './useExcelExport';
 
 interface ExcelExportButtonsProps {
     endpoint: string;
-    sorting: Array<{id: string; desc: boolean}>;
-    columnFilters: Array<{id: string; value: string}>;
+    sorting: Array<{ id: string; desc: boolean }>;
+    columnFilters: Array<{ id: string; value: string }>;
     /** Builds the filter params of endpoints that do not use the "<Column>Filter" convention */
-    buildFilterParams?: (columnFilters: Array<{id: string; value: string}>) => Record<string, string>;
+    buildFilterParams?: (columnFilters: Array<{ id: string; value: string }>) => Record<string, string>;
     additionalParams?: Record<string, string>;
 }
 
 export function ExcelExportButtons({
-    endpoint,
-    sorting,
-    columnFilters,
-    buildFilterParams,
-    additionalParams,
-}: ExcelExportButtonsProps) {
+                                       endpoint,
+                                       sorting,
+                                       columnFilters,
+                                       buildFilterParams,
+                                       additionalParams,
+                                   }: ExcelExportButtonsProps) {
     const {t} = useTranslation();
     const {exporting, error, exportExcel} = useExcelExport({
         endpoint,
@@ -39,7 +39,7 @@ export function ExcelExportButtons({
             disabled={exporting !== null}
             onClick={() => exportExcel(variant)}
         >
-            {exporting === variant && <Spinner animation="border" size="sm" className="me-1" />}
+            {exporting === variant && <Spinner animation="border" size="sm" className="me-1"/>}
             {label}
         </button>
     );

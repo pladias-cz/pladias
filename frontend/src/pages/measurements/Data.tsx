@@ -11,7 +11,7 @@ import {notifyApiError} from "@/stores/notificationStore";
 
 
 export default function Data() {
-    const { t } = useTranslation();
+    const {t} = useTranslation();
     const navigate = useNavigate();
     usePageTitle(t("trait.data.title"));
 
@@ -93,7 +93,7 @@ export default function Data() {
 
                             <Accordion.Body>
                                 {loadingGroup === group.id && (
-                                    <Spinner animation="border" size="sm" />
+                                    <Spinner animation="border" size="sm"/>
                                 )}
 
                                 {featuresByGroup[group.id] && (

@@ -1,14 +1,14 @@
-import { useState } from 'react';
-import type { RecordPladias } from '@/models';
-import { useRecordQuickUpdates } from './hooks/useRecordQuickUpdates';
+import {useState} from 'react';
+import type {RecordPladias} from '@/models';
+import {useRecordQuickUpdates} from './hooks/useRecordQuickUpdates';
 
 interface IncludeInMapCheckboxProps {
     record: RecordPladias;
     onRecordUpdated?: (record: RecordPladias) => void;
 }
 
-export function IncludeInMapCheckbox({ record, onRecordUpdated }: IncludeInMapCheckboxProps) {
-    const { updateIncludedInMap } = useRecordQuickUpdates();
+export function IncludeInMapCheckbox({record, onRecordUpdated}: IncludeInMapCheckboxProps) {
+    const {updateIncludedInMap} = useRecordQuickUpdates();
     const [optimisticValue, setOptimisticValue] = useState<boolean | null>(null);
 
     const currentValue = optimisticValue !== null ? optimisticValue : (record.includedInMap ?? false);
@@ -20,7 +20,7 @@ export function IncludeInMapCheckbox({ record, onRecordUpdated }: IncludeInMapCh
 
             try {
                 const result = await updateIncludedInMap(
-                    record, 
+                    record,
                     newVal,
                     (updatedRecord) => {
                         // Propagate updated record with new timestamp to parent

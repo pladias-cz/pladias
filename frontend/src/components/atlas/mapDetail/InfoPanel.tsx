@@ -1,4 +1,4 @@
-import type { RecordPladias } from '@/models';
+import type {RecordPladias} from '@/models';
 import type {ProjectType, RecordsByProject} from '@/models/AtlasRecords';
 import {useTranslation} from 'react-i18next';
 import {PladiasRecordsTable} from './PladiasRecordsTable';

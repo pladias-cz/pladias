@@ -7,7 +7,7 @@
  * - isLocked – record is locked (backend refuses edits with 403)
  */
 
-import type { RecordPladias, RecordPladiasFull } from '@/models';
+import type {RecordPladias, RecordPladiasFull} from '@/models';
 
 export function useRecordPermissions(record: RecordPladias | RecordPladiasFull | null) {
     const canEditCommonFields = record?.canEditCommonFields ?? false;

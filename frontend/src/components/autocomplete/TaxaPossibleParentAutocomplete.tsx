@@ -1,13 +1,14 @@
-import type { AutocompleteProvider } from '@/components/autocomplete/AutocompleteProvider';
-import type { TaxonId } from '@/models/TaxonId';
-import { Autocomplete } from '@/components/autocomplete/Autocomplete';
+import type {AutocompleteProvider} from '@/components/autocomplete/AutocompleteProvider';
+import type {TaxonId} from '@/models/TaxonId';
+import {Autocomplete} from '@/components/autocomplete/Autocomplete';
 import {searchPossibleTaxonParents} from '@/services/taxonApi';
-import { useTranslation } from 'react-i18next';
+import {useTranslation} from 'react-i18next';
 
 interface Props {
     taxonId: number;
     onSelect: (parent: TaxonId | null) => void;
 }
+
 function createPossibleParentsProvider(
     taxonId: number,
     placeholder: string
@@ -27,10 +28,10 @@ function createPossibleParentsProvider(
 }
 
 export default function TaxaPossibleParentAutocomplete({
-    taxonId,
-    onSelect,
-}: Props) {
-    const { t } = useTranslation();
+                                                           taxonId,
+                                                           onSelect,
+                                                       }: Props) {
+    const {t} = useTranslation();
     const provider = createPossibleParentsProvider(taxonId, t("common.autocomplete.possibleParentsPlaceholder"));
 
     return (

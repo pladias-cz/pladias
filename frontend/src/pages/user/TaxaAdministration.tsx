@@ -15,10 +15,10 @@ import {type TaxonId} from '@/models/TaxonId';
 import TaxonSynonyms from "@/components/taxonAdmin/TaxonSynonyms";
 import {getTaxon} from "@/services/taxonApi";
 import {notifyApiError} from "@/stores/notificationStore";
-import { useTranslation } from 'react-i18next';
+import {useTranslation} from 'react-i18next';
 
 export default function TaxaAdministration() {
-    const { t } = useTranslation();
+    const {t} = useTranslation();
     usePageTitle(t("taxon.administration.pageTitle"));
 
     const {taxonId} = useParams<{ taxonId: string }>(); // ← parametr z URL
@@ -97,32 +97,32 @@ export default function TaxaAdministration() {
             {/* --- Editace / podkomponenty --- */}
             {selectedTaxon && !loading && (
                 <>
-                <Row className="mt-3">
-                    <Col md={4}>
-                        <TaxonEditCard
-                            taxon={selectedTaxon}
-                            onTaxonChange={refreshSelectedTaxon} // reload po úpravě
-                        />
-                    </Col>
+                    <Row className="mt-3">
+                        <Col md={4}>
+                            <TaxonEditCard
+                                taxon={selectedTaxon}
+                                onTaxonChange={refreshSelectedTaxon} // reload po úpravě
+                            />
+                        </Col>
 
-                    <Col md={4}>
-                        <div className="mb-3">
-                        <MoveTaxonCard
-                            taxon={selectedTaxon}
-                            onMoved={refreshSelectedTaxon}
-                        />
-                        </div>
-                        <NewTaxonCard
-                            taxon={selectedTaxon}
-                        />
-                    </Col>
+                        <Col md={4}>
+                            <div className="mb-3">
+                                <MoveTaxonCard
+                                    taxon={selectedTaxon}
+                                    onMoved={refreshSelectedTaxon}
+                                />
+                            </div>
+                            <NewTaxonCard
+                                taxon={selectedTaxon}
+                            />
+                        </Col>
 
-                    <Col md={4}>
-                        <ChildrenOrderingCard
-                            taxon={selectedTaxon}
-                        />
-                    </Col>
-                </Row>
+                        <Col md={4}>
+                            <ChildrenOrderingCard
+                                taxon={selectedTaxon}
+                            />
+                        </Col>
+                    </Row>
                     <Row className="mt-3">
                         <TaxonSynonyms
                             cacheKey={taxonVersion}

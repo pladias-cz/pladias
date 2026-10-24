@@ -19,7 +19,7 @@ interface PendingConfirm {
  *
  * Promise se řeší kliknutím na Ano/Zrušit i zavřením dialogu (esc, klik mimo) → `false`.
  */
-export function useConfirm(): {confirm: (options: ConfirmOptions) => Promise<boolean>; dialog: React.ReactNode} {
+export function useConfirm(): { confirm: (options: ConfirmOptions) => Promise<boolean>; dialog: React.ReactNode } {
     const [pending, setPending] = useState<PendingConfirm | null>(null);
 
     const confirm = useCallback((options: ConfirmOptions) => {

@@ -74,7 +74,7 @@ export async function getSquareExternalRecords(
  * aktuálního uživatele. Odpověď nese `data.records` (PageSearchResults).
  */
 export async function getRecordsWithComments(): Promise<RecordPladias[]> {
-    const data = requireData<{records?: RecordPladias[]}>(
+    const data = requireData<{ records?: RecordPladias[] }>(
         await apiGet("/api/react/atlas/search/records-with-comments"),
         "Načtení záznamů s komentáři selhalo.",
     );

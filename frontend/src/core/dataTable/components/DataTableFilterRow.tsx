@@ -11,7 +11,7 @@ import {DateRangeFilter} from './DateRangeFilter';
 
 interface DataTableFilterRowProps<T> {
     columns: DataTableColumnDef<T>[];
-    filters: Array<{id: string; value: string}>;
+    filters: Array<{ id: string; value: string }>;
     onFilterChange: (columnId: string, value: string) => void;
 }
 
@@ -47,8 +47,8 @@ export function DataTableFilterRow<T>(props: DataTableFilterRowProps<T>) {
     return (
         <tr>
             {columns.map((column) => (
-                <th 
-                    key={`filter-${String(column.id)}`} 
+                <th
+                    key={`filter-${String(column.id)}`}
                     style={{
                         width: column.width,
                         minWidth: column.minWidth,

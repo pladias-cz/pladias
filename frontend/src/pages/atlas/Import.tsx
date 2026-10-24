@@ -36,7 +36,7 @@ export default function Import() {
         resetProgress();
         setImportResult(null);
         setError(null);
-        
+
         await uploadFile(file, operation, projectId);
     }, [uploadFile, resetProgress]);
 
@@ -53,7 +53,7 @@ export default function Import() {
                     <h3>{t("atlas.import.title")}</h3>
                 </Col>
             </Row>
-            
+
             <Row className="mt-4">
                 <Col md={10} className="offset-md-1">
                     {error && (
@@ -61,9 +61,9 @@ export default function Import() {
                             <div className="col">
                                 <Alert variant="danger">
                                     <h4>{t("atlas.import.component.uploadFailed")}</h4>
-                                    <br />
+                                    <br/>
                                     <p><u>{t("atlas.import.component.errorMessage")}</u>: {error.errorMessage}</p>
-                                    <hr />
+                                    <hr/>
                                     <p>
                                         {t("atlas.import.component.contactSupport")}
                                         <a href="mailto:pladias@googlegroups.com">pladias@googlegroups.com</a>.
@@ -74,9 +74,9 @@ export default function Import() {
                     )}
 
                     {importResult ? (
-                        <ImportResult result={importResult} onReset={handleReset} />
+                        <ImportResult result={importResult} onReset={handleReset}/>
                     ) : (
-                        <ImportForm 
+                        <ImportForm
                             onFileSelected={handleFileSelected}
                             isUploading={isUploading}
                             progress={progress}

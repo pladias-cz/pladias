@@ -52,7 +52,10 @@ describe("getPlayMessage", () => {
     });
 
     it("propagates other HTTP errors", async () => {
-        fetchMock.mockResolvedValue(jsonResponse({success: false, message: "Missing required query parameter: lang"}, 400));
+        fetchMock.mockResolvedValue(jsonResponse({
+            success: false,
+            message: "Missing required query parameter: lang"
+        }, 400));
 
         await expect(getPlayMessage("x", "")).rejects.toMatchObject({
             name: "ApiError",

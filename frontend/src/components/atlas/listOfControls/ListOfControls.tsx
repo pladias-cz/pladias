@@ -1,6 +1,6 @@
 /**
  * ListOfControls - Import Controls Component (Validated/Not Imported)
- * 
+ *
  * Uses the enterprise DataTable component with custom data fetching
  * to efficiently load import controls with pagination, sorting, and filtering.
  */
@@ -37,31 +37,31 @@ export default function ListOfControls() {
     const showFlash = useCallback((type: 'success' | 'danger', message: string) => {
         push({type, message});
     }, [push]);
-    
+
     // Data fetching hook
     const {fetchControls} = useImportControlsData({
         onSuccess: () => {
             // Optional: handle successful data fetch
         }
     });
-    
+
     // Delete handler with optimistic update
     const handleDelete = useCallback(async (id: number) => {
         // Set deleting state for optimistic UI
         setDeletingId(id);
-        
+
         try {
             // Make DELETE request
             await apiDelete(`/api/react/importResult/validated/${id}`);
-            
+
             // Success - show flash message
             showFlash('success', t("atlas.admin.importsList.deleteSuccess"));
-            
+
             // Note: DataTable will automatically refresh on next interaction
             // or user can manually refresh the page
         } catch (error) {
             logError(error, {source: "ListOfControls", action: "deleteImportControl"});
-            
+
             // Show error message
             showFlash('danger', t("atlas.admin.importsList.deleteError"));
         } finally {
@@ -79,7 +79,7 @@ export default function ListOfControls() {
             dateFormat: 'dd.MM.yyyy HH:mm',
         }),
         createActionColumn<ImportControlRecord>('filename', t("atlas.admin.importsList.filename"), (row) => (
-            <ImportControlsFilenameCell row={row} />
+            <ImportControlsFilenameCell row={row}/>
         ), {
             minWidth: '250px',
         }),
@@ -99,8 +99,8 @@ export default function ListOfControls() {
             minWidth: '80px',
         }),
         createActionColumn<ImportControlRecord>('delete', t("atlas.admin.importsList.delete"), (row) => (
-            <ImportControlsDeleteCell 
-                row={row} 
+            <ImportControlsDeleteCell
+                row={row}
                 onDelete={handleDelete}
                 isDeleting={deletingId === row.id}
             />
@@ -108,7 +108,7 @@ export default function ListOfControls() {
             minWidth: '100px',
         }),
     ], [t, handleDelete, deletingId]);
-    
+
     return (
         <div className="container-fluid">
             <DataTable<ImportControlRecord>

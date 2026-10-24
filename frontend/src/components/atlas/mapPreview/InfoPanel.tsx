@@ -11,7 +11,7 @@ interface InfoPanelProps {
 }
 
 export function InfoPanel({type = 1, taxonId, taxonName}: InfoPanelProps) {
-    const { t } = useTranslation();
+    const {t} = useTranslation();
 
     // nastavení mapy taxonu pro legendu – bez cache (sekce J), read-only
     const {data: mapSettings, isPending: loading, error} = useQuery({
@@ -42,11 +42,16 @@ export function InfoPanel({type = 1, taxonId, taxonName}: InfoPanelProps) {
     // Define legend colors by type (only color info needed, labels come from translations)
     const getLegendColors = () => {
         switch (type) {
-            case 1: return ['black', 'orange', 'blue'];
-            case 2: return ['black', 'gray', 'orange'];
-            case 3: return ['black', 'gray', 'yellow', 'orange'];
-            case 4: return ['black', 'khaki', 'orange'];
-            default: return [];
+            case 1:
+                return ['black', 'orange', 'blue'];
+            case 2:
+                return ['black', 'gray', 'orange'];
+            case 3:
+                return ['black', 'gray', 'yellow', 'orange'];
+            case 4:
+                return ['black', 'khaki', 'orange'];
+            default:
+                return [];
         }
     };
 
@@ -56,14 +61,15 @@ export function InfoPanel({type = 1, taxonId, taxonName}: InfoPanelProps) {
     return (
         <div className="d-flex flex-column h-100 overflow-hidden">
             <div className={`p-3 bg-warning flex-shrink-0`}>
-                <h2>{t("atlas.mapPreview.preview")} <span className={`small`}> <a href={`/atlas/mapMain/${taxonId}`}>{t("atlas.mapPreview.backToMainMap")}</a></span> </h2>
+                <h2>{t("atlas.mapPreview.preview")} <span className={`small`}> <a
+                    href={`/atlas/mapMain/${taxonId}`}>{t("atlas.mapPreview.backToMainMap")}</a></span></h2>
                 {taxonName && (
                     <h4>
                         <RichTextMessage html={taxonName}/>
                         <span className="text-muted small"> ID: {taxonId}</span>
                     </h4>
                 )}
-                <hr />
+                <hr/>
                 <h5 className="mt-3 mb-4">{t("atlas.mapPreview.mapType")} {translatedContent.title}</h5>
                 <p className="fst-italic">{translatedContent.description}</p>
             </div>
@@ -81,10 +87,12 @@ export function InfoPanel({type = 1, taxonId, taxonName}: InfoPanelProps) {
                             </>
                         )}
                         <p><b>{t("atlas.mapPreview.revisionStatus")} </b>{mapSettings.revisionStatusDescription}<br/>
-                            <b>{t("atlas.mapPreview.publicationStatus")} </b>{mapSettings.publicationStatusDescription}</p>
+                            <b>{t("atlas.mapPreview.publicationStatus")} </b>{mapSettings.publicationStatusDescription}
+                        </p>
                         {mapSettings.commonThreshold !== null && (
                             <p><b>
-                                {t("atlas.mapPreview.commonThreshold", {threshold: mapSettings.commonThreshold})}</b></p>
+                                {t("atlas.mapPreview.commonThreshold", {threshold: mapSettings.commonThreshold})}</b>
+                            </p>
                         )}
                     </>
                 )}
@@ -98,7 +106,8 @@ export function InfoPanel({type = 1, taxonId, taxonName}: InfoPanelProps) {
                         if (!legendKeys[index]) return null;
                         return (
                             <p key={index}>
-                                <span className={`circle ${color}`}></span>{translatedContent.legend[legendKeys[index] as keyof typeof translatedContent.legend]}
+                                <span
+                                    className={`circle ${color}`}></span>{translatedContent.legend[legendKeys[index] as keyof typeof translatedContent.legend]}
                             </p>
                         );
                     })}
@@ -106,7 +115,8 @@ export function InfoPanel({type = 1, taxonId, taxonName}: InfoPanelProps) {
                         const legendKeys = ['recentFindings', 'extinctFindings', 'uncertainQuadrant'];
                         return (
                             <p key={index}>
-                                <span className={`circle ${color}`}></span>{translatedContent.legend[legendKeys[index] as keyof typeof translatedContent.legend]}
+                                <span
+                                    className={`circle ${color}`}></span>{translatedContent.legend[legendKeys[index] as keyof typeof translatedContent.legend]}
                             </p>
                         );
                     })}
@@ -114,7 +124,8 @@ export function InfoPanel({type = 1, taxonId, taxonName}: InfoPanelProps) {
                         const legendKeys = ['native', 'nonNative', 'cultivated', 'notSpecified'];
                         return (
                             <p key={index}>
-                                <span className={`circle ${color}`}></span>{translatedContent.legend[legendKeys[index] as keyof typeof translatedContent.legend]}
+                                <span
+                                    className={`circle ${color}`}></span>{translatedContent.legend[legendKeys[index] as keyof typeof translatedContent.legend]}
                             </p>
                         );
                     })}
@@ -122,7 +133,8 @@ export function InfoPanel({type = 1, taxonId, taxonName}: InfoPanelProps) {
                         const legendKeys = ['herbariumSupported', 'nonHerbariumEvidence', 'uncertainQuadrant'];
                         return (
                             <p key={index}>
-                                <span className={`circle ${color}`}></span>{translatedContent.legend[legendKeys[index] as keyof typeof translatedContent.legend]}
+                                <span
+                                    className={`circle ${color}`}></span>{translatedContent.legend[legendKeys[index] as keyof typeof translatedContent.legend]}
                             </p>
                         );
                     })}

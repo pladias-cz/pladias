@@ -10,10 +10,10 @@ interface PresliaInlineFieldProps {
 }
 
 export function PresliaInlineField({
-    value,
-    onSave,
-    disabled
-}: PresliaInlineFieldProps) {
+                                       value,
+                                       onSave,
+                                       disabled
+                                   }: PresliaInlineFieldProps) {
     const {t} = useTranslation();
     const [editing, setEditing] = useState(false);
     const [draft, setDraft] = useState(value || '');

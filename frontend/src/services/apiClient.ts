@@ -64,7 +64,7 @@ export interface ApiOptions {
  * proto duck typing podle name).
  */
 export function isAbortError(err: unknown): boolean {
-    return typeof err === "object" && err !== null && (err as {name?: unknown}).name === "AbortError";
+    return typeof err === "object" && err !== null && (err as { name?: unknown }).name === "AbortError";
 }
 
 let forbiddenHandler: ((message: string) => void) | null = null;
@@ -91,7 +91,11 @@ export function setNetworkErrorHandler(handler: ((error: ApiError) => void) | nu
 /** Vytáhne chybovou hlášku z parsovaného těla – obálka nese `message`, `error` (JsonResult) nebo `errorMessage` (import kontrolery), výjimečně plain text. */
 function extractErrorMessage(payload: unknown): string | undefined {
     if (payload !== null && typeof payload === "object") {
-        const {message, error, errorMessage} = payload as {message?: unknown; error?: unknown; errorMessage?: unknown};
+        const {message, error, errorMessage} = payload as {
+            message?: unknown;
+            error?: unknown;
+            errorMessage?: unknown
+        };
         if (typeof message === "string" && message !== "") return message;
         if (typeof error === "string" && error !== "") return error;
         if (typeof errorMessage === "string" && errorMessage !== "") return errorMessage;
@@ -134,7 +138,7 @@ function loggedApiError(message: string, status?: number, payload?: unknown, con
 async function performRequest(
     url: string,
     method: string,
-    init: {body?: BodyInit; headers?: Record<string, string>},
+    init: { body?: BodyInit; headers?: Record<string, string> },
     options: ApiOptions = {},
 ): Promise<Response> {
     const requestUrl = options.params ? withParams(url, options.params) : url;
@@ -194,7 +198,6 @@ async function performRequest(
 
     return response;
 }
-
 
 
 /**
@@ -292,6 +295,8 @@ export interface DownloadedFile {
     blob: Blob;
     filename: string;
     contentType: string;
+    /** Hlavičky odpovědi – custom metadata endpointů (např. `X-Excel-*` exportu vyhledávání). */
+    headers: Headers;
 }
 
 export interface DownloadOptions extends ApiOptions {
@@ -307,7 +312,8 @@ export interface DownloadOptions extends ApiOptions {
  * Stažení souboru (exporty XLSX, mapové výstupy). Gotcha: souborové endpointy
  * (`MapAdminImportController.getImports`, `TraitExportController`) můžou místo
  * souboru vrátit JSON chybu – Content-Type se kontroluje před čtením těla a
- * chyba končí jako `ApiError` s hláškou z obálky.
+ * chyba končí jako `ApiError` s hláškou z obálky. Vrací i hlavičky odpovědi,
+ * aby volající mohl číst custom metadata (např. `X-Excel-*`).
  */
 export async function apiDownload(url: string, options: DownloadOptions = {}): Promise<DownloadedFile> {
     const response = await performRequest(url, options.method ?? "GET", {body: options.body}, options);
@@ -327,6 +333,7 @@ export async function apiDownload(url: string, options: DownloadOptions = {}): P
         blob: await response.blob(),
         filename: resolveFilename(response.headers.get("content-disposition"), options.fallbackFilename ?? "export.bin"),
         contentType,
+        headers: response.headers,
     };
 }
 

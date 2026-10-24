@@ -1,21 +1,19 @@
 /**
  * Universal Layer Adapter
- * 
+ *
  * Single adapter that can create any type of layer based on configuration.
  * Replaces the need for multiple adapter classes by using service configurations.
  */
 
 import L from 'leaflet';
 import {fetchWfsGeoJson} from '@/services/mapApi';
-import {logError, logInfo, logWarn} from '@/services/logger';
-import type { 
-    LayerDefinition, 
+import {logError, logInfo} from '@/services/logger';
+import type {
+    LayerDefinition,
     LayerParams,
     ServiceConfig,
     GeoServerConfig,
     TileConfig,
-    ApiConfig,
-    StaticConfig,
 } from '../../types';
 import type {BaseServiceConfig} from '../../types/serviceConfig';
 
@@ -24,40 +22,31 @@ export class UniversalLayerAdapter {
      * Create a Leaflet layer from a layer definition and parameters
      */
     createLayer(definition: LayerDefinition, params: LayerParams = {}): L.Layer {
-        // Use new service config if available, fall back to legacy source handling
-        if (definition.service) {
-            return this.createFromServiceConfig(definition, definition.service, params);
+        if (!definition.service) {
+            throw new Error(`Layer "${definition.id}" has no service configuration`);
         }
-        
-        // Legacy fallback for existing layers
-        return this.createLegacyLayer(definition, params);
+        return this.createFromServiceConfig(definition, definition.service, params);
     }
 
     /**
      * Create layer using new service configuration system
      */
     private createFromServiceConfig(
-        definition: LayerDefinition, 
-        serviceConfig: ServiceConfig, 
+        definition: LayerDefinition,
+        serviceConfig: ServiceConfig,
         params: LayerParams
     ): L.Layer {
         const interpolatedUrl = this.interpolateTemplate(serviceConfig.baseUrl, params);
-        
+
         switch (serviceConfig.type) {
             case 'geoserver':
                 return this.createGeoServerLayer(definition, interpolatedUrl, serviceConfig.config, params);
-                
+
             case 'tile':
                 return this.createTileLayer(definition, interpolatedUrl, serviceConfig.config, params);
-                
-            case 'api':
-                return this.createApiLayer(definition, interpolatedUrl, serviceConfig.config, params);
-                
-            case 'static':
-                return this.createStaticLayer(definition, interpolatedUrl, serviceConfig.config, params);
-                
+
             default:
-                // v default větvi je union zužen na never – typ služby vytáhneme přes základ
+                // typy 'api'/'static' zatím nemají implementaci – typ služby vytáhneme přes základ
                 throw new Error(`Unsupported service type: ${(serviceConfig as BaseServiceConfig).type}`);
         }
     }
@@ -72,7 +61,7 @@ export class UniversalLayerAdapter {
         params: LayerParams
     ): L.Layer {
         const queryParams = this.buildGeoServerParams(config, params);
-        
+
         if (config.service === 'WFS') {
             return this.createWfsLayer(baseUrl, queryParams);
         } else {
@@ -92,7 +81,7 @@ export class UniversalLayerAdapter {
      * Build GeoServer query parameters
      */
     private buildGeoServerParams(
-        config: GeoServerConfig['config'], 
+        config: GeoServerConfig['config'],
         params: LayerParams
     ): Record<string, string | number | boolean> {
         const result: Record<string, string | number | boolean> = {
@@ -123,7 +112,7 @@ export class UniversalLayerAdapter {
         // Add bbox parameter for WFS layers if bounds are provided
         // This enables spatial filtering to avoid downloading all data
         if (config.service === 'WFS' && params.bounds) {
-            const { north, south, east, west } = params.bounds;
+            const {north, south, east, west} = params.bounds;
             // Format: minLon,minLat,maxLon,maxLat,CRS:EPSG:4326
             result.bbox = `${west.toFixed(6)},${south.toFixed(6)},${east.toFixed(6)},${north.toFixed(6)},EPSG:4326`;
         }
@@ -136,9 +125,9 @@ export class UniversalLayerAdapter {
      */
     private createWfsLayer(baseUrl: string, queryParams: Record<string, unknown>): L.Layer {
         const url = this.buildQueryUrl(baseUrl, queryParams);
-        
+
         logInfo('Creating WFS layer', {source: 'universalAdapter', url, queryParams});
-        
+
         const geoJsonLayer = L.geoJSON(undefined, {
             pointToLayer: (_feature, latlng) => L.circleMarker(latlng, {
                 radius: 8,
@@ -183,63 +172,40 @@ export class UniversalLayerAdapter {
         if (definition.attribution || config.attribution) {
             options.attribution = definition.attribution || config.attribution;
         }
-        
+
         if (config.maxZoom !== undefined) {
             options.maxZoom = config.maxZoom;
         } else {
             options.maxZoom = 19; // Default
         }
-        
+
         if (config.minZoom !== undefined) {
             options.minZoom = config.minZoom;
         } else {
             options.minZoom = 0; // Default
         }
-        
+
         if (config.detectRetina !== undefined) {
             options.detectRetina = config.detectRetina;
         }
-        
+
         if (config.subdomains && config.subdomains.length > 0) {
             options.subdomains = config.subdomains;
         }
-        
+
         if (config.crossOrigin !== undefined) {
             options.crossOrigin = config.crossOrigin as L.CrossOrigin;
         }
-        
+
         if (config.errorTileUrl) {
             options.errorTileUrl = config.errorTileUrl;
         }
-        
+
         if (config.tileSize) {
             options.tileSize = config.tileSize;
         }
 
         return L.tileLayer(url, options);
-    }
-
-    /**
-     * Placeholder methods for other layer types
-     */
-    private createApiLayer(_definition: LayerDefinition, _baseUrl: string, _config: ApiConfig['config'], _params: LayerParams): L.Layer {
-        logWarn('API layers not yet implemented', {source: 'universalAdapter'});
-        return L.geoJSON();
-    }
-
-    private createStaticLayer(_definition: LayerDefinition, _url: string, _config: StaticConfig['config'], _params: LayerParams): L.Layer {
-        logWarn('Static layers not yet implemented', {source: 'universalAdapter'});
-        return L.geoJSON();
-    }
-
-    /**
-     * Legacy layer creation (for backward compatibility)
-     */
-    private createLegacyLayer(definition: LayerDefinition, params: LayerParams): L.Layer {
-        // eslint-disable-next-line @typescript-eslint/no-require-imports -- lazy import kvůli cyklu mezi adaptery
-        const { TileLayerAdapter } = require('./tileLayerAdapter');
-        const adapter = new TileLayerAdapter();
-        return adapter.createLayer(definition, params);
     }
 
     /**
@@ -257,13 +223,13 @@ export class UniversalLayerAdapter {
      */
     private buildQueryUrl(baseUrl: string, queryParams: Record<string, unknown>): string {
         const url = new URL(baseUrl, window.location.origin);
-        
+
         Object.entries(queryParams).forEach(([key, value]) => {
             if (value !== undefined && value !== null) {
                 url.searchParams.set(key, String(value));
             }
         });
-        
+
         return url.toString();
     }
 }

@@ -7,11 +7,11 @@
  * without having to re-create the layer.
  */
 
-import { WMSTileLayer, useMap } from 'react-leaflet';
-import { useEffect, useMemo, useRef } from 'react';
+import {WMSTileLayer, useMap} from 'react-leaflet';
+import {useEffect, useMemo, useRef} from 'react';
 import * as L from 'leaflet';
-import type { GeoServerConfig } from '../../types/serviceConfig';
-import type { LayerParams } from '../../types';
+import type {GeoServerConfig} from '../../types/serviceConfig';
+import type {LayerParams} from '../../types';
 
 export interface WmsLayerViewProps {
     /** GeoServer service configuration – the dispatcher in Layer.tsx guarantees service: 'WMS' */
@@ -25,12 +25,13 @@ export interface WmsLayerViewProps {
     visible: boolean;
 }
 
-export function WmsLayerView({ service, zIndex, attribution, params, visible }: WmsLayerViewProps) {
+export function WmsLayerView({service, zIndex, attribution, params, visible}: WmsLayerViewProps) {
     const config = service.config;
 
     // If viewParams are specified, use custom component that can handle them properly
     if (config.viewParams && config.viewParams.length > 0) {
-        return <WmsLayerWithParams service={service} zIndex={zIndex} attribution={attribution} params={params} visible={visible} />;
+        return <WmsLayerWithParams service={service} zIndex={zIndex} attribution={attribution} params={params}
+                                   visible={visible}/>;
     }
 
     // Standard WMS without viewParams
@@ -59,7 +60,7 @@ export function WmsLayerView({ service, zIndex, attribution, params, visible }: 
 /**
  * Custom WMS component that supports viewParams (e.g., for GeoServer)
  */
-function WmsLayerWithParams({ service, zIndex, attribution, params, visible }: WmsLayerViewProps) {
+function WmsLayerWithParams({service, zIndex, attribution, params, visible}: WmsLayerViewProps) {
     const map = useMap();
     const layerRef = useRef<L.TileLayer.WMS | null>(null);
     const visibleRef = useRef(visible);
@@ -103,7 +104,7 @@ function WmsLayerWithParams({ service, zIndex, attribution, params, visible }: W
             version: config.version || '1.1.1',
             attribution: attribution,
             zIndex: zIndex,
-            ...(config.styles && { styles: config.styles }),
+            ...(config.styles && {styles: config.styles}),
         };
         if (viewParamsStr) {
             wmsOptions.viewparams = viewParamsStr;
@@ -129,7 +130,7 @@ function WmsLayerWithParams({ service, zIndex, attribution, params, visible }: W
     // Update viewParams when they change
     useEffect(() => {
         if (!layerRef.current || !viewParamsStr) return;
-        const nextParams: L.WMSParams & { viewparams?: string } = { layers: layers || '', viewparams: viewParamsStr };
+        const nextParams: L.WMSParams & { viewparams?: string } = {layers: layers || '', viewparams: viewParamsStr};
         layerRef.current.setParams(nextParams);
     }, [viewParamsStr, layers]);
 

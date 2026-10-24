@@ -59,7 +59,7 @@ export default function BulkEdit({records, totalCount, searchPayloadEntries, onB
                 <Accordion.Item eventKey="0" className="bulk-edit-card">
                     <Accordion.Header>{t("atlas.search.bulkEdit.sections.positionBuffer.title")}</Accordion.Header>
                     <Accordion.Body>
-                        <PositionBufferFields bulkEdit={bulkEdit} />
+                        <PositionBufferFields bulkEdit={bulkEdit}/>
                     </Accordion.Body>
                 </Accordion.Item>
 

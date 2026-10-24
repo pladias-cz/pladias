@@ -20,17 +20,17 @@ interface MapUsersAddTaxonModalProps {
 }
 
 export function MapUsersAddTaxonModal({
-    show,
-    taxa,
-    taxaLoading,
-    submitting,
-    selectedTaxon,
-    taxonSearchTerm,
-    taxonInputRef,
-    onSearchChange,
-    onSelectTaxon,
-    onClose,
-}: MapUsersAddTaxonModalProps) {
+                                          show,
+                                          taxa,
+                                          taxaLoading,
+                                          submitting,
+                                          selectedTaxon,
+                                          taxonSearchTerm,
+                                          taxonInputRef,
+                                          onSearchChange,
+                                          onSelectTaxon,
+                                          onClose,
+                                      }: MapUsersAddTaxonModalProps) {
     const {t} = useTranslation();
 
     return (
@@ -52,13 +52,18 @@ export function MapUsersAddTaxonModal({
                     />
                     {taxaLoading && (
                         <div className="mt-2">
-                            <Spinner animation="border" size="sm" /> {t("common.loading")}
+                            <Spinner animation="border" size="sm"/> {t("common.loading")}
                         </div>
                     )}
                     {taxa.length > 0 && !selectedTaxon && (
-                        <div 
-                            className="mt-2" 
-                            style={{maxHeight: '200px', overflowY: 'auto', border: '1px solid #dee2e6', borderRadius: '4px'}}
+                        <div
+                            className="mt-2"
+                            style={{
+                                maxHeight: '200px',
+                                overflowY: 'auto',
+                                border: '1px solid #dee2e6',
+                                borderRadius: '4px'
+                            }}
                         >
                             {taxa.map(taxon => (
                                 <div
@@ -77,7 +82,7 @@ export function MapUsersAddTaxonModal({
                     {selectedTaxon && (
                         <div className="mt-3">
                             <div className="d-flex align-items-center gap-2">
-                                <Spinner animation="border" size="sm" />
+                                <Spinner animation="border" size="sm"/>
                                 <span>{t("user.usersAdministration.processingTaxon", {taxon: selectedTaxon.nameLat})}</span>
                             </div>
                             <div className="mt-2 text-muted small">
@@ -88,8 +93,8 @@ export function MapUsersAddTaxonModal({
                 </Form.Group>
             </Modal.Body>
             <Modal.Footer>
-                <Button 
-                    variant="secondary" 
+                <Button
+                    variant="secondary"
                     onClick={onClose}
                     disabled={submitting}
                 >

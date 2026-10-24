@@ -1,6 +1,6 @@
-import type { MapPreviewType } from '@/pages/atlas/MapPreview';
-import { useLayerManager, Layer, MapCanvas } from '@/core/mapLayers';
-import { useMemo } from 'react';
+import type {MapPreviewType} from '@/pages/atlas/MapPreview';
+import {useLayerManager, Layer, MapCanvas} from '@/core/mapLayers';
+import {useMemo} from 'react';
 import {useQuery} from '@tanstack/react-query';
 import {getTaxonMapSettings} from '@/services/atlasApi';
 
@@ -107,7 +107,7 @@ function getVisibilityOverrides(
     return overrides;
 }
 
-export function MapComponent({ type = 1, taxonId }: MapComponentProps) {
+export function MapComponent({type = 1, taxonId}: MapComponentProps) {
     const center: [number, number] = [49.8, 15.7];
     const initialZoom = 7.5;
 
@@ -140,7 +140,7 @@ export function MapComponent({ type = 1, taxonId }: MapComponentProps) {
     // CRITICAL FIX: Memoize layerParams to prevent WFS layer re-renders
     // Without this, a new object reference triggers WFS layer cleanup/re-fetch
     const layerParams = useMemo(
-        () => taxonId !== undefined ? { taxonId } : undefined,
+        () => taxonId !== undefined ? {taxonId} : undefined,
         [taxonId]
     );
 

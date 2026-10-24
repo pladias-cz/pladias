@@ -1,8 +1,8 @@
-import { useMemo, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import {useMemo, useCallback} from 'react';
+import {useNavigate} from 'react-router-dom';
 
-import { useLayerManager, useProjectLayers, MapCanvas, MapLayer, ProjectLayers } from '@/core/mapLayers';
-import { LayerSwitcher } from '@/core/mapLayers/components/LayerSwitcher';
+import {useLayerManager, useProjectLayers, MapCanvas, MapLayer, ProjectLayers} from '@/core/mapLayers';
+import {LayerSwitcher} from '@/core/mapLayers/components/LayerSwitcher';
 import './MapComponent.scss';
 
 interface MapComponentProps {
@@ -26,18 +26,25 @@ const MAP_MAIN_LAYERS = [
     'validation_common_2',
     'validation_common_1',
     'gbif_quadrants_other'];
-const MAP_MAIN_DEFAULTS: Record<string, boolean> = { osm: true, opentopo: false, technical_quadrants: true, interactive_squares: true, gbif_quadrants_inaturalist: false, gbif_quadrants_other: false };
+const MAP_MAIN_DEFAULTS: Record<string, boolean> = {
+    osm: true,
+    opentopo: false,
+    technical_quadrants: true,
+    interactive_squares: true,
+    gbif_quadrants_inaturalist: false,
+    gbif_quadrants_other: false
+};
 
 export function MapComponent({
-    mapName = 'mapMain',
-    center = [49.5, 15.7],
-    initialZoom = 8,
-    taxonId,
-}: MapComponentProps) {
+                                 mapName = 'mapMain',
+                                 center = [49.5, 15.7],
+                                 initialZoom = 8,
+                                 taxonId,
+                             }: MapComponentProps) {
     const navigate = useNavigate();
 
     // Get project layers (dynamically loaded based on taxon)
-    const { projectLayerIds } = useProjectLayers(mapName, taxonId);
+    const {projectLayerIds} = useProjectLayers(mapName, taxonId);
 
     // Combine static and dynamic layer IDs for the layer switcher
     const allLayerIds = useMemo(() => {
@@ -55,7 +62,7 @@ export function MapComponent({
     }, [taxonId, navigate]);
 
     // No need for useMapLayers - we render Layer components directly
-    const mapContext = useMemo(() => (taxonId ? { taxonId } : {}), [taxonId]);
+    const mapContext = useMemo(() => (taxonId ? {taxonId} : {}), [taxonId]);
 
     return (
         <div className="h-100 w-100 position-relative">
@@ -76,7 +83,7 @@ export function MapComponent({
                 ))}
 
                 {/* Dynamic project layers - rendered when taxonId is provided */}
-                {taxonId && <ProjectLayers taxonId={taxonId} mapName={mapName} />}
+                {taxonId && <ProjectLayers taxonId={taxonId} mapName={mapName}/>}
             </MapCanvas>
 
             {/* Layer Switcher - Shows all layer groups including dynamic project layers */}

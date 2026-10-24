@@ -9,7 +9,7 @@ export default function ListOfImportsPage() {
     return (
         <Row>
             <h3 className="mb-3">{t("atlas.importsList.title")}</h3>
-            <ListOfImports />
+            <ListOfImports/>
         </Row>
     );
 }

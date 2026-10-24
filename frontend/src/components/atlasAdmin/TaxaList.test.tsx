@@ -104,7 +104,7 @@ describe("TaxaList optimistic updates", () => {
 
     it("změna statusu se v selectu projeví okamžitě a po úspěchu zůstane", async () => {
         mockCatalogsAndRows();
-        let resolveMutation!: (payload: {success: boolean; timestamp: string}) => void;
+        let resolveMutation!: (payload: { success: boolean; timestamp: string }) => void;
         vi.mocked(apiPost).mockImplementation(() => new Promise((resolve) => {
             resolveMutation = resolve;
         }));

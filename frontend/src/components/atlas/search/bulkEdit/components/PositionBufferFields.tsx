@@ -7,14 +7,15 @@
 import {useTranslation} from "react-i18next";
 import type {UseBulkEditResult} from "../useBulkEdit";
 
-export function PositionBufferFields({bulkEdit}: {bulkEdit: UseBulkEditResult}) {
+export function PositionBufferFields({bulkEdit}: { bulkEdit: UseBulkEditResult }) {
     const {t} = useTranslation();
     const {requiredCoordErrors} = bulkEdit;
 
     return (
         <>
             <div className="mb-2">
-                <label className="form-label">{t("atlas.search.bulkEdit.sections.positionBuffer.rawCoordsLabel")}</label>
+                <label
+                    className="form-label">{t("atlas.search.bulkEdit.sections.positionBuffer.rawCoordsLabel")}</label>
                 <div className="d-flex gap-2">
                     <input
                         type="text"
@@ -50,7 +51,8 @@ export function PositionBufferFields({bulkEdit}: {bulkEdit: UseBulkEditResult}) 
                     />
                 </div>
                 <div className="col-md-4">
-                    <label className="form-label">{t("atlas.search.bulkEdit.sections.positionBuffer.bufferLabel")}</label>
+                    <label
+                        className="form-label">{t("atlas.search.bulkEdit.sections.positionBuffer.bufferLabel")}</label>
                     <input
                         type="text"
                         className={`form-control ${requiredCoordErrors.buffer ? "is-invalid" : ""}`}
@@ -60,7 +62,8 @@ export function PositionBufferFields({bulkEdit}: {bulkEdit: UseBulkEditResult}) 
                 </div>
             </div>
 
-            <button type="button" className="btn btn-warning btn-sm" onClick={() => void bulkEdit.submitCoordsChange()} disabled={bulkEdit.isRunning}>
+            <button type="button" className="btn btn-warning btn-sm" onClick={() => void bulkEdit.submitCoordsChange()}
+                    disabled={bulkEdit.isRunning}>
                 {t("atlas.search.bulkEdit.sections.positionBuffer.submitButton")}
             </button>
         </>

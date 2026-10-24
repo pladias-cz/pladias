@@ -25,7 +25,7 @@ interface ErrorBoundaryState {
 }
 
 /** Prezentační fallback UI – hooky (useTranslation) smí použít jen funkční komponenta. */
-function ErrorBoundaryFallback({onReload}: {onReload: () => void}) {
+function ErrorBoundaryFallback({onReload}: { onReload: () => void }) {
     const {t} = useTranslation();
 
     return (

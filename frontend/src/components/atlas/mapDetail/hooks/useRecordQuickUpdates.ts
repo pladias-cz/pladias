@@ -7,7 +7,7 @@ import {useState, useCallback} from 'react';
 import {apiPatch} from '@/services/apiClient';
 import {getRecordMapFields, type RecordMapFields} from '@/services/recordApi';
 import type {ApiResult} from '@/models/ApiResponse';
-import type { RecordPladias } from '@/models';
+import type {RecordPladias} from '@/models';
 import {ValidationStatusId, ValidationStatusMeta} from '@/core/validationStatus';
 import {notifyApiError, pushNotification} from '@/stores/notificationStore';
 import i18n from '@/i18n/i18n';
@@ -30,7 +30,7 @@ interface UpdateResult {
  * Odpověď PATCH /atlas/record/:recordId – data přichází v obálce (`data`),
  * ale kód toleruje i odpověď bez obálky (proto průnik s Partial dat).
  */
-type RecordUpdatePayload = ApiResult<{lastEditTimestampNum?: number}> & {lastEditTimestampNum?: number};
+type RecordUpdatePayload = ApiResult<{ lastEditTimestampNum?: number }> & { lastEditTimestampNum?: number };
 
 export function useRecordQuickUpdates() {
     const [updatingRecordId, setUpdatingRecordId] = useState<number | null>(null);
@@ -51,10 +51,10 @@ export function useRecordQuickUpdates() {
 
             // Backend returns {data: {validation_status: "2", timestamp: number}} structure
             const newTimestamp = payload?.data?.lastEditTimestampNum ?? payload?.lastEditTimestampNum;
-            
+
             if (newTimestamp !== undefined) {
                 // Merge new timestamp with original record to propagate to parent
-                const updatedRecord = originalRecord 
+                const updatedRecord = originalRecord
                     ? {...originalRecord, lastEditTimestampNum: newTimestamp}
                     : {id: recordId, lastEditTimestampNum: newTimestamp} as unknown as RecordPladias;
                 return {
@@ -96,7 +96,7 @@ export function useRecordQuickUpdates() {
     ): Promise<UpdateResult> => {
         setUpdatingRecordId(record.id);
         const result = await updateField(record.id, 'VALIDATION_STATUS', newStatus, record.lastEditTimestampNum || 0, record);
-        
+
         if (result.success && result.record) {
             if (refreshAfterUpdate) {
                 // Fetch fresh data to get cascading changes (includedInMap, originalityStatus, etc.)
@@ -114,7 +114,7 @@ export function useRecordQuickUpdates() {
                     return {success: true, timestamp: freshFields.lastEditTimestampNum, record: updatedRecord};
                 }
             }
-            
+
             // Fallback to old behavior if refresh not requested or failed
             const color = ValidationStatusMeta[newStatus as ValidationStatusId]?.color || '#808080';
             const updatedRecordWithColor = {
@@ -126,7 +126,7 @@ export function useRecordQuickUpdates() {
         } else {
             onError?.(result.error || 'Failed to update validation status');
         }
-        
+
         setUpdatingRecordId(null);
         return result;
     }, [updateField, fetchRecordMapFields]);
@@ -138,7 +138,7 @@ export function useRecordQuickUpdates() {
     ): Promise<UpdateResult> => {
         setUpdatingRecordId(record.id);
         const result = await updateField(record.id, 'ORIGINALITY_STATUS', newOriginality, record.lastEditTimestampNum || 0, record);
-        
+
         if (result.success && result.record) {
             if (refreshAfterUpdate) {
                 // Fetch fresh data to get cascading changes (includedInMap, etc.)
@@ -154,13 +154,13 @@ export function useRecordQuickUpdates() {
                     return {success: true, timestamp: freshFields.lastEditTimestampNum, record: updatedRecord};
                 }
             }
-            
+
             // Fallback to old behavior if refresh not requested or failed
             onSuccess?.(result.record!);
         } else {
             onError?.(result.error || 'Failed to update originality status');
         }
-        
+
         setUpdatingRecordId(null);
         return result;
     }, [updateField, fetchRecordMapFields]);

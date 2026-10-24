@@ -13,14 +13,14 @@
  *   prevent tile request cancellations when toggling visibility.
  */
 
-import { useEffect, useState } from 'react';
-import { logWarn } from '@/services/logger';
-import { getLayerDefinition } from '../registry/layerRegistry';
-import type { LayerParams } from '../types';
-import { SquaresOverlay } from './SquaresOverlay';
-import { TileLayerView } from './layers/TileLayerView';
-import { WmsLayerView } from './layers/WmsLayerView';
-import { WfsLayerView } from './layers/WfsLayerView';
+import {useEffect, useState} from 'react';
+import {logWarn} from '@/services/logger';
+import {getLayerDefinition} from '../registry/layerRegistry';
+import type {LayerParams} from '../types';
+import {SquaresOverlay} from './SquaresOverlay';
+import {TileLayerView} from './layers/TileLayerView';
+import {WmsLayerView} from './layers/WmsLayerView';
+import {WfsLayerView} from './layers/WfsLayerView';
 
 export interface LayerProps {
     layerId: string;
@@ -33,7 +33,7 @@ export interface LayerProps {
  * Render a layer from the registry as a react-leaflet component
  * Always keeps the layer mounted to prevent tile cancellations
  */
-export function Layer({ layerId, params = {}, visible = true, onSquareDoubleClick }: LayerProps) {
+export function Layer({layerId, params = {}, visible = true, onSquareDoubleClick}: LayerProps) {
     // Lazy mount: create the layer only once it has been visible for the first time.
     // Hidden layers therefore never load tiles/data from the backend. After the first
     // activation the layer stays mounted (hidden via opacity) so toggling visibility
@@ -81,7 +81,8 @@ export function Layer({ layerId, params = {}, visible = true, onSquareDoubleClic
             if (service.config.service === 'WFS') {
                 // Check if this is the interactive squares layer with custom component
                 if (definition.customComponent === 'SquaresOverlay') {
-                    return <SquaresOverlay visible={visible} params={params} onSquareDoubleClick={onSquareDoubleClick} />;
+                    return <SquaresOverlay visible={visible} params={params}
+                                           onSquareDoubleClick={onSquareDoubleClick}/>;
                 }
                 return (
                     <WfsLayerView

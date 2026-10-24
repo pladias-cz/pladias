@@ -1,12 +1,12 @@
 /**
  * Map Layers Components
- * 
+ *
  * React-leaflet components for rendering map layers.
  */
 
-export { LayerSwitcher } from './LayerSwitcher';
-export { Layer } from './Layer';
-export { SquaresOverlay } from './SquaresOverlay';
-export { ProjectLayers } from './ProjectLayers';
-export { MapCanvas } from './MapCanvas';
-export { MapLayer } from './MapLayer';
+export {LayerSwitcher} from './LayerSwitcher';
+export {Layer} from './Layer';
+export {SquaresOverlay} from './SquaresOverlay';
+export {ProjectLayers} from './ProjectLayers';
+export {MapCanvas} from './MapCanvas';
+export {MapLayer} from './MapLayer';

@@ -13,7 +13,16 @@
  *    přijít JSON chyba – neplatné taxony nese `ApiError.payload.invalidTaxa`.
  */
 
-import {apiDelete, apiDownload, apiGet, apiPost, apiPostFormUrlencoded, apiPut, requireData, requireEnvelope} from "./apiClient";
+import {
+    apiDelete,
+    apiDownload,
+    apiGet,
+    apiPost,
+    apiPostFormUrlencoded,
+    apiPut,
+    requireData,
+    requireEnvelope
+} from "./apiClient";
 import type {DownloadedFile} from "./apiClient";
 import type {EnumerateValue} from "@/models/EnumerateValue";
 import type {Feature} from "@/models/Feature";

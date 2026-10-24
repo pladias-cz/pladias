@@ -112,184 +112,194 @@ export default function App() {
             <InstanceConfigProvider config={instanceConfig}>
                 <UserProvider user={userData}>
                     <BrowserRouter basename="/">
-                    {/* Rozbitý lazy chunk po deployi (404/syntax error) zobrazí fallback
+                        {/* Rozbitý lazy chunk po deployi (404/syntax error) zobrazí fallback
                         s reloadem místo bílé stránky – sekce G. */}
-                    <ErrorBoundary>
-                        <Suspense fallback={<div>Loading page…</div>}>
-                        <Routes>
-                            <Route path="/" element={<Layout/>}>
-                                <Route index element={<Home/>}/>
-                                <Route path="unauthorized" element={<UnauthorizedPage/>}/>
+                        <ErrorBoundary>
+                            <Suspense fallback={<div>Loading page…</div>}>
+                                <Routes>
+                                    <Route path="/" element={<Layout/>}>
+                                        <Route index element={<Home/>}/>
+                                        <Route path="unauthorized" element={<UnauthorizedPage/>}/>
 
-                                {/* Atlas routes - requires atlas module */}
-                                <Route path="atlas">
-                                    <Route path="newComments" element={
-                                        <ProtectedRoute requiredModule="atlas">
-                                            <NewComments/>
-                                        </ProtectedRoute>
-                                    }/>
-                                    <Route path="search" element={
-                                        <ProtectedRoute requiredModule="atlas">
-                                            <AtlasSearch/>
-                                        </ProtectedRoute>
-                                    }/>
-                                    <Route path="listOfControls" element={
-                                        <ProtectedRoute requiredModule="atlas">
-                                            <ListOfControls/>
-                                        </ProtectedRoute>
-                                    }/>
-                                    <Route path="listOfImports" element={
-                                        <ProtectedRoute requiredModule="atlas">
-                                            <AtlasListOfImports/>
-                                        </ProtectedRoute>
-                                    }/>
-                                    <Route path="listOfTaxa" element={
-                                        <ProtectedRoute requiredModule="atlas">
-                                            <AtlasListOfTaxa/>
-                                        </ProtectedRoute>
-                                    }/>
-                                    <Route path="import" element={
-                                        <ProtectedRoute requiredModule="atlas">
-                                            <Import/>
-                                        </ProtectedRoute>
-                                    }/>
-                                    <Route path="importCSV" element={
-                                        <ProtectedRoute requiredModule="atlas">
-                                            <ImportCSV/>
-                                        </ProtectedRoute>
-                                    }/>
-                                    <Route path="mapMain/:taxonId" element={
-                                        <ProtectedRoute requiredModule="atlas">
-                                            <MapMain/>
-                                        </ProtectedRoute>
-                                    }/>
-                                    <Route path="mapPreview/:taxonId/:type" element={
-                                        <ProtectedRoute requiredModule="atlas">
-                                            <MapPreview/>
-                                        </ProtectedRoute>
-                                    }/>
-                                    <Route path="mapDetail/:taxonId/:squareId" element={
-                                        <ProtectedRoute requiredModule="atlas">
-                                            <MapDetail/>
-                                        </ProtectedRoute>
-                                    }/>
-                                    <Route path="record/:recordId" element={
-                                        <ProtectedRoute requiredModule="atlas">
-                                            <Record/>
-                                        </ProtectedRoute>
-                                    }/>
-                                </Route>
+                                        {/* Atlas routes - requires atlas module */}
+                                        <Route path="atlas">
+                                            <Route path="newComments" element={
+                                                                           <ProtectedRoute requiredModule="atlas">
+                                                                              <NewComments/>
+                                                                          </ProtectedRoute>
+                                                                      }/>
+                                            <Route path="search" element={
+                                                                      <ProtectedRoute requiredModule="atlas">
+                                                                         <AtlasSearch/>
+                                                                     </ProtectedRoute>
+                                                                 }/>
+                                            <Route path="listOfControls" element={
+                                                                              <ProtectedRoute requiredModule="atlas">
+                                                                                 <ListOfControls/>
+                                                                             </ProtectedRoute>
+                                                                         }/>
+                                            <Route path="listOfImports" element={
+                                                                             <ProtectedRoute requiredModule="atlas">
+                                                                                <AtlasListOfImports/>
+                                                                            </ProtectedRoute>
+                                                                        }/>
+                                            <Route path="listOfTaxa" element={
+                                                                          <ProtectedRoute requiredModule="atlas">
+                                                                             <AtlasListOfTaxa/>
+                                                                         </ProtectedRoute>
+                                                                     }/>
+                                            <Route path="import" element={
+                                                                      <ProtectedRoute requiredModule="atlas">
+                                                                         <Import/>
+                                                                     </ProtectedRoute>
+                                                                 }/>
+                                            <Route path="importCSV" element={
+                                                                         <ProtectedRoute requiredModule="atlas">
+                                                                            <ImportCSV/>
+                                                                        </ProtectedRoute>
+                                                                    }/>
+                                            <Route path="mapMain/:taxonId" element={
+                                                                                <ProtectedRoute requiredModule="atlas">
+                                                                                   <MapMain/>
+                                                                               </ProtectedRoute>
+                                                                           }/>
+                                            <Route path="mapPreview/:taxonId/:type" element={
+                                                                                         <ProtectedRoute
+                                                                                            requiredModule="atlas">
+                                                                                            <MapPreview/>
+                                                                                        </ProtectedRoute>
+                                                                                    }/>
+                                            <Route path="mapDetail/:taxonId/:squareId" element={
+                                                                                            <ProtectedRoute
+                                                                                               requiredModule="atlas">
+                                                                                               <MapDetail/>
+                                                                                           </ProtectedRoute>
+                                                                                       }/>
+                                            <Route path="record/:recordId" element={
+                                                                                <ProtectedRoute requiredModule="atlas">
+                                                                                   <Record/>
+                                                                               </ProtectedRoute>
+                                                                           }/>
+                                        </Route>
 
-                                {/* AtlasAdmin routes - requires atlas module + map admin permission */}
-                                <Route path="atlasAdmin">
-                                    <Route path="listOfImports" element={
-                                        <ProtectedRoute requiredModule="atlas" requiredRole="mapAdmin">
-                                            <AtlasAdminListOfImports/>
-                                        </ProtectedRoute>
-                                    }/>
-                                    <Route path="listOfUsers" element={
-                                        <ProtectedRoute requiredModule="atlas" requiredRole="mapAdmin">
-                                            <ListOfUsers/>
-                                        </ProtectedRoute>
-                                    }/>
-                                    <Route path="listOfTaxa" element={
-                                        <ProtectedRoute requiredModule="atlas" requiredRole="mapAdmin">
-                                            <AtlasAdminListOfTaxa/>
-                                        </ProtectedRoute>
-                                    }/>
-                                </Route>
+                                        {/* AtlasAdmin routes - requires atlas module + map admin permission */}
+                                        <Route path="atlasAdmin">
+                                            <Route path="listOfImports" element={
+                                                                             <ProtectedRoute requiredModule="atlas"
+                                                                                             requiredRole="mapAdmin">
+                                                                                <AtlasAdminListOfImports/>
+                                                                            </ProtectedRoute>
+                                                                        }/>
+                                            <Route path="listOfUsers" element={
+                                                                           <ProtectedRoute requiredModule="atlas"
+                                                                                           requiredRole="mapAdmin">
+                                                                              <ListOfUsers/>
+                                                                          </ProtectedRoute>
+                                                                      }/>
+                                            <Route path="listOfTaxa" element={
+                                                                          <ProtectedRoute requiredModule="atlas"
+                                                                                          requiredRole="mapAdmin">
+                                                                             <AtlasAdminListOfTaxa/>
+                                                                         </ProtectedRoute>
+                                                                     }/>
+                                        </Route>
 
-                                {/* Biblio routes - requires biblio module */}
-                                <Route path="biblio">
-                                    <Route path="search" element={
-                                        <ProtectedRoute requiredModule="biblio">
-                                            <Bibliography/>
-                                        </ProtectedRoute>
-                                    }/>
-                                </Route>
+                                        {/* Biblio routes - requires biblio module */}
+                                        <Route path="biblio">
+                                            <Route path="search" element={
+                                                                      <ProtectedRoute requiredModule="biblio">
+                                                                         <Bibliography/>
+                                                                     </ProtectedRoute>
+                                                                 }/>
+                                        </Route>
 
-                                {/* Measurements routes - requires measurements module */}
-                                <Route path="measurements">
-                                    <Route path="general" element={
-                                        <ProtectedRoute requiredModule="measurements">
-                                            <General/>
-                                        </ProtectedRoute>
-                                    }/>
-                                    <Route path="datatypes" element={
-                                        <ProtectedRoute requiredModule="measurements">
-                                            <Datatypes/>
-                                        </ProtectedRoute>
-                                    }/>
-                                    <Route path="aggregationTypes" element={
-                                        <ProtectedRoute requiredModule="measurements">
-                                            <AggregationTypes/>
-                                        </ProtectedRoute>
-                                    }/>
-                                    <Route path="data" element={
-                                        <ProtectedRoute requiredModule="measurements">
-                                            <Data/>
-                                        </ProtectedRoute>
-                                    }/>
-                                    <Route path="export" element={
-                                        <ProtectedRoute requiredModule="measurements">
-                                            <Export/>
-                                        </ProtectedRoute>
-                                    }/>
-                                    <Route path="backup" element={
-                                        <ProtectedRoute requiredModule="measurements" requiredRole="traitAdmin">
-                                            <Backup/>
-                                        </ProtectedRoute>
-                                    }/>
-                                    <Route path="features/:featureId" element={
-                                        <ProtectedRoute requiredModule="measurements">
-                                            <FeatureDetail/>
-                                        </ProtectedRoute>
-                                    }/>
-                                </Route>
+                                        {/* Measurements routes - requires measurements module */}
+                                        <Route path="measurements">
+                                            <Route path="general" element={
+                                                                       <ProtectedRoute requiredModule="measurements">
+                                                                          <General/>
+                                                                      </ProtectedRoute>
+                                                                  }/>
+                                            <Route path="datatypes" element={
+                                                                         <ProtectedRoute requiredModule="measurements">
+                                                                            <Datatypes/>
+                                                                        </ProtectedRoute>
+                                                                    }/>
+                                            <Route path="aggregationTypes" element={
+                                                                                <ProtectedRoute
+                                                                                   requiredModule="measurements">
+                                                                                   <AggregationTypes/>
+                                                                               </ProtectedRoute>
+                                                                           }/>
+                                            <Route path="data" element={
+                                                                    <ProtectedRoute requiredModule="measurements">
+                                                                       <Data/>
+                                                                   </ProtectedRoute>
+                                                               }/>
+                                            <Route path="export" element={
+                                                                      <ProtectedRoute requiredModule="measurements">
+                                                                         <Export/>
+                                                                     </ProtectedRoute>
+                                                                 }/>
+                                            <Route path="backup" element={
+                                                                      <ProtectedRoute requiredModule="measurements"
+                                                                                      requiredRole="traitAdmin">
+                                                                         <Backup/>
+                                                                     </ProtectedRoute>
+                                                                 }/>
+                                            <Route path="features/:featureId" element={
+                                                                                   <ProtectedRoute
+                                                                                      requiredModule="measurements">
+                                                                                      <FeatureDetail/>
+                                                                                  </ProtectedRoute>
+                                                                              }/>
+                                        </Route>
 
-                                {/* Downloads routes - public */}
-                                <Route path="downloads">
-                                    <Route index element={<DownloadsIndex/>}/>
-                                </Route>
+                                        {/* Downloads routes - public */}
+                                        <Route path="downloads">
+                                            <Route index element={<DownloadsIndex/>}/>
+                                        </Route>
 
-                                {/* User routes - public (logged in users) */}
-                                {/* Logout is intentionally NOT a SPA route – it is handled by the backend
+                                        {/* User routes - public (logged in users) */}
+                                        {/* Logout is intentionally NOT a SPA route – it is handled by the backend
                                     route GET /logout (controllers.Application.logout), which invalidates
                                     the session and redirects to /login. MainMenu links to it via href. */}
-                                <Route path="user">
-                                    <Route path="changePassword" element={<ChangePassword/>}/>
-                                    <Route path="changeEmail" element={<ChangeEmail/>}/>
-                                    <Route path="settings" element={<Settings/>}/>
+                                        <Route path="user">
+                                            <Route path="changePassword" element={<ChangePassword/>}/>
+                                            <Route path="changeEmail" element={<ChangeEmail/>}/>
+                                            <Route path="settings" element={<Settings/>}/>
 
-                                    <Route path="usersAdministration" element={
-                                        <ProtectedRoute requiredRole="sysAdmin">
-                                            <UsersAdministration/>
-                                        </ProtectedRoute>
-                                    }/>
-                                    <Route path="taxaAdministration/:taxonId?" element={
-                                        <ProtectedRoute requiredRole="taxonAdmin">
-                                            <TaxaAdministration/>
-                                        </ProtectedRoute>
-                                    }/>
-                                    <Route path="addUser" element={
-                                        <ProtectedRoute requiredRole="sysAdmin">
-                                            <AddUser/>
-                                        </ProtectedRoute>
-                                    }/>
-                                    <Route path="playMessages" element={
-                                        <ProtectedRoute requiredRole="sysAdmin">
-                                            <PlayMessages/>
-                                        </ProtectedRoute>
-                                    }/>
-                                    <Route path="docs" element={<Docs/>}/>
-                                </Route>
-                            </Route>
-                        </Routes>
-                        </Suspense>
-                    </ErrorBoundary>
-                </BrowserRouter>
-            </UserProvider>
-        </InstanceConfigProvider>
+                                            <Route path="usersAdministration" element={
+                                                                                   <ProtectedRoute
+                                                                                      requiredRole="sysAdmin">
+                                                                                      <UsersAdministration/>
+                                                                                  </ProtectedRoute>
+                                                                              }/>
+                                            <Route path="taxaAdministration/:taxonId?" element={
+                                                                                            <ProtectedRoute
+                                                                                               requiredRole="taxonAdmin">
+                                                                                               <TaxaAdministration/>
+                                                                                           </ProtectedRoute>
+                                                                                       }/>
+                                            <Route path="addUser" element={
+                                                                       <ProtectedRoute requiredRole="sysAdmin">
+                                                                          <AddUser/>
+                                                                      </ProtectedRoute>
+                                                                  }/>
+                                            <Route path="playMessages" element={
+                                                                            <ProtectedRoute requiredRole="sysAdmin">
+                                                                               <PlayMessages/>
+                                                                           </ProtectedRoute>
+                                                                       }/>
+                                            <Route path="docs" element={<Docs/>}/>
+                                        </Route>
+                                    </Route>
+                                </Routes>
+                            </Suspense>
+                        </ErrorBoundary>
+                    </BrowserRouter>
+                </UserProvider>
+            </InstanceConfigProvider>
         </ProjectNameProvider>
     );
 }

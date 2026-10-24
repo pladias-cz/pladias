@@ -7,11 +7,11 @@
  *  - `search` vrací neúspěch často jako HTTP 200 s obálkou `success: false`
  *    (příliš mnoho záznamů, uživatel bez projektu) – řeší `requireEnvelope`,
  *  - Excel export odpovídá souborem, ale při chybě JSON obálkou s `message`
- *    – rozlišuje se podle Content-Type; metadata nese hlavička `X-Excel-*`
- *    (proto vlastní fetch místo `apiDownload`, který hlavičky nevrací).
+ *    – Content-Type kontrolu řeší `apiDownload`; metadata exportu (`X-Excel-*`)
+ *    se čtou z `DownloadedFile.headers`.
  */
 
-import {ApiError, apiGet, apiPost, requireData, requireEnvelope, resolveFilename} from "./apiClient";
+import {apiDownload, apiGet, apiPost, requireData, requireEnvelope} from "./apiClient";
 import type {RecordPladias} from "@/models";
 
 /** Projekty výskytů (select vyhledávacího formuláře). */
@@ -121,31 +121,24 @@ export async function searchRecords(page: number, pageSize: number, getCount: bo
 
 /**
  * POST /api/react/atlas/search/page/1/… – Excel export výsledků. Místo souboru
- * může přijít JSON chyba s `message` (např. příliš mnoho záznamů) – pozná se
- * podle Content-Type a končí jako `ApiError` s hláškou.
+ * může přijít JSON chyba s `message` (např. příliš mnoho záznamů) – tu rozlišuje
+ * `apiDownload` podle Content-Type; metadata exportu se čtou z hlaviček
+ * `X-Excel-*`.
  */
 export async function exportSearchExcel(pageSize: number, formData: FormData): Promise<SearchExcelExport> {
-    const response = await fetch(`/api/react/atlas/search/page/1/pageSize/${pageSize}/getCount/true`, {
+    const file = await apiDownload(`/api/react/atlas/search/page/1/pageSize/${pageSize}/getCount/true`, {
         method: "POST",
         body: formData,
+        fallbackFilename: "PladiasExport.xlsx",
+        errorMessage: "Export selhal.",
     });
 
-    const contentType = response.headers.get("content-type") ?? "";
-    if (contentType.includes("application/json")) {
-        const payload = await response.json().catch(() => null) as {message?: string} | null;
-        throw new ApiError(payload?.message || "Export selhal.", response.status, payload);
-    }
-
-    if (!response.ok) {
-        throw new ApiError(`Export selhal (HTTP ${response.status}).`, response.status);
-    }
-
-    const totalRecordsHeader = response.headers.get("X-Excel-Total-Records");
+    const totalRecordsHeader = file.headers.get("X-Excel-Total-Records");
     const parsedTotal = totalRecordsHeader != null ? parseInt(totalRecordsHeader, 10) : null;
     return {
-        blob: await response.blob(),
-        filename: resolveFilename(response.headers.get("content-disposition"), "PladiasExport.xlsx"),
-        recordsExported: parseInt(response.headers.get("X-Excel-Records-Exported") ?? "0", 10),
+        blob: file.blob,
+        filename: file.filename,
+        recordsExported: parseInt(file.headers.get("X-Excel-Records-Exported") ?? "0", 10),
         totalRecords: parsedTotal != null && !Number.isNaN(parsedTotal) ? parsedTotal : null,
     };
 }

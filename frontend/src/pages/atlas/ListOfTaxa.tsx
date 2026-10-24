@@ -8,7 +8,7 @@ export default function ListOfTaxa() {
     usePageTitle(t("atlas.taxesList.title"));
     return (
         <Row>
-            <TaxaList />
+            <TaxaList/>
         </Row>
     );
 }

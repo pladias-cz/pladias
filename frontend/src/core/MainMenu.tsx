@@ -126,7 +126,9 @@ const MainMenu = React.forwardRef<HTMLDivElement>(function MainMenu(_props, ref)
                     {hasAtlasModule && (
                         <>
                             <Form className="me-auto">
-                                <Autocomplete<TaxonId> provider={createTaxaImportableProvider(t("menu.forms.taxonPlaceholder"))} cacheKey={0} onSelect={handleTaxonSelect} />
+                                <Autocomplete<TaxonId>
+                                    provider={createTaxaImportableProvider(t("menu.forms.taxonPlaceholder"))}
+                                    cacheKey={0} onSelect={handleTaxonSelect}/>
                             </Form>
                             <Form className="me-auto">
                                 <FormControl

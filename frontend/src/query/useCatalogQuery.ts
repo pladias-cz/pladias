@@ -10,7 +10,7 @@ import {useQuery} from "@tanstack/react-query";
 export function useCatalogQuery<T>(
     queryKey: readonly unknown[],
     loader: () => Promise<T[]>,
-    options?: {enabled?: boolean},
+    options?: { enabled?: boolean },
 ): T[] {
     const {data} = useQuery({
         queryKey,

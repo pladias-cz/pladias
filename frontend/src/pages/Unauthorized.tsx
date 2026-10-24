@@ -1,12 +1,11 @@
-
-import { Link } from "react-router-dom";
-import { useTranslation } from "react-i18next";
+import {Link} from "react-router-dom";
+import {useTranslation} from "react-i18next";
 
 /**
  * Unauthorized - A page displayed when a user tries to access a route they don't have permission for.
  */
 const Unauthorized = () => {
-    const { t } = useTranslation();
+    const {t} = useTranslation();
 
     return (
         <div className="container mt-5">

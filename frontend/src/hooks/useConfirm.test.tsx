@@ -12,7 +12,7 @@ import "@/i18n/i18n";
 // Vitest bez globals: true nespouští auto-cleanup, proto ručně (jinak se DOM hromadí přes testy).
 afterEach(cleanup);
 
-function Harness({onResult}: {onResult: (confirmed: boolean) => void}) {
+function Harness({onResult}: { onResult: (confirmed: boolean) => void }) {
     const {confirm, dialog} = useConfirm();
     const [label, setLabel] = useState("idle");
 

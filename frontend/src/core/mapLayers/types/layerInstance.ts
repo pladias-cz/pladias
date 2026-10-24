@@ -2,7 +2,7 @@
  * Layer Instance Types
  */
 
-import type { LayerParams } from './layerDefinition';
+import type {LayerParams} from './layerDefinition';
 
 export interface LayerInstance {
     layerId: string;
@@ -18,7 +18,7 @@ export interface LayerState {
 
 export function createLayerInstance(layerId: string, params: LayerParams = {}): LayerInstance {
     const cacheKey = generateCacheKey(layerId, params);
-    return { layerId, params, cacheKey };
+    return {layerId, params, cacheKey};
 }
 
 export function generateCacheKey(layerId: string, params: LayerParams): string {

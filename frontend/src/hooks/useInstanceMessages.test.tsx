@@ -33,7 +33,7 @@ const respondWith = (payload: unknown) =>
 let hidden = false;
 
 /** Každý renderHook dostane vlastního klienta s produkční konfigurací. */
-function QueryClientWrapper({children}: {children?: ReactNode}) {
+function QueryClientWrapper({children}: { children?: ReactNode }) {
     const [client] = useState(() => createQueryClient());
     return <QueryClientProvider client={client}>{children}</QueryClientProvider>;
 }

@@ -1,6 +1,6 @@
-import { Navigate, useLocation } from "react-router-dom";
-import { useInstanceConfig } from "@/context/InstanceConfigContext";
-import { useUser } from "@/context/UserContext";
+import {Navigate, useLocation} from "react-router-dom";
+import {useInstanceConfig} from "@/context/InstanceConfigContext";
+import {useUser} from "@/context/UserContext";
 import type {InstanceModule} from "@/models/InstanceConfig";
 import type {UserRole} from "@/models/UserRole";
 
@@ -27,28 +27,28 @@ interface ProtectedRouteProps {
  *                                      Cannot be used together with requiredRole.
  */
 const ProtectedRoute = ({
-    children,
-    requiredModule,
-    requiredRole,
-    requiredRoles
-}: ProtectedRouteProps) => {
+                            children,
+                            requiredModule,
+                            requiredRole,
+                            requiredRoles
+                        }: ProtectedRouteProps) => {
     const instanceConfig = useInstanceConfig();
     const user = useUser();
     const location = useLocation();
 
     // Check module availability (declarative - see InstanceConfig.hasModule)
     if (requiredModule && !instanceConfig.hasModule(requiredModule)) {
-        return <Navigate to="/unauthorized" replace state={{ from: location }} />;
+        return <Navigate to="/unauthorized" replace state={{from: location}}/>;
     }
 
     // Single role check
     if (requiredRole && !user.hasRole(requiredRole)) {
-        return <Navigate to="/unauthorized" replace state={{ from: location }} />;
+        return <Navigate to="/unauthorized" replace state={{from: location}}/>;
     }
 
     // Multiple roles check (OR logic - any one grants access)
     if (requiredRoles && requiredRoles.length > 0 && !requiredRoles.some(role => user.hasRole(role))) {
-        return <Navigate to="/unauthorized" replace state={{ from: location }} />;
+        return <Navigate to="/unauthorized" replace state={{from: location}}/>;
     }
 
     return children;

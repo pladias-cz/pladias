@@ -6,12 +6,12 @@
  * scoped Zustand store so layers update automatically.
  */
 
-import { useEffect, useMemo, useRef } from 'react';
-import { useLayerStore } from '../store/layerStore';
-import { createLayer } from '../factory';
-import { logError } from '@/services/logger';
-import type { MapContext, LayerState } from '../types';
-import type { Layer as LeafletLayer } from 'leaflet';
+import {useEffect, useMemo, useRef} from 'react';
+import {useLayerStore} from '../store/layerStore';
+import {createLayer} from '../factory';
+import {logError} from '@/services/logger';
+import type {MapContext, LayerState} from '../types';
+import type {Layer as LeafletLayer} from 'leaflet';
 
 export interface UseMapLayersReturn {
     layers: LeafletLayer[];
@@ -66,12 +66,12 @@ export function useMapLayers(
                 try {
                     return createLayer(layerId, layerState.params);
                 } catch (error) {
-                    logError(error, { source: 'useMapLayers', layerId });
+                    logError(error, {source: 'useMapLayers', layerId});
                     return null;
                 }
             })
             .filter((layer): layer is LeafletLayer => layer !== null);
-        
+
         return result;
     }, [visibleLayerIds, mapName, getLayerState]);
 

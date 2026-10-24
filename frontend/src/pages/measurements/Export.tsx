@@ -13,7 +13,7 @@ import ExportOptions from "@/components/measurement/export/ExportOptions";
 /** Chybová odpověď complex exportu – neplatné taxony nese zvlášť `invalidTaxa`. */
 function readInvalidTaxa(err: unknown): string | null {
     const payload = err instanceof ApiError ? err.payload : undefined;
-    const invalidTaxa = (payload as {invalidTaxa?: unknown} | undefined)?.invalidTaxa;
+    const invalidTaxa = (payload as { invalidTaxa?: unknown } | undefined)?.invalidTaxa;
     return typeof invalidTaxa === "string" && invalidTaxa ? invalidTaxa : null;
 }
 

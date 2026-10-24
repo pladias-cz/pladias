@@ -278,7 +278,10 @@ describe("deleteTaxonSynonym", () => {
 
 describe("searchTaxaByPrefix", () => {
     it("searches by prefix query param and unwraps the envelope", async () => {
-        fetchMock.mockResolvedValue(jsonResponse({success: true, data: [{id: 5, nameLat: "Acer campestre", nameHtml: "<i>Acer</i>"}]}));
+        fetchMock.mockResolvedValue(jsonResponse({
+            success: true,
+            data: [{id: 5, nameLat: "Acer campestre", nameHtml: "<i>Acer</i>"}]
+        }));
 
         await expect(searchTaxaByPrefix("Acer")).resolves.toEqual([
             {id: 5, nameLat: "Acer campestre", nameHtml: "<i>Acer</i>"},

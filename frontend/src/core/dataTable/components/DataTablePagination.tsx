@@ -43,7 +43,7 @@ export function DataTablePagination(props: DataTablePaginationProps) {
     const renderPageItems = () => {
         return visiblePages.map((p, index) => {
             if (p === 'ellipsis') {
-                return <Pagination.Ellipsis key={`ellipsis-${index}`} />;
+                return <Pagination.Ellipsis key={`ellipsis-${index}`}/>;
             }
             return (
                 <Pagination.Item

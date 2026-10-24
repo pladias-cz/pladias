@@ -49,6 +49,9 @@
       "taxaList": {
         "archiveCSV": "CSV archiv",
         "commonThreshold": "commonThresh",
+        "downloadCsv": "Stáhnout CSV",
+        "downloadCsvMap": "Stáhnout CSV mapy",
+        "downloadPngMap": "Stáhnout PNG mapu",
         "filterCommonThreshold": "Filtrovat práh rozšíření...",
         "filterLatinName": "Filtrovat latinské jméno...",
         "filterMapped": "Filtrovat mapováno...",
@@ -90,6 +93,7 @@
         "isMappedUpdated": "Taxon {{taxonName}} byl nastaven jako {{status}}.",
         "latinName": "Latinské jméno",
         "mapped": "Mapováno",
+        "noCsv": "Žádné CSV",
         "noTaxaFound": "Nebyly nalezeny žádné taxony",
         "partOfMapWith": "součástí mapy s",
         "pngUpload": {
@@ -737,6 +741,7 @@
       "yes": "Ano"
     },
     "true": "true",
+    "unknownError": "Neznámá chyba",
     "version": "Datum verze",
     "yes": "Ano"
   },

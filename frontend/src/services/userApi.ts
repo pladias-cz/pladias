@@ -72,7 +72,7 @@ export async function changePassword(input: ChangePasswordInput): Promise<string
 
 /** POST /api/react/user/createToken – API token pro externí nástroje. */
 export async function createApiToken(): Promise<string> {
-    const payload = await apiPost<ApiResult<{token: string}>>("/api/react/user/createToken");
+    const payload = await apiPost<ApiResult<{ token: string }>>("/api/react/user/createToken");
     const token = ensureSuccess(payload).data?.token;
     if (!token) {
         throw new ApiError("Odpověď createToken neobsahuje token.");

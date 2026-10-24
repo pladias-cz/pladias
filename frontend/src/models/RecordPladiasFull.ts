@@ -1,5 +1,5 @@
-import type { RecordPladias } from './RecordPladias';
-import type { QuadrantDetail, DistrictDetail } from './GeoTypes';
+import type {RecordPladias} from './RecordPladias';
+import type {QuadrantDetail, DistrictDetail} from './GeoTypes';
 
 /**
  * Taxon detail with rank and parent info
@@ -86,25 +86,25 @@ export interface LicenseDetail {
 export interface RecordPladiasFull extends RecordPladias {
     // Extended fields - Taxon details
     taxon: TaxonDetail;
-    
+
     // Extended fields - Record authors with full details
     recordAuthors: RecordAuthorFull[];
-    
+
     // Extended fields - Batch with full details
     batch: BatchDetail;
-    
+
     // Extended fields - Bibliography reference
     bibliography: BibliographyDetail | null;
-    
+
     // Extended fields - Nearest town legacy district details
     nearestTownLegacy: DistrictDetail | null;
-    
+
     // Extended fields - Map squares with quadrant info
     mapSquares: MapSquareDetail[];
-    
+
     // Extended fields - Quadrants with square info
     quadrants: QuadrantDetail[];
-    
+
     // Extended fields - License with description
     license: LicenseDetail | null;
 

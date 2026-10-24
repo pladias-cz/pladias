@@ -1,4 +1,4 @@
-import type { DistrictDetail, QuadrantDetail, TownHierarchyEntry } from './GeoTypes';
+import type {DistrictDetail, QuadrantDetail, TownHierarchyEntry} from './GeoTypes';
 
 /**
  * Reverse geocoding response from GET /react/query/reverseGeocoding/lon/:lon/lat/:lat

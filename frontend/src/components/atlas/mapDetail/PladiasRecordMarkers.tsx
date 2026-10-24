@@ -1,6 +1,6 @@
-import { Circle, CircleMarker, Popup, Tooltip } from 'react-leaflet';
-import type { RecordPladias } from '@/models';
-import type { RecordPladiasMinimal } from '@/models/AtlasRecords';
+import {Circle, CircleMarker, Popup, Tooltip} from 'react-leaflet';
+import type {RecordPladias} from '@/models';
+import type {RecordPladiasMinimal} from '@/models/AtlasRecords';
 import './RecordMarkers.scss';
 
 interface PladiasRecordMarkersProps {
@@ -15,7 +15,7 @@ const MARKER_CONFIG = {
     strokeColor: '#000000',
 };
 
-function PladiasRecordMarkers({ records, highlightedRecordId, onRecordHover }: PladiasRecordMarkersProps) {
+function PladiasRecordMarkers({records, highlightedRecordId, onRecordHover}: PladiasRecordMarkersProps) {
     const getValidationColor = (record: RecordPladias | RecordPladiasMinimal): string => {
         return record.validationStatusColor || '#808080';
     };
@@ -56,14 +56,15 @@ function PladiasRecordMarkers({ records, highlightedRecordId, onRecordHover }: P
                 const commonPopup = (
                     <Popup>
                         <div>
-                            <strong>ID: {record.id}</strong><br />
-                            <span className="text-muted">PLADIAS</span><br />
-                            {record.year && <span>Rok: {record.year}<br /></span>}
+                            <strong>ID: {record.id}</strong><br/>
+                            <span className="text-muted">PLADIAS</span><br/>
+                            {record.year && <span>Rok: {record.year}<br/></span>}
                             {(() => {
                                 const recordedBy = 'recordedBy' in record ? record.recordedBy : record.recordAuthorsNames;
-                                return recordedBy && <span>Sběratel: {recordedBy}<br /></span>;
+                                return recordedBy && <span>Sběratel: {recordedBy}<br/></span>;
                             })()}
-                            <a href={`${import.meta.env.BASE_URL.replace(/\/$/, "")}/atlas/record/${record.id}`} target="_blank" rel="noopener noreferrer">
+                            <a href={`${import.meta.env.BASE_URL.replace(/\/$/, "")}/atlas/record/${record.id}`}
+                               target="_blank" rel="noopener noreferrer">
                                 Otevřít záznam
                             </a>
                         </div>
@@ -101,8 +102,15 @@ function PladiasRecordMarkers({ records, highlightedRecordId, onRecordHover }: P
                             eventHandlers={commonEventHandlers}
                         >
                             {label && (
-                                <Tooltip permanent direction="top" offset={[0, -16]} className="record-label-transparent">
-                                    <span style={{ fontSize: '13px', whiteSpace: 'nowrap', color: '#000', fontWeight: 700, textShadow: '0 0 2px #fff, 0 0 2px #fff' }}>
+                                <Tooltip permanent direction="top" offset={[0, -16]}
+                                         className="record-label-transparent">
+                                    <span style={{
+                                        fontSize: '13px',
+                                        whiteSpace: 'nowrap',
+                                        color: '#000',
+                                        fontWeight: 700,
+                                        textShadow: '0 0 2px #fff, 0 0 2px #fff'
+                                    }}>
                                         {label}
                                     </span>
                                 </Tooltip>

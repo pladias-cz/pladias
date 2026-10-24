@@ -77,7 +77,15 @@ describe("importExcel", () => {
     });
 
     it("posts to the upload endpoint for the import operation", async () => {
-        fetchMock.mockResolvedValue(jsonResponse({success: true, id: 9, filename: "b.xlsx", records: 1, errors: 0, warnings: 0, imported: true}));
+        fetchMock.mockResolvedValue(jsonResponse({
+            success: true,
+            id: 9,
+            filename: "b.xlsx",
+            records: 1,
+            errors: 0,
+            warnings: 0,
+            imported: true
+        }));
         const file = new File(["xlsx"], "b.xlsx");
 
         await importExcel(file, "import");

@@ -1,14 +1,14 @@
 /**
  * Project Layers
- * 
+ *
  * Dynamic WMS layers showing taxon occurrences filtered by specific projects.
  * These layers are created dynamically based on the projects that have records for the current taxon.
- * 
+ *
  * Note: Project layers are rendered via the ProjectLayers component which fetches
  * project data from the API and creates WMS layers dynamically.
  */
 
-import type { LayerDefinition } from '../../types';
+import type {LayerDefinition} from '../../types';
 
 /**
  * Base template for project layers

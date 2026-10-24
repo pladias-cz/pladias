@@ -46,7 +46,7 @@ export async function getPlayMessagesForLanguage(lang: string): Promise<PlayMess
 }
 
 /** PUT /api/react/playmessage/admin/save – hromadné uložení hodnot pro jeden jazyk. */
-export async function savePlayMessages(lang: string, values: Array<{key: string; value: string}>): Promise<void> {
+export async function savePlayMessages(lang: string, values: Array<{ key: string; value: string }>): Promise<void> {
     requireEnvelope(
         await apiPut("/api/react/playmessage/admin/save", {lang, values}),
         "Uložení textů selhalo.",

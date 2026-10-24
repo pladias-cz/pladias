@@ -58,7 +58,10 @@ export async function removeProjectFromUser(userId: number, projectId: number): 
 /** POST /api/react/atlasadmin/assignUserTaxon – přiřazení taxonu uživateli (urlencoded). */
 export async function assignUserTaxon(userId: number, taxonId: number): Promise<void> {
     requireEnvelope(
-        await apiPostFormUrlencoded("/api/react/atlasadmin/assignUserTaxon", {user: String(userId), taxon: String(taxonId)}),
+        await apiPostFormUrlencoded("/api/react/atlasadmin/assignUserTaxon", {
+            user: String(userId),
+            taxon: String(taxonId)
+        }),
         "Přiřazení taxonu selhalo.",
     );
 }

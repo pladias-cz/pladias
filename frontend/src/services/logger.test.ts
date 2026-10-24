@@ -19,7 +19,7 @@ import {
  */
 
 /** Mock transport, který si pamatuje doručené záznamy. */
-function recordingTransport(): {transport: LogTransport; sent: LogEntry[]} {
+function recordingTransport(): { transport: LogTransport; sent: LogEntry[] } {
     const sent: LogEntry[] = [];
     return {transport: {name: "test", send: (entry) => sent.push(entry)}, sent};
 }
@@ -91,9 +91,11 @@ describe("logger", () => {
     });
 
     it("polyká výjimky z transportu a nezabije další transporty", () => {
-        addLogTransport({name: "broken", send: () => {
-            throw new Error("transport exploded");
-        }});
+        addLogTransport({
+            name: "broken", send: () => {
+                throw new Error("transport exploded");
+            }
+        });
         const {transport, sent} = recordingTransport();
         addLogTransport(transport);
 
@@ -114,7 +116,8 @@ describe("logger", () => {
     });
 
     it("konzolový transport formátuje úroveň, jméno, kontext a stack", () => {
-        const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+        const consoleError = vi.spyOn(console, "error").mockImplementation(() => {
+        });
         addLogTransport(createConsoleTransport());
 
         logError(new TypeError("boom"), {source: "test"});

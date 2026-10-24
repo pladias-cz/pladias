@@ -1,5 +1,5 @@
-import { Circle, CircleMarker, Popup, Tooltip } from 'react-leaflet';
-import type { RecordGbifMinimal, ProjectType } from '@/models/AtlasRecords';
+import {Circle, CircleMarker, Popup, Tooltip} from 'react-leaflet';
+import type {RecordGbifMinimal, ProjectType} from '@/models/AtlasRecords';
 import './RecordMarkers.scss';
 
 interface RecordMarkersProps {
@@ -9,12 +9,12 @@ interface RecordMarkersProps {
 }
 
 const MARKER_CONFIG: Record<ProjectType, { shape: 'circle', baseRadius: number, strokeColor: string }> = {
-    pladias: { shape: 'circle', baseRadius: 8, strokeColor: '#000000' },
-    gbif: { shape: 'circle', baseRadius: 12, strokeColor: '#000000' },
-    inaturalist: { shape: 'circle', baseRadius: 10, strokeColor: '#00aa00' },
+    pladias: {shape: 'circle', baseRadius: 8, strokeColor: '#000000'},
+    gbif: {shape: 'circle', baseRadius: 12, strokeColor: '#000000'},
+    inaturalist: {shape: 'circle', baseRadius: 10, strokeColor: '#00aa00'},
 };
 
-function RecordMarkers({ records, highlightedRecordId, onRecordHover }: RecordMarkersProps) {
+function RecordMarkers({records, highlightedRecordId, onRecordHover}: RecordMarkersProps) {
     const getValidationColor = (record: RecordGbifMinimal): string => {
         return record.validationStatusColor || '#808080';
     };
@@ -49,11 +49,12 @@ function RecordMarkers({ records, highlightedRecordId, onRecordHover }: RecordMa
                 const commonPopup = (
                     <Popup>
                         <div>
-                            <strong>ID: {record.id}</strong><br />
-                            <span className="text-muted">{record.project.toUpperCase()}</span><br />
-                            {record.year && <span>Rok: {record.year}<br /></span>}
-                            {record.recordedBy && <span>Sběratel: {record.recordedBy}<br /></span>}
-                            <a href={`https://www.gbif.org/occurrence/${record.id}`} target="_blank" rel="noopener noreferrer">
+                            <strong>ID: {record.id}</strong><br/>
+                            <span className="text-muted">{record.project.toUpperCase()}</span><br/>
+                            {record.year && <span>Rok: {record.year}<br/></span>}
+                            {record.recordedBy && <span>Sběratel: {record.recordedBy}<br/></span>}
+                            <a href={`https://www.gbif.org/occurrence/${record.id}`} target="_blank"
+                               rel="noopener noreferrer">
                                 Zobrazit na GBIF
                             </a>
                         </div>
@@ -67,9 +68,9 @@ function RecordMarkers({ records, highlightedRecordId, onRecordHover }: RecordMa
                                 key={`precision-${record.id}`}
                                 center={[record.latitude, record.longitude]}
                                 radius={record.gpsPrecision! / 2}
-                                pathOptions={{ 
-                                    color: config.strokeColor, 
-                                    fillColor: color, 
+                                pathOptions={{
+                                    color: config.strokeColor,
+                                    fillColor: color,
                                     fillOpacity: 0.25,
                                     weight: 1,
                                     dashArray: '4, 4'
@@ -82,12 +83,24 @@ function RecordMarkers({ records, highlightedRecordId, onRecordHover }: RecordMa
                             key={record.id}
                             center={[record.latitude, record.longitude]}
                             radius={radius}
-                            pathOptions={{ color: config.strokeColor, fillColor: color, fillOpacity: isHighlighted ? 0.9 : 0.6, weight: 2 }}
+                            pathOptions={{
+                                color: config.strokeColor,
+                                fillColor: color,
+                                fillOpacity: isHighlighted ? 0.9 : 0.6,
+                                weight: 2
+                            }}
                             eventHandlers={commonEventHandlers}
                         >
                             {label && (
-                                <Tooltip permanent direction="top" offset={[0, -16]} className="record-label-transparent">
-                                    <span style={{ fontSize: '13px', whiteSpace: 'nowrap', color: '#000', fontWeight: 700, textShadow: '0 0 2px #fff, 0 0 2px #fff' }}>
+                                <Tooltip permanent direction="top" offset={[0, -16]}
+                                         className="record-label-transparent">
+                                    <span style={{
+                                        fontSize: '13px',
+                                        whiteSpace: 'nowrap',
+                                        color: '#000',
+                                        fontWeight: 700,
+                                        textShadow: '0 0 2px #fff, 0 0 2px #fff'
+                                    }}>
                                         {label}
                                     </span>
                                 </Tooltip>

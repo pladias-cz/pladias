@@ -10,7 +10,7 @@ interface ImportControlsDeleteCellProps {
 
 export function ImportControlsDeleteCell({row, onDelete, isDeleting}: ImportControlsDeleteCellProps) {
     const {t} = useTranslation();
-    
+
     return (
         <Button
             variant="outline-danger"
@@ -20,7 +20,7 @@ export function ImportControlsDeleteCell({row, onDelete, isDeleting}: ImportCont
         >
             {isDeleting ? (
                 <>
-                    <Spinner animation="border" size="sm" className="me-1" />
+                    <Spinner animation="border" size="sm" className="me-1"/>
                     {t("common.loading")}
                 </>
             ) : (

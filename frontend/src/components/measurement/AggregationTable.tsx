@@ -1,13 +1,13 @@
-import { useEffect, useState } from "react";
-import { Table, Spinner } from "react-bootstrap";
-import { useTranslation } from "react-i18next";
-import type { TraitAggregationType } from "@/models/TraitAggregationType";
+import {useEffect, useState} from "react";
+import {Table, Spinner} from "react-bootstrap";
+import {useTranslation} from "react-i18next";
+import type {TraitAggregationType} from "@/models/TraitAggregationType";
 import {getTraitAggregationTypes} from "@/services/traitApi";
 import RichTextMessage from "@/components/RichTextMessage";
 import {notifyApiError} from "@/stores/notificationStore";
 
 export default function AggregationTable() {
-    const { t } = useTranslation();
+    const {t} = useTranslation();
 
     const [types, setTypes] = useState<TraitAggregationType[]>([]);
     const [loading, setLoading] = useState(true);
@@ -29,7 +29,7 @@ export default function AggregationTable() {
     if (loading) {
         return (
             <div className="text-center my-4">
-                <Spinner animation="border" />
+                <Spinner animation="border"/>
             </div>
         );
     }

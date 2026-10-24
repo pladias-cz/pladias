@@ -1,11 +1,11 @@
-import { useMemo, useEffect, useRef } from 'react';
-import { useMap } from 'react-leaflet';
+import {useMemo, useEffect, useRef} from 'react';
+import {useMap} from 'react-leaflet';
 import {useQuery} from '@tanstack/react-query';
 import {getSquareInfo, type SquareValidationStatus, type CurrentSquareInfo} from '@/services/atlasApi';
-import { useNavigate } from 'react-router-dom';
+import {useNavigate} from 'react-router-dom';
 
-import { useLayerManager, MapCanvas, MapLayer } from '@/core/mapLayers';
-import { LayerSwitcher } from '@/core/mapLayers/components/LayerSwitcher';
+import {useLayerManager, MapCanvas, MapLayer} from '@/core/mapLayers';
+import {LayerSwitcher} from '@/core/mapLayers/components/LayerSwitcher';
 import './MapComponent.scss';
 
 // Map extent limit: 7 km from center (max bounds for user panning)
@@ -20,7 +20,7 @@ function calculateMaxBounds(center: [number, number], radiusKm: number): [[numbe
     const [lat, lng] = center;
     const latDelta = radiusKm * KM_TO_DEGREES_LAT;
     const lngDelta = radiusKm * KM_TO_DEGREES_LAT / Math.cos((lat * Math.PI) / 180);
-    
+
     return [
         [lat - latDelta, lng - lngDelta], // Southwest
         [lat + latDelta, lng + lngDelta], // Northeast
@@ -30,17 +30,20 @@ function calculateMaxBounds(center: [number, number], radiusKm: number): [[numbe
 /**
  * Internal component to update map center and bounds when they change
  */
-function MapUpdater({ center, maxBounds }: { center: [number, number]; maxBounds: [[number, number], [number, number]] }) {
+function MapUpdater({center, maxBounds}: {
+    center: [number, number];
+    maxBounds: [[number, number], [number, number]]
+}) {
     const map = useMap();
-    
+
     useEffect(() => {
         // Update max bounds first
         map.setMaxBounds(maxBounds);
-        
+
         // Then set the view to the new center
-        map.setView(center, map.getZoom(), { animate: true });
+        map.setView(center, map.getZoom(), {animate: true});
     }, [map, center, maxBounds]);
-    
+
     return null;
 }
 
@@ -49,7 +52,7 @@ function MapUpdater({ center, maxBounds }: { center: [number, number]; maxBounds
  */
 export type {SquareValidationStatus, CurrentSquareInfo, SquareInfoResponse} from '@/services/atlasApi';
 
-import type { RecordsByProject, RecordsByProjectMinimal } from '@/models/AtlasRecords';
+import type {RecordsByProject, RecordsByProjectMinimal} from '@/models/AtlasRecords';
 import RecordMarkers from './RecordMarkers';
 import PladiasRecordMarkers from './PladiasRecordMarkers';
 
@@ -73,14 +76,19 @@ const MAP_MAIN_LAYERS = [
     'technical_quadrants',
     'technical_phytochorion',
     'technical_square',
-    
+
     'validation_semafor',
     'validation_common_3',
     'validation_common_2',
     'validation_common_1',
 
 ];
-const MAP_MAIN_DEFAULTS: Record<string, boolean> = { osm: true, opentopo: false, technical_quadrants: true, interactive_squares: true };
+const MAP_MAIN_DEFAULTS: Record<string, boolean> = {
+    osm: true,
+    opentopo: false,
+    technical_quadrants: true,
+    interactive_squares: true
+};
 
 // Map zoom constraints
 const MIN_ZOOM = 12;
@@ -95,9 +103,9 @@ const ARROW_HALF = ARROW_SIZE / 2;
  * Navigation arrow component for directional square navigation
  */
 function NavigationArrow({
-    status,
-    taxonId,
-}: {
+                             status,
+                             taxonId,
+                         }: {
     status: SquareValidationStatus;
     taxonId?: number;
 }) {
@@ -146,21 +154,27 @@ function NavigationArrow({
 
         switch (status.direction) {
             case 'north':
-                return { ...baseStyle, top: `${ARROW_OFFSET}px`, left: '50%', marginLeft: `-${ARROW_HALF}px` };
+                return {...baseStyle, top: `${ARROW_OFFSET}px`, left: '50%', marginLeft: `-${ARROW_HALF}px`};
             case 'northeast':
-                return { ...baseStyle, top: `${ARROW_OFFSET}px`, right: `${ARROW_OFFSET}px` };
+                return {...baseStyle, top: `${ARROW_OFFSET}px`, right: `${ARROW_OFFSET}px`};
             case 'east':
-                return { ...baseStyle, top: '50%', right: `${ARROW_OFFSET}px`, marginTop: `-${ARROW_HALF}px` };
+                return {...baseStyle, top: '50%', right: `${ARROW_OFFSET}px`, marginTop: `-${ARROW_HALF}px`};
             case 'southeast':
-                return { ...baseStyle, bottom: `${ARROW_OFFSET}px`, right: `${ARROW_OFFSET}px` };
+                return {...baseStyle, bottom: `${ARROW_OFFSET}px`, right: `${ARROW_OFFSET}px`};
             case 'south':
-                return { ...baseStyle, bottom: `${ARROW_OFFSET}px`, left: '50%', marginLeft: `-${ARROW_HALF}px`, zIndex: 1001 };
+                return {
+                    ...baseStyle,
+                    bottom: `${ARROW_OFFSET}px`,
+                    left: '50%',
+                    marginLeft: `-${ARROW_HALF}px`,
+                    zIndex: 1001
+                };
             case 'southwest':
-                return { ...baseStyle, bottom: `${ARROW_OFFSET}px`, left: `${ARROW_OFFSET}px` };
+                return {...baseStyle, bottom: `${ARROW_OFFSET}px`, left: `${ARROW_OFFSET}px`};
             case 'west':
-                return { ...baseStyle, top: '50%', left: `${ARROW_OFFSET}px`, marginTop: `-${ARROW_HALF}px` };
+                return {...baseStyle, top: '50%', left: `${ARROW_OFFSET}px`, marginTop: `-${ARROW_HALF}px`};
             case 'northwest':
-                return { ...baseStyle, top: `${ARROW_OFFSET}px`, left: `${ARROW_OFFSET}px` };
+                return {...baseStyle, top: `${ARROW_OFFSET}px`, left: `${ARROW_OFFSET}px`};
             default:
                 return baseStyle;
         }
@@ -202,8 +216,8 @@ function NavigationArrow({
  * Current square status indicator component
  */
 function CurrentSquareIndicator({
-    currentSquare,
-}: {
+                                    currentSquare,
+                                }: {
     currentSquare: CurrentSquareInfo;
 }) {
     return (
@@ -237,15 +251,15 @@ function CurrentSquareIndicator({
 }
 
 export function MapComponent({
-    mapName = 'mapDetail',
-    initialZoom = 12,
-    taxonId,
-    squareId,
-    records = { pladias: [], gbif: [], inaturalist: [] },
-    highlightedRecordId,
-    onRecordHover,
-    centerOnRecord,
-}: MapComponentProps) {
+                                 mapName = 'mapDetail',
+                                 initialZoom = 12,
+                                 taxonId,
+                                 squareId,
+                                 records = {pladias: [], gbif: [], inaturalist: []},
+                                 highlightedRecordId,
+                                 onRecordHover,
+                                 centerOnRecord,
+                             }: MapComponentProps) {
     const mapRef = useRef<L.Map | null>(null);
 
     const allLayerIds = useMemo(() => {
@@ -278,10 +292,10 @@ export function MapComponent({
             const map = mapRef.current;
             const target = [centerOnRecord.latitude, centerOnRecord.longitude] as [number, number];
             const currentBounds = map.getBounds();
-            
+
             // Check if target is already visible (within current bounds)
             const alreadyVisible = currentBounds.contains(target);
-            
+
             if (!alreadyVisible) {
                 // Target is outside current view, pan to it
                 map.flyTo(target, map.getZoom(), {
@@ -310,10 +324,10 @@ export function MapComponent({
     }
 
     return (
-        <div className="h-100 w-100" style={{ position: 'relative' }}>
+        <div className="h-100 w-100" style={{position: 'relative'}}>
             {/* Current square status indicator */}
-            {currentSquare && <CurrentSquareIndicator currentSquare={currentSquare} />}
-            
+            {currentSquare && <CurrentSquareIndicator currentSquare={currentSquare}/>}
+
             {/* Navigation arrows */}
             {neighbors.map((neighbor) => (
                 <NavigationArrow
@@ -322,7 +336,7 @@ export function MapComponent({
                     taxonId={taxonId}
                 />
             ))}
-            
+
             <MapCanvas
                 center={mapCenter}
                 zoom={initialZoom}
@@ -332,9 +346,9 @@ export function MapComponent({
                 mapRef={mapRef}
             >
                 {mapCenter && maxBounds && (
-                    <MapUpdater center={mapCenter} maxBounds={maxBounds} />
+                    <MapUpdater center={mapCenter} maxBounds={maxBounds}/>
                 )}
-                
+
                 {MAP_MAIN_LAYERS.map(layerId => (
                     <MapLayer
                         key={layerId}
@@ -343,7 +357,7 @@ export function MapComponent({
                         params={mapContext}
                     />
                 ))}
-                
+
                 {records && (records.pladias?.length > 0) && (
                     <PladiasRecordMarkers
                         records={records.pladias}
@@ -351,7 +365,7 @@ export function MapComponent({
                         onRecordHover={onRecordHover}
                     />
                 )}
-                
+
                 {records && ((records.gbif?.length > 0 || records.inaturalist?.length > 0)) && (
                     <RecordMarkers
                         records={[...(records.gbif || []), ...(records.inaturalist || [])]}

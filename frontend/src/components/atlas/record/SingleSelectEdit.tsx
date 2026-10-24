@@ -12,21 +12,21 @@ interface Props {
     /** načte dostupné volby pro výběr */
     loadOptions: () => Promise<MultiValueOption[]>;
     field: string;
-    onUpdated?: (data: {updatedValue: MultiValueOption | null, newTimestamp: number}) => void;
+    onUpdated?: (data: { updatedValue: MultiValueOption | null, newTimestamp: number }) => void;
     lastEditTimestampNum?: number;
     renderDisplay?: (option: MultiValueOption) => React.ReactNode;
 }
 
 export default function SingleSelectEdit({
-    label,
-    recordId,
-    currentValue,
-    loadOptions,
-    field,
-    onUpdated,
-    lastEditTimestampNum,
-    renderDisplay
-}: Props) {
+                                             label,
+                                             recordId,
+                                             currentValue,
+                                             loadOptions,
+                                             field,
+                                             onUpdated,
+                                             lastEditTimestampNum,
+                                             renderDisplay
+                                         }: Props) {
     const {t} = useTranslation();
     const [options, setOptions] = useState<MultiValueOption[]>([]);
     const [saving, setSaving] = useState(false);
@@ -157,7 +157,7 @@ export default function SingleSelectEdit({
                                     </option>
                                 ))}
                             </Form.Select>
-                            
+
                             <button
                                 type="button"
                                 className="btn btn-primary btn-sm ms-2"
@@ -166,7 +166,7 @@ export default function SingleSelectEdit({
                             >
                                 {t('common.ok')}
                             </button>
-                            
+
                             <button
                                 type="button"
                                 className="btn btn-secondary btn-sm ms-2"

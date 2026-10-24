@@ -17,9 +17,9 @@
  * ExportTraitList); jako celek se zaškrtnout nedá.
  */
 
-import { useState, useCallback, useMemo, type FocusEvent } from 'react';
-import { useTranslation } from 'react-i18next';
-import { useLayerManager, type LayerDefinition, layerGroups, getLayerDefinition, useLayerStore } from '../index';
+import {useState, useCallback, useMemo, type FocusEvent} from 'react';
+import {useTranslation} from 'react-i18next';
+import {useLayerManager, type LayerDefinition, layerGroups, getLayerDefinition, useLayerStore} from '../index';
 
 interface LayerSwitcherProps {
     mapName: string;
@@ -36,8 +36,8 @@ interface LayerGroupItem {
     defaultExpanded?: boolean;
 }
 
-export function LayerSwitcher({ mapName, layerIds, defaultVisibility }: LayerSwitcherProps) {
-    const { t } = useTranslation();
+export function LayerSwitcher({mapName, layerIds, defaultVisibility}: LayerSwitcherProps) {
+    const {t} = useTranslation();
     const layerManager = useLayerManager(mapName, layerIds, defaultVisibility);
     const [isExpanded, setIsExpanded] = useState(false);
     // Stavy vrstev dané mapy: titulky dynamických vrstev (project_*) se do store
@@ -45,7 +45,7 @@ export function LayerSwitcher({ mapName, layerIds, defaultVisibility }: LayerSwi
     // hodnotu čteme přímo – musí být i v deps groupItems mema, aby se změna
     // store (nový titulek) projevila v panelu, nejen vyvolala re-render.
     const layerStates = useLayerStore(state => state.layers[mapName]);
-    
+
     // Initialize open groups based on layerGroups config
     const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() => {
         const initial: Record<string, boolean> = {};
@@ -72,7 +72,7 @@ export function LayerSwitcher({ mapName, layerIds, defaultVisibility }: LayerSwi
             // Try to get from registry first
             const staticDef = getLayerDefinition(id);
             if (staticDef) return staticDef;
-            
+
             // For dynamic layers (e.g., project_*), get title from layer state
             // (registered asynchronously by useProjectLayers once projects load)
             const stateTitle = layerStates?.[id]?.title;
@@ -87,7 +87,7 @@ export function LayerSwitcher({ mapName, layerIds, defaultVisibility }: LayerSwi
             } else {
                 title = stateTitle ?? id;
             }
-            
+
             // Create minimal layer definition for dynamic layers
             // Only display properties - actual rendering is handled by ProjectLayers component
             return {
@@ -116,15 +116,15 @@ export function LayerSwitcher({ mapName, layerIds, defaultVisibility }: LayerSwi
 
         // Group layers by their assigned group
         const groupsMap = new Map<string, LayerDefinition[]>();
-        
+
         for (const layer of layersToShow) {
             let groupId = layerToGroupMap.get(layer.id);
-            
+
             // Assign dynamic project layers to 'project' group
             if (!groupId && layer.id.startsWith('project_')) {
                 groupId = 'project';
             }
-            
+
             groupId = groupId || 'other';
             const existing = groupsMap.get(groupId) || [];
             existing.push(layer);
@@ -148,7 +148,7 @@ export function LayerSwitcher({ mapName, layerIds, defaultVisibility }: LayerSwi
     }, [layerIds, layerStates, t]);
 
     const toggleGroup = (groupId: string) => {
-        setOpenGroups(prev => ({ ...prev, [groupId]: !prev[groupId] }));
+        setOpenGroups(prev => ({...prev, [groupId]: !prev[groupId]}));
     };
 
     const handleLayerToggle = useCallback((layerId: string) => {

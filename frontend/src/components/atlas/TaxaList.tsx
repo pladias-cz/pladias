@@ -1,6 +1,6 @@
 /**
  * TaxaList - Taxon Map Settings Component (Read-Only for Users)
- * 
+ *
  * Displays taxa where the current user is a supervisor.
  * This is a simplified read-only view - only the first column remains interactive.
  */
@@ -85,7 +85,10 @@ export default function TaxaList() {
         createTextColumn<TaxonMapSettings>('publicationStatusId', t("atlas.admin.taxaList.publicationStatus"), {
             enableSorting: false,
             enableFiltering: true,
-            filterOptions: publicationStatusOptions.map(o => ({value: String(o.id), label: `${o.description} [${o.id}]`})),
+            filterOptions: publicationStatusOptions.map(o => ({
+                value: String(o.id),
+                label: `${o.description} [${o.id}]`
+            })),
             cellRenderer: (_value, row) => {
                 const desc = row.publicationStatusDescription || '-';
                 const id = row.publicationStatusId;

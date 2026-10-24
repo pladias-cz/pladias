@@ -7,11 +7,11 @@ interface ImportsListDownloadCellProps {
 
 export function ImportsListDownloadCell({row}: ImportsListDownloadCellProps) {
     const {t} = useTranslation();
-    
+
     return (
-        <a 
-            href={`/api/react/atlasadmin/downloadBatchModified/${row.batchId}`} 
-            target="_blank" 
+        <a
+            href={`/api/react/atlasadmin/downloadBatchModified/${row.batchId}`}
+            target="_blank"
             rel="noopener noreferrer"
         >
             {t("atlas.admin.importsList.downloadModified")}

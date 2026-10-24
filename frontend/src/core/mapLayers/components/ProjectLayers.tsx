@@ -6,13 +6,13 @@
  * Integrates with the layer management system for visibility control.
  */
 
-import { useEffect, useMemo, useState } from 'react';
-import { WMSTileLayer } from 'react-leaflet';
-import type { WMSParams } from 'leaflet';
+import {useEffect, useMemo, useState} from 'react';
+import {WMSTileLayer} from 'react-leaflet';
+import type {WMSParams} from 'leaflet';
 import {useQuery} from '@tanstack/react-query';
 import {getTaxonRecordsByProject} from '@/services/taxonApi';
-import { useLayerState } from '../store/layerStore';
-import { PROJECT_LAYER_TEMPLATE } from '../registry/groups/projectLayers';
+import {useLayerState} from '../store/layerStore';
+import {PROJECT_LAYER_TEMPLATE} from '../registry/groups/projectLayers';
 
 export interface ProjectLayersProps {
     taxonId?: number;
@@ -28,7 +28,7 @@ interface GeoServerWMSParams extends WMSParams {
  * Component that dynamically creates WMS layers for each project
  * and manages their visibility through the layer store
  */
-export function ProjectLayers({ taxonId, mapName }: ProjectLayersProps) {
+export function ProjectLayers({taxonId, mapName}: ProjectLayersProps) {
     // projekty taxonu pro dynamické WMS vrstvy – bez cache (sekce J)
     const {data} = useQuery({
         queryKey: ['taxonRecordsByProject', taxonId],
@@ -88,11 +88,11 @@ export function ProjectLayers({ taxonId, mapName }: ProjectLayersProps) {
  * so disabled project layers never request tiles from GeoServer.
  */
 function ProjectLayer({
-    layerId,
-    url,
-    params,
-    mapName,
-}: {
+                          layerId,
+                          url,
+                          params,
+                          mapName,
+                      }: {
     layerId: string;
     url: string;
     params: GeoServerWMSParams;

@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
-import { Card, Spinner } from "react-bootstrap";
-import { type Taxon } from "@/models/Taxon";
-import { useTranslation } from "react-i18next";
+import {useEffect, useState} from "react";
+import {Card, Spinner} from "react-bootstrap";
+import {type Taxon} from "@/models/Taxon";
+import {useTranslation} from "react-i18next";
 import {Link} from "react-router-dom";
 import {getTaxonFirstChildren, moveTaxonBeforeSibling} from "@/services/taxonApi";
 import {notifyApiError} from "@/stores/notificationStore";
@@ -10,7 +10,7 @@ interface Props {
     taxon: Taxon;
 }
 
-export default function ChildrenOrderingCard({ taxon }: Props) {
+export default function ChildrenOrderingCard({taxon}: Props) {
     const {t} = useTranslation();
     const [children, setChildren] = useState<Taxon[]>([]);
     const [draggedId, setDraggedId] = useState<number | null>(null);
@@ -60,12 +60,12 @@ export default function ChildrenOrderingCard({ taxon }: Props) {
         <Card>
             <Card.Header>
                 {t("taxon.ordering.title")}
-                {isUpdating && <Spinner size="sm" className="ms-2" animation="border" />}
+                {isUpdating && <Spinner size="sm" className="ms-2" animation="border"/>}
             </Card.Header>
 
             <Card.Body>
                 {children.map((c) => (
-                    <div key={c.id} style={{ position: "relative" }}>
+                    <div key={c.id} style={{position: "relative"}}>
                         {/* indikátor kam padne */}
                         {hoveredId === c.id && (
                             <div
@@ -93,7 +93,7 @@ export default function ChildrenOrderingCard({ taxon }: Props) {
                             className={`p-2 mb-1 border rounded d-flex align-items-center gap-2 ${
                                 draggedId === c.id ? "bg-light" : ""
                             }`}
-                            style={{ cursor: isUpdating ? "not-allowed" : "move" }}
+                            style={{cursor: isUpdating ? "not-allowed" : "move"}}
                         >
                             {/* odkaz na detail */}
                             <Link

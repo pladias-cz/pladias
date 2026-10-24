@@ -6,9 +6,9 @@
  * Returns the list of project layer IDs for use with LayerSwitcher.
  */
 
-import { useEffect, useMemo } from 'react';
+import {useEffect, useMemo} from 'react';
 import {useQuery} from '@tanstack/react-query';
-import { useLayerStore, getVisibilityStorageKey } from '../store/layerStore';
+import {useLayerStore, getVisibilityStorageKey} from '../store/layerStore';
 import {getTaxonRecordsByProject, type TaxonProjectRecords} from '@/services/taxonApi';
 import {getUserSetting} from '@/services/settingsApi';
 
@@ -31,7 +31,7 @@ export function useProjectLayers(
     mapName: string,
     taxonId?: number
 ): UseProjectLayersReturn {
-    const { addLayer } = useLayerStore();
+    const {addLayer} = useLayerStore();
 
     // projekty taxonu – bez cache (sekce J), načtení při mountu
     const projectsQuery = useQuery({
@@ -78,7 +78,7 @@ export function useProjectLayers(
             // Add layer to store
             addLayer(mapName, layerId, {
                 visible: isVisible,
-                params: { taxonId, projectId: String(projectId) },
+                params: {taxonId, projectId: String(projectId)},
                 title: `${projectName} (${recordCount})`,
             });
         });

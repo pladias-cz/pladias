@@ -10,7 +10,12 @@ interface LanguageSettingsProps {
     loading: boolean;
 }
 
-export default function LanguageSettings({userSettings, handleInputChange, handleSaveSetting, loading}: LanguageSettingsProps) {
+export default function LanguageSettings({
+                                             userSettings,
+                                             handleInputChange,
+                                             handleSaveSetting,
+                                             loading
+                                         }: LanguageSettingsProps) {
     const {t, i18n} = useTranslation();
 
     const handleLanguageChange = (language: string) => {

@@ -7,7 +7,15 @@
 
 import {useState, useCallback, useMemo, useRef} from 'react';
 import {useTranslation} from 'react-i18next';
-import {DataTable, type DataTableColumnDef, type TableDataUpdater, createActionColumn, createCheckboxColumn, createTextColumn, createNumberColumn} from '@/core/dataTable';
+import {
+    DataTable,
+    type DataTableColumnDef,
+    type TableDataUpdater,
+    createActionColumn,
+    createCheckboxColumn,
+    createTextColumn,
+    createNumberColumn
+} from '@/core/dataTable';
 import {
     useTaxaData,
     useTaxonUpdates,
@@ -152,7 +160,8 @@ export default function TaxaList() {
             cellRenderer: (_value, row) => (
                 <>
                     <i>
-                        <Link to={`/atlas/mapMain/${row.taxonId}`} target="_blank" rel="noopener noreferrer">{row.taxonNameLat}</Link>
+                        <Link to={`/atlas/mapMain/${row.taxonId}`} target="_blank"
+                              rel="noopener noreferrer">{row.taxonNameLat}</Link>
                     </i>
                     {row.taxonRankCz && (
                         <small className="text-muted"> ({row.taxonRankCz})</small>
@@ -228,7 +237,10 @@ export default function TaxaList() {
         createTextColumn<TaxonMapSettings>('publicationStatusId', t("atlas.admin.taxaList.publicationStatus"), {
             enableSorting: true,
             enableFiltering: true,
-            filterOptions: publicationStatusOptions.map(o => ({value: String(o.id), label: `${o.description} [${o.id}]`})),
+            filterOptions: publicationStatusOptions.map(o => ({
+                value: String(o.id),
+                label: `${o.description} [${o.id}]`
+            })),
             cellRenderer: (_value, row) => (
                 <StatusSelect
                     value={row.publicationStatusId}

@@ -7,8 +7,8 @@ import type {LatLngExpression} from 'leaflet';
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
-import type { RecordPladiasFull } from '@/models/RecordPladiasFull';
-import type { ReverseGeocodingResponse } from '@/models/ReverseGeocoding';
+import type {RecordPladiasFull} from '@/models/RecordPladiasFull';
+import type {ReverseGeocodingResponse} from '@/models/ReverseGeocoding';
 import {reverseGeocode} from "@/services/recordApi";
 import {logError, logInfo} from "@/services/logger";
 import {useRecordPermissions} from "./";
@@ -103,7 +103,8 @@ export default function RecordMap({record, onLocationSelectWithGeocode, hasPropo
         <Card className="mb-3">
             <Card.Header>
                 <strong>{t("record.map")}</strong>
-                <a href={`/atlas/mapDetail/${record.taxon.id}/${record.quadrantCodeComputed?.slice(0, 4) ?? ""}`} className="small ms-2 fs-5">
+                <a href={`/atlas/mapDetail/${record.taxon.id}/${record.quadrantCodeComputed?.slice(0, 4) ?? ""}`}
+                   className="small ms-2 fs-5">
                     zpět na mapu
                 </a>
                 {canEdit && <span className="ms-2 text-muted">({t("record.clickOnMap")})</span>}
@@ -126,9 +127,10 @@ export default function RecordMap({record, onLocationSelectWithGeocode, hasPropo
                             indicatorPosition={selectedLocation || undefined}
                             canEdit={canEdit}
                         />
-                        {selectedLocation && canEdit && <Marker position={selectedLocation} icon={proposedLocationIcon} />}
+                        {selectedLocation && canEdit &&
+                            <Marker position={selectedLocation} icon={proposedLocationIcon}/>}
                         {!selectedLocation && record.latitude && record.longitude && (
-                            <Marker position={[record.latitude, record.longitude]} icon={defaultIcon} />
+                            <Marker position={[record.latitude, record.longitude]} icon={defaultIcon}/>
                         )}
                     </MapContainer>
                 </div>

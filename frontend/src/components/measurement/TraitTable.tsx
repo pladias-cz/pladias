@@ -94,114 +94,114 @@ export default function TraitTable({feature, refreshKey}: Props) {
 
     return (
         <>
-        {dialog}
+            {dialog}
 
-    <table className="table table-condensed table-striped">
-            <thead>
-            <tr>
-                <th>id</th>
-                <th>nahrání</th>
-                <th>zahrnuje taxonů</th>
-                <th>zdroj</th>
-                <th>popis</th>
-                <th>vlastník dat</th>
-                <th>dostupnost</th>
-                <th>stáhnout</th>
-                <th>smazat</th>
-                <th>výchozí</th>
-            </tr>
-            </thead>
-
-            <tbody>
-            {traits.map(t => (
-                <tr key={t.id}>
-                    <td>{t.id}</td>
-
-                    <td>
-                        {new Date(t.createTimestamp)
-                            .toLocaleDateString("cs-CZ")}
-                    </td>
-
-                    <td>{t.totalTaxonCount}</td>
-
-                    <td><RichTextMessage html={t.sourceHtml}/></td>
-
-                    <td>{t.descriptionCz}</td>
-
-                    <td><RichTextMessage html={t.ownerHtml}/></td>
-
-                    <td>{t.visibilityDescriptionCz}</td>
-
-                    {/* TODO - use user locale to this route */}
-                    <td>
-                        {t.canDownload ? (
-                            <>
-                                <a href={`/api/react/measurement/trait/download/${t.id}/lang/cs`}>
-                                    stáhnout data
-                                </a>
-
-                                {t.hasAttachment && (
-                                    <>
-                                        <br/>
-                                        <a href={`/api/react/measurement/trait/downloadAttachment/${t.id}`}>
-                                            stáhnout přílohu
-                                        </a>
-                                    </>
-                                )}
-
-                                {t.canExport && (
-                                    <>
-                                        <br/>
-                                        <a href={`/api/react/measurement/trait/export/${t.id}`}>
-                                            detailní export
-                                        </a>
-                                    </>
-                                )}
-                            </>
-                        ) : (
-                            <span
-                                className="fa fa-times-circle-o"
-                                style={{cursor: "not-allowed", color: "#bebebe"}}
-                            />
-                        )}
-                    </td>
-
-                    {/* delete – oprávnění dává feature.canAdminister (traitAdmin / admin vlastnosti) */}
-                    <td>
-                        {feature.canAdminister ? (
-                            <button
-                                type="button"
-                                className="btn btn-sm btn-link p-0 text-danger"
-                                disabled={busyTraitId === t.id}
-                                onClick={() => handleDeleteTrait(t.id)}
-                            >
-                                smazat
-                            </button>
-                        ) : (
-                            <span
-                                className="fa fa-times-circle-o"
-                                style={{cursor: "not-allowed", color: "#bebebe"}}
-                            />
-                        )}
-                    </td>
-
-                    {/* default */}
-                    {/* výchozí řadu smí nastavit jen traitAdmin / admin vlastnosti (feature.canAdminister) */}
-                    <td>
-                        <input
-                            type="radio"
-                            name="default_trait"
-                            value={t.id}
-                            checked={defaultTraitId === t.id}
-                            disabled={!feature.canAdminister || busyTraitId !== null}
-                            onChange={() => handleSetDefault(t.id)}
-                        />
-                    </td>
-
+            <table className="table table-condensed table-striped">
+                <thead>
+                <tr>
+                    <th>id</th>
+                    <th>nahrání</th>
+                    <th>zahrnuje taxonů</th>
+                    <th>zdroj</th>
+                    <th>popis</th>
+                    <th>vlastník dat</th>
+                    <th>dostupnost</th>
+                    <th>stáhnout</th>
+                    <th>smazat</th>
+                    <th>výchozí</th>
                 </tr>
-            ))}
-            </tbody>
-        </table>
+                </thead>
+
+                <tbody>
+                {traits.map(t => (
+                    <tr key={t.id}>
+                        <td>{t.id}</td>
+
+                        <td>
+                            {new Date(t.createTimestamp)
+                                .toLocaleDateString("cs-CZ")}
+                        </td>
+
+                        <td>{t.totalTaxonCount}</td>
+
+                        <td><RichTextMessage html={t.sourceHtml}/></td>
+
+                        <td>{t.descriptionCz}</td>
+
+                        <td><RichTextMessage html={t.ownerHtml}/></td>
+
+                        <td>{t.visibilityDescriptionCz}</td>
+
+                        {/* TODO - use user locale to this route */}
+                        <td>
+                            {t.canDownload ? (
+                                <>
+                                    <a href={`/api/react/measurement/trait/download/${t.id}/lang/cs`}>
+                                        stáhnout data
+                                    </a>
+
+                                    {t.hasAttachment && (
+                                        <>
+                                            <br/>
+                                            <a href={`/api/react/measurement/trait/downloadAttachment/${t.id}`}>
+                                                stáhnout přílohu
+                                            </a>
+                                        </>
+                                    )}
+
+                                    {t.canExport && (
+                                        <>
+                                            <br/>
+                                            <a href={`/api/react/measurement/trait/export/${t.id}`}>
+                                                detailní export
+                                            </a>
+                                        </>
+                                    )}
+                                </>
+                            ) : (
+                                <span
+                                    className="fa fa-times-circle-o"
+                                    style={{cursor: "not-allowed", color: "#bebebe"}}
+                                />
+                            )}
+                        </td>
+
+                        {/* delete – oprávnění dává feature.canAdminister (traitAdmin / admin vlastnosti) */}
+                        <td>
+                            {feature.canAdminister ? (
+                                <button
+                                    type="button"
+                                    className="btn btn-sm btn-link p-0 text-danger"
+                                    disabled={busyTraitId === t.id}
+                                    onClick={() => handleDeleteTrait(t.id)}
+                                >
+                                    smazat
+                                </button>
+                            ) : (
+                                <span
+                                    className="fa fa-times-circle-o"
+                                    style={{cursor: "not-allowed", color: "#bebebe"}}
+                                />
+                            )}
+                        </td>
+
+                        {/* default */}
+                        {/* výchozí řadu smí nastavit jen traitAdmin / admin vlastnosti (feature.canAdminister) */}
+                        <td>
+                            <input
+                                type="radio"
+                                name="default_trait"
+                                value={t.id}
+                                checked={defaultTraitId === t.id}
+                                disabled={!feature.canAdminister || busyTraitId !== null}
+                                onChange={() => handleSetDefault(t.id)}
+                            />
+                        </td>
+
+                    </tr>
+                ))}
+                </tbody>
+            </table>
         </>
     );
 }

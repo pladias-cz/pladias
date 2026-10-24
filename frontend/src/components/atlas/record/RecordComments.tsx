@@ -2,7 +2,7 @@ import {Card, Table, Row, Col, Spinner, Button, Modal, Form} from "react-bootstr
 import {useTranslation} from "react-i18next";
 import {getRecordComments, createComment, updateComment, resolveComment, deleteComment} from "@/services/recordApi";
 import {apiErrorMessage} from "@/services/apiClient";
-import type { RecordComment } from '@/models/RecordComment';
+import type {RecordComment} from '@/models/RecordComment';
 import {useState} from "react";
 import {useQuery, useQueryClient} from "@tanstack/react-query";
 import {useConfirm} from "@/hooks/useConfirm";
@@ -63,10 +63,10 @@ export default function RecordComments({recordId, canResolveComments}: RecordCom
 
     const handleSubmitComment = async () => {
         if (!newComment.trim()) return;
-        
+
         setSubmitting(true);
         setActionError(null);
-        
+
         try {
             if (editingComment) {
                 await updateComment(editingComment.id, newComment.trim());
@@ -164,8 +164,8 @@ export default function RecordComments({recordId, canResolveComments}: RecordCom
                             ({nonDeletedComments.filter(c => c.resolved === false).length} {t("record.unresolved")})
                         </strong>
                         {canEditComments && (
-                            <Button 
-                                variant="primary" 
+                            <Button
+                                variant="primary"
                                 size="sm"
                                 onClick={() => {
                                     setEditingComment(null);
@@ -180,85 +180,85 @@ export default function RecordComments({recordId, canResolveComments}: RecordCom
                     <Card.Body>
                         <Table striped bordered hover size="sm">
                             <thead>
-                                <tr>
-                                    <th>{t("record.commentAuthor")}</th>
-                                    <th>{t("record.commentMessage")}</th>
-                                    <th>{t("record.commentDate")}</th>
-                                    <th>{t("record.commentResolved")}</th>
-                                    <th>{t("record.resolvedBy")}</th>
-                                    <th>{t("record.resolvedWhen")}</th>
-                                    {canEditComments && <th>{t("common.actions")}</th>}
-                                </tr>
+                            <tr>
+                                <th>{t("record.commentAuthor")}</th>
+                                <th>{t("record.commentMessage")}</th>
+                                <th>{t("record.commentDate")}</th>
+                                <th>{t("record.commentResolved")}</th>
+                                <th>{t("record.resolvedBy")}</th>
+                                <th>{t("record.resolvedWhen")}</th>
+                                {canEditComments && <th>{t("common.actions")}</th>}
+                            </tr>
                             </thead>
                             <tbody>
-                                {nonDeletedComments.length === 0 ? (
-                                    <tr>
-                                        <td colSpan={canEditComments ? 7 : 6} className="text-center text-muted">
-                                            {t("common.noData")}
+                            {nonDeletedComments.length === 0 ? (
+                                <tr>
+                                    <td colSpan={canEditComments ? 7 : 6} className="text-center text-muted">
+                                        {t("common.noData")}
+                                    </td>
+                                </tr>
+                            ) : (
+                                nonDeletedComments.map((comment) => (
+                                    <tr key={comment.id}>
+                                        <td>{comment.authorName ?? '-'}</td>
+                                        <td>{comment.message ?? '-'}</td>
+                                        <td>
+                                            {comment.createTimestamp
+                                                ? new Date(comment.createTimestamp).toLocaleDateString()
+                                                : '-'}
                                         </td>
+                                        <td>
+                                            {comment.resolved
+                                                ? t("common.yes")
+                                                : t("common.no")}
+                                        </td>
+                                        <td>
+                                            {comment.resolvedByName ?? '-'}
+                                        </td>
+                                        <td>
+                                            {comment.resolved && comment.resolvedTimestamp
+                                                ? formatDateTime(comment.resolvedTimestamp)
+                                                : '-'}
+                                        </td>
+                                        {canEditComments && (
+                                            <td>
+                                                {/* Edit button: same permission as resolve (mapAdmin / supervisor incl. parent taxa / project manager), NOT the comment author */}
+                                                {canUpdateComment && (
+                                                    <Button
+                                                        variant="outline-primary"
+                                                        size="sm"
+                                                        className="me-1"
+                                                        onClick={() => handleEditComment(comment)}
+                                                    >
+                                                        {t("common.edit")}
+                                                    </Button>
+                                                )}
+                                                {/* Resolve button: server-computed permission (mapAdmin / supervisor incl. parent taxa / project manager) */}
+                                                {!comment.resolved && canResolveComments && (
+                                                    <Button
+                                                        variant="success"
+                                                        size="sm"
+                                                        className="me-1"
+                                                        onClick={() => handleResolveComment(comment.id)}
+                                                    >
+                                                        {t("record.resolve")}
+                                                    </Button>
+                                                )}
+                                                {/* Delete button: for comment author OR MapAdmin */}
+                                                {canDeleteComment(comment) && (
+                                                    <Button
+                                                        variant="danger"
+                                                        size="sm"
+                                                        onClick={() => handleDeleteComment(comment.id)}
+                                                    >
+                                                        {t("common.delete")}
+                                                    </Button>
+                                                )}
+                                            </td>
+                                        )}
                                     </tr>
-                                ) : (
-                                    nonDeletedComments.map((comment) => (
-                                        <tr key={comment.id}>
-                                            <td>{comment.authorName ?? '-'}</td>
-                                            <td>{comment.message ?? '-'}</td>
-                                            <td>
-                                                {comment.createTimestamp
-                                                    ? new Date(comment.createTimestamp).toLocaleDateString()
-                                                    : '-'}
-                                            </td>
-                                            <td>
-                                                {comment.resolved
-                                                    ? t("common.yes")
-                                                    : t("common.no")}
-                                            </td>
-                                            <td>
-                                                {comment.resolvedByName ?? '-'}
-                                            </td>
-                                            <td>
-                                                {comment.resolved && comment.resolvedTimestamp
-                                                    ? formatDateTime(comment.resolvedTimestamp)
-                                                    : '-'}
-                                            </td>
-                                            {canEditComments && (
-                                                <td>
-                                                    {/* Edit button: same permission as resolve (mapAdmin / supervisor incl. parent taxa / project manager), NOT the comment author */}
-                                                    {canUpdateComment && (
-                                                        <Button
-                                                            variant="outline-primary"
-                                                            size="sm"
-                                                            className="me-1"
-                                                            onClick={() => handleEditComment(comment)}
-                                                        >
-                                                            {t("common.edit")}
-                                                        </Button>
-                                                    )}
-                                                    {/* Resolve button: server-computed permission (mapAdmin / supervisor incl. parent taxa / project manager) */}
-                                                    {!comment.resolved && canResolveComments && (
-                                                        <Button
-                                                            variant="success"
-                                                            size="sm"
-                                                            className="me-1"
-                                                            onClick={() => handleResolveComment(comment.id)}
-                                                        >
-                                                            {t("record.resolve")}
-                                                        </Button>
-                                                    )}
-                                                    {/* Delete button: for comment author OR MapAdmin */}
-                                                    {canDeleteComment(comment) && (
-                                                        <Button
-                                                            variant="danger"
-                                                            size="sm"
-                                                            onClick={() => handleDeleteComment(comment.id)}
-                                                        >
-                                                            {t("common.delete")}
-                                                        </Button>
-                                                    )}
-                                                </td>
-                                            )}
-                                        </tr>
-                                    ))
-                                )}
+                                ))
+                            )}
                             </tbody>
                         </Table>
                     </Card.Body>
@@ -291,8 +291,8 @@ export default function RecordComments({recordId, canResolveComments}: RecordCom
                     <Button variant="secondary" onClick={handleCloseModal}>
                         {t("common.cancel")}
                     </Button>
-                    <Button 
-                        variant="primary" 
+                    <Button
+                        variant="primary"
                         onClick={handleSubmitComment}
                         disabled={!newComment.trim() || submitting}
                     >

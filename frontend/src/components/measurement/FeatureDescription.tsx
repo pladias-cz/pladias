@@ -106,7 +106,7 @@ export default function FeatureDatatypeFlags({feature}: Props) {
                     <ul>
                         {enumerate.map(ev => (
                             <li key={ev.id}>
-                                 {ev.nameCz}
+                                {ev.nameCz}
                                 {ev.descriptionCz && ` – ${ev.descriptionCz}`}
                             </li>
                         ))}

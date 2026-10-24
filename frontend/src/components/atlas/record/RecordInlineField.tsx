@@ -20,7 +20,7 @@ interface Props {
     type?: "text" | "select" | "boolean" | "multi-value";
     options?: Option[];
     render?: (v: string | string[] | boolean | null) => React.ReactNode;
-    onUpdated?: (data: {updatedValue: string | null, newTimestamp: number}) => void;
+    onUpdated?: (data: { updatedValue: string | null, newTimestamp: number }) => void;
     lastEditTimestampNum?: number;
     validate?: (value: string) => string | null;
 }
@@ -47,7 +47,7 @@ export default function RecordInlineField({
     const [editing, setEditing] = useState(false);
     // Boolean switch keeps its own optimistic value; top-level hook (rules-of-hooks)
     const [internalValue, setInternalValue] = useState(draft);
-    
+
     // Sync internal timestamp with prop when prop changes (e.g., after another field was edited)
     useEffect(() => {
         if (lastEditTimestampNum !== undefined && lastEditTimestampNum !== lastTimestamp) {
@@ -127,14 +127,16 @@ export default function RecordInlineField({
                         style={{cursor: "pointer"}}
                         onClick={() => setEditing(true)}
                     >
-                        {render ? render(draft) : draft || <span className="text-muted">{t("common.inlineField.add")}</span>}
+                        {render ? render(draft) : draft ||
+                            <span className="text-muted">{t("common.inlineField.add")}</span>}
                     </span>
                 </span>
             );
         } else if (type === "select") {
             content = renderSelect(options, draft as string | null, saving, save, setEditing);
         } else if (type === "multi-value") {
-            content = <MultiValueEditor value={draft as string[] | null} saving={saving} onSave={save} onDone={() => setEditing(false)}/>;
+            content = <MultiValueEditor value={draft as string[] | null} saving={saving} onSave={save}
+                                        onDone={() => setEditing(false)}/>;
         } else {
             content = (
                 <Form.Control

@@ -92,7 +92,7 @@ export const parseCoordinate = (input: string, axis: CoordAxis, defaultHemispher
  * Parsuje "lat, lon" / "lat; lon" do desetinných stupňů.
  * Vrací null, když chybí oddělovač nebo některá část není platná souřadnice.
  */
-export const parseCoordinatePair = (raw: string): {lat: number; lon: number} | null => {
+export const parseCoordinatePair = (raw: string): { lat: number; lon: number } | null => {
     const pairMatch = raw.trim().match(/^(.+?)\s*[;,]\s*(.+)$/);
     if (!pairMatch) {
         return null;

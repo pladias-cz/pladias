@@ -16,13 +16,13 @@ import "@/i18n/i18n";
  */
 
 vi.mock("./PladiasRecordsTable", () => ({
-    PladiasRecordsTable: ({records}: {records: unknown[]}) => (
+    PladiasRecordsTable: ({records}: { records: unknown[] }) => (
         <div data-testid={`pladias-table-${records.length}`}/>
     ),
 }));
 
 vi.mock("./ExternalRecordsTable", () => ({
-    ExternalRecordsTable: ({records}: {records: unknown[]}) => (
+    ExternalRecordsTable: ({records}: { records: unknown[] }) => (
         <div data-testid={`external-table-${records.length}`}/>
     ),
 }));

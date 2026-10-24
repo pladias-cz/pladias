@@ -24,7 +24,7 @@ interface TaxaTableResponse extends ApiResult {
  * Query params of the taxa endpoint for the filters typed into the table filter row. Empty inputs
  * are not filters, so they are left out. Shared by the paginated fetch and the XLSX export.
  */
-export function extractTaxaFilters(columnFilters: Array<{id: string; value: string}>): Record<string, string> {
+export function extractTaxaFilters(columnFilters: Array<{ id: string; value: string }>): Record<string, string> {
     const valueOf = (columnId: string) => columnFilters.find(f => f.id === columnId)?.value || '';
     const filters: Record<string, string> = {
         nameLatFilter: valueOf('taxonNameLat'),
@@ -50,8 +50,8 @@ export function useTaxaData(options?: UseTaxaDataOptions) {
     const fetchTaxa = useCallback(async (params: {
         page: number;
         pageSize: number;
-        sorting: Array<{id: string; desc: boolean}>;
-        columnFilters: Array<{id: string; value: string}>;
+        sorting: Array<{ id: string; desc: boolean }>;
+        columnFilters: Array<{ id: string; value: string }>;
         additionalParams: Record<string, string>;
         signal?: AbortSignal;
     }) => {

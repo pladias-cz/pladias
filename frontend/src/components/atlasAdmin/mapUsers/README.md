@@ -24,7 +24,8 @@ mapUsers/
 
 ## Key Features
 
-- **Custom Data Fetching**: Uses `fetchData` prop of DataTable to efficiently fetch users and their rights in a single operation
+- **Custom Data Fetching**: Uses `fetchData` prop of DataTable to efficiently fetch users and their rights in a single
+  operation
 - **Modular Design**: Separated concerns into hooks (business logic) and components (UI)
 - **Type-Safe**: Full TypeScript support with proper interfaces
 - **No Backend Changes**: Works with existing API structure
@@ -50,17 +51,22 @@ import MapUsers from '@/components/atlasAdmin/MapUsers';
 ## Hooks
 
 ### useMapUsersData
+
 Handles data fetching with custom fetcher that combines users and rights.
 
 ### useMapUsersProjects
+
 Manages project-related state and operations:
+
 - Project list fetching
 - Add/remove project handlers
 - Modal state management
 
 ### useMapUsersTaxa
+
 Manages taxon-related state and operations:
+
 - Taxon search with debouncing
 - Add taxon handler
 - Modal state management
- 
+

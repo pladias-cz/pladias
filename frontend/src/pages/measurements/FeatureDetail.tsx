@@ -30,7 +30,7 @@ export default function FeatureDetail() {
     useEffect(() => {
         // hlášku po přesměrování z legacy stránky injectuje backend do
         // window.__FLASH__ (app/views/react/index.scala.html) – gotchas.md
-        const flash = (window as {__FLASH__?: {success?: string; error?: string}}).__FLASH__;
+        const flash = (window as { __FLASH__?: { success?: string; error?: string } }).__FLASH__;
         if (!flash) return;
 
         // obsah může nést HTML s odkazem na sešit s chybami importu

@@ -48,14 +48,14 @@ export default function Bibliography() {
                 <div className="offset-2 col-8"><p>{t("bibliography.description")}</p></div>
             </div>
             <div className="row">
-            <Card>
-                <Card.Body>
-                    <DataTable<BibliographyDto>
-                        endpoint="/api/react/bibliography/searchReact"
-                        columns={columns}
-                    />
-                </Card.Body>
-            </Card>
+                <Card>
+                    <Card.Body>
+                        <DataTable<BibliographyDto>
+                            endpoint="/api/react/bibliography/searchReact"
+                            columns={columns}
+                        />
+                    </Card.Body>
+                </Card>
             </div>
         </div>
     );

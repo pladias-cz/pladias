@@ -1,9 +1,9 @@
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import {cleanup, fireEvent, render, screen, waitFor} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { afterEach, describe, expect, it, vi } from "vitest";
-import { LayerSwitcher } from "./LayerSwitcher";
-import { useLayerStore } from "../store/layerStore";
-import { saveUserSetting } from "@/services/settingsApi";
+import {afterEach, describe, expect, it, vi} from "vitest";
+import {LayerSwitcher} from "./LayerSwitcher";
+import {useLayerStore} from "../store/layerStore";
+import {saveUserSetting} from "@/services/settingsApi";
 import "@/i18n/i18n";
 
 /**
@@ -37,7 +37,7 @@ function renderSwitcher() {
         <LayerSwitcher
             mapName={`test-map-${mapSeq}`}
             layerIds={["osm", "opentopo", "technical_quadrants"]}
-            defaultVisibility={{ osm: true, technical_quadrants: false }}
+            defaultVisibility={{osm: true, technical_quadrants: false}}
         />,
     );
 }
@@ -47,7 +47,7 @@ afterEach(() => cleanup());
 describe("LayerSwitcher", () => {
     it("je sbalený – viditelná jen ikonka, panel není ve DOM", () => {
         renderSwitcher();
-        const toggle = screen.getByRole("button", { name: "Vrstvy mapy" });
+        const toggle = screen.getByRole("button", {name: "Vrstvy mapy"});
         expect(toggle).toHaveAttribute("aria-expanded", "false");
         expect(screen.queryByRole("checkbox")).toBeNull();
         expect(screen.queryByRole("radio")).toBeNull();
@@ -56,33 +56,33 @@ describe("LayerSwitcher", () => {
     it("rozbalí se při hoveru a sbalí po odjetí myší", async () => {
         const user = userEvent.setup();
         renderSwitcher();
-        const toggle = screen.getByRole("button", { name: "Vrstvy mapy" });
+        const toggle = screen.getByRole("button", {name: "Vrstvy mapy"});
 
         await user.hover(toggle);
         expect(toggle).toHaveAttribute("aria-expanded", "true");
         // skupiny i s radio (Base Maps) i checkbox (General) vrstvami
-        expect(screen.getByRole("button", { name: "Base Maps" })).toBeInTheDocument();
-        expect(screen.getByRole("button", { name: "General" })).toBeInTheDocument();
+        expect(screen.getByRole("button", {name: "Base Maps"})).toBeInTheDocument();
+        expect(screen.getByRole("button", {name: "General"})).toBeInTheDocument();
 
         await user.unhover(toggle);
         expect(toggle).toHaveAttribute("aria-expanded", "false");
-        expect(screen.queryByRole("button", { name: "Base Maps" })).toBeNull();
+        expect(screen.queryByRole("button", {name: "Base Maps"})).toBeNull();
     });
 
     it("rozbalí se i kliknutím na ikonku (cesta pro dotyková zařízení)", async () => {
         const user = userEvent.setup();
         renderSwitcher();
-        await user.click(screen.getByRole("button", { name: "Vrstvy mapy" }));
-        expect(screen.getByRole("button", { name: "Base Maps" })).toBeInTheDocument();
+        await user.click(screen.getByRole("button", {name: "Vrstvy mapy"}));
+        expect(screen.getByRole("button", {name: "Base Maps"})).toBeInTheDocument();
     });
 
     it("zaškrtnutí vrstvy zvýrazní skupinu a uloží viditelnost", async () => {
         const user = userEvent.setup();
         renderSwitcher();
-        await user.click(screen.getByRole("button", { name: "Vrstvy mapy" }));
+        await user.click(screen.getByRole("button", {name: "Vrstvy mapy"}));
 
         // skupiny jsou defaultně sbalené – nejprve rozbalit General
-        const generalHeader = screen.getByRole("button", { name: "General" });
+        const generalHeader = screen.getByRole("button", {name: "General"});
         expect(generalHeader).not.toHaveClass("layer-switcher__group-header--selected");
 
         // Prvky uvnitř panelu klikáme přes fireEvent: user-event při přesunu
@@ -91,7 +91,7 @@ describe("LayerSwitcher", () => {
         // V reálném prohlížeči se na společném předkovi mouseleave nespustí.
         fireEvent.click(generalHeader);
 
-        const grid = screen.getByRole("checkbox", { name: "Grid (quadrants)" });
+        const grid = screen.getByRole("checkbox", {name: "Grid (quadrants)"});
         fireEvent.click(grid);
 
         expect(grid).toBeChecked();
@@ -105,12 +105,12 @@ describe("LayerSwitcher", () => {
     it("radio skupina Base Maps přepíná právě jednu vrstvu", async () => {
         const user = userEvent.setup();
         renderSwitcher();
-        await user.click(screen.getByRole("button", { name: "Vrstvy mapy" }));
+        await user.click(screen.getByRole("button", {name: "Vrstvy mapy"}));
 
         // rozbalit Base Maps a přepnout podklad (fireEvent – viz komentář výše)
-        fireEvent.click(screen.getByRole("button", { name: "Base Maps" }));
-        const osm = screen.getByRole("radio", { name: "OpenStreetMap" });
-        const opentopo = screen.getByRole("radio", { name: "OpenTopoMap" });
+        fireEvent.click(screen.getByRole("button", {name: "Base Maps"}));
+        const osm = screen.getByRole("radio", {name: "OpenStreetMap"});
+        const opentopo = screen.getByRole("radio", {name: "OpenTopoMap"});
         fireEvent.click(opentopo);
 
         expect(opentopo).toBeChecked();
@@ -128,20 +128,20 @@ describe("LayerSwitcher", () => {
             />,
         );
 
-        await user.click(screen.getByRole("button", { name: "Vrstvy mapy" }));
-        fireEvent.click(screen.getByRole("button", { name: "Projects" }));
+        await user.click(screen.getByRole("button", {name: "Vrstvy mapy"}));
+        fireEvent.click(screen.getByRole("button", {name: "Projects"}));
 
         // před registrací vrstvy ve store je vidět jen fallback „Projekt“ + ID
-        expect(screen.getByRole("checkbox", { name: "Projekt 22" })).toBeInTheDocument();
+        expect(screen.getByRole("checkbox", {name: "Projekt 22"})).toBeInTheDocument();
 
         // useProjectLayers zaregistruje vrstvu se skutečným titulkem (název +
         // počet záznamů) až asynchronně v effectu – bez změny layerIds se musí
         // titulek v panelu aktualizovat (regrese: dříve zůstalo „Project 22“)
-        useLayerStore.getState().addLayer(mapName, "project_22", { title: "Testovací projekt (7)" });
+        useLayerStore.getState().addLayer(mapName, "project_22", {title: "Testovací projekt (7)"});
 
         await waitFor(() =>
-            expect(screen.getByRole("checkbox", { name: "Projekt Testovací projekt (7)" })).toBeInTheDocument(),
+            expect(screen.getByRole("checkbox", {name: "Projekt Testovací projekt (7)"})).toBeInTheDocument(),
         );
-        expect(screen.queryByRole("checkbox", { name: "Projekt 22" })).toBeNull();
+        expect(screen.queryByRole("checkbox", {name: "Projekt 22"})).toBeNull();
     });
 });

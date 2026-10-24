@@ -29,7 +29,7 @@ export function parseInstanceMessages(raw: unknown): InstanceMessage[] {
         if (typeof item !== "object" || item === null) {
             continue;
         }
-        const {type, text} = item as {type?: unknown; text?: unknown};
+        const {type, text} = item as { type?: unknown; text?: unknown };
         if (typeof type === "string" && VALID_TYPES.has(type) && typeof text === "string" && text !== "") {
             messages.push({type: type as InstanceMessageType, text});
         }

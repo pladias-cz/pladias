@@ -11,5 +11,6 @@ export interface ApiResult<T = unknown> {
     data?: T;
     message?: string;
     error?: string;
+
     [key: string]: unknown;
 }

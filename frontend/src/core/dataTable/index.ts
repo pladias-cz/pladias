@@ -2,8 +2,8 @@
  * Enterprise DataTable - Main entry point
  */
 
-export { DataTable } from './DataTable';
-export type { default as DefaultDataTable } from './DataTable';
+export {DataTable} from './DataTable';
+export type {default as DefaultDataTable} from './DataTable';
 
 // Type exports
 export type {

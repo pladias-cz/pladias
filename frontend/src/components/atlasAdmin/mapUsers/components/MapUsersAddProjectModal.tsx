@@ -17,14 +17,14 @@ interface MapUsersAddProjectModalProps {
 }
 
 export function MapUsersAddProjectModal({
-    show,
-    projects,
-    projectsLoading,
-    selectedProjectId,
-    onProjectSelect,
-    onAdd,
-    onClose,
-}: MapUsersAddProjectModalProps) {
+                                            show,
+                                            projects,
+                                            projectsLoading,
+                                            selectedProjectId,
+                                            onProjectSelect,
+                                            onAdd,
+                                            onClose,
+                                        }: MapUsersAddProjectModalProps) {
     const {t} = useTranslation();
 
     return (
@@ -59,9 +59,9 @@ export function MapUsersAddProjectModal({
                 <Button variant="secondary" onClick={onClose}>
                     {t("common.cancel")}
                 </Button>
-                <Button 
-                    variant="primary" 
-                    onClick={onAdd} 
+                <Button
+                    variant="primary"
+                    onClick={onAdd}
                     disabled={!selectedProjectId || projectsLoading}
                 >
                     {t("user.usersAdministration.add")}

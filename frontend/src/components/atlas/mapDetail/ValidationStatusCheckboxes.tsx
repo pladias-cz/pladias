@@ -1,16 +1,16 @@
-import { useState } from 'react';
-import { ValidationStatusId, ValidationStatusMeta } from '@/core/validationStatus';
-import type { RecordPladias } from '@/models';
-import { useRecordQuickUpdates } from './hooks/useRecordQuickUpdates';
-import { useUser } from '@/context/UserContext';
+import {useState} from 'react';
+import {ValidationStatusId, ValidationStatusMeta} from '@/core/validationStatus';
+import type {RecordPladias} from '@/models';
+import {useRecordQuickUpdates} from './hooks/useRecordQuickUpdates';
+import {useUser} from '@/context/UserContext';
 
 interface ValidationStatusCheckboxesProps {
     record: RecordPladias;
     onRecordUpdated?: (record: RecordPladias) => void;
 }
 
-export function ValidationStatusCheckboxes({ record, onRecordUpdated }: ValidationStatusCheckboxesProps) {
-    const { updateValidationStatus } = useRecordQuickUpdates();
+export function ValidationStatusCheckboxes({record, onRecordUpdated}: ValidationStatusCheckboxesProps) {
+    const {updateValidationStatus} = useRecordQuickUpdates();
     const user = useUser();
     const [optimisticStatus, setOptimisticStatus] = useState<ValidationStatusId | null>(null);
 
@@ -29,14 +29,14 @@ export function ValidationStatusCheckboxes({ record, onRecordUpdated }: Validati
         if (!record.canEditValidationFields) {
             return;
         }
-        
+
         // Always allow clicking a status - even if it's already selected
         // This allows users to confirm/reapply the same status
         setOptimisticStatus(newStatus);
-        
+
         try {
             const result = await updateValidationStatus(
-                record, 
+                record,
                 newStatus,
                 (updatedRecord) => {
                     // Success callback - notify parent of the update

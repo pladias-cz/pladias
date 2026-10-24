@@ -1,17 +1,17 @@
-import { useState } from 'react';
+import {useState} from 'react';
 import {useTranslation} from 'react-i18next';
-import { OriginalityStatusId, OriginalityStatusMeta } from '@/core/originalityStatus';
-import type { RecordPladias } from '@/models';
-import { useRecordQuickUpdates } from './hooks/useRecordQuickUpdates';
+import {OriginalityStatusId, OriginalityStatusMeta} from '@/core/originalityStatus';
+import type {RecordPladias} from '@/models';
+import {useRecordQuickUpdates} from './hooks/useRecordQuickUpdates';
 
 interface OriginalityStatusIconsProps {
     record: RecordPladias;
     onRecordUpdated?: (record: RecordPladias) => void;
 }
 
-export function OriginalityStatusIcons({ record, onRecordUpdated }: OriginalityStatusIconsProps) {
+export function OriginalityStatusIcons({record, onRecordUpdated}: OriginalityStatusIconsProps) {
     const {t} = useTranslation();
-    const { updateOriginalityStatus } = useRecordQuickUpdates();
+    const {updateOriginalityStatus} = useRecordQuickUpdates();
     const [optimisticStatus, setOptimisticStatus] = useState<OriginalityStatusId | null>(null);
 
     const handleStatusChange = async (newStatus: OriginalityStatusId) => {
@@ -21,7 +21,7 @@ export function OriginalityStatusIcons({ record, onRecordUpdated }: OriginalityS
 
             try {
                 const result = await updateOriginalityStatus(
-                    record, 
+                    record,
                     newStatus,
                     (updatedRecord) => {
                         // Propagate updated record with new timestamp to parent

@@ -14,20 +14,20 @@ interface Props {
     loadOptions: () => Promise<MultiValueOption[]>;
     addKey: string;      // API key for adding (e.g., "ADDHERBARIUM")
     deleteKey: string;   // API key for deleting (e.g., "DELETEHERBARIUM")
-    onUpdated?: (data: {updatedValue: MultiValueOption[], newTimestamp: number}) => void;
+    onUpdated?: (data: { updatedValue: MultiValueOption[], newTimestamp: number }) => void;
     lastEditTimestampNum?: number;
 }
 
 export default function MultiSelectEdit({
-    label,
-    recordId,
-    currentValue,
-    loadOptions,
-    addKey,
-    deleteKey,
-    onUpdated,
-    lastEditTimestampNum
-}: Props) {
+                                            label,
+                                            recordId,
+                                            currentValue,
+                                            loadOptions,
+                                            addKey,
+                                            deleteKey,
+                                            onUpdated,
+                                            lastEditTimestampNum
+                                        }: Props) {
     const {t} = useTranslation();
     const {confirm, dialog} = useConfirm();
     const [options, setOptions] = useState<MultiValueOption[]>([]);

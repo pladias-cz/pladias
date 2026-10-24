@@ -15,11 +15,11 @@ interface ParentMapAutocompleteProps {
 }
 
 export function ParentMapAutocomplete({
-    taxonId,
-    onChange,
-    updatingTaxonId,
-    placeholder
-}: ParentMapAutocompleteProps) {
+                                          taxonId,
+                                          onChange,
+                                          updatingTaxonId,
+                                          placeholder
+                                      }: ParentMapAutocompleteProps) {
     const {t} = useTranslation();
     const [query, setQuery] = useState('');
     // Inkrement po výběru položky – změní klíč dotazu, čímž se zahodí výsledky

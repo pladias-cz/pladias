@@ -1,9 +1,9 @@
-import { Button, Card, Form, Spinner } from "react-bootstrap";
-import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { type Taxon } from "@/models/Taxon";
-import { type Option } from "@/models/Option";
-import { useTranslation } from "react-i18next";
+import {Button, Card, Form, Spinner} from "react-bootstrap";
+import {useMemo, useState} from "react";
+import {useNavigate} from "react-router-dom";
+import {type Taxon} from "@/models/Taxon";
+import {type Option} from "@/models/Option";
+import {useTranslation} from "react-i18next";
 import {createTaxon, getTaxonRanks} from "@/services/taxonApi";
 import {useCatalogQuery} from '@/query/useCatalogQuery';
 import {notifyApiError} from "@/stores/notificationStore";
@@ -11,8 +11,9 @@ import {notifyApiError} from "@/stores/notificationStore";
 interface Props {
     taxon: Taxon;
 }
-export default function NewTaxonCard({ taxon }: Props) {
-    const { t } = useTranslation();
+
+export default function NewTaxonCard({taxon}: Props) {
+    const {t} = useTranslation();
     const navigate = useNavigate();
 
     const [nameLat, setNameLat] = useState("");
@@ -58,7 +59,7 @@ export default function NewTaxonCard({ taxon }: Props) {
     return (
         <Card>
             <Card.Header>
-                {t("taxon.create.title", { name: taxon.nameLat })}
+                {t("taxon.create.title", {name: taxon.nameLat})}
             </Card.Header>
 
             <Card.Body>

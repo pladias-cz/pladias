@@ -1,11 +1,11 @@
 /**
  * Occurrence Layers
- * 
+ *
  * Additional taxon occurrence data layers beyond preprint.
  * Includes grid cells, temporal distributions, and other occurrence visualizations.
  */
 
-import type { LayerDefinition } from '../../types';
+import type {LayerDefinition} from '../../types';
 
 export const OCCURRENCE_LAYERS: LayerDefinition[] = [
     // Grid cells by time period
@@ -22,7 +22,7 @@ export const OCCURRENCE_LAYERS: LayerDefinition[] = [
                 layers: 'validation:taxon_per_quadrant',
                 transparent: true,
                 viewParams: ['TAXON_ID:{taxonId}'],
-               //cqlFilter: 'year BETWEEN {yearFrom} AND {yearTo}',
+                //cqlFilter: 'year BETWEEN {yearFrom} AND {yearTo}',
             }
         },
         defaultVisible: false,

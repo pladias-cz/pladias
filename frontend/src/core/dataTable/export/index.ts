@@ -7,4 +7,4 @@ export {ExcelExportButtons, default as DefaultExcelExportButtons} from './ExcelE
 export {useExcelExport, XlsxAcceptHeader} from './useExcelExport';
 export type {UseExcelExportOptions} from './useExcelExport';
 
-export {downloadBlob, readErrorMessage, resolveFilename} from './downloadFile';
+export {downloadBlob, readErrorMessage} from './downloadFile';

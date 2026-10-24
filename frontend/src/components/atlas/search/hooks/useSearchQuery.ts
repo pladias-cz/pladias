@@ -6,6 +6,7 @@
 import {useCallback, useState} from "react";
 import {useTranslation} from "react-i18next";
 import type {RecordPladias} from "@/models";
+import {downloadBlob} from "@/core/dataTable/export";
 import {ApiError, apiErrorMessage} from "@/services/apiClient";
 import {exportSearchExcel, searchRecords} from "@/services/searchApi";
 import {
@@ -32,17 +33,6 @@ export function useSearchQuery() {
     const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
     const [sortDescending, setSortDescending] = useState<boolean>(false);
 
-    const downloadFile = useCallback((blob: Blob, fileName: string) => {
-        const url = window.URL.createObjectURL(blob);
-        const anchor = document.createElement("a");
-        anchor.href = url;
-        anchor.download = fileName;
-        document.body.appendChild(anchor);
-        anchor.click();
-        anchor.remove();
-        window.URL.revokeObjectURL(url);
-    }, []);
-
     const fetchSearchPage = useCallback(async (
         page: number,
         getCount: boolean,
@@ -61,7 +51,7 @@ export function useSearchQuery() {
             if (exportType === EXCEL_EXPORT_TYPE) {
                 const file = await exportSearchExcel(EXCEL_EXPORT_PAGE_SIZE, formData);
 
-                downloadFile(file.blob, file.filename);
+                downloadBlob(file.blob, file.filename);
 
                 if (file.totalRecords != null) {
                     if (file.recordsExported >= file.totalRecords) {
@@ -107,7 +97,7 @@ export function useSearchQuery() {
         } finally {
             setIsLoading(false);
         }
-    }, [downloadFile, sortBy, sortOrder, t, totalCount]);
+    }, [sortBy, sortOrder, t, totalCount]);
 
     /** Submit formuláře – první stránka s přepočtem total. */
     const search = useCallback(async (payloadEntries: SearchPayloadEntries) => {
@@ -141,7 +131,10 @@ export function useSearchQuery() {
             return;
         }
 
-        const loaded = await fetchSearchPage(1, true, lastPayloadEntries, {sortBy: resolvedSortBy, sortOrder: nextSortOrder});
+        const loaded = await fetchSearchPage(1, true, lastPayloadEntries, {
+            sortBy: resolvedSortBy,
+            sortOrder: nextSortOrder
+        });
         if (loaded) {
             setCurrentPage(1);
         }

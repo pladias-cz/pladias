@@ -13,16 +13,16 @@ export interface UseTableDataOptions<T> {
     endpoint: string;
     page: number;
     pageSize: number;
-    sorting: Array<{id: string; desc: boolean}>;
-    columnFilters: Array<{id: string; value: string}>;
+    sorting: Array<{ id: string; desc: boolean }>;
+    columnFilters: Array<{ id: string; value: string }>;
     additionalParams?: Record<string, string>;
     method?: HttpMethod;
     fetchData?: CustomDataFetcher<T>;
     transformRequest?: (data: {
         page: number;
         pageSize: number;
-        sorting: Array<{id: string; desc: boolean}>;
-        columnFilters: Array<{id: string; value: string}>;
+        sorting: Array<{ id: string; desc: boolean }>;
+        columnFilters: Array<{ id: string; value: string }>;
         additionalParams: Record<string, string>;
     }) => Record<string, unknown>;
 }
@@ -82,7 +82,7 @@ export function useTableData<T>(options: UseTableDataOptions<T>) {
      * Fetch data from server – request params identical to the pre-migration
      * manual fetch; the AbortSignal is now owned by the query.
      */
-    const queryFn = useCallback(async ({signal}: {signal: AbortSignal}): Promise<TableDataEnvelope<T>> => {
+    const queryFn = useCallback(async ({signal}: { signal: AbortSignal }): Promise<TableDataEnvelope<T>> => {
         if (customFetcher) {
             // Use custom fetcher function if provided
             const result = await customFetcher({

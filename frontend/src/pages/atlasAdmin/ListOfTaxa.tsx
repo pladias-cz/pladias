@@ -17,7 +17,7 @@ export default function ListOfTaxa() {
                     {t("atlas.admin.pages.listOfTaxa.downloadPublicationCsv")}
                 </a>
             </div>
-            <TaxaList />
+            <TaxaList/>
         </Row>
     );
 }

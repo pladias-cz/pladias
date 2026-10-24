@@ -42,6 +42,7 @@ export interface LogEntry {
 export interface LogTransport {
     /** Identifikace transportu (ladění). */
     name: string;
+
     /** Zpracuje záznam; vlastní výjimku logger polyká. */
     send(entry: LogEntry): void;
 }
@@ -92,7 +93,7 @@ function messageOf(err: unknown): string {
 /** HTTP status duck typingem (`ApiError.status`) – bez importu apiClientu. */
 function statusOf(err: unknown): number | undefined {
     if (typeof err === "object" && err !== null) {
-        const status = (err as {status?: unknown}).status;
+        const status = (err as { status?: unknown }).status;
         if (typeof status === "number") {
             return status;
         }

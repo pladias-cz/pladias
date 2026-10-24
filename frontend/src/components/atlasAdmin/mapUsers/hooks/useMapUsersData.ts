@@ -37,17 +37,17 @@ export function useMapUsersData(options: UseMapUsersDataOptions = {}) {
      * Custom fetcher: fetch users + rights in one go
      */
     const fetchUsersWithRights = useCallback(async ({
-        page,
-        pageSize,
-        sorting,
-        columnFilters,
-        additionalParams = {},
-        signal
-    }: {
+                                                        page,
+                                                        pageSize,
+                                                        sorting,
+                                                        columnFilters,
+                                                        additionalParams = {},
+                                                        signal
+                                                    }: {
         page: number;
         pageSize: number;
-        sorting: Array<{id: string; desc: boolean}>;
-        columnFilters: Array<{id: string; value: string}>;
+        sorting: Array<{ id: string; desc: boolean }>;
+        columnFilters: Array<{ id: string; value: string }>;
         additionalParams?: Record<string, string>;
         signal?: AbortSignal;
     }) => {
@@ -90,7 +90,7 @@ export function useMapUsersData(options: UseMapUsersDataOptions = {}) {
         const userIds = users.map(u => u.id);
 
         const rightsPayload = await apiGet<UserRightsApiResponse>("/api/react/atlasadmin/userrights", {
-            params: { userIds: userIds.join(",") },
+            params: {userIds: userIds.join(",")},
             signal,
         });
 

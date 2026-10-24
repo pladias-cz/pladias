@@ -8,7 +8,7 @@ interface ImportControlsDataCellProps {
 
 export function ImportControlsDataCell({row}: ImportControlsDataCellProps) {
     const {t} = useTranslation();
-    
+
     const badges = [];
     if (row.warningsCount > 0) {
         badges.push(
@@ -31,7 +31,7 @@ export function ImportControlsDataCell({row}: ImportControlsDataCellProps) {
             </Badge>
         );
     }
-    
+
     return (
         <div className="d-flex align-items-center gap-2">
             <span className="fw-bold">{row.recordsCount}</span>

@@ -31,7 +31,7 @@ export async function loadInstanceMessages(options?: ApiOptions): Promise<Instan
 export async function loadProjectName(lang: string, options?: ApiOptions): Promise<string> {
     // Background fetch s fallbackem (menu zobrazí prázdný brand) – centrální
     // notifikace síťové chyby by byla jen šum.
-    const payload = await apiGet<ApiResult<{value?: string}>>("/api/react/playmessage/project_name", {
+    const payload = await apiGet<ApiResult<{ value?: string }>>("/api/react/playmessage/project_name", {
         ...options,
         params: {lang},
         silent: true,

@@ -6,9 +6,9 @@
  * a LayerSwitcher; maps with fixed visibility render Layer directly.
  */
 
-import { Layer } from './Layer';
-import { useLayerState } from '../store/layerStore';
-import type { LayerParams } from '../types';
+import {Layer} from './Layer';
+import {useLayerState} from '../store/layerStore';
+import type {LayerParams} from '../types';
 
 export interface MapLayerProps {
     layerId: string;
@@ -17,7 +17,7 @@ export interface MapLayerProps {
     onSquareDoubleClick?: (squareId: string) => void;
 }
 
-export function MapLayer({ layerId, mapName, params, onSquareDoubleClick }: MapLayerProps) {
+export function MapLayer({layerId, mapName, params, onSquareDoubleClick}: MapLayerProps) {
     const layerState = useLayerState(mapName, layerId);
     const visible = layerState?.visible ?? false;
 

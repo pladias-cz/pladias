@@ -1,4 +1,4 @@
-import type { RecordPladias } from '@/models';
+import type {RecordPladias} from '@/models';
 import {useRecordPermissions} from '@/components/atlas/record';
 import {useState} from 'react';
 import {useRecordQuickUpdates} from "@/components/atlas/mapDetail/hooks/useRecordQuickUpdates";
@@ -17,9 +17,9 @@ export function HerbariumQualityCheckbox({record, onRecordUpdated}: HerbariumQua
         const newValue = e.target.checked;
         // Optimistic update
         setIsChecked(newValue);
-        
+
         const result = await updateHerbariumQuality(
-            {...record, herbariumQuality: newValue}, 
+            {...record, herbariumQuality: newValue},
             newValue,
             (updatedRecord) => {
                 // Propagate updated record with new timestamp to parent
@@ -30,7 +30,7 @@ export function HerbariumQualityCheckbox({record, onRecordUpdated}: HerbariumQua
                 setIsChecked(!newValue);
             }
         );
-        
+
         // Also revert if failed
         if (!result.success) {
             setIsChecked(!newValue);

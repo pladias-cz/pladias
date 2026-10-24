@@ -10,7 +10,12 @@ interface TraitsSettingsProps {
     loading: boolean;
 }
 
-export default function TraitsSettings({userSettings, handleInputChange, handleSaveSetting, loading}: TraitsSettingsProps) {
+export default function TraitsSettings({
+                                           userSettings,
+                                           handleInputChange,
+                                           handleSaveSetting,
+                                           loading
+                                       }: TraitsSettingsProps) {
     const {t} = useTranslation();
 
     return (

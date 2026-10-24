@@ -11,11 +11,11 @@ interface MappedCellProps {
 }
 
 export function MappedCell({
-    row,
-    updatingTaxonId,
-    onIsMappedChange,
-    onParentMapChange
-}: MappedCellProps) {
+                               row,
+                               updatingTaxonId,
+                               onIsMappedChange,
+                               onParentMapChange
+                           }: MappedCellProps) {
     const {t} = useTranslation();
 
     const handleParentMapSelect = (selected: TaxonOption | null) => {

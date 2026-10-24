@@ -118,7 +118,8 @@ afterEach(() => {
 describe("DataTable", () => {
     it("vykreslí hlavičky, buňky všech typů sloupců a požádá fetcher o první stránku", async () => {
         const fetcher = vi.fn(async () => ({data: rows, totalCount: 2}));
-        render(withQueryClient(<DataTable endpoint="/test" columns={makeColumns(vi.fn(async () => undefined))} fetchData={fetcher}/>));
+        render(withQueryClient(<DataTable endpoint="/test" columns={makeColumns(vi.fn(async () => undefined))}
+                                          fetchData={fetcher}/>));
 
         expect(await screen.findByText("Vřesovec pleterný")).toBeInTheDocument();
         expect(fetcher).toHaveBeenCalledWith(expect.objectContaining({
@@ -165,11 +166,12 @@ describe("DataTable", () => {
     });
 
     it("zobrazí spinner během načítání a prázdný stav, když fetcher nevrátí data", async () => {
-        let resolveFetch!: (value: {data: TestRow[]; totalCount: number}) => void;
-        const fetcher = vi.fn(() => new Promise<{data: TestRow[]; totalCount: number}>((resolve) => {
+        let resolveFetch!: (value: { data: TestRow[]; totalCount: number }) => void;
+        const fetcher = vi.fn(() => new Promise<{ data: TestRow[]; totalCount: number }>((resolve) => {
             resolveFetch = resolve;
         }));
-        render(withQueryClient(<DataTable endpoint="/test" columns={makeColumns(vi.fn(async () => undefined))} fetchData={fetcher}/>));
+        render(withQueryClient(<DataTable endpoint="/test" columns={makeColumns(vi.fn(async () => undefined))}
+                                          fetchData={fetcher}/>));
 
         expect(screen.getByRole("status")).toBeInTheDocument();
 
@@ -181,7 +183,8 @@ describe("DataTable", () => {
 
     it("odešle textový filtr, resetuje stránku na 1 a nabídne vymazání filtrů", async () => {
         const fetcher = vi.fn(async () => ({data: rows, totalCount: 45}));
-        render(withQueryClient(<DataTable endpoint="/test" columns={makeColumns(vi.fn(async () => undefined))} fetchData={fetcher}/>));
+        render(withQueryClient(<DataTable endpoint="/test" columns={makeColumns(vi.fn(async () => undefined))}
+                                          fetchData={fetcher}/>));
 
         expect(await screen.findByText("Vřesovec pleterný")).toBeInTheDocument();
         expect(screen.queryByText("Vymazat filtry")).not.toBeInTheDocument();
@@ -210,7 +213,8 @@ describe("DataTable", () => {
 
     it("boolean filtr i textový sloupec s filterOptions se renderují jako select", async () => {
         const fetcher = vi.fn(async () => ({data: rows, totalCount: 2}));
-        render(withQueryClient(<DataTable endpoint="/test" columns={makeColumns(vi.fn(async () => undefined))} fetchData={fetcher}/>));
+        render(withQueryClient(<DataTable endpoint="/test" columns={makeColumns(vi.fn(async () => undefined))}
+                                          fetchData={fetcher}/>));
 
         expect(await screen.findByText("Vřesovec pleterný")).toBeInTheDocument();
 
@@ -235,7 +239,8 @@ describe("DataTable", () => {
 
     it("řazení přepíná vzestupně → sestupně → zrušeno a vždy refetchne", async () => {
         const fetcher = vi.fn(async () => ({data: rows, totalCount: 2}));
-        render(withQueryClient(<DataTable endpoint="/test" columns={makeColumns(vi.fn(async () => undefined))} fetchData={fetcher}/>));
+        render(withQueryClient(<DataTable endpoint="/test" columns={makeColumns(vi.fn(async () => undefined))}
+                                          fetchData={fetcher}/>));
 
         expect(await screen.findByText("Vřesovec pleterný")).toBeInTheDocument();
 
@@ -257,7 +262,8 @@ describe("DataTable", () => {
 
     it("paginace mění stránku i velikost stránky a přepočítává rozsah řádků", async () => {
         const fetcher = vi.fn(async () => ({data: rows, totalCount: 45}));
-        render(withQueryClient(<DataTable endpoint="/test" columns={makeColumns(vi.fn(async () => undefined))} fetchData={fetcher}/>));
+        render(withQueryClient(<DataTable endpoint="/test" columns={makeColumns(vi.fn(async () => undefined))}
+                                          fetchData={fetcher}/>));
 
         expect(await screen.findByText(/Zobrazeno od 1 do 20 z 45/)).toBeInTheDocument();
 

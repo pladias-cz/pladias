@@ -1,11 +1,11 @@
 /**
  * Base Layers
- * 
+ *
  * Foundational base map layers for the atlas mapping feature.
  * These are the underlying map tiles that provide geographic context.
  */
 
-import type { LayerDefinition } from '../../types';
+import type {LayerDefinition} from '../../types';
 
 export const BASE_LAYERS: LayerDefinition[] = [
     {

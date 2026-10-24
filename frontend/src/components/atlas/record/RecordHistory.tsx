@@ -1,7 +1,7 @@
 import {Row, Col, Card} from "react-bootstrap";
 import {useTranslation} from "react-i18next";
 import {DataTable, type DataTableColumnDef} from "@/core/dataTable";
-import type { RecordHistoryEntry } from '@/models/RecordHistory';
+import type {RecordHistoryEntry} from '@/models/RecordHistory';
 
 interface RecordHistoryProps {
     recordId: number;

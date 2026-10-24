@@ -204,7 +204,8 @@ export default function ExportTraitList() {
 
                 return (
                     <div className="export-tree__node export-tree__node--group" key={group.id}>
-                        <div className={`export-tree__row${isHighlighted(groupState) ? " export-tree__row--selected" : ""}`}>
+                        <div
+                            className={`export-tree__row${isHighlighted(groupState) ? " export-tree__row--selected" : ""}`}>
                             <button
                                 type="button"
                                 className="export-tree__toggle"
@@ -242,7 +243,8 @@ export default function ExportTraitList() {
 
                                     return (
                                         <div className="export-tree__node" key={feature.id}>
-                                            <div className={`export-tree__row${isHighlighted(featureState) ? " export-tree__row--selected" : ""}`}>
+                                            <div
+                                                className={`export-tree__row${isHighlighted(featureState) ? " export-tree__row--selected" : ""}`}>
                                                 <button
                                                     type="button"
                                                     className="export-tree__toggle"
@@ -252,7 +254,8 @@ export default function ExportTraitList() {
                                                         : t("trait.export.expand", {name: feature.name})}
                                                     onClick={() => toggleFeatureExpanded(feature)}
                                                 >
-                                                    <i className={`bi bi-chevron-${featureExpanded ? "down" : "right"}`} aria-hidden="true"/>
+                                                    <i className={`bi bi-chevron-${featureExpanded ? "down" : "right"}`}
+                                                       aria-hidden="true"/>
                                                 </button>
                                                 <input
                                                     type="checkbox"
@@ -265,18 +268,22 @@ export default function ExportTraitList() {
                                                     }}
                                                     onChange={() => toggleFeatureCheck(feature)}
                                                 />
-                                                <label className="export-tree__label" htmlFor={`export-tree-feature-${feature.id}`}>
+                                                <label className="export-tree__label"
+                                                       htmlFor={`export-tree-feature-${feature.id}`}>
                                                     {feature.name}
                                                 </label>
-                                                {featureLoading && <Spinner animation="border" size="sm" className="export-tree__spinner"/>}
+                                                {featureLoading && <Spinner animation="border" size="sm"
+                                                                            className="export-tree__spinner"/>}
                                             </div>
 
                                             {featureExpanded && traitsByFeature[feature.id] && (
                                                 <div className="export-tree__children">
                                                     {traitsByFeature[feature.id].map(trait => (
                                                         <div className="export-tree__node" key={trait.id}>
-                                                            <label className={`export-tree__row${selectedTraitIds.has(trait.id) ? " export-tree__row--selected" : ""}`}>
-                                                                <span className="export-tree__spacer" aria-hidden="true"/>
+                                                            <label
+                                                                className={`export-tree__row${selectedTraitIds.has(trait.id) ? " export-tree__row--selected" : ""}`}>
+                                                                <span className="export-tree__spacer"
+                                                                      aria-hidden="true"/>
                                                                 <input
                                                                     type="checkbox"
                                                                     className="form-check-input"
@@ -285,7 +292,9 @@ export default function ExportTraitList() {
                                                                     onChange={() => toggleTrait(trait.id)}
                                                                 />
                                                                 <span className="export-tree__label">
-                                                                    datová řada založená na zdroji <RichTextMessage html={trait.sourceHtml}/><small className="text-muted">({new Date(trait.createTimestamp).toLocaleDateString("cs-CZ")})</small>
+                                                                    datová řada založená na zdroji <RichTextMessage
+                                                                    html={trait.sourceHtml}/><small
+                                                                    className="text-muted">({new Date(trait.createTimestamp).toLocaleDateString("cs-CZ")})</small>
                                                                 </span>
                                                             </label>
                                                         </div>

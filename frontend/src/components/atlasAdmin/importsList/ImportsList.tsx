@@ -1,6 +1,6 @@
 /**
  * ImportsList - Import Administration Component
- * 
+ *
  * Uses the enterprise DataTable component with custom data fetching
  * to efficiently load imports with pagination, sorting, and filtering.
  */
@@ -35,20 +35,20 @@ export default function ImportsList() {
     const showFlash = useCallback((type: 'success' | 'danger', message: string) => {
         push({type, message});
     }, [push]);
-    
+
     // Data fetching hook
     const {fetchImports} = useImportsData({
         onSuccess: () => {
             // Optional: handle successful data fetch
         }
     });
-    
+
     // Actions hook
     const {
         deletingBatchId,
         handleDelete,
     } = useImportsActions(showFlash, t);
-    
+
     // Column definitions
     const columns = useMemo<DataTableColumnDef<ImportRecord>[]>(() => [
         createTextColumn<ImportRecord>('committerName', t("atlas.admin.importsList.committer"), {
@@ -66,31 +66,31 @@ export default function ImportsList() {
             enableFiltering: false,
         }),
         createActionColumn<ImportRecord>('data', t("atlas.admin.importsList.data"), (row) => (
-            <ImportsListDataCell row={row} />
+            <ImportsListDataCell row={row}/>
         ), {
             minWidth: '200px',
         }),
         createActionColumn<ImportRecord>('filename', t("atlas.admin.importsList.filename"), (row) => (
-            <ImportsListFilenameCell row={row} />
+            <ImportsListFilenameCell row={row}/>
         ), {
             minWidth: '200px',
         }),
         createActionColumn<ImportRecord>('download', '', (row) => (
-            <ImportsListDownloadCell row={row} />
+            <ImportsListDownloadCell row={row}/>
         ), {
             minWidth: '150px',
         }),
         createActionColumn<ImportRecord>('delete', '', (row) => (
-            <ImportsListDeleteCell 
-                row={row} 
-                onDelete={handleDelete} 
+            <ImportsListDeleteCell
+                row={row}
+                onDelete={handleDelete}
                 deletingBatchId={deletingBatchId}
             />
         ), {
             minWidth: '150px',
         }),
     ], [t, deletingBatchId, handleDelete]);
-    
+
     return (
         <div className="container-fluid">
             <DataTable<ImportRecord>

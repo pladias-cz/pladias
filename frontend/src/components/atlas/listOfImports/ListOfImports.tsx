@@ -1,6 +1,6 @@
 /**
  * ListOfImports - Imported Records Component
- * 
+ *
  * Uses the enterprise DataTable component with custom data fetching
  * to efficiently load imported records with pagination, sorting, and filtering.
  */
@@ -24,14 +24,14 @@ import type {ImportRecord} from './types';
 
 export default function ListOfImports() {
     const {t} = useTranslation();
-    
+
     // Data fetching hook
     const {fetchImports} = useImportsData({
         onSuccess: () => {
             // Optional: handle successful data fetch
         }
     });
-    
+
     // Column definitions
     const columns = useMemo<DataTableColumnDef<ImportRecord>[]>(() => [
         createTimestampColumn<ImportRecord>('importTimestamp', t("atlas.admin.importsList.importedAt"), {
@@ -41,7 +41,7 @@ export default function ListOfImports() {
             dateFormat: 'dd.MM.yyyy HH:mm',
         }),
         createActionColumn<ImportRecord>('filename', t("atlas.admin.importsList.filename"), (row) => (
-            <ImportsFilenameCell row={row} />
+            <ImportsFilenameCell row={row}/>
         ), {
             minWidth: '250px',
         }),
@@ -61,7 +61,7 @@ export default function ListOfImports() {
             minWidth: '80px',
         }),
     ], [t]);
-    
+
     return (
         <div className="container-fluid">
             <DataTable<ImportRecord>

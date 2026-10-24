@@ -1,14 +1,14 @@
 /**
  * Layer State Store (Zustand)
- * 
+ *
  * Centralized state management for layer visibility and parameters.
  * State is scoped by map name so multiple map instances can have
  * independent visibility for the same layer definition.
  */
 
-import { create } from 'zustand';
-import type { LayerState as ILayerState, LayerParams } from '../types';
-import { getLayerDefinition } from '../registry/layerRegistry';
+import {create} from 'zustand';
+import type {LayerState as ILayerState, LayerParams} from '../types';
+import {getLayerDefinition} from '../registry/layerRegistry';
 
 /**
  * Nested state: mapName → layerId → LayerState
@@ -46,21 +46,21 @@ export const useLayerStore = create<LayerStoreState>((set, get) => ({
     addLayer: (mapName, layerId, initialState = {}) => {
         set(state => {
             const mapLayers = state.layers[mapName] ?? {};
-            
+
             const definition = getLayerDefinition(layerId);
-            
+
             // Start with empty params or provided initialState.params
-            const baseParams: LayerParams = { ...(initialState.params ?? {}) };
+            const baseParams: LayerParams = {...(initialState.params ?? {})};
 
             // If mapContext has taxonId/year etc., merge them into initial params
             // This ensures layers are created with context values from the start
             const params: LayerParams = {
                 ...baseParams,
-                ...(state.mapContext.taxonId !== undefined && { taxonId: state.mapContext.taxonId }),
-                ...(state.mapContext.year !== undefined && { year: state.mapContext.year }),
-                ...(state.mapContext.yearFrom !== undefined && { yearFrom: state.mapContext.yearFrom }),
-                ...(state.mapContext.yearTo !== undefined && { yearTo: state.mapContext.yearTo }),
-                ...(state.mapContext.projectId !== undefined && { projectId: state.mapContext.projectId }),
+                ...(state.mapContext.taxonId !== undefined && {taxonId: state.mapContext.taxonId}),
+                ...(state.mapContext.year !== undefined && {year: state.mapContext.year}),
+                ...(state.mapContext.yearFrom !== undefined && {yearFrom: state.mapContext.yearFrom}),
+                ...(state.mapContext.yearTo !== undefined && {yearTo: state.mapContext.yearTo}),
+                ...(state.mapContext.projectId !== undefined && {projectId: state.mapContext.projectId}),
             };
 
             // If layer already exists, preserve its visibility state
@@ -81,7 +81,7 @@ export const useLayerStore = create<LayerStoreState>((set, get) => ({
                         ...state.layers,
                         [mapName]: {
                             ...mapLayers,
-                            [layerId]: { ...existing, ...layerState },
+                            [layerId]: {...existing, ...layerState},
                         },
                     },
                 };
@@ -104,8 +104,8 @@ export const useLayerStore = create<LayerStoreState>((set, get) => ({
         set(state => {
             const mapLayers = state.layers[mapName];
             if (!mapLayers) return state;
-            const { [layerId]: _, ...rest } = mapLayers;
-            return { layers: { ...state.layers, [mapName]: rest } };
+            const {[layerId]: _, ...rest} = mapLayers;
+            return {layers: {...state.layers, [mapName]: rest}};
         });
     },
 
@@ -118,7 +118,7 @@ export const useLayerStore = create<LayerStoreState>((set, get) => ({
                     ...state.layers,
                     [mapName]: {
                         ...state.layers[mapName],
-                        [layerId]: { ...layer, visible: !layer.visible },
+                        [layerId]: {...layer, visible: !layer.visible},
                     },
                 },
             };
@@ -134,7 +134,7 @@ export const useLayerStore = create<LayerStoreState>((set, get) => ({
                     ...state.layers,
                     [mapName]: {
                         ...state.layers[mapName],
-                        [layerId]: { ...layer, visible },
+                        [layerId]: {...layer, visible},
                     },
                 },
             };
@@ -150,7 +150,7 @@ export const useLayerStore = create<LayerStoreState>((set, get) => ({
                     ...state.layers,
                     [mapName]: {
                         ...state.layers[mapName],
-                        [layerId]: { ...layer, params },
+                        [layerId]: {...layer, params},
                     },
                 },
             };
@@ -166,7 +166,7 @@ export const useLayerStore = create<LayerStoreState>((set, get) => ({
                     ...state.layers,
                     [mapName]: {
                         ...state.layers[mapName],
-                        [layerId]: { ...layer, params: { ...layer.params, ...params } },
+                        [layerId]: {...layer, params: {...layer.params, ...params}},
                     },
                 },
             };
@@ -184,7 +184,7 @@ export const useLayerStore = create<LayerStoreState>((set, get) => ({
     getLayerState: (mapName, layerId) => get().layers[mapName]?.[layerId],
 
     setMapContext: (context) => {
-        set(state => ({ mapContext: { ...state.mapContext, ...context } }));
+        set(state => ({mapContext: {...state.mapContext, ...context}}));
     },
 }));
 

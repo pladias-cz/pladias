@@ -28,19 +28,19 @@ interface SearchResultsViewProps {
 }
 
 export function SearchResultsView({
-    records,
-    totalCount,
-    currentPage,
-    isLoading,
-    sortBy,
-    sortDescending,
-    sortOptions,
-    onPageChange,
-    onSortChange,
-    onSortDescendingChange,
-    onNewSearch,
-    children,
-}: SearchResultsViewProps) {
+                                      records,
+                                      totalCount,
+                                      currentPage,
+                                      isLoading,
+                                      sortBy,
+                                      sortDescending,
+                                      sortOptions,
+                                      onPageChange,
+                                      onSortChange,
+                                      onSortDescendingChange,
+                                      onNewSearch,
+                                      children,
+                                  }: SearchResultsViewProps) {
     const {t} = useTranslation();
 
     const totalPages = computeTotalPages(totalCount);

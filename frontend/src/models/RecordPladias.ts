@@ -1,12 +1,12 @@
 export interface RecordPladias {
     id: number;
     taxonOriginal: string;
-    
+
     // Taxon information
     taxonId: number | null;
     taxonNameLat: string | null;
     taxonNameHtml: string | null;
-    
+
     latitude: number | null;
     longitude: number | null;
     gpsPrecision: number | null;
@@ -42,13 +42,13 @@ export interface RecordPladias {
     locality: string | null;
     environment: string | null;
     detrev: string | null;
-    
+
     // Nonvascular-specific fields
     substrate: string | null;
     chemical: string | null;
     localityExtra: string | null;
     substrateCategoryText: string | null;
-    
+
     comment: string | null;
     remarkExcerption: string | null;
     remarkOther: string | null;
@@ -88,7 +88,7 @@ export interface RecordPladias {
     createTimestamp: string | null;
     // For editing - timestamp as number for conflict detection
     lastEditTimestampNum?: number;
-    
+
     // Edit permissions (backend: RecordEditPermissions – single source of truth)
     canEditCommonFields: boolean;
     canEditValidationFields: boolean;

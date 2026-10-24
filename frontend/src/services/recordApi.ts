@@ -54,7 +54,10 @@ export async function getRecordComments(recordId: number): Promise<RecordComment
 
 /** POST /api/react/atlas/record/comment – nový komentář (JSON {recordId, message}). */
 export async function createComment(recordId: number, message: string): Promise<void> {
-    requireEnvelope(await apiPost("/api/react/atlas/record/comment", {recordId, message}), "Vytvoření komentáře selhalo.");
+    requireEnvelope(await apiPost("/api/react/atlas/record/comment", {
+        recordId,
+        message
+    }), "Vytvoření komentáře selhalo.");
 }
 
 /** PUT /api/react/atlas/record/comment/{id} – úprava textu komentáře. */
@@ -132,7 +135,13 @@ export async function moveRecordCoordinates(
     lastEditTimestampNum: number,
 ): Promise<void> {
     requireEnvelope(
-        await apiPost("/api/react/atlas/record/moveCoordinates", {recordId, latitude, longitude, gpsPrecision, lastEditTimestampNum}),
+        await apiPost("/api/react/atlas/record/moveCoordinates", {
+            recordId,
+            latitude,
+            longitude,
+            gpsPrecision,
+            lastEditTimestampNum
+        }),
         "Přesun záznamu selhal.",
     );
 }
@@ -147,7 +156,7 @@ export async function reverseGeocode(lat: number, lng: number): Promise<ReverseG
     const merged: ReverseGeocodingResponse = {};
     if (Array.isArray(items)) {
         for (const item of items) {
-            if ((item as {success?: unknown}).success !== undefined) continue; // obálka
+            if ((item as { success?: unknown }).success !== undefined) continue; // obálka
             Object.assign(merged, item);
         }
     }
@@ -179,7 +188,7 @@ export async function getPhytochorionOptions(): Promise<MultiValueOption[]> {
  * `{id, name|nameLat, label|nameHtml}` – sjednocují se do `MultiValueOption`.
  */
 async function fetchOptions(url: string): Promise<MultiValueOption[]> {
-    const data = requireData<{id: number; name?: string; nameLat?: string; label?: string; nameHtml?: string}[]>(
+    const data = requireData<{ id: number; name?: string; nameLat?: string; label?: string; nameHtml?: string }[]>(
         await apiGet(url),
         "Načtení možností selhalo.",
     );

@@ -79,7 +79,7 @@ export default function RecordFloristic({record, onFieldUpdated}: RecordFloristi
                 lastEditTimestampNum: record.lastEditTimestampNum
             }));
         }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- záměrná částečná synchronizace: full-sync jen při změně id, jinak jen timestamp (optimistické lokální editace se nesmí přepsat)
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- záměrná částečná synchronizace: full-sync jen při změně id, jinak jen timestamp (optimistické lokální editace se nesmí přepsat)
     }, [record.id, record.lastEditTimestampNum]);
 
     const {canEditCommonFields: canEdit} = useRecordPermissions(localRecord);

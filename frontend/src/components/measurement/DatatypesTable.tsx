@@ -1,12 +1,12 @@
-import { useEffect, useState } from "react";
-import { Table, Spinner } from "react-bootstrap";
-import { useTranslation } from "react-i18next";
-import type { TraitDatatype } from "@/models/TraitDatatype";
+import {useEffect, useState} from "react";
+import {Table, Spinner} from "react-bootstrap";
+import {useTranslation} from "react-i18next";
+import type {TraitDatatype} from "@/models/TraitDatatype";
 import {getTraitDatatypes} from "@/services/traitApi";
 import {notifyApiError} from "@/stores/notificationStore";
 
 export default function DatatypesTable() {
-    const { t } = useTranslation();
+    const {t} = useTranslation();
 
     const [datatypes, setDatatypes] = useState<TraitDatatype[]>([]);
     const [loading, setLoading] = useState(true);
@@ -28,16 +28,16 @@ export default function DatatypesTable() {
     if (loading) {
         return (
             <div className="text-center my-4">
-                <Spinner animation="border" />
+                <Spinner animation="border"/>
             </div>
         );
     }
 
     const boolIcon = (value: boolean) =>
         value ? (
-            <i className="bi bi-check-lg text-success" aria-label="true" />
+            <i className="bi bi-check-lg text-success" aria-label="true"/>
         ) : (
-            <i className="bi bi-x-lg text-danger" aria-label="false" />
+            <i className="bi bi-x-lg text-danger" aria-label="false"/>
         );
 
     return (

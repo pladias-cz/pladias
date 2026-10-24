@@ -8,8 +8,8 @@
  * remain with the specific map components.
  */
 
-import { MapContainer } from 'react-leaflet';
-import type { LatLngExpression, Map as LeafletMap } from 'leaflet';
+import {MapContainer} from 'react-leaflet';
+import type {LatLngExpression, Map as LeafletMap} from 'leaflet';
 
 export interface MapCanvasProps {
     center: LatLngExpression;
@@ -23,7 +23,7 @@ export interface MapCanvasProps {
     children?: React.ReactNode;
 }
 
-export function MapCanvas({ center, zoom, minZoom, maxZoom, mapKey, mapRef, children }: MapCanvasProps) {
+export function MapCanvas({center, zoom, minZoom, maxZoom, mapKey, mapRef, children}: MapCanvasProps) {
     return (
         <MapContainer
             center={center}
@@ -31,7 +31,7 @@ export function MapCanvas({ center, zoom, minZoom, maxZoom, mapKey, mapRef, chil
             minZoom={minZoom}
             maxZoom={maxZoom}
             scrollWheelZoom={true}
-            style={{ height: '100%', width: '100%' }}
+            style={{height: '100%', width: '100%'}}
             key={mapKey}
             ref={mapRef}
         >

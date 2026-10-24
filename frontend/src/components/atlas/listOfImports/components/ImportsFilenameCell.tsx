@@ -6,11 +6,11 @@ interface ImportsFilenameCellProps {
 
 export function ImportsFilenameCell({row}: ImportsFilenameCellProps) {
     if (!row.filename) return <span>-</span>;
-    
+
     return (
-        <a 
-            href={`/api/react/occurrence/imports/${row.id}`} 
-            target="_blank" 
+        <a
+            href={`/api/react/occurrence/imports/${row.id}`}
+            target="_blank"
             rel="noopener noreferrer"
         >
             {row.filename}

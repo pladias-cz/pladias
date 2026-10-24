@@ -67,7 +67,7 @@ export async function getTaxonStatistics(id: number): Promise<TaxonStats> {
 
 /** Počty záznamů taxonu v jednotlivých projektech (dynamické vrstvy mapy). */
 export interface TaxonProjectRecords {
-    project: {id: number; name: string; abbrev: string};
+    project: { id: number; name: string; abbrev: string };
     recordCount: number;
 }
 
@@ -89,8 +89,8 @@ export interface TaxonMapStatistics {
     quadrantsUncertain: number;
     quadrantsDeclined: number;
     quadrantsUnprocessed: number;
-    recordsByProject: Array<{project: {id: number; name: string; abbrev: string}; recordCount: number}>;
-    supervisors: Array<{id: number; name: string}>;
+    recordsByProject: Array<{ project: { id: number; name: string; abbrev: string }; recordCount: number }>;
+    supervisors: Array<{ id: number; name: string }>;
 }
 
 /** GET /api/react/taxonStatistics/{id} – kompletní statistiky mapy taxonu (mapMain panel). */
@@ -103,7 +103,7 @@ export async function getTaxonMapStatistics(taxonId: number): Promise<TaxonMapSt
 
 /** GET /api/react/taxonStatistics/{id} – počty záznamů taxonu podle projektů. */
 export async function getTaxonRecordsByProject(taxonId: number): Promise<TaxonProjectRecords[]> {
-    const stats = requireData<{recordsByProject?: TaxonProjectRecords[]}>(
+    const stats = requireData<{ recordsByProject?: TaxonProjectRecords[] }>(
         await apiGet(`/api/react/taxonStatistics/${taxonId}`),
         "Načtení projektů taxonu selhalo.",
     );
@@ -137,7 +137,7 @@ export async function updateTaxonField(id: number, field: TaxonEditorField, valu
 }
 
 /** POST /api/react/taxon – nový potomek pod vybraný taxon; vrací vytvořený taxon. */
-export async function createTaxon(input: {nameLat: string; rankId: number; parentId: number}): Promise<Taxon> {
+export async function createTaxon(input: { nameLat: string; rankId: number; parentId: number }): Promise<Taxon> {
     return requireData<Taxon>(
         await apiPost("/api/react/taxon", input),
         "Vytvoření taxonu selhalo.",

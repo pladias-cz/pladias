@@ -5,7 +5,7 @@ import {
     getCoreRowModel,
     useReactTable,
 } from '@tanstack/react-table';
-import { type ColumnDef} from '@tanstack/react-table';
+import {type ColumnDef} from '@tanstack/react-table';
 
 import {type Taxon} from '@/models/Taxon';
 import type {TaxonSynonym} from "@/models/TaxonSynonym";
@@ -226,7 +226,7 @@ export default function TaxonSynonyms({taxon, cacheKey}: Props) {
                     <Button size="sm" onClick={addRow}>{t("taxon.synonyms.addButton")}</Button>
                 </div>
 
-                {loading && <Spinner animation="border" />}
+                {loading && <Spinner animation="border"/>}
 
                 {!loading && (
                     <Table striped bordered hover size="sm">

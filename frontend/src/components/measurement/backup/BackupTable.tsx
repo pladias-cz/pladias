@@ -1,12 +1,12 @@
-import { useEffect, useState } from "react";
-import { Table, Spinner } from "react-bootstrap";
-import { useTranslation } from "react-i18next";
-import type { TraitBackup } from "@/models/TraitBackup";
+import {useEffect, useState} from "react";
+import {Table, Spinner} from "react-bootstrap";
+import {useTranslation} from "react-i18next";
+import type {TraitBackup} from "@/models/TraitBackup";
 import {getTraitBackups} from "@/services/traitApi";
 import {notifyApiError} from "@/stores/notificationStore";
 
 export default function BackupTable() {
-    const { t } = useTranslation();
+    const {t} = useTranslation();
 
     const [backups, setBackups] = useState<TraitBackup[]>([]);
     const [loading, setLoading] = useState(true);
@@ -28,7 +28,7 @@ export default function BackupTable() {
     if (loading) {
         return (
             <div className="text-center my-4">
-                <Spinner animation="border" />
+                <Spinner animation="border"/>
             </div>
         );
     }

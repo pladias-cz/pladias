@@ -19,8 +19,8 @@ import "./SearchForm.scss";
 export default function SearchForm() {
     const {t} = useTranslation();
     const user = useUser();
-    const config = useInstanceConfig() as {isVascular?: boolean};
-    const {projectName} = useProjectName() as {projectName?: string};
+    const config = useInstanceConfig() as { isVascular?: boolean };
+    const {projectName} = useProjectName() as { projectName?: string };
 
     const isVascular = Boolean(config.isVascular);
 
@@ -78,66 +78,69 @@ export default function SearchForm() {
 
     return (
         <>
-            <div id="searchRecordsFormView" className="pladiasView" />
+            <div id="searchRecordsFormView" className="pladiasView"/>
 
             {!hasRecords && (
-            <form id="searchForm" className="form-horizontal" onSubmit={handleSearchSubmit}>
-                <div className="row">
-                    <div className="col-md-2 offset-md-3">
-                        <button type="submit" name="extended_search" className="btn btn-primary btn-lg" disabled={query.isLoading}>
-                            {query.isLoading && (
-                                <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true" />
-                            )}
-                            {query.isLoading ? t("atlas.search.form.processingRequest") : t("atlas.search.form.submit")}
-                        </button>
-                        {query.submitMessage && <div className="text-muted mt-2 small">{query.submitMessage}</div>}
-                        {query.isLoading && <div className="text-muted mt-2 small">{t("atlas.search.form.waitingForData")}</div>}
-                        <br />
-                    </div>
-                    <div className="btn-group col-md-4" role="group">
-                        <div className="radio-inline">
-                            <label>
-                                <input type="radio" name="export_type" value="browser" defaultChecked />
-                                {t("atlas.search.form.exportBrowser")}
-                            </label>
+                <form id="searchForm" className="form-horizontal" onSubmit={handleSearchSubmit}>
+                    <div className="row">
+                        <div className="col-md-2 offset-md-3">
+                            <button type="submit" name="extended_search" className="btn btn-primary btn-lg"
+                                    disabled={query.isLoading}>
+                                {query.isLoading && (
+                                    <span className="spinner-border spinner-border-sm me-2" role="status"
+                                          aria-hidden="true"/>
+                                )}
+                                {query.isLoading ? t("atlas.search.form.processingRequest") : t("atlas.search.form.submit")}
+                            </button>
+                            {query.submitMessage && <div className="text-muted mt-2 small">{query.submitMessage}</div>}
+                            {query.isLoading &&
+                                <div className="text-muted mt-2 small">{t("atlas.search.form.waitingForData")}</div>}
+                            <br/>
                         </div>
-                        <div className="radio-inline">
-                            <label>
-                                <a
-                                    tabIndex={0}
-                                    role="button"
-                                    data-bs-toggle="popover"
-                                    data-bs-placement="bottom"
-                                    data-bs-trigger="focus"
-                                    data-bs-html="true"
-                                    title={excelExportTitle}
-                                >
-                                    <input type="radio" name="export_type" value="excel" />
-                                </a>
-                                {t("atlas.search.form.exportExcel")}
-                            </label>
+                        <div className="btn-group col-md-4" role="group">
+                            <div className="radio-inline">
+                                <label>
+                                    <input type="radio" name="export_type" value="browser" defaultChecked/>
+                                    {t("atlas.search.form.exportBrowser")}
+                                </label>
+                            </div>
+                            <div className="radio-inline">
+                                <label>
+                                    <a
+                                        tabIndex={0}
+                                        role="button"
+                                        data-bs-toggle="popover"
+                                        data-bs-placement="bottom"
+                                        data-bs-trigger="focus"
+                                        data-bs-html="true"
+                                        title={excelExportTitle}
+                                    >
+                                        <input type="radio" name="export_type" value="excel"/>
+                                    </a>
+                                    {t("atlas.search.form.exportExcel")}
+                                </label>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <div className="row">
-                    <SearchFilterColumnOne
-                        filters={filters}
-                        options={options}
-                        isVascular={isVascular}
-                        projectNameText={projectNameText}
-                        taxonProvider={taxonProvider}
-                    />
+                    <div className="row">
+                        <SearchFilterColumnOne
+                            filters={filters}
+                            options={options}
+                            isVascular={isVascular}
+                            projectNameText={projectNameText}
+                            taxonProvider={taxonProvider}
+                        />
 
-                    <SearchFilterColumnTwo
-                        filters={filters}
-                        options={options}
-                        isVascular={isVascular}
-                        projectNameText={projectNameText}
-                        validationStatusOptions={validationStatusOptions}
-                    />
-                </div>
-            </form>
+                        <SearchFilterColumnTwo
+                            filters={filters}
+                            options={options}
+                            isVascular={isVascular}
+                            projectNameText={projectNameText}
+                            validationStatusOptions={validationStatusOptions}
+                        />
+                    </div>
+                </form>
             )}
 
             {hasRecords && (

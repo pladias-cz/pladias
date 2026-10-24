@@ -14,11 +14,11 @@ interface DateRangeFilterProps {
 }
 
 export function DateRangeFilter({
-    fromDate,
-    toDate,
-    onFromDateChange,
-    onToDateChange
-}: DateRangeFilterProps) {
+                                    fromDate,
+                                    toDate,
+                                    onFromDateChange,
+                                    onToDateChange
+                                }: DateRangeFilterProps) {
     const {t} = useTranslation();
 
     return (

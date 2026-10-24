@@ -1,7 +1,7 @@
 import {Card, Col, Row} from "react-bootstrap";
 import {useCallback, useLayoutEffect, useRef, useState, useEffect} from "react";
 import {useTranslation} from "react-i18next";
-import type { RecordPladiasFull } from '@/models/RecordPladiasFull';
+import type {RecordPladiasFull} from '@/models/RecordPladiasFull';
 import RecordReadonlyField from "@/components/atlas/record/RecordReadonlyField";
 import RecordInlineField from "@/components/atlas/record/RecordInlineField";
 import MultiSelectEdit from "@/components/atlas/record/MultiSelectEdit";
@@ -36,7 +36,7 @@ export default function RecordRemarks({record, onFieldUpdated}: RecordRemarksPro
                 lastEditTimestampNum: record.lastEditTimestampNum
             }));
         }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- záměrná částečná synchronizace: full-sync jen při změně id, jinak jen timestamp (optimistické lokální editace se nesmí přepsat)
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- záměrná částečná synchronizace: full-sync jen při změně id, jinak jen timestamp (optimistické lokální editace se nesmí přepsat)
     }, [record.id, record.lastEditTimestampNum]);
 
     // Scroll position preservation on re-render

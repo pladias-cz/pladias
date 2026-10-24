@@ -1,11 +1,11 @@
 /**
  * General Layers
- * 
+ *
  * Administrative boundaries, grids, and other general reference layers.
  * These layers provide geographic context and administrative divisions.
  */
 
-import type { LayerDefinition } from '../../types';
+import type {LayerDefinition} from '../../types';
 
 export const GENERAL_LAYERS: LayerDefinition[] = [
     {

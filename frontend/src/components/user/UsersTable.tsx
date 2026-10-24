@@ -47,42 +47,42 @@ export default function UsersTable() {
             enableSorting: true,
             enableFiltering: true,
         }),
-        createCheckboxColumn<UserTableRow>('mapAdmin', t("user.usersAdministration.mapAdmin"), 
+        createCheckboxColumn<UserTableRow>('mapAdmin', t("user.usersAdministration.mapAdmin"),
             (row, checked) => handleFieldChange(row, 'mapAdmin', checked),
             {
                 enableSorting: true,
                 enableFiltering: true,
             }
         ),
-        createCheckboxColumn<UserTableRow>('traitAdmin', t("user.usersAdministration.traitAdmin"), 
+        createCheckboxColumn<UserTableRow>('traitAdmin', t("user.usersAdministration.traitAdmin"),
             (row, checked) => handleFieldChange(row, 'traitAdmin', checked),
             {
                 enableSorting: true,
                 enableFiltering: true,
             }
         ),
-        createCheckboxColumn<UserTableRow>('sysAdmin', t("user.usersAdministration.sysAdmin"), 
+        createCheckboxColumn<UserTableRow>('sysAdmin', t("user.usersAdministration.sysAdmin"),
             (row, checked) => handleFieldChange(row, 'sysAdmin', checked),
             {
                 enableSorting: true,
                 enableFiltering: true,
             }
         ),
-        createCheckboxColumn<UserTableRow>('biblioAdmin', t("user.usersAdministration.biblioAdmin"), 
+        createCheckboxColumn<UserTableRow>('biblioAdmin', t("user.usersAdministration.biblioAdmin"),
             (row, checked) => handleFieldChange(row, 'biblioAdmin', checked),
             {
                 enableSorting: true,
                 enableFiltering: true,
             }
         ),
-        createCheckboxColumn<UserTableRow>('taxonAdmin', t("user.usersAdministration.taxonAdmin"), 
+        createCheckboxColumn<UserTableRow>('taxonAdmin', t("user.usersAdministration.taxonAdmin"),
             (row, checked) => handleFieldChange(row, 'taxonAdmin', checked),
             {
                 enableSorting: true,
                 enableFiltering: true,
             }
         ),
-        createCheckboxColumn<UserTableRow>('deleted', t("user.usersAdministration.deleted"), 
+        createCheckboxColumn<UserTableRow>('deleted', t("user.usersAdministration.deleted"),
             (row, checked) => handleFieldChange(row, 'deleted', checked),
             {
                 enableSorting: true,

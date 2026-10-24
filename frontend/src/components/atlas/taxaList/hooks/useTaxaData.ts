@@ -29,8 +29,8 @@ export function useTaxaData(options?: UseTaxaDataOptions) {
     const fetchTaxa = useCallback(async (params: {
         page: number;
         pageSize: number;
-        sorting: Array<{id: string; desc: boolean}>;
-        columnFilters: Array<{id: string; value: string}>;
+        sorting: Array<{ id: string; desc: boolean }>;
+        columnFilters: Array<{ id: string; value: string }>;
         additionalParams: Record<string, string>;
         signal?: AbortSignal;
     }) => {

@@ -59,7 +59,7 @@ export interface TextColumnDef<T> extends BaseColumnDef<T> {
     /** Placeholder for filter input */
     filterPlaceholder?: string;
     /** Options for select filter - when set, a select is rendered instead of text input */
-    filterOptions?: Array<{value: string; label: string}>;
+    filterOptions?: Array<{ value: string; label: string }>;
     /** Custom cell renderer */
     cellRenderer?: (value: string, row: T) => React.ReactNode;
 }
@@ -149,7 +149,7 @@ export interface ActionColumnDef<T> extends Omit<BaseColumnDef<T>, 'enableSortin
 /**
  * Union type for all column types
  */
-export type DataTableColumnDef<T> = 
+export type DataTableColumnDef<T> =
     | TextColumnDef<T>
     | BooleanColumnDef<T>
     | CheckboxColumnDef<T>
@@ -179,7 +179,7 @@ export interface TableState<T> {
     /** Current sort state */
     sorting: ColumnSort[];
     /** Current filter state */
-    columnFilters: Array<{id: string; value: string}>;
+    columnFilters: Array<{ id: string; value: string }>;
     /** Loading state */
     loading: boolean;
 }
@@ -195,11 +195,11 @@ export type HttpMethod = 'GET' | 'POST';
 export type CustomDataFetcher<T> = (params: {
     page: number;
     pageSize: number;
-    sorting: Array<{id: string; desc: boolean}>;
-    columnFilters: Array<{id: string; value: string}>;
+    sorting: Array<{ id: string; desc: boolean }>;
+    columnFilters: Array<{ id: string; value: string }>;
     additionalParams: Record<string, string>;
     signal?: AbortSignal;
-}) => Promise<{data: T[]; totalCount: number; filteredCount?: number}>;
+}) => Promise<{ data: T[]; totalCount: number; filteredCount?: number }>;
 
 /**
  * External state control for controlled DataTable usage
@@ -207,12 +207,12 @@ export type CustomDataFetcher<T> = (params: {
 export interface ExternalTableState {
     page?: number;
     pageSize?: number;
-    sorting?: Array<{id: string; desc: boolean}>;
-    columnFilters?: Array<{id: string; value: string}>;
+    sorting?: Array<{ id: string; desc: boolean }>;
+    columnFilters?: Array<{ id: string; value: string }>;
     onPageChange?: (page: number) => void;
     onPageSizeChange?: (pageSize: number) => void;
-    onSortingChange?: (sorting: Array<{id: string; desc: boolean}>) => void;
-    onColumnFiltersChange?: (filters: Array<{id: string; value: string}>) => void;
+    onSortingChange?: (sorting: Array<{ id: string; desc: boolean }>) => void;
+    onColumnFiltersChange?: (filters: Array<{ id: string; value: string }>) => void;
 }
 
 /**
@@ -252,7 +252,7 @@ export interface DataTableConfig<T> {
      * Builds the filter query params of the XLSX export from the filter row state, for endpoints
      * that do not use the "<Column>Filter" convention of the table params
      */
-    buildExportFilterParams?: (columnFilters: Array<{id: string; value: string}>) => Record<string, string>;
+    buildExportFilterParams?: (columnFilters: Array<{ id: string; value: string }>) => Record<string, string>;
     /** HTTP method for data fetching (default: 'GET') */
     method?: HttpMethod;
     /** Custom data fetcher function (overrides endpoint/method if provided) */
@@ -261,8 +261,8 @@ export interface DataTableConfig<T> {
     transformRequest?: (data: {
         page: number;
         pageSize: number;
-        sorting: Array<{id: string; desc: boolean}>;
-        columnFilters: Array<{id: string; value: string}>;
+        sorting: Array<{ id: string; desc: boolean }>;
+        columnFilters: Array<{ id: string; value: string }>;
         additionalParams: Record<string, string>;
     }) => Record<string, unknown>;
     /**
@@ -274,8 +274,11 @@ export interface DataTableConfig<T> {
     externalState?: ExternalTableState;
     /** Custom filter row renderer - receives columnFilters and setColumnFilters */
     renderCustomFilters?: (props: {
-        columnFilters: Array<{id: string; value: string}>;
-        setColumnFilters: (filters: Array<{id: string; value: string}> | ((old: Array<{id: string; value: string}>) => Array<{id: string; value: string}>)) => void;
+        columnFilters: Array<{ id: string; value: string }>;
+        setColumnFilters: (filters: Array<{ id: string; value: string }> | ((old: Array<{
+            id: string;
+            value: string
+        }>) => Array<{ id: string; value: string }>)) => void;
     }) => React.ReactNode;
 }
 
@@ -320,8 +323,11 @@ export interface UseSortingReturn {
  * Hook return type for filters
  */
 export interface UseFiltersReturn {
-    columnFilters: Array<{id: string; value: string}>;
-    setColumnFilters: (filters: Array<{id: string; value: string}> | ((old: Array<{id: string; value: string}>) => Array<{id: string; value: string}>)) => void;
+    columnFilters: Array<{ id: string; value: string }>;
+    setColumnFilters: (filters: Array<{ id: string; value: string }> | ((old: Array<{
+        id: string;
+        value: string
+    }>) => Array<{ id: string; value: string }>)) => void;
     getFilterValue: (columnId: string) => string;
     setFilterValue: (columnId: string, value: string) => void;
     clearFilters: () => void;

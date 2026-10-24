@@ -40,7 +40,8 @@ export function useRecordSourceVisibility() {
                     setVisibleProjects(parsed);
                 }
             })
-            .catch(() => {/* chyba načtení → zůstává výchozí stav */});
+            .catch(() => {/* chyba načtení → zůstává výchozí stav */
+            });
     }, []);
 
     const toggleProjectVisibility = useCallback((project: ProjectType) => {

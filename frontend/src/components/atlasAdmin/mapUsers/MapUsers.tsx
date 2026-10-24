@@ -1,6 +1,6 @@
 /**
  * MapUsers - Map User Administration Component
- * 
+ *
  * Uses the enterprise DataTable component with custom data fetching
  * to efficiently load users and their rights (projects, taxa) on demand.
  */
@@ -37,14 +37,14 @@ export default function MapUsers() {
     // klíč a DataTable znovu načte aktuální stránku – nový stav je ihned viditelný.
     const [rightsRefreshKey, setRightsRefreshKey] = useState(0);
     const bumpRightsRefresh = useCallback(() => setRightsRefreshKey(key => key + 1), []);
-    
+
     // Data fetching hook
     const {fetchUsersWithRights} = useMapUsersData({
         onSuccess: () => {
             // Optional: handle successful data fetch
         }
     });
-    
+
     // Projects hook
     const {
         projects,
@@ -57,7 +57,7 @@ export default function MapUsers() {
         handleRemoveProject,
         setSelectedProjectId,
     } = useMapUsersProjects(showFlash, t, bumpRightsRefresh);
-    
+
     // Taxa hook
     const {
         taxa,
@@ -72,7 +72,7 @@ export default function MapUsers() {
         handleCloseTaxonModal,
         handleSelectTaxon,
     } = useMapUsersTaxa(showFlash, t, bumpRightsRefresh);
-    
+
     // Handler to convert taxon selection to remove operation
     const handleRemoveTaxonFromCell = useCallback((userId: number, taxonId: number) => {
         removeUserTaxonFromUser(userId, taxonId)
@@ -84,7 +84,7 @@ export default function MapUsers() {
                 showFlash('danger', apiErrorMessage(err, t("user.usersAdministration.error")));
             });
     }, [showFlash, t, bumpRightsRefresh]);
-    
+
     // Column definitions
     const columns = useMemo<DataTableColumnDef<MapUserTableRow>[]>(() => [
         createTextColumn<MapUserTableRow>('name', t("user.usersAdministration.firstName"), {
@@ -118,7 +118,7 @@ export default function MapUsers() {
             minWidth: '250px',
         }),
     ], [t, handleOpenAddModal, handleRemoveProject, handleOpenAddTaxonModal, handleRemoveTaxonFromCell]);
-    
+
     return (
         <div className="container-fluid">
             <DataTable<MapUserTableRow>
@@ -129,7 +129,7 @@ export default function MapUsers() {
                 pageSizeOptions={[10, 20, 50, 100]}
                 refreshKey={rightsRefreshKey}
             />
-            
+
             <MapUsersAddProjectModal
                 show={showAddModal}
                 projects={projects}
@@ -139,7 +139,7 @@ export default function MapUsers() {
                 onAdd={handleAddProject}
                 onClose={handleCloseModal}
             />
-            
+
             <MapUsersAddTaxonModal
                 show={showAddTaxonModal}
                 taxa={taxa}

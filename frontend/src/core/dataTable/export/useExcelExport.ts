@@ -13,10 +13,10 @@ export type ExcelExportVariant = 'all' | 'filtered';
 
 export interface UseExcelExportOptions {
     endpoint: string;
-    sorting: Array<{id: string; desc: boolean}>;
-    columnFilters: Array<{id: string; value: string}>;
+    sorting: Array<{ id: string; desc: boolean }>;
+    columnFilters: Array<{ id: string; value: string }>;
     /** Builds the filter params of endpoints that do not use the "<Column>Filter" convention */
-    buildFilterParams?: (columnFilters: Array<{id: string; value: string}>) => Record<string, string>;
+    buildFilterParams?: (columnFilters: Array<{ id: string; value: string }>) => Record<string, string>;
     additionalParams?: Record<string, string>;
     /** Used when the backend does not send a Content-disposition header */
     fallbackFilename?: string;
@@ -25,14 +25,14 @@ export interface UseExcelExportOptions {
 }
 
 export function useExcelExport({
-    endpoint,
-    sorting,
-    columnFilters,
-    buildFilterParams,
-    additionalParams = {},
-    fallbackFilename = 'export.xlsx',
-    errorMessage = '',
-}: UseExcelExportOptions) {
+                                   endpoint,
+                                   sorting,
+                                   columnFilters,
+                                   buildFilterParams,
+                                   additionalParams = {},
+                                   fallbackFilename = 'export.xlsx',
+                                   errorMessage = '',
+                               }: UseExcelExportOptions) {
     const [exporting, setExporting] = useState<ExcelExportVariant | null>(null);
     const [error, setError] = useState<string | null>(null);
 

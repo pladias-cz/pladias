@@ -2,7 +2,16 @@
  * Column helper functions for type-safe column creation
  */
 
-import type {DataTableColumnDef, TextColumnDef, BooleanColumnDef, CheckboxColumnDef, NumberColumnDef, DateColumnDef, TimestampColumnDef, ActionColumnDef} from '../types';
+import type {
+    DataTableColumnDef,
+    TextColumnDef,
+    BooleanColumnDef,
+    CheckboxColumnDef,
+    NumberColumnDef,
+    DateColumnDef,
+    TimestampColumnDef,
+    ActionColumnDef
+} from '../types';
 import type {TFunction} from 'i18next';
 
 /**
@@ -15,7 +24,7 @@ export function createTextColumn<T extends object>(
         enableSorting?: boolean;
         enableFiltering?: boolean;
         filterPlaceholder?: string;
-        filterOptions?: Array<{value: string; label: string}>;
+        filterOptions?: Array<{ value: string; label: string }>;
         width?: string | number;
         minWidth?: string | number;
         cellRenderer?: (value: string, row: T) => React.ReactNode;

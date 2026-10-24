@@ -1,6 +1,6 @@
-import type { AutocompleteProvider } from '@/components/autocomplete/AutocompleteProvider';
+import type {AutocompleteProvider} from '@/components/autocomplete/AutocompleteProvider';
 import {searchTaxaByPrefix} from '@/services/taxonApi';
-import type { TaxonId } from '@/models/TaxonId';
+import type {TaxonId} from '@/models/TaxonId';
 
 export function createTaxaAllProvider(placeholder: string): AutocompleteProvider<TaxonId> {
     return {

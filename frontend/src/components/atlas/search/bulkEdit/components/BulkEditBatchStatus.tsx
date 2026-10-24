@@ -10,13 +10,19 @@ import type {BulkOperationSummary} from "../types";
 
 interface BulkEditBatchStatusProps {
     isRunning: boolean;
-    batchProgress: {processed: number; total: number};
+    batchProgress: { processed: number; total: number };
     progressPercent: number;
     batchSummary: BulkOperationSummary | null;
     formMessage: string;
 }
 
-export function BulkEditBatchStatus({isRunning, batchProgress, progressPercent, batchSummary, formMessage}: BulkEditBatchStatusProps) {
+export function BulkEditBatchStatus({
+                                        isRunning,
+                                        batchProgress,
+                                        progressPercent,
+                                        batchSummary,
+                                        formMessage
+                                    }: BulkEditBatchStatusProps) {
     const {t} = useTranslation();
 
     return (
@@ -29,7 +35,7 @@ export function BulkEditBatchStatus({isRunning, batchProgress, progressPercent, 
                             total: batchProgress.total,
                         })}
                     </div>
-                    <ProgressBar now={progressPercent} label={`${progressPercent}%`} animated={isRunning} />
+                    <ProgressBar now={progressPercent} label={`${progressPercent}%`} animated={isRunning}/>
                 </div>
             )}
 
@@ -43,7 +49,8 @@ export function BulkEditBatchStatus({isRunning, batchProgress, progressPercent, 
                                 : batchSummary.successIds.map((id, index) => (
                                     <span key={id}>
                                         {index > 0 && ", "}
-                                        <Link to={`/atlas/record/${id}`} target="_blank" rel="noopener noreferrer">{id}</Link>
+                                        <Link to={`/atlas/record/${id}`} target="_blank"
+                                              rel="noopener noreferrer">{id}</Link>
                                     </span>
                                 ))}
                         </div>
@@ -56,7 +63,8 @@ export function BulkEditBatchStatus({isRunning, batchProgress, progressPercent, 
                                 : batchSummary.failed.map((item, index) => (
                                     <span key={item.id}>
                                         {index > 0 && ", "}
-                                        <Link to={`/atlas/record/${item.id}`} target="_blank" rel="noopener noreferrer">{item.id}</Link>
+                                        <Link to={`/atlas/record/${item.id}`} target="_blank"
+                                              rel="noopener noreferrer">{item.id}</Link>
                                         {" ("}
                                         {item.error}
                                         {")"}

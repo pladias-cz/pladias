@@ -1,10 +1,10 @@
-import { Container, Row, Col } from "react-bootstrap";
-import { usePageTitle } from "@/hooks/usePageTitle";
-import { useTranslation } from "react-i18next";
-import { useParams } from "react-router-dom";
-import { useEffect, useMemo, useState, useRef, useCallback } from "react";
+import {Container, Row, Col} from "react-bootstrap";
+import {usePageTitle} from "@/hooks/usePageTitle";
+import {useTranslation} from "react-i18next";
+import {useParams} from "react-router-dom";
+import {useEffect, useMemo, useState, useRef, useCallback} from "react";
 import {useQuery, useQueryClient} from "@tanstack/react-query";
-import type { RecordPladias } from "@/models";
+import type {RecordPladias} from "@/models";
 import type {RecordsByProject, RecordsByProjectMinimal} from "@/models/AtlasRecords";
 import {
     getNearbyExternalRecords,
@@ -14,8 +14,8 @@ import {
 } from "@/services/atlasApi";
 import {getTaxon} from "@/services/taxonApi";
 import {notifyApiError} from "@/stores/notificationStore";
-import { MapComponent } from "@/components/atlas/mapDetail/MapComponent";
-import { InfoPanel } from "@/components/atlas/mapDetail/InfoPanel";
+import {MapComponent} from "@/components/atlas/mapDetail/MapComponent";
+import {InfoPanel} from "@/components/atlas/mapDetail/InfoPanel";
 import RichTextMessage from "@/components/RichTextMessage";
 import {useRecordSourceVisibility} from "@/components/atlas/mapDetail/hooks/useRecordSourceVisibility";
 import {filterRecordsByVisibility} from "@/components/atlas/mapDetail/recordSources";
@@ -26,18 +26,25 @@ interface SquareRecords {
     tableRecords: RecordsByProject;
 }
 
-const EMPTY_RECORDS: RecordsByProjectMinimal = { pladias: [], gbif: [], inaturalist: [] };
+const EMPTY_RECORDS: RecordsByProjectMinimal = {pladias: [], gbif: [], inaturalist: []};
 
 export default function MapDetail() {
-    const { t } = useTranslation();
-    const { taxonId, squareId } = useParams<{ taxonId: string; squareId: string }>();
+    const {t} = useTranslation();
+    const {taxonId, squareId} = useParams<{ taxonId: string; squareId: string }>();
     const queryClient = useQueryClient();
     const [highlightedRecordId, setHighlightedRecordId] = useState<number | null>(null);
     const [centerOnRecord, setCenterOnRecord] = useState<{ latitude: number; longitude: number } | null>(null);
-    const tableScrollFnsRef = useRef<{ pladias?: ((recordId: number) => void); gbif?: ((recordId: number) => void); inaturalist?: ((recordId: number) => void) }>({});
-    const hoverLockRef = useRef<{ recordId: number | null; timeoutId: NodeJS.Timeout | null }>({ recordId: null, timeoutId: null });
+    const tableScrollFnsRef = useRef<{
+        pladias?: ((recordId: number) => void);
+        gbif?: ((recordId: number) => void);
+        inaturalist?: ((recordId: number) => void)
+    }>({});
+    const hoverLockRef = useRef<{ recordId: number | null; timeoutId: NodeJS.Timeout | null }>({
+        recordId: null,
+        timeoutId: null
+    });
     // viditelnost skupin záznamů na mapě (checkboxy v InfoPanelu), perzistováno v user settings
-    const { visibleProjects, toggleProjectVisibility } = useRecordSourceVisibility();
+    const {visibleProjects, toggleProjectVisibility} = useRecordSourceVisibility();
 
     usePageTitle(t("atlas.mapDetail.title"));
 
@@ -77,14 +84,14 @@ export default function MapDetail() {
                 getSquareExternalRecords(squareId!, id!, "inaturalist"),
             ]);
             return {
-                mapRecords: { pladias: mapPladias, gbif: mapGbif, inaturalist: mapInaturalist },
-                tableRecords: { pladias: tablePladias, gbif: tableGbif, inaturalist: tableInaturalist },
+                mapRecords: {pladias: mapPladias, gbif: mapGbif, inaturalist: mapInaturalist},
+                tableRecords: {pladias: tablePladias, gbif: tableGbif, inaturalist: tableInaturalist},
             };
         },
         enabled: id !== null && squareId !== undefined,
     });
     const mapRecords = recordsQuery.data?.mapRecords ?? EMPTY_RECORDS;
-    const tableRecords = recordsQuery.data?.tableRecords ?? { pladias: [], gbif: [], inaturalist: [] };
+    const tableRecords = recordsQuery.data?.tableRecords ?? {pladias: [], gbif: [], inaturalist: []};
     const recordsLoading = recordsQuery.isPending;
     // markery na mapě odpovídají zaškrtnutým skupinám – tabulky zůstávají kompletní
     const visibleMapRecords = useMemo(
@@ -178,7 +185,7 @@ export default function MapDetail() {
 
     return (
         <Container fluid className="px-0">
-            <Row className="g-0" style={{ height: 'calc(90vh - 56px)' }}>
+            <Row className="g-0" style={{height: 'calc(90vh - 56px)'}}>
                 <Col md={12} lg={5} xl={4} className="h-100">
                     <h5>
                         <RichTextMessage html={taxon?.nameHtml}/>
@@ -187,7 +194,7 @@ export default function MapDetail() {
                                     ({t("atlas.mapDetail.square")} {squareId})
                                 </span>
                         <a href={`/atlas/mapMain/${taxonId}`} className="small ms-2 fs-5">
-                             zpět na hlavní mapu
+                            zpět na hlavní mapu
                         </a>
                     </h5>
                     <MapComponent
@@ -209,14 +216,20 @@ export default function MapDetail() {
                             onRecordHover={setHighlightedRecordId}
                             onRecordCenter={(record) => {
                                 if (record.latitude !== null && record.longitude !== null) {
-                                    setCenterOnRecord({ latitude: record.latitude, longitude: record.longitude });
+                                    setCenterOnRecord({latitude: record.latitude, longitude: record.longitude});
                                 }
                             }}
                             currentSquareCode={squareId}
                             registerScrollFns={{
-                                pladias: (scrollFn) => { tableScrollFnsRef.current.pladias = scrollFn; },
-                                gbif: (scrollFn) => { tableScrollFnsRef.current.gbif = scrollFn; },
-                                inaturalist: (scrollFn) => { tableScrollFnsRef.current.inaturalist = scrollFn; }
+                                pladias: (scrollFn) => {
+                                    tableScrollFnsRef.current.pladias = scrollFn;
+                                },
+                                gbif: (scrollFn) => {
+                                    tableScrollFnsRef.current.gbif = scrollFn;
+                                },
+                                inaturalist: (scrollFn) => {
+                                    tableScrollFnsRef.current.inaturalist = scrollFn;
+                                }
                             }}
                             onRecordUpdated={handleRecordUpdated}
                             visibleProjects={visibleProjects}

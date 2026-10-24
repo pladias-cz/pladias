@@ -1,11 +1,11 @@
 /**
  * GBIF Layers
- * 
+ *
  * Global Biodiversity Information Facility occurrence data layers.
  * These layers display taxon occurrence records from the GBIF database.
  */
 
-import type { LayerDefinition } from '../../types';
+import type {LayerDefinition} from '../../types';
 
 export const GBIF_LAYERS: LayerDefinition[] = [
     {

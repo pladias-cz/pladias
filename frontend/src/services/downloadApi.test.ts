@@ -37,12 +37,24 @@ describe("getDownloads", () => {
     it("returns the bare download list (no JsonResult envelope)", async () => {
         fetchMock.mockResolvedValue(jsonResponse([
             {description: "Metodika", manager: "Pladias", version: "1.0", url: "/files/m.pdf", dynamic: false},
-            {description: "Seznam taxonů", manager: "admin", version: "1. 1. 2025 (dynamic)", url: "/api/react/downloads/taxa", dynamic: true},
+            {
+                description: "Seznam taxonů",
+                manager: "admin",
+                version: "1. 1. 2025 (dynamic)",
+                url: "/api/react/downloads/taxa",
+                dynamic: true
+            },
         ]));
 
         await expect(getDownloads()).resolves.toEqual([
             {description: "Metodika", manager: "Pladias", version: "1.0", url: "/files/m.pdf", dynamic: false},
-            {description: "Seznam taxonů", manager: "admin", version: "1. 1. 2025 (dynamic)", url: "/api/react/downloads/taxa", dynamic: true},
+            {
+                description: "Seznam taxonů",
+                manager: "admin",
+                version: "1. 1. 2025 (dynamic)",
+                url: "/api/react/downloads/taxa",
+                dynamic: true
+            },
         ]);
         expect(fetchMock).toHaveBeenCalledWith("/api/react/downloads", expect.anything());
     });

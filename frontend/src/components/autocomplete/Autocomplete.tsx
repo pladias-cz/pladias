@@ -1,9 +1,9 @@
-import { AsyncTypeahead } from 'react-bootstrap-typeahead';
+import {AsyncTypeahead} from 'react-bootstrap-typeahead';
 import {useState} from 'react';
 import {useQuery} from '@tanstack/react-query';
 import {useTranslation} from 'react-i18next';
-import type { AutocompleteProvider } from './AutocompleteProvider';
-import type { Option } from 'react-bootstrap-typeahead/types/types';
+import type {AutocompleteProvider} from './AutocompleteProvider';
+import type {Option} from 'react-bootstrap-typeahead/types/types';
 import {isAbortError} from '@/services/apiClient';
 import {notifyApiError} from '@/stores/notificationStore';
 
@@ -17,12 +17,12 @@ interface Props<T> {
 }
 
 export function Autocomplete<T extends Option>({
-    provider,
-    cacheKey,
-    autoFocus = false,
-    clearOnSelect = true,
-    onSelect,
-}: Props<T>) {
+                                                   provider,
+                                                   cacheKey,
+                                                   autoFocus = false,
+                                                   clearOnSelect = true,
+                                                   onSelect,
+                                               }: Props<T>) {
     const {t} = useTranslation();
     const [query, setQuery] = useState('');
     const [selected, setSelected] = useState<T[]>([]);
@@ -50,7 +50,7 @@ export function Autocomplete<T extends Option>({
             // nedoběhne (jako dřív); po přepnutí kontextu (jiný cacheKey /
             // provider) se nabídka zahodí.
             return previousQuery?.queryKey[1] === provider.placeholder
-                && previousQuery.queryKey[2] === cacheKey
+            && previousQuery.queryKey[2] === cacheKey
                 ? previous
                 : undefined;
         },

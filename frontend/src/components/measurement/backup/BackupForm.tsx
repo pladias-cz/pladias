@@ -31,28 +31,28 @@ export default function BackupForm() {
 
     return (
         <Form onSubmit={handleSubmit}>
-                <Form.Group className="mb-3" controlId="backupDescription">
-                    <Form.Label>{t("trait.backup.note")}</Form.Label>
-                    <Form.Control
-                        type="text"
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                        placeholder={t("trait.backup.notePlaceholder")}
-                        disabled={submitting}
-                        required
-                    />
-                </Form.Group>
+            <Form.Group className="mb-3" controlId="backupDescription">
+                <Form.Label>{t("trait.backup.note")}</Form.Label>
+                <Form.Control
+                    type="text"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder={t("trait.backup.notePlaceholder")}
+                    disabled={submitting}
+                    required
+                />
+            </Form.Group>
 
-                <Button type="submit" variant="primary" disabled={submitting}>
-                    {submitting ? (
-                        <>
-                            <Spinner as="span" size="sm" animation="border" className="me-2"/>
-                            {t("trait.backup.submitting")}
-                        </>
-                    ) : (
-                        t("trait.backup.submit")
-                    )}
-                </Button>
-            </Form>
+            <Button type="submit" variant="primary" disabled={submitting}>
+                {submitting ? (
+                    <>
+                        <Spinner as="span" size="sm" animation="border" className="me-2"/>
+                        {t("trait.backup.submitting")}
+                    </>
+                ) : (
+                    t("trait.backup.submit")
+                )}
+            </Button>
+        </Form>
     );
 }

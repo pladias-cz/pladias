@@ -11,17 +11,17 @@ export function useImportControlsData(options: UseImportControlsDataOptions = {}
     const {onSuccess} = options;
 
     const fetchControls = useCallback(async ({
-        page,
-        pageSize,
-        sorting,
-        columnFilters,
-        additionalParams = {},
-        signal
-    }: {
+                                                 page,
+                                                 pageSize,
+                                                 sorting,
+                                                 columnFilters,
+                                                 additionalParams = {},
+                                                 signal
+                                             }: {
         page: number;
         pageSize: number;
-        sorting: Array<{id: string; desc: boolean}>;
-        columnFilters: Array<{id: string; value: string}>;
+        sorting: Array<{ id: string; desc: boolean }>;
+        columnFilters: Array<{ id: string; value: string }>;
         additionalParams?: Record<string, string>;
         signal?: AbortSignal;
     }) => {

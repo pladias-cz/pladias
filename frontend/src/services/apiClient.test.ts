@@ -144,7 +144,10 @@ describe("HTTP error branches", () => {
     it("throws ApiError with the message from the error payload on HTTP 400", async () => {
         fetchMock.mockResolvedValue(jsonResponse({error: "Email již existuje"}, 400));
 
-        await expect(apiPost("/api/react/user/changeEmail", {password: "x", newEmail: "a@b.cz"})).rejects.toMatchObject({
+        await expect(apiPost("/api/react/user/changeEmail", {
+            password: "x",
+            newEmail: "a@b.cz"
+        })).rejects.toMatchObject({
             status: 400,
             message: "Email již existuje",
         });

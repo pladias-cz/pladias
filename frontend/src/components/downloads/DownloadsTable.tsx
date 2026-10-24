@@ -1,13 +1,13 @@
-import { useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
-import { Table, Spinner, Alert, Button } from "react-bootstrap";
+import {useEffect, useState} from "react";
+import {useTranslation} from "react-i18next";
+import {Table, Spinner, Alert, Button} from "react-bootstrap";
 import {downloadDynamicFile, getDownloads} from "@/services/downloadApi";
 import {downloadBlob} from "@/core/dataTable/export";
 import {notifyApiError} from "@/stores/notificationStore";
 import type {DownloadDto} from "@/models/Download";
 
 export default function DownloadsTable() {
-    const { t } = useTranslation();
+    const {t} = useTranslation();
 
     const [downloads, setDownloads] = useState<DownloadDto[]>([]);
     const [loading, setLoading] = useState(true);
@@ -20,14 +20,14 @@ export default function DownloadsTable() {
             try {
                 setDownloads(await getDownloads());
             } catch (e) {
-                setError(e instanceof Error ? e.message : "Unknown error");
+                setError(e instanceof Error ? e.message : t("common.unknownError"));
             } finally {
                 setLoading(false);
             }
         };
 
         load();
-    }, []);
+    }, [t]);
 
     /**
      * Dynamický export (xlsx) – na rozdíl od statických odkazů jde o fetch přes
@@ -53,7 +53,7 @@ export default function DownloadsTable() {
     if (loading) {
         return (
             <div className="text-center my-4">
-                <Spinner animation="border" />
+                <Spinner animation="border"/>
             </div>
         );
     }
@@ -92,7 +92,7 @@ export default function DownloadsTable() {
                             >
                                 {downloading.has(i) ? (
                                     <>
-                                        <Spinner as="span" size="sm" animation="border" className="me-1" />
+                                        <Spinner as="span" size="sm" animation="border" className="me-1"/>
                                         {t("download.download")}
                                     </>
                                 ) : (

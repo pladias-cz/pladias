@@ -35,7 +35,7 @@ export default function ImportCSV() {
     ) => {
         setUploadSuccess(false);
         setError(null);
-        
+
         await uploadFile(file, operation, projectId);
     }, [uploadFile]);
 
@@ -46,7 +46,7 @@ export default function ImportCSV() {
                     <h3>{t("atlas.importCSV.title")}</h3>
                 </Col>
             </Row>
-            
+
             <Row className="mt-4">
                 <Col md={10} className="offset-md-1">
                     {error && (
@@ -54,9 +54,10 @@ export default function ImportCSV() {
                             <div className="col">
                                 <Alert variant="danger">
                                     <h4>{t("other.components.atlas.importCSV.uploadFailed")}</h4>
-                                    <br />
-                                    <p><u>{t("other.components.atlas.importCSV.errorMessage")}</u>: {error.errorMessage}</p>
-                                    <hr />
+                                    <br/>
+                                    <p><u>{t("other.components.atlas.importCSV.errorMessage")}</u>: {error.errorMessage}
+                                    </p>
+                                    <hr/>
                                     <p>
                                         {t("other.components.atlas.importCSV.contactSupport")}
                                         <a href="mailto:pladias@googlegroups.com">pladias@googlegroups.com</a>.
@@ -76,7 +77,7 @@ export default function ImportCSV() {
                             </div>
                         </div>
                     ) : (
-                        <ImportCSVForm 
+                        <ImportCSVForm
                             onFileSelected={handleFileSelected}
                             isUploading={isUploading}
                         />

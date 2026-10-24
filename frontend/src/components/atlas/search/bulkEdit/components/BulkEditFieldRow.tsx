@@ -16,7 +16,15 @@ interface BulkEditFieldRowProps {
     children: ReactNode;
 }
 
-export function BulkEditFieldRow({label, submitLabel, onSubmit, disabled, invalid = false, helperText, children}: BulkEditFieldRowProps) {
+export function BulkEditFieldRow({
+                                     label,
+                                     submitLabel,
+                                     onSubmit,
+                                     disabled,
+                                     invalid = false,
+                                     helperText,
+                                     children
+                                 }: BulkEditFieldRowProps) {
     return (
         <>
             {helperText && <p className="small text-muted">{helperText}</p>}

@@ -9,7 +9,7 @@ export default function ListOfControlsPage() {
     return (
         <Row>
             <h3 className="mb-3">{t("atlas.controls.title")}</h3>
-            <ListOfControls />
+            <ListOfControls/>
         </Row>
     );
 }

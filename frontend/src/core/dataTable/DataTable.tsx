@@ -165,7 +165,7 @@ export function DataTable<T extends object>(config: DataTableConfig<T>) {
                     return column.cellRenderer(row[column.accessor] as boolean, row);
                 }
                 const boolValue = row[column.accessor] as boolean;
-                return boolValue 
+                return boolValue
                     ? (column.trueLabel ?? t("common.table.yes"))
                     : (column.falseLabel ?? t("common.table.no"));
             }
@@ -178,9 +178,9 @@ export function DataTable<T extends object>(config: DataTableConfig<T>) {
                 // aktualizace i rollback). Bez `id` (rowId === undefined) smí matchnout
                 // jen reference – fallback nesmí matchnout řádky bez identity,
                 // undefined === undefined by jinak přepnul všechny řádky tabulky.
-                const rowId = (row as {id?: unknown}).id;
+                const rowId = (row as { id?: unknown }).id;
                 const isTargetRow = (item: T): boolean =>
-                    item === row || (rowId !== undefined && rowId === (item as {id?: unknown}).id);
+                    item === row || (rowId !== undefined && rowId === (item as { id?: unknown }).id);
                 return (
                     <Form.Check
                         type="checkbox"
@@ -188,16 +188,16 @@ export function DataTable<T extends object>(config: DataTableConfig<T>) {
                         disabled={isDisabled}
                         onChange={async (e) => {
                             const newValue = e.target.checked;
-                            
+
                             // Optimistically update the local data first for instant UI feedback
-                            setLocalData((prevData: T[]) => 
-                                prevData.map((item: T) => 
+                            setLocalData((prevData: T[]) =>
+                                prevData.map((item: T) =>
                                     isTargetRow(item)
-                                        ? { ...item, [column.accessor]: newValue } as T
+                                        ? {...item, [column.accessor]: newValue} as T
                                         : item
                                 )
                             );
-                            
+
                             try {
                                 // Call the onToggle handler from the column definition
                                 await column.onToggle(row, newValue);
@@ -211,10 +211,10 @@ export function DataTable<T extends object>(config: DataTableConfig<T>) {
                             } catch (error) {
                                 logError(error, {source: 'DataTable', action: 'checkboxToggle'});
                                 // Rollback the optimistic update - revert to original value
-                                setLocalData((prevData: T[]) => 
-                                    prevData.map((item: T) => 
+                                setLocalData((prevData: T[]) =>
+                                    prevData.map((item: T) =>
                                         isTargetRow(item)
-                                            ? { ...item, [column.accessor]: !newValue } as T
+                                            ? {...item, [column.accessor]: !newValue} as T
                                             : item
                                     )
                                 );
@@ -321,39 +321,39 @@ export function DataTable<T extends object>(config: DataTableConfig<T>) {
 
                 <Table striped bordered hover responsive size="sm" className={styles.tableStable}>
                     <thead>
-                        <tr>
-                            {columns.map((column) => (
-                                <DataTableHeaderCell
-                                    key={String(column.id)}
-                                    label={column.header}
-                                    columnId={String(column.id)}
-                                    sortIndicator={getSortIndicator(String(column.id))}
-                                    canSort={canSort(column)}
-                                    onSort={handleSort}
-                                    width={column.width}
-                                    minWidth={column.minWidth}
-                                />
-                            ))}
-                        </tr>
-
-                        {renderCustomFilters ? (
-                            <tr>{renderCustomFilters({columnFilters, setColumnFilters})}</tr>
-                        ) : (
-                            <DataTableFilterRow
-                                columns={columns}
-                                filters={columnFilters}
-                                onFilterChange={handleFilterChange}
+                    <tr>
+                        {columns.map((column) => (
+                            <DataTableHeaderCell
+                                key={String(column.id)}
+                                label={column.header}
+                                columnId={String(column.id)}
+                                sortIndicator={getSortIndicator(String(column.id))}
+                                canSort={canSort(column)}
+                                onSort={handleSort}
+                                width={column.width}
+                                minWidth={column.minWidth}
                             />
-                        )}
+                        ))}
+                    </tr>
+
+                    {renderCustomFilters ? (
+                        <tr>{renderCustomFilters({columnFilters, setColumnFilters})}</tr>
+                    ) : (
+                        <DataTableFilterRow
+                            columns={columns}
+                            filters={columnFilters}
+                            onFilterChange={handleFilterChange}
+                        />
+                    )}
                     </thead>
 
                     <tbody>
-                        <DataTableBody
-                            data={data}
-                            columns={columns}
-                            loading={loading}
-                            cellRenderer={renderCell}
-                        />
+                    <DataTableBody
+                        data={data}
+                        columns={columns}
+                        loading={loading}
+                        cellRenderer={renderCell}
+                    />
                     </tbody>
                 </Table>
             </Card.Body>

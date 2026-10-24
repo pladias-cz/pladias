@@ -1,6 +1,6 @@
-import {Card} from "react-bootstrap";
-import {useTranslation} from "react-i18next";
-import {useState, useCallback, useEffect} from "react";
+import {Card} from 'react-bootstrap';
+import {useTranslation} from 'react-i18next';
+import {useState, useCallback, useEffect} from 'react';
 import {MapContainer, TileLayer, Marker, Popup, useMapEvents} from 'react-leaflet';
 import {Icon} from 'leaflet';
 import type {LatLngExpression} from 'leaflet';
@@ -9,9 +9,9 @@ import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
 import type {RecordPladiasFull} from '@/models/RecordPladiasFull';
 import type {ReverseGeocodingResponse} from '@/models/ReverseGeocoding';
-import {reverseGeocode} from "@/services/recordApi";
-import {logError, logInfo} from "@/services/logger";
-import {useRecordPermissions} from "./";
+import {reverseGeocode} from '@/services/recordApi';
+import {logError, logInfo} from '@/services/logger';
+import {useRecordPermissions} from './';
 
 // Create a red marker icon for proposed location
 const proposedLocationIcon = new Icon({
@@ -102,12 +102,12 @@ export default function RecordMap({record, onLocationSelectWithGeocode, hasPropo
     return (
         <Card className="mb-3">
             <Card.Header>
-                <strong>{t("record.map")}</strong>
-                <a href={`/atlas/mapDetail/${record.taxon.id}/${record.quadrantCodeComputed?.slice(0, 4) ?? ""}`}
+                <strong>{t('record.map')}</strong>
+                <a href={`/atlas/mapDetail/${record.taxon.id}/${record.quadrantCodeComputed?.slice(0, 4) ?? ''}`}
                    className="small ms-2 fs-5">
                     zpět na mapu
                 </a>
-                {canEdit && <span className="ms-2 text-muted">({t("record.clickOnMap")})</span>}
+                {canEdit && <span className="ms-2 text-muted">({t('record.clickOnMap')})</span>}
             </Card.Header>
             <Card.Body className="p-0">
                 <div style={{height: '500px', width: '100%'}}>

@@ -16,11 +16,8 @@ import {
     createTextColumn,
     createNumberColumn
 } from '@/core/dataTable';
-import {
-    useTaxaData,
-    useTaxonUpdates,
-    extractTaxaFilters,
-} from './taxaList/hooks';
+import {useTaxonUpdates} from './taxaList/hooks';
+import {useTaxaData} from '@/hooks/useTaxaData';
 import {
     StatusSelect,
     PresliaInlineField,
@@ -28,10 +25,10 @@ import {
     MappedCell,
 } from './taxaList/components';
 import type {TaxonMapSettings, TaxonOption} from './taxaList/types';
-import {getPublicationStatuses, getRevisionStatuses} from '@/services/mapAdminApi';
+import {getPublicationStatuses, getRevisionStatuses, extractTaxaFilters} from '@/services/mapAdminApi';
 import {notifyApiError} from '@/stores/notificationStore';
 import {useCatalogQuery} from '@/query/useCatalogQuery';
-import {Link} from "react-router-dom";
+import {Link} from 'react-router-dom';
 
 export default function TaxaList() {
     const {t} = useTranslation();
@@ -58,14 +55,10 @@ export default function TaxaList() {
 
     // číselníky statusů – bez cache (sekce J); při selhání zůstane filtr
     // prázdný (stejně jako dřív – chybu jen logoval)
-    const revisionStatusOptions = useCatalogQuery(["revisionStatuses"], getRevisionStatuses);
-    const publicationStatusOptions = useCatalogQuery(["publicationStatuses"], getPublicationStatuses);
+    const revisionStatusOptions = useCatalogQuery(['revisionStatuses'], getRevisionStatuses);
+    const publicationStatusOptions = useCatalogQuery(['publicationStatuses'], getPublicationStatuses);
 
-    const {fetchTaxa} = useTaxaData({
-        onSuccess: () => {
-            // Optional: handle successful data fetch
-        }
-    });
+    const {fetchTaxa} = useTaxaData({endpoint: '/api/react/atlasadmin/taxa'});
 
     const {
         updatingTaxonId,
@@ -83,7 +76,7 @@ export default function TaxaList() {
     // lokalizovaný fallback jinak; chyby už centrálně oznámené (403, síť)
     // notifyApiError přeskakuje.
     const handleError = useCallback((error: unknown) => {
-        notifyApiError(error, t("atlas.admin.taxaList.updateFailed"));
+        notifyApiError(error, t('atlas.admin.taxaList.updateFailed'));
     }, [t]);
 
     const refreshTable = useCallback(() => {
@@ -153,10 +146,10 @@ export default function TaxaList() {
     }, [updatePublicationStatus, updateLocalData, handleError]);
 
     const columns = useMemo<DataTableColumnDef<TaxonMapSettings>[]>(() => [
-        createTextColumn<TaxonMapSettings>('taxonNameLat', t("atlas.admin.taxaList.latinName"), {
+        createTextColumn<TaxonMapSettings>('taxonNameLat', t('atlas.admin.taxaList.latinName'), {
             enableSorting: true,
             enableFiltering: true,
-            filterPlaceholder: t("atlas.admin.taxaList.filterLatinName"),
+            filterPlaceholder: t('atlas.admin.taxaList.filterLatinName'),
             cellRenderer: (_value, row) => (
                 <>
                     <i>
@@ -169,7 +162,7 @@ export default function TaxaList() {
                 </>
             ),
         }),
-        createActionColumn<TaxonMapSettings>('isMapped', t("atlas.admin.taxaList.mapped"), (row) => (
+        createActionColumn<TaxonMapSettings>('isMapped', t('atlas.admin.taxaList.mapped'), (row) => (
             <MappedCell
                 row={row}
                 updatingTaxonId={updatingTaxonId}
@@ -179,7 +172,7 @@ export default function TaxaList() {
         ), {
             minWidth: '250px',
         }),
-        createNumberColumn<TaxonMapSettings>('commonThreshold', t("atlas.admin.taxaList.commonThreshold"), {
+        createNumberColumn<TaxonMapSettings>('commonThreshold', t('atlas.admin.taxaList.commonThreshold'), {
             enableSorting: true,
             enableFiltering: true,
             cellRenderer: (_value, row) => (
@@ -195,17 +188,17 @@ export default function TaxaList() {
                 />
             ),
         }),
-        createCheckboxColumn<TaxonMapSettings>('isProtected', t("atlas.admin.taxaList.protected"), async (_row, _checked) => {
+        createCheckboxColumn<TaxonMapSettings>('isProtected', t('atlas.admin.taxaList.protected'), async (_row, _checked) => {
             await handleIsProtectedChange(_row);
         }, {
             enableSorting: true,
             enableFiltering: true,
             isDisabled: (row) => updatingTaxonId === row.taxonId,
         }),
-        createTextColumn<TaxonMapSettings>('preslia', t("atlas.admin.taxaList.preslia"), {
+        createTextColumn<TaxonMapSettings>('preslia', t('atlas.admin.taxaList.preslia'), {
             enableSorting: true,
             enableFiltering: true,
-            filterPlaceholder: t("atlas.admin.taxaList.filterPreslia"),
+            filterPlaceholder: t('atlas.admin.taxaList.filterPreslia'),
             cellRenderer: (_value, row) => (
                 <PresliaInlineField
                     taxonId={row.taxonId}
@@ -215,13 +208,13 @@ export default function TaxaList() {
                 />
             ),
         }),
-        createTextColumn<TaxonMapSettings>('revisors', t("atlas.admin.taxaList.revisors"), {
+        createTextColumn<TaxonMapSettings>('revisors', t('atlas.admin.taxaList.revisors'), {
             enableSorting: true,
             enableFiltering: false,
-            filterPlaceholder: t("atlas.admin.taxaList.filterRevisors"),
+            filterPlaceholder: t('atlas.admin.taxaList.filterRevisors'),
             cellRenderer: (value) => value || '-',
         }),
-        createTextColumn<TaxonMapSettings>('revisionStatusId', t("atlas.admin.taxaList.revisionStatus"), {
+        createTextColumn<TaxonMapSettings>('revisionStatusId', t('atlas.admin.taxaList.revisionStatus'), {
             enableSorting: true,
             enableFiltering: true,
             filterOptions: revisionStatusOptions.map(o => ({value: String(o.id), label: `${o.description} [${o.id}]`})),
@@ -234,7 +227,7 @@ export default function TaxaList() {
                 />
             ),
         }),
-        createTextColumn<TaxonMapSettings>('publicationStatusId', t("atlas.admin.taxaList.publicationStatus"), {
+        createTextColumn<TaxonMapSettings>('publicationStatusId', t('atlas.admin.taxaList.publicationStatus'), {
             enableSorting: true,
             enableFiltering: true,
             filterOptions: publicationStatusOptions.map(o => ({
@@ -250,7 +243,7 @@ export default function TaxaList() {
                 />
             ),
         }),
-        createActionColumn<TaxonMapSettings>('archiveCSV', t("atlas.admin.taxaList.archiveCSV"), (row) => (
+        createActionColumn<TaxonMapSettings>('archiveCSV', t('atlas.admin.taxaList.archiveCSV'), (row) => (
             <ArchiveCsvCell
                 row={row}
                 onPngUploadComplete={handlePngUploadComplete}

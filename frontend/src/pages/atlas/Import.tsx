@@ -1,14 +1,14 @@
-import {Row, Col, Container, Alert} from "react-bootstrap";
-import {usePageTitle} from "@/hooks/usePageTitle";
-import {useTranslation} from "react-i18next";
-import {useState, useCallback} from "react";
-import {ImportForm, ImportResult} from "@/components/atlas/import/components";
-import {useImportData} from "@/components/atlas/import/hooks";
-import type {ImportOperation, ImportResult as ImportResultType, ImportError} from "@/components/atlas/import/types";
+import {Row, Col, Container, Alert} from 'react-bootstrap';
+import {usePageTitle} from '@/hooks/usePageTitle';
+import {useTranslation} from 'react-i18next';
+import {useState, useCallback} from 'react';
+import {ImportForm, ImportResult} from '@/components/atlas/import/components';
+import {useImportData} from '@/components/atlas/import/hooks';
+import type {ImportOperation, ImportResult as ImportResultType, ImportError} from '@/components/atlas/import/types';
 
 export default function Import() {
     const {t} = useTranslation();
-    usePageTitle(t("atlas.import.title"));
+    usePageTitle(t('atlas.import.title'));
 
     const [importResult, setImportResult] = useState<ImportResultType | null>(null);
     const [error, setError] = useState<ImportError | null>(null);
@@ -50,7 +50,7 @@ export default function Import() {
         <Container fluid>
             <Row>
                 <Col>
-                    <h3>{t("atlas.import.title")}</h3>
+                    <h3>{t('atlas.import.title')}</h3>
                 </Col>
             </Row>
 
@@ -60,12 +60,12 @@ export default function Import() {
                         <div className="row mb-3">
                             <div className="col">
                                 <Alert variant="danger">
-                                    <h4>{t("atlas.import.component.uploadFailed")}</h4>
+                                    <h4>{t('atlas.import.component.uploadFailed')}</h4>
                                     <br/>
-                                    <p><u>{t("atlas.import.component.errorMessage")}</u>: {error.errorMessage}</p>
+                                    <p><u>{t('atlas.import.component.errorMessage')}</u>: {error.errorMessage}</p>
                                     <hr/>
                                     <p>
-                                        {t("atlas.import.component.contactSupport")}
+                                        {t('atlas.import.component.contactSupport')}
                                         <a href="mailto:pladias@googlegroups.com">pladias@googlegroups.com</a>.
                                     </p>
                                 </Alert>

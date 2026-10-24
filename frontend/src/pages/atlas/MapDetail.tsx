@@ -1,24 +1,24 @@
-import {Container, Row, Col} from "react-bootstrap";
-import {usePageTitle} from "@/hooks/usePageTitle";
-import {useTranslation} from "react-i18next";
-import {useParams} from "react-router-dom";
-import {useEffect, useMemo, useState, useRef, useCallback} from "react";
-import {useQuery, useQueryClient} from "@tanstack/react-query";
-import type {RecordPladias} from "@/models";
-import type {RecordsByProject, RecordsByProjectMinimal} from "@/models/AtlasRecords";
+import {Container, Row, Col} from 'react-bootstrap';
+import {usePageTitle} from '@/hooks/usePageTitle';
+import {useTranslation} from 'react-i18next';
+import {useParams} from 'react-router-dom';
+import {useEffect, useMemo, useState, useRef, useCallback} from 'react';
+import {useQuery, useQueryClient} from '@tanstack/react-query';
+import type {RecordPladias} from '@/models';
+import type {RecordsByProject, RecordsByProjectMinimal} from '@/models/AtlasRecords';
 import {
     getNearbyExternalRecords,
     getNearbyPladiasRecords,
     getSquareExternalRecords,
     getSquarePladiasRecords,
-} from "@/services/atlasApi";
-import {getTaxon} from "@/services/taxonApi";
-import {notifyApiError} from "@/stores/notificationStore";
-import {MapComponent} from "@/components/atlas/mapDetail/MapComponent";
-import {InfoPanel} from "@/components/atlas/mapDetail/InfoPanel";
-import RichTextMessage from "@/components/RichTextMessage";
-import {useRecordSourceVisibility} from "@/components/atlas/mapDetail/hooks/useRecordSourceVisibility";
-import {filterRecordsByVisibility} from "@/components/atlas/mapDetail/recordSources";
+} from '@/services/atlasApi';
+import {getTaxon} from '@/services/taxonApi';
+import {notifyApiError} from '@/stores/notificationStore';
+import {MapComponent} from '@/components/atlas/mapDetail/MapComponent';
+import {InfoPanel} from '@/components/atlas/mapDetail/InfoPanel';
+import RichTextMessage from '@/components/RichTextMessage';
+import {useRecordSourceVisibility} from '@/components/atlas/mapDetail/hooks/useRecordSourceVisibility';
+import {filterRecordsByVisibility} from '@/components/atlas/mapDetail/recordSources';
 
 /** Data mapy (minimal) a tabulky (full) kvadrantu – jeden query, jeden loading. */
 interface SquareRecords {
@@ -46,29 +46,29 @@ export default function MapDetail() {
     // viditelnost skupin záznamů na mapě (checkboxy v InfoPanelu), perzistováno v user settings
     const {visibleProjects, toggleProjectVisibility} = useRecordSourceVisibility();
 
-    usePageTitle(t("atlas.mapDetail.title"));
+    usePageTitle(t('atlas.mapDetail.title'));
 
     const id = useMemo(() => {
-        const parsed = parseInt(taxonId ?? "", 10);
+        const parsed = parseInt(taxonId ?? '', 10);
         return isNaN(parsed) ? null : parsed;
     }, [taxonId]);
 
     // taxon pro hlávčku – bez cache (sekce J), načtení při mountu
     const {data: taxon, error: taxonError} = useQuery({
-        queryKey: ["taxon", id],
+        queryKey: ['taxon', id],
         queryFn: () => getTaxon(id!),
         enabled: id !== null,
     });
 
     useEffect(() => {
         if (taxonError) {
-            notifyApiError(taxonError, t("atlas.taxonLoadFailed"));
+            notifyApiError(taxonError, t('atlas.taxonLoadFailed'));
         }
     }, [taxonError, t]);
 
     // záznamy všech tří projektů – minimální data pro mapu (okolní kvadranty)
     // a plná pro tabulku (aktuální kvadrant) se načítají společně jako dřív
-    const recordsKey = useMemo(() => ["squareRecords", squareId, id] as const, [squareId, id]);
+    const recordsKey = useMemo(() => ['squareRecords', squareId, id] as const, [squareId, id]);
     const recordsQuery = useQuery({
         queryKey: recordsKey,
         queryFn: async (): Promise<SquareRecords> => {
@@ -77,11 +77,11 @@ export default function MapDetail() {
                 tablePladias, tableGbif, tableInaturalist
             ] = await Promise.all([
                 getNearbyPladiasRecords(squareId!, id!),
-                getNearbyExternalRecords(squareId!, id!, "gbif"),
-                getNearbyExternalRecords(squareId!, id!, "inaturalist"),
+                getNearbyExternalRecords(squareId!, id!, 'gbif'),
+                getNearbyExternalRecords(squareId!, id!, 'inaturalist'),
                 getSquarePladiasRecords(squareId!, id!),
-                getSquareExternalRecords(squareId!, id!, "gbif"),
-                getSquareExternalRecords(squareId!, id!, "inaturalist"),
+                getSquareExternalRecords(squareId!, id!, 'gbif'),
+                getSquareExternalRecords(squareId!, id!, 'inaturalist'),
             ]);
             return {
                 mapRecords: {pladias: mapPladias, gbif: mapGbif, inaturalist: mapInaturalist},
@@ -101,7 +101,7 @@ export default function MapDetail() {
 
     useEffect(() => {
         if (recordsQuery.error) {
-            notifyApiError(recordsQuery.error, t("atlas.mapDetail.loadRecordsFailed"));
+            notifyApiError(recordsQuery.error, t('atlas.mapDetail.loadRecordsFailed'));
         }
     }, [recordsQuery.error, t]);
 
@@ -191,7 +191,7 @@ export default function MapDetail() {
                         <RichTextMessage html={taxon?.nameHtml}/>
                         <span className="text-muted small"> ID: {taxonId}</span>
                         <span className="text-muted small ms-2">
-                                    ({t("atlas.mapDetail.square")} {squareId})
+                                    ({t('atlas.mapDetail.square')} {squareId})
                                 </span>
                         <a href={`/atlas/mapMain/${taxonId}`} className="small ms-2 fs-5">
                             zpět na hlavní mapu

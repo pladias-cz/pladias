@@ -8,7 +8,7 @@
  * mimo tuto komponentu jsou mapové popup šablony (OpenLayers Popup HTML).
  */
 
-export type RichTextElement = "span" | "div" | "p";
+export type RichTextElement = 'span' | 'div' | 'p';
 
 interface RichTextMessageProps {
     /** HTML z backendu – důvěryhodné, viz komentář výše; null/undefined → prázdné. */
@@ -18,9 +18,9 @@ interface RichTextMessageProps {
     className?: string;
 }
 
-function RichTextMessage({html, as = "span", className}: RichTextMessageProps) {
+function RichTextMessage({html, as = 'span', className}: RichTextMessageProps) {
     const Tag = as;
-    return <Tag className={className} dangerouslySetInnerHTML={{__html: html ?? ""}}/>;
+    return <Tag className={className} dangerouslySetInnerHTML={{__html: html ?? ''}}/>;
 }
 
 export default RichTextMessage;

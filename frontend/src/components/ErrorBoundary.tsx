@@ -1,7 +1,7 @@
-import React from "react";
-import {useTranslation} from "react-i18next";
-import {Alert, Button} from "react-bootstrap";
-import {logError} from "@/services/logger";
+import React from 'react';
+import {useTranslation} from 'react-i18next';
+import {Alert, Button} from 'react-bootstrap';
+import {logError} from '@/services/logger';
 
 /**
  * Globální error boundary.
@@ -30,10 +30,10 @@ function ErrorBoundaryFallback({onReload}: { onReload: () => void }) {
 
     return (
         <Alert variant="danger" className="text-center">
-            <Alert.Heading>{t("common.errorBoundary.title")}</Alert.Heading>
-            <p>{t("common.errorBoundary.message")}</p>
+            <Alert.Heading>{t('common.errorBoundary.title')}</Alert.Heading>
+            <p>{t('common.errorBoundary.message')}</p>
             <Button variant="outline-danger" onClick={onReload}>
-                {t("common.errorBoundary.reload")}
+                {t('common.errorBoundary.reload')}
             </Button>
         </Alert>
     );
@@ -49,7 +49,7 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
     componentDidCatch(error: Error, info: React.ErrorInfo): void {
         // Vývojářská stopa do centrálního logu (sekce F); uživatelská zpětná
         // vazba je fallback UI.
-        logError(error, {source: "errorBoundary", componentStack: info.componentStack});
+        logError(error, {source: 'errorBoundary', componentStack: info.componentStack});
     }
 
     private readonly handleReload = (): void => {

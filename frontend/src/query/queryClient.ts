@@ -19,24 +19,24 @@
  * (logError je idempotentní per instance, duplikát v logu nevznikne).
  */
 
-import {MutationCache, QueryCache, QueryClient} from "@tanstack/react-query";
-import {logError} from "@/services/logger";
+import {MutationCache, QueryCache, QueryClient} from '@tanstack/react-query';
+import {logError} from '@/services/logger';
 
 export function createQueryClient(): QueryClient {
     return new QueryClient({
         queryCache: new QueryCache({
-            onError: (error, query) => logError(error, {source: "react-query", queryKey: query.queryKey}),
+            onError: (error, query) => logError(error, {source: 'react-query', queryKey: query.queryKey}),
         }),
         mutationCache: new MutationCache({
             // signatura: (error, variables, onMutateResult, mutation, context)
             onError: (error, _variables, _onMutateResult, mutation) =>
-                logError(error, {source: "react-query", mutationKey: mutation.options.mutationKey}),
+                logError(error, {source: 'react-query', mutationKey: mutation.options.mutationKey}),
         }),
         defaultOptions: {
             queries: {
                 staleTime: 0,
                 gcTime: 0,
-                refetchOnMount: "always",
+                refetchOnMount: 'always',
                 refetchOnWindowFocus: false,
                 refetchOnReconnect: false,
                 retry: false,

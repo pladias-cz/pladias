@@ -39,7 +39,7 @@ export function Autocomplete<T extends Option>({
             } catch (err) {
                 // přerušené hledání (novější text / unmount) není chyba
                 if (!isAbortError(err)) {
-                    notifyApiError(err, t("common.autocomplete.searchFailed"));
+                    notifyApiError(err, t('common.autocomplete.searchFailed'));
                 }
                 throw err;
             }

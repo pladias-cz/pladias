@@ -26,6 +26,11 @@ export default tseslint.config([
         argsIgnorePattern: '^_',
         varsIgnorePattern: '^_',
       }],
+      // Jednotné uvozovky (improvements.md §2.8): single v TS kódu (většinové
+      // nastavení), double v JSX atributech (jsx-quotes); avoidEscape dovolí
+      // dvojité uvozovky pro řetězce obsahující apostrof.
+      'quotes': ['error', 'single', {avoidEscape: true}],
+      'jsx-quotes': ['error', 'prefer-double'],
     },
   },
   {

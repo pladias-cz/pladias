@@ -1,14 +1,15 @@
-import {useEffect, useState} from "react";
-import {Spinner} from "react-bootstrap";
-import {type Feature} from "@/models/Feature";
-import type {TraitVisibilityStatus} from "@/models/TraitVisibilityStatus";
-import type {UserId} from "@/models/UserId";
-import type {TraitDatatype} from "@/models/TraitDatatype";
-import {useUser} from "@/context/UserContext";
-import {useTranslation} from "react-i18next";
-import {getUsersMinimal} from "@/services/userApi";
-import {getTraitDatatypes, getTraitVisibilityStatuses} from "@/services/traitApi";
-import {notifyApiError} from "@/stores/notificationStore";
+import {useState} from 'react';
+import {Spinner} from 'react-bootstrap';
+import {useQuery} from '@tanstack/react-query';
+import {type Feature} from '@/models/Feature';
+import type {TraitVisibilityStatus} from '@/models/TraitVisibilityStatus';
+import type {UserId} from '@/models/UserId';
+import type {TraitDatatype} from '@/models/TraitDatatype';
+import {useUser} from '@/context/UserContext';
+import {useTranslation} from 'react-i18next';
+import {getUsersMinimal} from '@/services/userApi';
+import {getTraitDatatypes, getTraitVisibilityStatuses} from '@/services/traitApi';
+import {useQueryErrorNotify} from '@/query/useQueryErrorNotify';
 
 interface Props {
     feature: Feature;
@@ -19,36 +20,22 @@ export default function TraitUpload({feature, submitting = false}: Props) {
     const user = useUser();
     const {t} = useTranslation();
 
-    const [datatype, setDatatype] = useState<TraitDatatype | null>(null);
-    const [users, setUsers] = useState<UserId[]>([]);
-    const [visibility, setVisibility] = useState<TraitVisibilityStatus[]>([]);
-    const [operation, setOperation] = useState("validation");
-    const [loading, setLoading] = useState(true);
+    // číselníky formuláře – bez cache (sekce J), při mountu znovu
+    const usersQuery = useQuery({queryKey: ['usersMinimal'], queryFn: getUsersMinimal});
+    const statusesQuery = useQuery({queryKey: ['traitVisibilityStatuses'], queryFn: getTraitVisibilityStatuses});
+    const datatypesQuery = useQuery({queryKey: ['traitDatatypes'], queryFn: getTraitDatatypes});
 
-    useEffect(() => {
-        async function load() {
-            try {
-                const [users, statuses, datatypes] = await Promise.all([
-                    getUsersMinimal(),
-                    getTraitVisibilityStatuses(),
-                    getTraitDatatypes(),
-                ]);
+    // jedna notifikace i při selhání více číselníků najednou (původní chování
+    // jednoho catch nad Promise.all); selecty zůstanou prázdné
+    const firstError = usersQuery.error ?? statusesQuery.error ?? datatypesQuery.error;
+    useQueryErrorNotify(firstError, t('common.loadFailed'));
 
-                setUsers(users);
-                setVisibility(statuses);
+    const users: UserId[] = usersQuery.data ?? [];
+    const visibility: TraitVisibilityStatus[] = statusesQuery.data ?? [];
+    const datatype: TraitDatatype | null = datatypesQuery.data?.find(d => d.id === feature.datatype) ?? null;
+    const loading = usersQuery.isPending || statusesQuery.isPending || datatypesQuery.isPending;
 
-                setDatatype(
-                    datatypes.find(d => d.id === feature.datatype) ?? null
-                );
-            } catch (e) {
-                notifyApiError(e, t("common.loadFailed"));
-            } finally {
-                setLoading(false);
-            }
-        }
-
-        load();
-    }, [feature.datatype, t]);
+    const [operation, setOperation] = useState('validation');
 
     if (!feature || loading) return null;
 
@@ -59,7 +46,7 @@ export default function TraitUpload({feature, submitting = false}: Props) {
             {/* file upload */}
             <div className="form-group row">
                 <label className="col-sm-3 control-label" htmlFor="data">
-                    {t("trait.upload.inputFile")}
+                    {t('trait.upload.inputFile')}
                 </label>
                 <div className="col-sm-9">
                     <input
@@ -72,15 +59,15 @@ export default function TraitUpload({feature, submitting = false}: Props) {
                     />
                     {datatype && (
                         <p className="help-block">
-                            {t("trait.upload.fileStructure")}{" "}
+                            {t('trait.upload.fileStructure')}{' '}
                             <a
                                 href={`/assets/downloads/traits/${datatype.name}_template.xlsx`}
                                 target="_blank"
                                 rel="noreferrer"
                             >
-                                {t("trait.upload.sampleExcel")}
-                            </a>{" "}
-                            {t("trait.upload.forDatatype")} <b>{datatype.name}</b>; {t("trait.upload.fileSize")}.
+                                {t('trait.upload.sampleExcel')}
+                            </a>{' '}
+                            {t('trait.upload.forDatatype')} <b>{datatype.name}</b>; {t('trait.upload.fileSize')}.
                         </p>
                     )}
                 </div>
@@ -89,7 +76,7 @@ export default function TraitUpload({feature, submitting = false}: Props) {
             {/* owner */}
             <div className="form-group row">
                 <label className="col-sm-3 control-label" htmlFor="owner">
-                    {t("trait.upload.owner")}
+                    {t('trait.upload.owner')}
                 </label>
                 <div className="col-sm-7">
                     <select
@@ -98,7 +85,7 @@ export default function TraitUpload({feature, submitting = false}: Props) {
                         name="owner"
                         defaultValue={user.id}
                     >
-                        <option value="">{t("trait.upload.selectOwner")}</option>
+                        <option value="">{t('trait.upload.selectOwner')}</option>
                         {users.map(u => (
                             <option key={u.id} value={u.id}>
                                 {u.name}
@@ -111,7 +98,7 @@ export default function TraitUpload({feature, submitting = false}: Props) {
             {/* source */}
             <div className="form-group row">
                 <label className="col-sm-3 control-label" htmlFor="source">
-                    {t("trait.upload.source")}
+                    {t('trait.upload.source')}
                 </label>
                 <div className="col-sm-7">
                     <input
@@ -125,7 +112,7 @@ export default function TraitUpload({feature, submitting = false}: Props) {
             {/* description cz */}
             <div className="form-group row">
                 <label className="col-sm-3 control-label" htmlFor="descriptionCz">
-                    {t("trait.upload.descriptionCz")}
+                    {t('trait.upload.descriptionCz')}
                 </label>
                 <div className="col-sm-7">
                     <textarea className="form-control" rows={2} id="descriptionCz" name="descriptionCz"/>
@@ -135,7 +122,7 @@ export default function TraitUpload({feature, submitting = false}: Props) {
             {/* description en */}
             <div className="form-group row">
                 <label className="col-sm-3 control-label" htmlFor="descriptionEn">
-                    {t("trait.upload.descriptionEn")}
+                    {t('trait.upload.descriptionEn')}
                 </label>
                 <div className="col-sm-7">
                     <textarea className="form-control" rows={2} id="descriptionEn" name="descriptionEn"/>
@@ -145,7 +132,7 @@ export default function TraitUpload({feature, submitting = false}: Props) {
             {/* visibility */}
             <div className="form-group row">
                 <label className="col-sm-3 control-label" htmlFor="visibility">
-                    {t("trait.upload.visibility")}
+                    {t('trait.upload.visibility')}
                 </label>
                 <div className="col-sm-7">
                     {/* dostupnost je povinná jen pro import, validace ji nepožaduje */}
@@ -153,9 +140,9 @@ export default function TraitUpload({feature, submitting = false}: Props) {
                         className="form-control"
                         id="visibility"
                         name="visibility"
-                        required={operation === "import"}
+                        required={operation === 'import'}
                     >
-                        <option value="">{t("trait.upload.selectVisibility")}</option>
+                        <option value="">{t('trait.upload.selectVisibility')}</option>
                         {visibility.map(v => (
                             <option key={v.id} value={v.id}>
                                 {v.descriptionCz}
@@ -168,7 +155,7 @@ export default function TraitUpload({feature, submitting = false}: Props) {
             {/* attachment */}
             <div className="form-group row">
                 <label className="col-sm-3 control-label" htmlFor="attachment">
-                    {t("trait.upload.attachment")}
+                    {t('trait.upload.attachment')}
                 </label>
                 <div className="col-sm-9">
                     <input type="file" id="attachment" name="attachment"/>
@@ -177,7 +164,7 @@ export default function TraitUpload({feature, submitting = false}: Props) {
 
             {/* operation */}
             <div className="form-group row">
-                <label className="col-sm-3 control-label">{t("trait.upload.operation")}</label>
+                <label className="col-sm-3 control-label">{t('trait.upload.operation')}</label>
                 <div className="col-sm-9">
                     <div className="radio">
                         <label>
@@ -185,11 +172,11 @@ export default function TraitUpload({feature, submitting = false}: Props) {
                                 type="radio"
                                 name="operation"
                                 value="validation"
-                                checked={operation === "validation"}
+                                checked={operation === 'validation'}
                                 disabled={submitting}
-                                onChange={() => setOperation("validation")}
+                                onChange={() => setOperation('validation')}
                             />
-                            {t("trait.upload.validate")}
+                            {t('trait.upload.validate')}
                         </label>
                     </div>
                     <div className="radio">
@@ -198,11 +185,11 @@ export default function TraitUpload({feature, submitting = false}: Props) {
                                 type="radio"
                                 name="operation"
                                 value="import"
-                                checked={operation === "import"}
+                                checked={operation === 'import'}
                                 disabled={submitting}
-                                onChange={() => setOperation("import")}
+                                onChange={() => setOperation('import')}
                             />
-                            {t("trait.upload.import")}
+                            {t('trait.upload.import')}
                         </label>
                     </div>
                 </div>
@@ -213,10 +200,10 @@ export default function TraitUpload({feature, submitting = false}: Props) {
                     {submitting && (
                         <>
                             <Spinner as="span" size="sm" animation="border" className="me-2"/>
-                            {t("common.submitting")}
+                            {t('common.submitting')}
                         </>
                     )}
-                    {!submitting && t("trait.upload.submit")}
+                    {!submitting && t('trait.upload.submit')}
                 </button>
             </div>
         </>

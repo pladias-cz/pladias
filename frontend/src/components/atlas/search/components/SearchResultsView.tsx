@@ -3,12 +3,12 @@
  * a tabulka záznamů. BulkEdit se vkládá jako children (jen pro editory).
  */
 
-import type {ReactNode} from "react";
-import {useTranslation} from "react-i18next";
-import {PladiasRecordsTable} from "@/components/atlas/mapDetail/PladiasRecordsTable";
-import type {RecordPladias} from "@/models";
-import {DEFAULT_PAGE_SIZE, computeTotalPages, getVisiblePages} from "../searchRequest";
-import type {SortOption} from "../types";
+import type {ReactNode} from 'react';
+import {useTranslation} from 'react-i18next';
+import {PladiasRecordsTable} from '@/components/atlas/mapDetail/PladiasRecordsTable';
+import type {RecordPladias} from '@/models';
+import {DEFAULT_PAGE_SIZE, computeTotalPages, getVisiblePages} from '../searchRequest';
+import type {SortOption} from '../types';
 
 interface SearchResultsViewProps {
     records: RecordPladias[];
@@ -60,14 +60,14 @@ export function SearchResultsView({
                     disabled={!canGoPrev}
                     onClick={() => onPageChange(currentPage - 1)}
                 >
-                    {t("atlas.search.grid.previous")}
+                    {t('atlas.search.grid.previous')}
                 </button>
 
                 {visiblePages.map((pageNumber) => (
                     <button
                         key={pageNumber}
                         type="button"
-                        className={`btn btn-sm ${pageNumber === currentPage ? "btn-primary" : "btn-outline-secondary"}`}
+                        className={`btn btn-sm ${pageNumber === currentPage ? 'btn-primary' : 'btn-outline-secondary'}`}
                         disabled={isLoading || pageNumber === currentPage}
                         onClick={() => onPageChange(pageNumber)}
                     >
@@ -81,20 +81,20 @@ export function SearchResultsView({
                     disabled={!canGoNext}
                     onClick={() => onPageChange(currentPage + 1)}
                 >
-                    {t("atlas.search.grid.next")}
+                    {t('atlas.search.grid.next')}
                 </button>
 
                 <span className="small text-muted ms-2">
                     {totalPages != null
-                        ? t("atlas.search.grid.pageOf", {page: currentPage, totalPages})
-                        : t("atlas.search.grid.page", {page: currentPage})}
+                        ? t('atlas.search.grid.pageOf', {page: currentPage, totalPages})
+                        : t('atlas.search.grid.page', {page: currentPage})}
                 </span>
                 {totalCount != null && (
                     <span className="small text-muted">
-                        {t("atlas.search.grid.totalFound", {totalCount})}
+                        {t('atlas.search.grid.totalFound', {totalCount})}
                     </span>
                 )}
-                {isLoading && <span className="small text-muted">{t("common.loading")}</span>}
+                {isLoading && <span className="small text-muted">{t('common.loading')}</span>}
 
                 <button
                     type="button"
@@ -102,21 +102,21 @@ export function SearchResultsView({
                     disabled={isLoading}
                     onClick={onNewSearch}
                 >
-                    {t("atlas.search.grid.newSearch")}
+                    {t('atlas.search.grid.newSearch')}
                 </button>
             </div>
 
             <div className="w-100 mt-3">
                 <label htmlFor="recordsSortSelect" className="form-label mb-1">
-                    {t("atlas.search.form.sortLabel")}
+                    {t('atlas.search.form.sortLabel')}
                 </label>
                 <div className="d-flex align-items-center gap-3 flex-wrap">
                     <select
                         id="recordsSortSelect"
                         className="form-select form-select-sm"
                         style={{maxWidth: 280}}
-                        value={sortBy ?? "taxonName"}
-                        onChange={(event) => onSortChange(event.target.value || "taxonName")}
+                        value={sortBy ?? 'taxonName'}
+                        onChange={(event) => onSortChange(event.target.value || 'taxonName')}
                         disabled={isLoading}
                     >
                         {sortOptions.map((option) => (
@@ -136,7 +136,7 @@ export function SearchResultsView({
                             disabled={isLoading || !sortBy}
                         />
                         <label className="form-check-label" htmlFor="recordsSortDescending">
-                            {t("atlas.search.form.sortDescending")}
+                            {t('atlas.search.form.sortDescending')}
                         </label>
                     </div>
                 </div>

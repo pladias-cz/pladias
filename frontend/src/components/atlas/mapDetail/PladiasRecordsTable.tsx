@@ -5,8 +5,8 @@ import type {RecordPladias} from '@/models';
 import './RecordsTable.scss';
 import {HerbariumQualityCheckbox} from './HerbariumQualityCheckbox';
 import {AddCommentModal} from './AddCommentModal';
-import {ValidationStatusId} from "@/core/validationStatus";
-import RichTextMessage from "@/components/RichTextMessage";
+import {ValidationStatusId} from '@/core/validationStatus';
+import RichTextMessage from '@/components/RichTextMessage';
 import {ValidationStatusCheckboxes} from './ValidationStatusCheckboxes';
 import {OriginalityStatusIcons} from './OriginalityStatusIcons';
 import {IncludeInMapCheckbox} from './IncludeInMapCheckbox';
@@ -133,7 +133,7 @@ export function PladiasRecordsTable({
                 return next;
             });
         } catch (error) {
-            notifyApiError(error, t("atlas.mapDetail.markCommentAsReadError"));
+            notifyApiError(error, t('atlas.mapDetail.markCommentAsReadError'));
         } finally {
             setMarkingCommentIds((prev) => {
                 const next = new Set(prev);
@@ -167,22 +167,22 @@ export function PladiasRecordsTable({
             {showExpandAllButton && (
                 <div className="d-flex justify-content-end mb-2">
                     <Button variant="outline-secondary" size="sm" onClick={toggleExpandAll}>
-                        {isAllExpanded ? t("atlas.mapDetail.collapseAll") : t("atlas.mapDetail.expandAll")}
+                        {isAllExpanded ? t('atlas.mapDetail.collapseAll') : t('atlas.mapDetail.expandAll')}
                     </Button>
                 </div>
             )}
             <Table striped bordered hover size="sm">
                 <thead>
                 <tr>
-                    <th title={t("atlas.mapDetail.square")}>{t("atlas.mapDetail.squareAbbrev")}</th>
+                    <th title={t('atlas.mapDetail.square')}>{t('atlas.mapDetail.squareAbbrev')}</th>
                     {isVascular && (
-                        <th title={t("atlas.mapDetail.phytochorion")}>{t("atlas.mapDetail.phytochorionAbbrev")}</th>
+                        <th title={t('atlas.mapDetail.phytochorion')}>{t('atlas.mapDetail.phytochorionAbbrev')}</th>
                     )}
-                    <th>{t("atlas.mapDetail.locality")}</th>
-                    <th>{t("atlas.mapDetail.collectors")}</th>
-                    <th>{t("atlas.mapDetail.date")}</th>
-                    <th>{t("atlas.mapDetail.originality")}</th>
-                    <th>{t("atlas.mapDetail.validationStatus")}</th>
+                    <th>{t('atlas.mapDetail.locality')}</th>
+                    <th>{t('atlas.mapDetail.collectors')}</th>
+                    <th>{t('atlas.mapDetail.date')}</th>
+                    <th>{t('atlas.mapDetail.originality')}</th>
+                    <th>{t('atlas.mapDetail.validationStatus')}</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -214,7 +214,7 @@ export function PladiasRecordsTable({
                                 </td>
                                 {isVascular && (
                                     <td className="align-text-top"
-                                        title={record.phytochorionName || ""}>
+                                        title={record.phytochorionName || ''}>
                                         {record.phytochorionName || '-'}
                                     </td>
                                 )}
@@ -234,7 +234,7 @@ export function PladiasRecordsTable({
                                             {isVascular
                                                 ? (record.nearestTownText || record.nearestTownName || '')
                                                 : (record.nearestTownName || '')}
-                                            {record.districtName && t("atlas.mapDetail.districtInline", {district: record.districtName})}
+                                            {record.districtName && t('atlas.mapDetail.districtInline', {district: record.districtName})}
                                         </b>
                                         {record.locality && (<br/>)}
                                         {record.locality && (
@@ -246,22 +246,22 @@ export function PladiasRecordsTable({
                                         )}
                                         {record.source && (
                                             <span><br/>
-                                             <b>{t("atlas.mapDetail.sourceLower")}: </b>
+                                             <b>{t('atlas.mapDetail.sourceLower')}: </b>
                                                 {record.source}
                                                 <br/></span>
                                         )}
                                         {!isVascular && record.substrate && (
                                             <span><br/>
-                                             <b>{t("atlas.mapDetail.substrate")}:</b> {record.substrate}<br/></span>
+                                             <b>{t('atlas.mapDetail.substrate')}:</b> {record.substrate}<br/></span>
                                         )}
 
                                     </button>
                                     {record.herbariums.length > 0 && (
                                         <span><br/>
-       <b>{t("atlas.mapDetail.herbariumLower")}:</b>{" "}
+       <b>{t('atlas.mapDetail.herbariumLower')}:</b>{' '}
                                             {record.herbariums.map((herbarium, index) => (
                                                 <React.Fragment key={herbarium.id}>
-                                                    {index > 0 && ", "}
+                                                    {index > 0 && ', '}
 
                                                     <span title={herbarium.label}>{herbarium.name}</span>
                                                 </React.Fragment>
@@ -288,13 +288,13 @@ export function PladiasRecordsTable({
                                     {(record.unresolvedCommentsCount ?? 0) > 0 && (
                                         <p style={{fontSize: '80%'}}>
                                             <span className="bi bi-paperclip" aria-hidden="true"></span>
-                                            {" "}{t("atlas.mapDetail.commented")}
+                                            {' '}{t('atlas.mapDetail.commented')}
                                         </p>
                                     )}
                                     {record.hasHistory && (
                                         <p style={{fontSize: '80%'}}>
                                             <span className="bi bi-pencil" aria-hidden="true"></span>
-                                            {" "}{t("atlas.mapDetail.edited")}
+                                            {' '}{t('atlas.mapDetail.edited')}
                                         </p>
                                     )}
                                 </td>
@@ -319,7 +319,7 @@ export function PladiasRecordsTable({
                                     )}
                                     <br/>
                                     -- <br/>
-                                    {t("atlas.mapDetail.importedBy")} <b>{record.batchAuthorName}</b>
+                                    {t('atlas.mapDetail.importedBy')} <b>{record.batchAuthorName}</b>
 
                                 </td>
                                 <td className="align-text-top">
@@ -362,21 +362,21 @@ export function PladiasRecordsTable({
                                         <div className="row">
                                             <div className="col-md-6">
                                                 <div>
-                                                    <b>{t("atlas.mapDetail.originalName")}:</b>{' '}
+                                                    <b>{t('atlas.mapDetail.originalName')}:</b>{' '}
                                                     {record.taxonOriginal}
                                                 </div>
                                                 <div>
-                                                    <b>{t("atlas.mapDetail.localityLower")}:</b> {record.locality || ''}
+                                                    <b>{t('atlas.mapDetail.localityLower')}:</b> {record.locality || ''}
                                                 </div>
                                                 {isVascular && (
                                                     <div>
-                                                        <b>{t("atlas.mapDetail.nearestTownLower")}:</b> {record.nearestTownText || record.nearestTownName || '-'}
-                                                        {record.districtName && t("atlas.mapDetail.districtInline", {district: record.districtName})}
+                                                        <b>{t('atlas.mapDetail.nearestTownLower')}:</b> {record.nearestTownText || record.nearestTownName || '-'}
+                                                        {record.districtName && t('atlas.mapDetail.districtInline', {district: record.districtName})}
                                                     </div>
                                                 )}
                                                 {record.latitude && record.longitude && (
                                                     <div>
-                                                        <b>{t("atlas.mapDetail.gps")}: </b>
+                                                        <b>{t('atlas.mapDetail.gps')}: </b>
                                                         <a
                                                             href={`http://mapy.cz/turisticka?x=${record.longitude}&y=${record.latitude}&z=16&l=0&source=coor&id=${record.longitude}%2C${record.latitude}`}
                                                             target="_blank"
@@ -390,13 +390,13 @@ export function PladiasRecordsTable({
                                                         <br/>
                                                         {record.gpsPrecision && (
                                                             <>
-                                                                <b>{t("atlas.mapDetail.gpsPrecision")}:</b> {record.gpsPrecision} m</>
+                                                                <b>{t('atlas.mapDetail.gpsPrecision')}:</b> {record.gpsPrecision} m</>
                                                         )}
                                                     </div>
                                                 )}
                                                 {(record.altitudeMin || record.altitudeMax) && (
                                                     <div>
-                                                        <b>{t("atlas.mapDetail.altitude")}:</b>
+                                                        <b>{t('atlas.mapDetail.altitude')}:</b>
                                                         {record.altitudeMin === record.altitudeMax
                                                             ? `${record.altitudeMax} m`
                                                             : `${record.altitudeMin} - ${record.altitudeMax} m`}
@@ -406,7 +406,7 @@ export function PladiasRecordsTable({
                                             <div className="col-md-6">
                                                 {(record.environment || record.remarkExcerption || record.remarkDoubt || record.remarkOther) && (
                                                     <div>
-                                                        <b>{t("atlas.mapDetail.otherNotes")}:</b>
+                                                        <b>{t('atlas.mapDetail.otherNotes')}:</b>
                                                         {record.environment && <><br/>{record.environment}</>}
                                                         {record.remarkExcerption && <><br/>{record.remarkExcerption}</>}
                                                         {record.remarkDoubt && <><br/>{record.remarkDoubt}</>}
@@ -423,7 +423,7 @@ export function PladiasRecordsTable({
                                                     href={`/atlas/record/${record.id}`}
                                                     style={{padding: 0, textDecoration: 'none'}}
                                                 >
-                                                    {t("atlas.mapDetail.editRecordShowDetail")}
+                                                    {t('atlas.mapDetail.editRecordShowDetail')}
                                                 </Button>
                                                 {' | '}
                                                 <Button
@@ -432,7 +432,7 @@ export function PladiasRecordsTable({
                                                     onClick={() => setCommentModalRecordId(record.id)}
                                                     style={{padding: 0, textDecoration: 'none'}}
                                                 >
-                                                    {t("atlas.mapDetail.addComment")}
+                                                    {t('atlas.mapDetail.addComment')}
                                                 </Button>
                                             </div>
                                         </div>
@@ -440,7 +440,7 @@ export function PladiasRecordsTable({
                                             <div className="col-md-6">
                                                 {record.comments && record.comments.length > 0 && (
                                                     <div>
-                                                        <b>{t("atlas.mapDetail.comments")}:</b>
+                                                        <b>{t('atlas.mapDetail.comments')}:</b>
                                                         {record.comments.map((comment) => (
                                                             <div key={comment.id} className="comment"
                                                                  style={{marginTop: '5px'}}>
@@ -457,8 +457,8 @@ export function PladiasRecordsTable({
                                                                                 marginLeft: '6px',
                                                                                 lineHeight: 1
                                                                             }}
-                                                                            aria-label={t("atlas.mapDetail.markCommentAsRead", {defaultValue: "Označit komentář jako přečtený"})}
-                                                                            title={t("atlas.mapDetail.markCommentAsRead", {defaultValue: "Označit komentář jako přečtený"})}
+                                                                            aria-label={t('atlas.mapDetail.markCommentAsRead', {defaultValue: 'Označit komentář jako přečtený'})}
+                                                                            title={t('atlas.mapDetail.markCommentAsRead', {defaultValue: 'Označit komentář jako přečtený'})}
                                                                             onClick={() => handleMarkCommentAsRead(comment.id)}
                                                                             disabled={markingCommentIds.has(comment.id)}
                                                                         >
@@ -477,10 +477,10 @@ export function PladiasRecordsTable({
                                     </td>
                                     <td colSpan={isVascular ? 2 : 1}>
 
-                                        <small>{t("atlas.mapDetail.recordIdLabel")}: {record.id}</small>
+                                        <small>{t('atlas.mapDetail.recordIdLabel')}: {record.id}</small>
                                         {record.originalId && (
                                             <>
-                                                <br/><small>{t("atlas.mapDetail.externalIdLabel")}: {record.originalId}</small></>
+                                                <br/><small>{t('atlas.mapDetail.externalIdLabel')}: {record.originalId}</small></>
                                         )}
                                         {/* Include in Map - conditionally rendered based on validation status */}
                                         {record.canEditValidationFields ? (
@@ -491,20 +491,20 @@ export function PladiasRecordsTable({
                                                                                  onRecordUpdated={onRecordUpdated}/>;
                                                 }
                                                 return <>
-                                                    <br/><small>{t("atlas.mapDetail.includedInMapLabel")}: {record.includedInMap ? t("common.yes") : t("common.no")}</small></>;
+                                                    <br/><small>{t('atlas.mapDetail.includedInMapLabel')}: {record.includedInMap ? t('common.yes') : t('common.no')}</small></>;
                                             })()
                                         ) : (
                                             <>
-                                                <br/><small>{t("atlas.mapDetail.includedInMapLabel")}: {record.includedInMap ? t("common.yes") : t("common.no")}</small></>
+                                                <br/><small>{t('atlas.mapDetail.includedInMapLabel')}: {record.includedInMap ? t('common.yes') : t('common.no')}</small></>
                                         )}
                                         <br/>
 
                                         {/* Herbarium Quality display - always show the text, but checkbox is conditional */}
-                                        <small>{t("atlas.mapDetail.revisedHerbariumLabel")}: {record.herbariumQuality ? t("common.yes") : t("common.no")}</small>
+                                        <small>{t('atlas.mapDetail.revisedHerbariumLabel')}: {record.herbariumQuality ? t('common.yes') : t('common.no')}</small>
                                         <br/>
 
                                         {/* Originality Status - conditionally rendered based on validation status */}
-                                        <small>{t("atlas.mapDetail.originalOccurrenceLabel")}: </small>
+                                        <small>{t('atlas.mapDetail.originalOccurrenceLabel')}: </small>
                                         {record.canEditValidationFields ? (
                                             (() => {
                                                 const visibility = getVisibilityByStatus(record);

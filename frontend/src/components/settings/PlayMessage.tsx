@@ -1,8 +1,8 @@
-import {useTranslation} from "react-i18next";
-import {useQuery} from "@tanstack/react-query";
-import RichTextMessage from "@/components/RichTextMessage";
-import {getPlayMessage} from "@/services/playMessageApi";
-import {logError} from "@/services/logger";
+import {useTranslation} from 'react-i18next';
+import {useQuery} from '@tanstack/react-query';
+import RichTextMessage from '@/components/RichTextMessage';
+import {getPlayMessage} from '@/services/playMessageApi';
+import {logError} from '@/services/logger';
 
 interface PlayMessageProps {
     messageKey: string;
@@ -25,15 +25,15 @@ interface PlayMessageProps {
  * @param {string} className - Optional CSS class name for styling
  * @param {React.ReactNode} children - Optional children to render if no message is found
  */
-export default function PlayMessage({messageKey, fallback = "", className = "", children}: PlayMessageProps) {
+export default function PlayMessage({messageKey, fallback = '', className = '', children}: PlayMessageProps) {
     const {i18n} = useTranslation();
     // Get current language from i18n context and send it as query parameter
-    const lang = i18n.language || "cs";
+    const lang = i18n.language || 'cs';
 
     // text klíče v aktuálním jazyce – bez cache (sekce J); služba vrací `null`
     // pro chybějící klíč (použije se fallback)
     const {data, isPending, error} = useQuery({
-        queryKey: ["playMessage", messageKey, lang],
+        queryKey: ['playMessage', messageKey, lang],
         queryFn: () => getPlayMessage(messageKey, lang),
         enabled: !!messageKey,
     });
@@ -47,7 +47,7 @@ export default function PlayMessage({messageKey, fallback = "", className = "", 
     }
 
     if (error) {
-        logError(error, {source: "PlayMessage", messageKey});
+        logError(error, {source: 'PlayMessage', messageKey});
         return children || <span>{fallback}</span>;
     }
 

@@ -8,8 +8,8 @@
  * `ensureSuccess`.
  */
 
-import {apiDelete, apiGet, apiPut, ensureSuccess} from "./apiClient";
-import type {ApiResult} from "@/models/ApiResponse";
+import {apiDelete, apiGet, apiPut, ensureSuccess} from './apiClient';
+import type {ApiResult} from '@/models/ApiResponse';
 
 /** Odpověď GET/PUT /api/react/user/settings/{key}. */
 export interface UserSettingResult extends ApiResult {
@@ -18,19 +18,19 @@ export interface UserSettingResult extends ApiResult {
 
 /** Mapování backend klíčů (snake_case) na stavové klíče komponent (camelCase). */
 const BACKEND_TO_STATE_KEY_MAPPING: Record<string, string> = {
-    traits_substitute_false: "traitsSubstituteFalse",
-    traits_substitute_true: "traitsSubstituteTrue",
-    traits_substitute_null: "traitsSubstituteNull",
-    traits_substitute_unmeasurable: "traitsSubstituteUnmeasurable",
-    traits_substitute_percentasinteger: "traitsSubstitutePercentInteger",
-    application_language: "applicationLanguage",
-    traits_substitute_english: "traitsSubstituteInEnglish",
+    traits_substitute_false: 'traitsSubstituteFalse',
+    traits_substitute_true: 'traitsSubstituteTrue',
+    traits_substitute_null: 'traitsSubstituteNull',
+    traits_substitute_unmeasurable: 'traitsSubstituteUnmeasurable',
+    traits_substitute_percentasinteger: 'traitsSubstitutePercentInteger',
+    application_language: 'applicationLanguage',
+    traits_substitute_english: 'traitsSubstituteInEnglish',
 };
 
 /** Přebývá hodnota boolean (parsuje se z "true"/"false")? */
 export function isBooleanSetting(backendKey: string): boolean {
-    return backendKey.includes("traits_substitute_percentasinteger")
-        || backendKey.includes("traits_substitute_english");
+    return backendKey.includes('traits_substitute_percentasinteger')
+        || backendKey.includes('traits_substitute_english');
 }
 
 /** Převede backend klíč na stavový klíč komponenty. */

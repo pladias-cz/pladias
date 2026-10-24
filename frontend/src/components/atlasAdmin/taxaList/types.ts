@@ -2,29 +2,8 @@
  * Type definitions for TaxaList component
  */
 
-export interface TaxonMapSettings {
-    /** PK atlas.taxon_mapsettings – u 1:1 relace s taxonem totožné s taxonId;
-     *  DataTable optimistická vrstva checkboxů podle něj matchuje řádky. */
-    id: number;
-    taxonId: number;
-    taxonNameLat: string;
-    taxonRankCz: string;
-    isMapped: boolean;
-    commonThreshold: number;
-    isProtected: boolean;
-    preslia: string;
-    revisors: string;
-    revisionStatusId: number;
-    revisionStatusDescription: string;
-    publicationStatusId: number;
-    publicationStatusDescription: string;
-    lastEditTimestamp: number;
-    parentTaxonId?: number | null;
-    parentTaxonNameLat?: string | null;
-    csvMapDetailId?: number | null;
-    csvMapDetailTimestamp?: number | null;
-    hasPng: boolean;
-}
+// sdílený model (sekce J.2/C.4): re-export kvůli existujícím importům
+export type {TaxonMapSettings} from '@/models/TaxonMapSettings';
 
 export interface StatusOption {
     id: number;

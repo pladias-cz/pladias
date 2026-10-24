@@ -16,53 +16,53 @@
  *    frontend nezíská, seznam se načítá znovu po uložení.
  */
 
-import {apiDelete, apiGet, apiPatch, apiPost, apiPut, requireData, requireEnvelope} from "./apiClient";
-import type {Taxon} from "@/models/Taxon";
-import type {TaxonId} from "@/models/TaxonId";
-import type {TaxonPublication} from "@/models/TaxonPublication";
-import type {TaxonRankId} from "@/models/TaxonRankId";
-import type {TaxonStats} from "@/models/TaxonStats";
-import type {TaxonSynonym} from "@/models/TaxonSynonym";
+import {apiDelete, apiGet, apiPatch, apiPost, apiPut, requireData, requireEnvelope} from './apiClient';
+import type {Taxon} from '@/models/Taxon';
+import type {TaxonId} from '@/models/TaxonId';
+import type {TaxonPublication} from '@/models/TaxonPublication';
+import type {TaxonRankId} from '@/models/TaxonRankId';
+import type {TaxonStats} from '@/models/TaxonStats';
+import type {TaxonSynonym} from '@/models/TaxonSynonym';
 
 /** Konstanty polí spravovaných přes PATCH (TaxonManagerController.patch). */
 export type TaxonEditorField =
-    | "LATNAME"
-    | "NAMEHTML"
-    | "CZNAME"
-    | "RANK"
-    | "AUTHOR"
-    | "HYBRIDPARENTAGE"
-    | "SUPPRESSED"
-    | "COMMENT";
+    | 'LATNAME'
+    | 'NAMEHTML'
+    | 'CZNAME'
+    | 'RANK'
+    | 'AUTHOR'
+    | 'HYBRIDPARENTAGE'
+    | 'SUPPRESSED'
+    | 'COMMENT';
 
 /** GET /api/react/taxon/{id} – celý taxon. */
 export async function getTaxon(id: number): Promise<Taxon> {
-    return requireData<Taxon>(await apiGet(`/api/react/taxon/${id}`), "Načtení taxonu selhalo.");
+    return requireData<Taxon>(await apiGet(`/api/react/taxon/${id}`), 'Načtení taxonu selhalo.');
 }
 
 /** GET /api/react/taxon/{id}/parents – rodiče od kořene po přímého rodiče. */
 export async function getTaxonParents(id: number): Promise<TaxonId[]> {
-    return requireData<TaxonId[]>(await apiGet(`/api/react/taxon/${id}/parents`), "Načtení rodičů taxonu selhalo.");
+    return requireData<TaxonId[]>(await apiGet(`/api/react/taxon/${id}/parents`), 'Načtení rodičů taxonu selhalo.');
 }
 
 /** GET /api/react/taxon/{id}/firstChildren – přímí potomci (řazení sourozenců). */
 export async function getTaxonFirstChildren(id: number): Promise<Taxon[]> {
-    return requireData<Taxon[]>(await apiGet(`/api/react/taxon/${id}/firstChildren`), "Načtení potomků taxonu selhalo.");
+    return requireData<Taxon[]>(await apiGet(`/api/react/taxon/${id}/firstChildren`), 'Načtení potomků taxonu selhalo.');
 }
 
 /** GET /api/react/taxonrank/queryAll – všechny taxonomické ranky. */
 export async function getTaxonRanks(): Promise<TaxonRankId[]> {
-    return requireData<TaxonRankId[]>(await apiGet("/api/react/taxonrank/queryAll"), "Načtení taxonomických ranků selhalo.");
+    return requireData<TaxonRankId[]>(await apiGet('/api/react/taxonrank/queryAll'), 'Načtení taxonomických ranků selhalo.');
 }
 
 /** GET /api/react/taxonrank/queryExportable – ranky zahrnutelné do komplexního exportu vlastností. */
 export async function getExportableTaxonRanks(): Promise<TaxonRankId[]> {
-    return requireData<TaxonRankId[]>(await apiGet("/api/react/taxonrank/queryExportable"), "Načtení taxonomických ranků selhalo.");
+    return requireData<TaxonRankId[]>(await apiGet('/api/react/taxonrank/queryExportable'), 'Načtení taxonomických ranků selhalo.');
 }
 
 /** GET /api/react/taxon/{id}/stats – statistiky záznamů taxonu. */
 export async function getTaxonStatistics(id: number): Promise<TaxonStats> {
-    return requireData<TaxonStats>(await apiGet(`/api/react/taxon/${id}/stats`), "Načtení statistik taxonu selhalo.");
+    return requireData<TaxonStats>(await apiGet(`/api/react/taxon/${id}/stats`), 'Načtení statistik taxonu selhalo.');
 }
 
 /** Počty záznamů taxonu v jednotlivých projektech (dynamické vrstvy mapy). */
@@ -97,7 +97,7 @@ export interface TaxonMapStatistics {
 export async function getTaxonMapStatistics(taxonId: number): Promise<TaxonMapStatistics> {
     return requireData<TaxonMapStatistics>(
         await apiGet(`/api/react/taxonStatistics/${taxonId}`),
-        "Načtení statistik taxonu selhalo.",
+        'Načtení statistik taxonu selhalo.',
     );
 }
 
@@ -105,24 +105,24 @@ export async function getTaxonMapStatistics(taxonId: number): Promise<TaxonMapSt
 export async function getTaxonRecordsByProject(taxonId: number): Promise<TaxonProjectRecords[]> {
     const stats = requireData<{ recordsByProject?: TaxonProjectRecords[] }>(
         await apiGet(`/api/react/taxonStatistics/${taxonId}`),
-        "Načtení projektů taxonu selhalo.",
+        'Načtení projektů taxonu selhalo.',
     );
     return stats.recordsByProject ?? [];
 }
 
 /** GET /api/react/taxon/{id}/traitCount – počet trait hodnot taxonu. */
 export async function getTaxonTraitCount(id: number): Promise<number> {
-    return requireData<number>(await apiGet(`/api/react/taxon/${id}/traitCount`), "Načtení počtu trait hodnot selhalo.");
+    return requireData<number>(await apiGet(`/api/react/taxon/${id}/traitCount`), 'Načtení počtu trait hodnot selhalo.');
 }
 
 /** GET /api/react/taxon/{id}/synonyms – synonyma taxonu. */
 export async function getTaxonSynonyms(id: number): Promise<TaxonSynonym[]> {
-    return requireData<TaxonSynonym[]>(await apiGet(`/api/react/taxon/${id}/synonyms`), "Načtení synonym selhalo.");
+    return requireData<TaxonSynonym[]>(await apiGet(`/api/react/taxon/${id}/synonyms`), 'Načtení synonym selhalo.');
 }
 
 /** GET /api/react/taxaPublications – publikace pro výběr u synonym. */
 export async function getTaxonPublications(): Promise<TaxonPublication[]> {
-    return requireData<TaxonPublication[]>(await apiGet("/api/react/taxaPublications"), "Načtení publikací selhalo.");
+    return requireData<TaxonPublication[]>(await apiGet('/api/react/taxaPublications'), 'Načtení publikací selhalo.');
 }
 
 /**
@@ -132,15 +132,15 @@ export async function getTaxonPublications(): Promise<TaxonPublication[]> {
 export async function updateTaxonField(id: number, field: TaxonEditorField, value: string | boolean): Promise<Taxon> {
     return requireData<Taxon>(
         await apiPatch(`/api/react/taxon/${id}`, {field, value}),
-        "Uložení pole taxonu selhalo.",
+        'Uložení pole taxonu selhalo.',
     );
 }
 
 /** POST /api/react/taxon – nový potomek pod vybraný taxon; vrací vytvořený taxon. */
 export async function createTaxon(input: { nameLat: string; rankId: number; parentId: number }): Promise<Taxon> {
     return requireData<Taxon>(
-        await apiPost("/api/react/taxon", input),
-        "Vytvoření taxonu selhalo.",
+        await apiPost('/api/react/taxon', input),
+        'Vytvoření taxonu selhalo.',
     );
 }
 
@@ -148,21 +148,21 @@ export async function createTaxon(input: { nameLat: string; rankId: number; pare
 export async function moveTaxon(id: number, parentId: number): Promise<Taxon> {
     return requireData<Taxon>(
         await apiPost(`/api/react/taxon/${id}/move`, {parentId}),
-        "Přesun taxonu selhalo.",
+        'Přesun taxonu selhalo.',
     );
 }
 
 /** POST /api/react/taxon/moveBeforeSibling – změna pořadí sourozenců. */
 export async function moveTaxonBeforeSibling(taxonId: number, siblingId: number): Promise<void> {
     requireEnvelope(
-        await apiPost("/api/react/taxon/moveBeforeSibling", {taxonId, siblingId}),
-        "Změna pořadí potomků selhala.",
+        await apiPost('/api/react/taxon/moveBeforeSibling', {taxonId, siblingId}),
+        'Změna pořadí potomků selhala.',
     );
 }
 
 /** DELETE /api/react/taxon/{id} – smazání taxonu bez potomků. */
 export async function deleteTaxon(id: number): Promise<void> {
-    requireEnvelope(await apiDelete(`/api/react/taxon/${id}`), "Smazání taxonu selhalo.");
+    requireEnvelope(await apiDelete(`/api/react/taxon/${id}`), 'Smazání taxonu selhalo.');
 }
 
 /**
@@ -171,7 +171,7 @@ export async function deleteTaxon(id: number): Promise<void> {
  * na frontendu dočasné (záporné) do reloadu seznamu.
  */
 export async function saveTaxonSynonym(synonym: TaxonSynonym): Promise<void> {
-    const errorMessage = "Uložení synonyma selhalo.";
+    const errorMessage = 'Uložení synonyma selhalo.';
     const payload = synonym.id < 0
         ? await apiPost(`/api/react/synonyms/${synonym.taxonId}`, synonym)
         : await apiPut(`/api/react/synonyms/${synonym.id}`, synonym);
@@ -180,7 +180,7 @@ export async function saveTaxonSynonym(synonym: TaxonSynonym): Promise<void> {
 
 /** DELETE /api/react/synonyms/{id} – smazání synonyma. */
 export async function deleteTaxonSynonym(id: number): Promise<void> {
-    requireEnvelope(await apiDelete(`/api/react/synonyms/${id}`), "Smazání synonyma selhalo.");
+    requireEnvelope(await apiDelete(`/api/react/synonyms/${id}`), 'Smazání synonyma selhalo.');
 }
 
 /**
@@ -189,8 +189,8 @@ export async function deleteTaxonSynonym(id: number): Promise<void> {
  */
 export async function searchTaxaByPrefix(prefix: string, signal?: AbortSignal): Promise<TaxonId[]> {
     return requireData<TaxonId[]>(
-        await apiGet("/api/react/taxa/queryAll", {params: {prefix}, signal}),
-        "Vyhledávání taxonů selhalo.",
+        await apiGet('/api/react/taxa/queryAll', {params: {prefix}, signal}),
+        'Vyhledávání taxonů selhalo.',
     );
 }
 
@@ -200,8 +200,8 @@ export async function searchTaxaByPrefix(prefix: string, signal?: AbortSignal): 
  */
 export async function searchImportableTaxa(prefix: string, signal?: AbortSignal): Promise<TaxonId[]> {
     return requireData<TaxonId[]>(
-        await apiGet("/api/react/taxa/importable", {params: {prefix}, signal}),
-        "Vyhledávání taxonů selhalo.",
+        await apiGet('/api/react/taxa/importable', {params: {prefix}, signal}),
+        'Vyhledávání taxonů selhalo.',
     );
 }
 
@@ -212,6 +212,6 @@ export async function searchImportableTaxa(prefix: string, signal?: AbortSignal)
 export async function searchPossibleTaxonParents(taxonId: number, prefix: string, signal?: AbortSignal): Promise<TaxonId[]> {
     return requireData<TaxonId[]>(
         await apiGet(`/api/react/taxon/${taxonId}/possibleParents`, {params: {prefix}, signal}),
-        "Vyhledávání rodičů taxonu selhalo.",
+        'Vyhledávání rodičů taxonu selhalo.',
     );
 }

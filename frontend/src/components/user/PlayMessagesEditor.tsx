@@ -1,11 +1,11 @@
-import {useEffect, useState, type SyntheticEvent} from "react";
-import {useTranslation} from "react-i18next";
-import {Button, Form} from "react-bootstrap";
-import {useQuery} from "@tanstack/react-query";
-import {getPlayMessagesForLanguage, savePlayMessages, type PlayMessageEntry} from "@/services/playMessageApi";
-import {notifyApiError, useNotifications} from "@/stores/notificationStore";
+import {useEffect, useState, type SyntheticEvent} from 'react';
+import {useTranslation} from 'react-i18next';
+import {Button, Form} from 'react-bootstrap';
+import {useQuery} from '@tanstack/react-query';
+import {getPlayMessagesForLanguage, savePlayMessages, type PlayMessageEntry} from '@/services/playMessageApi';
+import {notifyApiError, useNotifications} from '@/stores/notificationStore';
 
-const LANGUAGES = ["cs", "en", "sk", "pl"] as const;
+const LANGUAGES = ['cs', 'en', 'sk', 'pl'] as const;
 
 /**
  * PlayMessagesEditor - sysAdmin editor of PlayMessage constant values for one language.
@@ -15,7 +15,7 @@ const LANGUAGES = ["cs", "en", "sk", "pl"] as const;
 export default function PlayMessagesEditor() {
     const {t} = useTranslation();
     const {push} = useNotifications();
-    const [language, setLanguage] = useState<string>("cs");
+    const [language, setLanguage] = useState<string>('cs');
     const [entries, setEntries] = useState<PlayMessageEntry[]>([]);
     const [saving, setSaving] = useState(false);
 
@@ -23,7 +23,7 @@ export default function PlayMessagesEditor() {
     // i po přepnutí jazyka; editovatelné hodnoty zůstávají lokální (jako
     // formulář nastavení v Settings)
     const {data: loadedEntries, isPending: loading, error: loadError} = useQuery({
-        queryKey: ["playMessages", language],
+        queryKey: ['playMessages', language],
         queryFn: () => getPlayMessagesForLanguage(language),
     });
 
@@ -36,7 +36,7 @@ export default function PlayMessagesEditor() {
     // chyba načtení → globální notifikace (Toast vpravo dole, sekce F)
     useEffect(() => {
         if (loadError) {
-            notifyApiError(loadError, t("user.playMessages.error"));
+            notifyApiError(loadError, t('user.playMessages.error'));
         }
     }, [loadError, t]);
 
@@ -53,24 +53,24 @@ export default function PlayMessagesEditor() {
         setSaving(true);
 
         try {
-            await savePlayMessages(language, entries.map((entry) => ({key: entry.key, value: entry.value ?? ""})));
+            await savePlayMessages(language, entries.map((entry) => ({key: entry.key, value: entry.value ?? ''})));
 
-            push({type: "success", message: t("user.playMessages.success")});
+            push({type: 'success', message: t('user.playMessages.success')});
         } catch (err) {
-            notifyApiError(err, t("user.playMessages.error"));
+            notifyApiError(err, t('user.playMessages.error'));
         } finally {
             setSaving(false);
         }
     };
 
     if (loading) {
-        return <p>{t("user.playMessages.loading")}</p>;
+        return <p>{t('user.playMessages.loading')}</p>;
     }
 
     return (
         <Form onSubmit={handleSubmit}>
             <Form.Group className="mb-3" controlId="playMessagesLanguage">
-                <Form.Label>{t("user.playMessages.language")}</Form.Label>
+                <Form.Label>{t('user.playMessages.language')}</Form.Label>
                 <Form.Select
                     value={language}
                     onChange={(event) => handleLanguageChange(event.target.value)}
@@ -88,14 +88,14 @@ export default function PlayMessagesEditor() {
                     <Form.Control
                         as="textarea"
                         rows={3}
-                        value={entry.value ?? ""}
+                        value={entry.value ?? ''}
                         onChange={(event) => handleChange(entry.key, event.target.value)}
                     />
                 </Form.Group>
             ))}
 
             <Button type="submit" variant="primary" disabled={saving}>
-                {saving ? t("user.playMessages.submitting") : t("user.playMessages.submit")}
+                {saving ? t('user.playMessages.submitting') : t('user.playMessages.submit')}
             </Button>
         </Form>
     );

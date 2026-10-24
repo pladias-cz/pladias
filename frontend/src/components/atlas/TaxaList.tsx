@@ -10,7 +10,7 @@ import {useTranslation} from 'react-i18next';
 import {DataTable, type DataTableColumnDef, createTextColumn, createBooleanColumn} from '@/core/dataTable';
 import {getPublicationStatuses, getRevisionStatuses} from '@/services/mapAdminApi';
 import {useCatalogQuery} from '@/query/useCatalogQuery';
-import {useTaxaData} from './taxaList/hooks';
+import {useTaxaData} from '@/hooks/useTaxaData';
 import type {TaxonMapSettings} from './taxaList/types';
 
 export default function TaxaList() {
@@ -18,21 +18,17 @@ export default function TaxaList() {
 
     // číselníky statusů – bez cache (sekce J); při selhání zůstane filtr
     // prázdný (stejně jako dřív – chybu jen logoval)
-    const revisionStatusOptions = useCatalogQuery(["revisionStatuses"], getRevisionStatuses);
-    const publicationStatusOptions = useCatalogQuery(["publicationStatuses"], getPublicationStatuses);
+    const revisionStatusOptions = useCatalogQuery(['revisionStatuses'], getRevisionStatuses);
+    const publicationStatusOptions = useCatalogQuery(['publicationStatuses'], getPublicationStatuses);
 
-    const {fetchTaxa} = useTaxaData({
-        onSuccess: () => {
-            // Optional: handle successful data fetch
-        }
-    });
+    const {fetchTaxa} = useTaxaData({endpoint: '/api/react/atlasadmin/taxa/user'});
 
     const columns = useMemo<DataTableColumnDef<TaxonMapSettings>[]>(() => [
         // First column - keep as is with link to map
-        createTextColumn<TaxonMapSettings>('taxonNameLat', t("atlas.admin.taxaList.latinName"), {
+        createTextColumn<TaxonMapSettings>('taxonNameLat', t('atlas.admin.taxaList.latinName'), {
             enableSorting: false,
             enableFiltering: true,
-            filterPlaceholder: t("atlas.admin.taxaList.filterLatinName"),
+            filterPlaceholder: t('atlas.admin.taxaList.filterLatinName'),
             cellRenderer: (_value, row) => (
                 <>
                     <i>
@@ -48,31 +44,31 @@ export default function TaxaList() {
         }),
         // Remaining columns - simple read-only text values
         // Use backend field names for proper filtering/sorting
-        createBooleanColumn<TaxonMapSettings>('isMapped', t("atlas.admin.taxaList.mapped"), {
+        createBooleanColumn<TaxonMapSettings>('isMapped', t('atlas.admin.taxaList.mapped'), {
             enableSorting: false,
             enableFiltering: true,
-            trueLabel: t("common.yes"),
-            falseLabel: t("common.no"),
+            trueLabel: t('common.yes'),
+            falseLabel: t('common.no'),
         }),
-        createTextColumn<TaxonMapSettings>('commonThreshold', t("atlas.admin.taxaList.commonThreshold"), {
+        createTextColumn<TaxonMapSettings>('commonThreshold', t('atlas.admin.taxaList.commonThreshold'), {
             enableSorting: false,
             enableFiltering: true,
             cellRenderer: (value) => value?.toString() ?? '-',
         }),
-        createBooleanColumn<TaxonMapSettings>('isProtected', t("atlas.admin.taxaList.protected"), {
+        createBooleanColumn<TaxonMapSettings>('isProtected', t('atlas.admin.taxaList.protected'), {
             enableSorting: false,
             enableFiltering: false,
-            trueLabel: t("common.yes"),
-            falseLabel: t("common.no"),
+            trueLabel: t('common.yes'),
+            falseLabel: t('common.no'),
         }),
-        createTextColumn<TaxonMapSettings>('revisors', t("atlas.admin.taxaList.revisors"), {
+        createTextColumn<TaxonMapSettings>('revisors', t('atlas.admin.taxaList.revisors'), {
             enableSorting: false,
             enableFiltering: false,
-            filterPlaceholder: t("atlas.admin.taxaList.filterRevisors"),
+            filterPlaceholder: t('atlas.admin.taxaList.filterRevisors'),
             cellRenderer: (value) => value || '-',
         }),
         // Use ID field for filtering/sorting, display description with ID
-        createTextColumn<TaxonMapSettings>('revisionStatusId', t("atlas.admin.taxaList.revisionStatus"), {
+        createTextColumn<TaxonMapSettings>('revisionStatusId', t('atlas.admin.taxaList.revisionStatus'), {
             enableSorting: false,
             enableFiltering: true,
             filterOptions: revisionStatusOptions.map(o => ({value: String(o.id), label: `${o.description} [${o.id}]`})),
@@ -82,7 +78,7 @@ export default function TaxaList() {
                 return desc !== '-' ? `${desc}[${id}]` : desc;
             },
         }),
-        createTextColumn<TaxonMapSettings>('publicationStatusId', t("atlas.admin.taxaList.publicationStatus"), {
+        createTextColumn<TaxonMapSettings>('publicationStatusId', t('atlas.admin.taxaList.publicationStatus'), {
             enableSorting: false,
             enableFiltering: true,
             filterOptions: publicationStatusOptions.map(o => ({

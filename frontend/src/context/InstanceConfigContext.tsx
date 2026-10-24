@@ -1,5 +1,5 @@
-import React, {createContext, useContext} from "react";
-import InstanceConfig, {type InstanceConfigData} from "../models/InstanceConfig";
+import React, {createContext, useContext} from 'react';
+import InstanceConfig, {type InstanceConfigData} from '../models/InstanceConfig';
 
 interface Props {
     config: InstanceConfigData;
@@ -20,7 +20,7 @@ export const InstanceConfigProvider: React.FC<Props> = ({children, config}) => {
 export const useInstanceConfig = (): InstanceConfig => {
     const ctx = useContext(InstanceConfigContext);
     if (!ctx) {
-        throw new Error("useInstanceConfig must be used inside InstanceConfigProvider");
+        throw new Error('useInstanceConfig must be used inside InstanceConfigProvider');
     }
     return ctx;
 };

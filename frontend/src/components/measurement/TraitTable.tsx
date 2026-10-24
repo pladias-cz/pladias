@@ -1,11 +1,11 @@
-import {useCallback, useEffect, useState} from "react";
-import {useTranslation} from "react-i18next";
-import {useConfirm} from "@/hooks/useConfirm";
-import type {Feature} from "@/models/Feature";
-import type {Trait} from "@/models/Trait";
-import {deleteTrait, getTraitsOfFeature, setDefaultTrait} from "@/services/traitApi";
-import {notifyApiError, useNotifications} from "@/stores/notificationStore";
-import RichTextMessage from "@/components/RichTextMessage";
+import {useCallback, useEffect, useState} from 'react';
+import {useTranslation} from 'react-i18next';
+import {useConfirm} from '@/hooks/useConfirm';
+import type {Feature} from '@/models/Feature';
+import type {Trait} from '@/models/Trait';
+import {deleteTrait, getTraitsOfFeature, setDefaultTrait} from '@/services/traitApi';
+import {notifyApiError, useNotifications} from '@/stores/notificationStore';
+import RichTextMessage from '@/components/RichTextMessage';
 
 interface Props {
     feature: Feature;
@@ -30,7 +30,7 @@ export default function TraitTable({feature, refreshKey}: Props) {
             setTraits(list);
             setDefaultTraitId(list.find(trait => trait.isDefault)?.id ?? null);
         } catch (e) {
-            notifyApiError(e, t("trait.loadFailed"));
+            notifyApiError(e, t('trait.loadFailed'));
         } finally {
             setLoading(false);
         }
@@ -43,8 +43,8 @@ export default function TraitTable({feature, refreshKey}: Props) {
 
     async function handleDeleteTrait(traitId: number) {
         if (!(await confirm({
-            message: t("trait.deleteConfirm"),
-            confirmLabel: t("common.delete"),
+            message: t('trait.deleteConfirm'),
+            confirmLabel: t('common.delete'),
         }))) {
             return;
         }
@@ -55,13 +55,13 @@ export default function TraitTable({feature, refreshKey}: Props) {
             const message = await deleteTrait(traitId);
 
             push({
-                type: "success",
-                message: message || t("trait.deleted")
+                type: 'success',
+                message: message || t('trait.deleted')
             });
             // mazání může přenastavit výchozí řadu, proto znovu načíst
             await loadTraits();
         } catch (e) {
-            notifyApiError(e, t("trait.deleteFailed"));
+            notifyApiError(e, t('trait.deleteFailed'));
         } finally {
             setBusyTraitId(null);
         }
@@ -78,13 +78,13 @@ export default function TraitTable({feature, refreshKey}: Props) {
             await setDefaultTrait(traitId);
 
             push({
-                type: "success",
-                message: t("trait.setDefaultChanged")
+                type: 'success',
+                message: t('trait.setDefaultChanged')
             });
             await loadTraits();
         } catch (e) {
             setDefaultTraitId(previous);
-            notifyApiError(e, t("trait.setDefaultFailed"));
+            notifyApiError(e, t('trait.setDefaultFailed'));
         } finally {
             setBusyTraitId(null);
         }
@@ -119,7 +119,7 @@ export default function TraitTable({feature, refreshKey}: Props) {
 
                         <td>
                             {new Date(t.createTimestamp)
-                                .toLocaleDateString("cs-CZ")}
+                                .toLocaleDateString('cs-CZ')}
                         </td>
 
                         <td>{t.totalTaxonCount}</td>
@@ -161,7 +161,7 @@ export default function TraitTable({feature, refreshKey}: Props) {
                             ) : (
                                 <span
                                     className="fa fa-times-circle-o"
-                                    style={{cursor: "not-allowed", color: "#bebebe"}}
+                                    style={{cursor: 'not-allowed', color: '#bebebe'}}
                                 />
                             )}
                         </td>
@@ -180,7 +180,7 @@ export default function TraitTable({feature, refreshKey}: Props) {
                             ) : (
                                 <span
                                     className="fa fa-times-circle-o"
-                                    style={{cursor: "not-allowed", color: "#bebebe"}}
+                                    style={{cursor: 'not-allowed', color: '#bebebe'}}
                                 />
                             )}
                         </td>

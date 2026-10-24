@@ -34,13 +34,13 @@ export function MappedCell({
                 {row.parentTaxonId ? (
                     <div className="d-flex align-items-center gap-2">
                         <small className="text-muted">
-                            {t("atlas.admin.taxaList.partOfMapWith")} {row.parentTaxonNameLat}
+                            {t('atlas.admin.taxaList.partOfMapWith')} {row.parentTaxonNameLat}
                         </small>
                         <button
                             className="btn btn-sm btn-link text-danger p-0"
                             onClick={() => onParentMapChange(row, null)}
                             disabled={updatingTaxonId === row.taxonId}
-                            title={t("atlas.admin.taxaList.removeParentMap")}
+                            title={t('atlas.admin.taxaList.removeParentMap')}
                         >
                             <i className="bi bi-trash"></i>
                         </button>
@@ -50,7 +50,7 @@ export function MappedCell({
                         taxonId={row.taxonId}
                         onChange={handleParentMapSelect}
                         updatingTaxonId={updatingTaxonId}
-                        placeholder={t("atlas.admin.taxaList.selectParentMap")}
+                        placeholder={t('atlas.admin.taxaList.selectParentMap')}
                     />
                 )}
             </div>

@@ -1,7 +1,7 @@
 import type {RecordPladias} from '@/models';
 import {useRecordPermissions} from '@/components/atlas/record';
 import {useState} from 'react';
-import {useRecordQuickUpdates} from "@/components/atlas/mapDetail/hooks/useRecordQuickUpdates";
+import {useRecordQuickUpdates} from '@/components/atlas/mapDetail/hooks/useRecordQuickUpdates';
 
 interface HerbariumQualityCheckboxProps {
     record: RecordPladias;
@@ -45,7 +45,7 @@ export function HerbariumQualityCheckbox({record, onRecordUpdated}: HerbariumQua
                     checked={isChecked}
                     disabled={!canEdit}
                     onChange={handleChange}
-                />{" "}
+                />{' '}
                 Revidovaný herbář
             </label>
         </div>

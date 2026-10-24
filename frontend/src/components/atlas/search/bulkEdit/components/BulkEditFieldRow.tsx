@@ -4,7 +4,7 @@
  * Invalid stav textových inputů/selectů řeší samotný vstup přes `is-invalid`
  * (children); `invalid` tu spouští wrapper class pro typeaheady/autocomplete.
  */
-import type {ReactNode} from "react";
+import type {ReactNode} from 'react';
 
 interface BulkEditFieldRowProps {
     label: string;
@@ -29,7 +29,7 @@ export function BulkEditFieldRow({
         <>
             {helperText && <p className="small text-muted">{helperText}</p>}
             <div className="d-flex gap-2 align-items-end">
-                <div className={`flex-grow-1 ${invalid ? "bulk-edit-field-invalid" : ""}`}>
+                <div className={`flex-grow-1 ${invalid ? 'bulk-edit-field-invalid' : ''}`}>
                     <label className="form-label">{label}</label>
                     {children}
                 </div>

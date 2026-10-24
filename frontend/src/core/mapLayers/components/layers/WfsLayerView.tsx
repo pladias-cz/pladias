@@ -244,7 +244,7 @@ export function WfsLayerView({id, service, zIndex, wfsStyle, params, visible}: W
                             radius, // Override radius with zoom-based value
                         });
                     },
-                    style: (styleOptions?.pathStyle || styleOptions?.style) as L.GeoJSONOptions["style"],
+                    style: (styleOptions?.pathStyle || styleOptions?.style) as L.GeoJSONOptions['style'],
                     onEachFeature: styleOptions?.onEachFeature,
                 });
 

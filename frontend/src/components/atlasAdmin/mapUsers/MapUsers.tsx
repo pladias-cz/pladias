@@ -5,9 +5,9 @@
  * to efficiently load users and their rights (projects, taxa) on demand.
  */
 
-import {useCallback, useMemo, useState} from "react";
-import {useTranslation} from "react-i18next";
-import {DataTable, type DataTableColumnDef, createActionColumn, createTextColumn} from "@/core/dataTable";
+import {useCallback, useMemo, useState} from 'react';
+import {useTranslation} from 'react-i18next';
+import {DataTable, type DataTableColumnDef, createActionColumn, createTextColumn} from '@/core/dataTable';
 import {
     useMapUsersData,
     useMapUsersProjects,
@@ -22,7 +22,7 @@ import {
 import type {MapUserTableRow} from './types';
 import {removeUserTaxonFromUser} from '@/services/mapAdminApi';
 import {apiErrorMessage} from '@/services/apiClient';
-import {useNotifications} from "@/stores/notificationStore";
+import {useNotifications} from '@/stores/notificationStore';
 
 export default function MapUsers() {
     const {t} = useTranslation();
@@ -77,29 +77,29 @@ export default function MapUsers() {
     const handleRemoveTaxonFromCell = useCallback((userId: number, taxonId: number) => {
         removeUserTaxonFromUser(userId, taxonId)
             .then(() => {
-                showFlash('success', t("user.usersAdministration.taxonRemoved"));
+                showFlash('success', t('user.usersAdministration.taxonRemoved'));
                 bumpRightsRefresh();
             })
             .catch(err => {
-                showFlash('danger', apiErrorMessage(err, t("user.usersAdministration.error")));
+                showFlash('danger', apiErrorMessage(err, t('user.usersAdministration.error')));
             });
     }, [showFlash, t, bumpRightsRefresh]);
 
     // Column definitions
     const columns = useMemo<DataTableColumnDef<MapUserTableRow>[]>(() => [
-        createTextColumn<MapUserTableRow>('name', t("user.usersAdministration.firstName"), {
+        createTextColumn<MapUserTableRow>('name', t('user.usersAdministration.firstName'), {
             enableSorting: true,
             enableFiltering: true,
         }),
-        createTextColumn<MapUserTableRow>('surname', t("user.usersAdministration.lastName"), {
+        createTextColumn<MapUserTableRow>('surname', t('user.usersAdministration.lastName'), {
             enableSorting: true,
             enableFiltering: true,
         }),
-        createTextColumn<MapUserTableRow>('email', t("user.usersAdministration.email"), {
+        createTextColumn<MapUserTableRow>('email', t('user.usersAdministration.email'), {
             enableSorting: true,
             enableFiltering: true,
         }),
-        createActionColumn<MapUserTableRow>('contributionProjects', t("user.usersAdministration.projects"), (row) => (
+        createActionColumn<MapUserTableRow>('contributionProjects', t('user.usersAdministration.projects'), (row) => (
             <MapUsersProjectsCell
                 row={row}
                 onAddProject={handleOpenAddModal}
@@ -108,7 +108,7 @@ export default function MapUsers() {
         ), {
             minWidth: '250px',
         }),
-        createActionColumn<MapUserTableRow>('supervisedTaxa', t("user.usersAdministration.supervisedTaxa"), (row) => (
+        createActionColumn<MapUserTableRow>('supervisedTaxa', t('user.usersAdministration.supervisedTaxa'), (row) => (
             <MapUsersTaxaCell
                 row={row}
                 onAddTaxon={handleOpenAddTaxonModal}

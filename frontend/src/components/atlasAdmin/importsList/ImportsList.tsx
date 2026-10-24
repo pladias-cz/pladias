@@ -5,15 +5,15 @@
  * to efficiently load imports with pagination, sorting, and filtering.
  */
 
-import {useMemo, useCallback} from "react";
-import {useTranslation} from "react-i18next";
+import {useMemo, useCallback} from 'react';
+import {useTranslation} from 'react-i18next';
 import {
     DataTable,
     type DataTableColumnDef,
     createTextColumn,
     createTimestampColumn,
     createActionColumn,
-} from "@/core/dataTable";
+} from '@/core/dataTable';
 import {
     useImportsData,
     useImportsActions,
@@ -25,7 +25,7 @@ import {
     ImportsListDeleteCell,
 } from './components';
 import type {ImportRecord} from './types';
-import {useNotifications} from "@/stores/notificationStore";
+import {useNotifications} from '@/stores/notificationStore';
 
 export default function ImportsList() {
     const {t} = useTranslation();
@@ -51,26 +51,26 @@ export default function ImportsList() {
 
     // Column definitions
     const columns = useMemo<DataTableColumnDef<ImportRecord>[]>(() => [
-        createTextColumn<ImportRecord>('committerName', t("atlas.admin.importsList.committer"), {
+        createTextColumn<ImportRecord>('committerName', t('atlas.admin.importsList.committer'), {
             enableSorting: true,
             enableFiltering: true,
         }),
-        createTimestampColumn<ImportRecord>('importTimestamp', t("atlas.admin.importsList.importedAt"), {
+        createTimestampColumn<ImportRecord>('importTimestamp', t('atlas.admin.importsList.importedAt'), {
             enableSorting: true,
             enableFiltering: true,
             enableRangeFilter: true,
             dateFormat: 'dd.MM.yyyy HH:mm',
         }),
-        createTextColumn<ImportRecord>('batchId', t("atlas.admin.importsList.batchId"), {
+        createTextColumn<ImportRecord>('batchId', t('atlas.admin.importsList.batchId'), {
             enableSorting: true,
             enableFiltering: false,
         }),
-        createActionColumn<ImportRecord>('data', t("atlas.admin.importsList.data"), (row) => (
+        createActionColumn<ImportRecord>('data', t('atlas.admin.importsList.data'), (row) => (
             <ImportsListDataCell row={row}/>
         ), {
             minWidth: '200px',
         }),
-        createActionColumn<ImportRecord>('filename', t("atlas.admin.importsList.filename"), (row) => (
+        createActionColumn<ImportRecord>('filename', t('atlas.admin.importsList.filename'), (row) => (
             <ImportsListFilenameCell row={row}/>
         ), {
             minWidth: '200px',

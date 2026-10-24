@@ -36,7 +36,7 @@ export function AddCommentModal({show, recordId, onHide, onCommentAdded}: AddCom
             onHide();
             onCommentAdded?.();
         } catch (err) {
-            setActionError(apiErrorMessage(err, t("record.commentActionFailed")));
+            setActionError(apiErrorMessage(err, t('record.commentActionFailed')));
         } finally {
             setSubmitting(false);
         }
@@ -45,18 +45,18 @@ export function AddCommentModal({show, recordId, onHide, onCommentAdded}: AddCom
     return (
         <Modal show={show} onHide={onHide}>
             <Modal.Header closeButton>
-                <Modal.Title>{t("record.addComment")}</Modal.Title>
+                <Modal.Title>{t('record.addComment')}</Modal.Title>
             </Modal.Header>
             <Modal.Body>
                 <Form>
                     <Form.Group controlId="newComment">
-                        <Form.Label>{t("record.commentMessage")}</Form.Label>
+                        <Form.Label>{t('record.commentMessage')}</Form.Label>
                         <Form.Control
                             as="textarea"
                             rows={4}
                             value={newComment}
                             onChange={(e) => setNewComment(e.target.value)}
-                            placeholder={t("record.commentPlaceholder") || ''}
+                            placeholder={t('record.commentPlaceholder') || ''}
                         />
                     </Form.Group>
                     {actionError && (

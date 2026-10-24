@@ -22,7 +22,7 @@ export function DataTableBody<T>(props: DataTableBodyProps<T>) {
             <tr>
                 <td colSpan={columns.length} className="text-center py-4">
                     <div className="spinner-border text-primary" role="status">
-                        <span className="visually-hidden">{t("common.loading")}</span>
+                        <span className="visually-hidden">{t('common.loading')}</span>
                     </div>
                 </td>
             </tr>
@@ -33,7 +33,7 @@ export function DataTableBody<T>(props: DataTableBodyProps<T>) {
         return (
             <tr>
                 <td colSpan={columns.length} className="text-center text-muted py-4">
-                    <p className="mb-0">{t("common.table.noData")}</p>
+                    <p className="mb-0">{t('common.table.noData')}</p>
                 </td>
             </tr>
         );

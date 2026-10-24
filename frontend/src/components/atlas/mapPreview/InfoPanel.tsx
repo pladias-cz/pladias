@@ -25,17 +25,17 @@ export function InfoPanel({type = 1, taxonId, taxonName}: InfoPanelProps) {
         title: t(`atlas.mapPreview.typeContent.${type}.title`),
         description: t(`atlas.mapPreview.typeContent.${type}.description`),
         legend: {
-            certainQuadrant: t("atlas.mapPreview.typeContent.1.legend.certainQuadrant"),
-            uncertainQuadrant: t("atlas.mapPreview.typeContent.1.legend.uncertainQuadrant"),
-            quadrantByThreshold: t("atlas.mapPreview.typeContent.1.legend.quadrantByThreshold"),
-            recentFindings: t("atlas.mapPreview.typeContent.2.legend.recentFindings"),
-            extinctFindings: t("atlas.mapPreview.typeContent.2.legend.extinctFindings"),
-            native: t("atlas.mapPreview.typeContent.3.legend.native"),
-            nonNative: t("atlas.mapPreview.typeContent.3.legend.nonNative"),
-            cultivated: t("atlas.mapPreview.typeContent.3.legend.cultivated"),
-            notSpecified: t("atlas.mapPreview.typeContent.3.legend.notSpecified"),
-            herbariumSupported: t("atlas.mapPreview.typeContent.4.legend.herbariumSupported"),
-            nonHerbariumEvidence: t("atlas.mapPreview.typeContent.4.legend.nonHerbariumEvidence"),
+            certainQuadrant: t('atlas.mapPreview.typeContent.1.legend.certainQuadrant'),
+            uncertainQuadrant: t('atlas.mapPreview.typeContent.1.legend.uncertainQuadrant'),
+            quadrantByThreshold: t('atlas.mapPreview.typeContent.1.legend.quadrantByThreshold'),
+            recentFindings: t('atlas.mapPreview.typeContent.2.legend.recentFindings'),
+            extinctFindings: t('atlas.mapPreview.typeContent.2.legend.extinctFindings'),
+            native: t('atlas.mapPreview.typeContent.3.legend.native'),
+            nonNative: t('atlas.mapPreview.typeContent.3.legend.nonNative'),
+            cultivated: t('atlas.mapPreview.typeContent.3.legend.cultivated'),
+            notSpecified: t('atlas.mapPreview.typeContent.3.legend.notSpecified'),
+            herbariumSupported: t('atlas.mapPreview.typeContent.4.legend.herbariumSupported'),
+            nonHerbariumEvidence: t('atlas.mapPreview.typeContent.4.legend.nonHerbariumEvidence'),
         }
     };
 
@@ -56,13 +56,13 @@ export function InfoPanel({type = 1, taxonId, taxonName}: InfoPanelProps) {
     };
 
     // chyba načtení nastavení – stejná hláška jako dřív
-    const loadError = error ? t("atlas.mapPreview.loading") : null;
+    const loadError = error ? t('atlas.mapPreview.loading') : null;
 
     return (
         <div className="d-flex flex-column h-100 overflow-hidden">
-            <div className={`p-3 bg-warning flex-shrink-0`}>
-                <h2>{t("atlas.mapPreview.preview")} <span className={`small`}> <a
-                    href={`/atlas/mapMain/${taxonId}`}>{t("atlas.mapPreview.backToMainMap")}</a></span></h2>
+            <div className={'p-3 bg-warning flex-shrink-0'}>
+                <h2>{t('atlas.mapPreview.preview')} <span className={'small'}> <a
+                    href={`/atlas/mapMain/${taxonId}`}>{t('atlas.mapPreview.backToMainMap')}</a></span></h2>
                 {taxonName && (
                     <h4>
                         <RichTextMessage html={taxonName}/>
@@ -70,35 +70,35 @@ export function InfoPanel({type = 1, taxonId, taxonName}: InfoPanelProps) {
                     </h4>
                 )}
                 <hr/>
-                <h5 className="mt-3 mb-4">{t("atlas.mapPreview.mapType")} {translatedContent.title}</h5>
+                <h5 className="mt-3 mb-4">{t('atlas.mapPreview.mapType')} {translatedContent.title}</h5>
                 <p className="fst-italic">{translatedContent.description}</p>
             </div>
             <div className="flex-grow-1 overflow-auto p-3">
-                <h5>{t("atlas.mapPreview.mapAuthorsNote")}</h5>
-                {loading && <p className="text-muted">{t("atlas.mapPreview.loading")}</p>}
+                <h5>{t('atlas.mapPreview.mapAuthorsNote')}</h5>
+                {loading && <p className="text-muted">{t('atlas.mapPreview.loading')}</p>}
                 {loadError && <p className="text-danger">{loadError}</p>}
                 {!loading && !loadError && mapSettings && (
                     <>
-                        <p className={`bg-info bg-opacity-10 p-2`}>{mapSettings.revisorsComment || t("atlas.mapPreview.noComment")}</p>
+                        <p className={'bg-info bg-opacity-10 p-2'}>{mapSettings.revisorsComment || t('atlas.mapPreview.noComment')}</p>
                         {mapSettings.revisorsPrintComment && (
                             <>
-                                <h6 className="mt-3">{t("atlas.mapPreview.printMapNote")}</h6>
-                                <p className={`bg-info bg-opacity-10 p-2`}>{mapSettings.revisorsPrintComment}</p>
+                                <h6 className="mt-3">{t('atlas.mapPreview.printMapNote')}</h6>
+                                <p className={'bg-info bg-opacity-10 p-2'}>{mapSettings.revisorsPrintComment}</p>
                             </>
                         )}
-                        <p><b>{t("atlas.mapPreview.revisionStatus")} </b>{mapSettings.revisionStatusDescription}<br/>
-                            <b>{t("atlas.mapPreview.publicationStatus")} </b>{mapSettings.publicationStatusDescription}
+                        <p><b>{t('atlas.mapPreview.revisionStatus')} </b>{mapSettings.revisionStatusDescription}<br/>
+                            <b>{t('atlas.mapPreview.publicationStatus')} </b>{mapSettings.publicationStatusDescription}
                         </p>
                         {mapSettings.commonThreshold !== null && (
                             <p><b>
-                                {t("atlas.mapPreview.commonThreshold", {threshold: mapSettings.commonThreshold})}</b>
+                                {t('atlas.mapPreview.commonThreshold', {threshold: mapSettings.commonThreshold})}</b>
                             </p>
                         )}
                     </>
                 )}
                 <hr/>
                 <div className="mt-2">
-                    <p><strong>{t("atlas.mapPreview.legend")}</strong></p>
+                    <p><strong>{t('atlas.mapPreview.legend')}</strong></p>
                     {type === 1 && getLegendColors().map((color, index) => {
                         const legendKeys = !mapSettings?.commonThreshold
                             ? ['certainQuadrant', 'uncertainQuadrant']

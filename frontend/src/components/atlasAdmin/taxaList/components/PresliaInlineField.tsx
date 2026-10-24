@@ -97,7 +97,7 @@ export function PresliaInlineField({
             className="editable-value"
             style={{cursor: 'pointer'}}
             onClick={handleEdit}
-            title={disabled ? 'Saving...' : t("common.inlineField.edit")}
+            title={disabled ? 'Saving...' : t('common.inlineField.edit')}
         >
             {value || <span className="text-muted">—</span>}
             {!disabled && <i className="bi bi-pencil ms-1 small" aria-hidden="true"/>}

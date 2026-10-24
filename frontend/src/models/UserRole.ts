@@ -7,16 +7,16 @@
  * varování o driftu BE ↔ FE.
  */
 
-import {logWarn} from "@/services/logger";
+import {logWarn} from '@/services/logger';
 
 export const USER_ROLES = [
-    "mapAdmin",
-    "bulkEditor",
-    "traitAdmin",
-    "sysAdmin",
-    "taxonAdmin",
-    "asyncImporter",
-    "biblioAdmin",
+    'mapAdmin',
+    'bulkEditor',
+    'traitAdmin',
+    'sysAdmin',
+    'taxonAdmin',
+    'asyncImporter',
+    'biblioAdmin',
 ] as const;
 
 export type UserRole = (typeof USER_ROLES)[number];
@@ -39,7 +39,7 @@ export function parseRoles(raw: readonly string[] | undefined | null): UserRole[
             parsed.push(role);
         } else {
             logWarn(
-                "Neznámá role z backendu – FE union v src/models/UserRole.ts nedrží krok s app/models/UserRole.java.",
+                'Neznámá role z backendu – FE union v src/models/UserRole.ts nedrží krok s app/models/UserRole.java.',
                 {role},
             );
         }

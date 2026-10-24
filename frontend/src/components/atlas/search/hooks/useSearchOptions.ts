@@ -3,9 +3,9 @@
  * service vrstvu a normalizace na TypeaheadOption pro selecty.
  */
 
-import {useMemo} from "react";
-import {useTranslation} from "react-i18next";
-import {useCatalogQuery} from "@/query/useCatalogQuery";
+import {useMemo} from 'react';
+import {useTranslation} from 'react-i18next';
+import {useCatalogQuery} from '@/query/useCatalogQuery';
 import {
     getCommitters,
     getHerbariums,
@@ -14,21 +14,21 @@ import {
     getLicenses,
     getPhytochorions,
     getProjects,
-} from "@/services/searchApi";
-import type {TypeaheadOption} from "../types";
+} from '@/services/searchApi';
+import type {TypeaheadOption} from '../types';
 
 export function useSearchOptions() {
     const {t} = useTranslation();
 
     // číselníky formuláře – při selhání zůstane select prázdný (použitelný);
     // bez cache (sekce J): každý mount je načte znovu
-    const projects = useCatalogQuery(["projects"], getProjects);
-    const herbariums = useCatalogQuery(["herbariums"], getHerbariums);
-    const institutions = useCatalogQuery(["institutions"], getInstitutions);
-    const committers = useCatalogQuery(["committers"], getCommitters);
-    const licenses = useCatalogQuery(["licenses"], getLicenses);
-    const historyFlags = useCatalogQuery(["historyFlags"], getHistoryFlags);
-    const phytochorions = useCatalogQuery(["phytochorions"], getPhytochorions);
+    const projects = useCatalogQuery(['projects'], getProjects);
+    const herbariums = useCatalogQuery(['herbariums'], getHerbariums);
+    const institutions = useCatalogQuery(['institutions'], getInstitutions);
+    const committers = useCatalogQuery(['committers'], getCommitters);
+    const licenses = useCatalogQuery(['licenses'], getLicenses);
+    const historyFlags = useCatalogQuery(['historyFlags'], getHistoryFlags);
+    const phytochorions = useCatalogQuery(['phytochorions'], getPhytochorions);
 
     const phytochorionOptions = useMemo<TypeaheadOption[]>(() => (
         phytochorions.map((phytochorion) => ({id: phytochorion.rowid, label: phytochorion.name}))

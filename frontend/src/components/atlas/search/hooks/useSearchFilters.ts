@@ -5,11 +5,11 @@
  * FormData); kontrolované jsou typeaheady, Pladias ID a podtaxony.
  */
 
-import {useCallback, useState} from "react";
-import type {TypeaheadOption} from "../types";
+import {useCallback, useState} from 'react';
+import type {TypeaheadOption} from '../types';
 
 export function useSearchFilters() {
-    const [selectedTaxonName, setSelectedTaxonName] = useState<string>("");
+    const [selectedTaxonName, setSelectedTaxonName] = useState<string>('');
     const [selectedPhytochorion, setSelectedPhytochorion] = useState<TypeaheadOption[]>([]);
     const [selectedSubstrate1, setSelectedSubstrate1] = useState<TypeaheadOption[]>([]);
     const [selectedSubstrate2, setSelectedSubstrate2] = useState<TypeaheadOption[]>([]);
@@ -20,12 +20,12 @@ export function useSearchFilters() {
     const [selectedValidationStatus, setSelectedValidationStatus] = useState<TypeaheadOption[]>([]);
     const [selectedHistoryFlag, setSelectedHistoryFlag] = useState<TypeaheadOption[]>([]);
     const [selectedLicense, setSelectedLicense] = useState<TypeaheadOption[]>([]);
-    const [pladiasId, setPladiasId] = useState<string>("");
+    const [pladiasId, setPladiasId] = useState<string>('');
     const [includeSubtaxa, setIncludeSubtaxa] = useState<boolean>(true);
 
     /** Nové hledání – všechny výběry do výchozího stavu. */
     const reset = useCallback(() => {
-        setSelectedTaxonName("");
+        setSelectedTaxonName('');
         setSelectedPhytochorion([]);
         setSelectedSubstrate1([]);
         setSelectedSubstrate2([]);
@@ -36,7 +36,7 @@ export function useSearchFilters() {
         setSelectedValidationStatus([]);
         setSelectedHistoryFlag([]);
         setSelectedLicense([]);
-        setPladiasId("");
+        setPladiasId('');
         setIncludeSubtaxa(true);
     }, []);
 

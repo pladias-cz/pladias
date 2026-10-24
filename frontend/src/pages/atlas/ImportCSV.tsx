@@ -1,14 +1,14 @@
-import {Row, Col, Container, Alert} from "react-bootstrap";
-import {usePageTitle} from "@/hooks/usePageTitle";
-import {useTranslation} from "react-i18next";
-import {useState, useCallback} from "react";
-import {ImportCSVForm} from "@/components/atlas/importCsv/components";
-import {useImportCSVData} from "@/components/atlas/importCsv/hooks";
-import type {ImportOperation, ImportError} from "@/components/atlas/importCsv/types";
+import {Row, Col, Container, Alert} from 'react-bootstrap';
+import {usePageTitle} from '@/hooks/usePageTitle';
+import {useTranslation} from 'react-i18next';
+import {useState, useCallback} from 'react';
+import {ImportCSVForm} from '@/components/atlas/importCsv/components';
+import {useImportCSVData} from '@/components/atlas/importCsv/hooks';
+import type {ImportOperation, ImportError} from '@/components/atlas/importCsv/types';
 
 export default function ImportCSV() {
     const {t} = useTranslation();
-    usePageTitle(t("atlas.importCSV.title"));
+    usePageTitle(t('atlas.importCSV.title'));
 
     const [error, setError] = useState<ImportError | null>(null);
     const [uploadSuccess, setUploadSuccess] = useState(false);
@@ -43,7 +43,7 @@ export default function ImportCSV() {
         <Container fluid>
             <Row>
                 <Col>
-                    <h3>{t("atlas.importCSV.title")}</h3>
+                    <h3>{t('atlas.importCSV.title')}</h3>
                 </Col>
             </Row>
 
@@ -53,13 +53,13 @@ export default function ImportCSV() {
                         <div className="row mb-3">
                             <div className="col">
                                 <Alert variant="danger">
-                                    <h4>{t("other.components.atlas.importCSV.uploadFailed")}</h4>
+                                    <h4>{t('other.components.atlas.importCSV.uploadFailed')}</h4>
                                     <br/>
-                                    <p><u>{t("other.components.atlas.importCSV.errorMessage")}</u>: {error.errorMessage}
+                                    <p><u>{t('other.components.atlas.importCSV.errorMessage')}</u>: {error.errorMessage}
                                     </p>
                                     <hr/>
                                     <p>
-                                        {t("other.components.atlas.importCSV.contactSupport")}
+                                        {t('other.components.atlas.importCSV.contactSupport')}
                                         <a href="mailto:pladias@googlegroups.com">pladias@googlegroups.com</a>.
                                     </p>
                                 </Alert>
@@ -71,8 +71,8 @@ export default function ImportCSV() {
                         <div className="row">
                             <div className="col">
                                 <Alert variant="success">
-                                    <h4>{t("other.components.atlas.importCSV.uploadSuccess")}</h4>
-                                    <p>{t("other.components.atlas.importCSV.emailNotificationInfo")}</p>
+                                    <h4>{t('other.components.atlas.importCSV.uploadSuccess')}</h4>
+                                    <p>{t('other.components.atlas.importCSV.emailNotificationInfo')}</p>
                                 </Alert>
                             </div>
                         </div>

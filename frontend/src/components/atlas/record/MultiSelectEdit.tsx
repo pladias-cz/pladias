@@ -1,10 +1,10 @@
-import {useState, useEffect} from "react";
-import {Button, Form, Spinner} from "react-bootstrap";
-import {useTranslation} from "react-i18next";
-import {useConfirm} from "@/hooks/useConfirm";
-import type {MultiValueOption} from "@/models/MultiValueOption";
-import {patchRecordField} from "@/services/recordApi";
-import {ApiError, apiErrorMessage} from "@/services/apiClient";
+import {useState, useEffect} from 'react';
+import {Button, Form, Spinner} from 'react-bootstrap';
+import {useTranslation} from 'react-i18next';
+import {useConfirm} from '@/hooks/useConfirm';
+import type {MultiValueOption} from '@/models/MultiValueOption';
+import {patchRecordField} from '@/services/recordApi';
+import {ApiError, apiErrorMessage} from '@/services/apiClient';
 
 interface Props {
     label: string;
@@ -59,7 +59,7 @@ export default function MultiSelectEdit({
                     setOptions(fetchedOptions);
                 })
                 .catch(err => {
-                    setError(apiErrorMessage(err, t("common.multiValueEdit.loadFailed")));
+                    setError(apiErrorMessage(err, t('common.multiValueEdit.loadFailed')));
                 });
         }
     }, [editing, loadOptions, t]);
@@ -90,7 +90,7 @@ export default function MultiSelectEdit({
         } catch (e) {
             // 403 apod. notifikuje centrálně apiClient – zde jen propagujeme
             if (!(e instanceof ApiError && e.notified)) {
-                setError(apiErrorMessage(e, t("common.multiValueEdit.saveFailed")));
+                setError(apiErrorMessage(e, t('common.multiValueEdit.saveFailed')));
             }
             throw e;
         }
@@ -119,8 +119,8 @@ export default function MultiSelectEdit({
 
     async function handleRemove(option: MultiValueOption) {
         if (!(await confirm({
-            message: t("common.multiValueEdit.confirmDeleteMessage", {name: option.name}),
-            confirmLabel: t("common.multiValueEdit.remove"),
+            message: t('common.multiValueEdit.confirmDeleteMessage', {name: option.name}),
+            confirmLabel: t('common.multiValueEdit.remove'),
         }))) {
             return;
         }
@@ -156,7 +156,7 @@ export default function MultiSelectEdit({
         content = (
             <div className="d-flex flex-wrap gap-1">
                 {selected.length === 0 ? (
-                    <span className="text-muted">{t("common.multiValueEdit.none")}</span>
+                    <span className="text-muted">{t('common.multiValueEdit.none')}</span>
                 ) : (
                     selected.map(option => (
                         <span key={option.id} className="badge bg-secondary" title={option.label}>
@@ -173,7 +173,7 @@ export default function MultiSelectEdit({
                     {/*<strong className="d-block mb-2">{t("common.multiValueEdit.current")}</strong>*/}
                     <div className="d-flex flex-wrap gap-1 mb-3">
                         {selected.length === 0 ? (
-                            <span className="text-muted small">{t("common.multiValueEdit.none")}</span>
+                            <span className="text-muted small">{t('common.multiValueEdit.none')}</span>
                         ) : (
                             selected.map(option => (
                                 <span key={option.id} className="badge bg-primary fs-6" title={option.label}>
@@ -184,18 +184,18 @@ export default function MultiSelectEdit({
                                         style={{fontSize: '0.7em', verticalAlign: 'middle'}}
                                         onClick={() => handleRemove(option)}
                                         disabled={saving}
-                                        title={t("common.multiValueEdit.remove")}
+                                        title={t('common.multiValueEdit.remove')}
                                     />
                                 </span>
                             ))
                         )}
                     </div>
 
-                    <strong className="d-block mb-2">{t("common.multiValueEdit.available")}</strong>
+                    <strong className="d-block mb-2">{t('common.multiValueEdit.available')}</strong>
                     <div className="d-flex gap-2 mb-2">
                         <Form.Select
                             size="sm"
-                            value={pendingAdd?.id.toString() || ""}
+                            value={pendingAdd?.id.toString() || ''}
                             onChange={e => {
                                 const option = availableOptions.find(o => o.id === Number(e.target.value));
                                 if (option) {
@@ -205,7 +205,7 @@ export default function MultiSelectEdit({
                             disabled={saving || availableOptions.length === 0}
                             className="flex-grow-1"
                         >
-                            <option value="">-- {t("common.select")} --</option>
+                            <option value="">-- {t('common.select')} --</option>
                             {availableOptions.map(option => (
                                 <option key={option.id} value={option.id} title={option.label}>
                                     {option.name}
@@ -219,13 +219,13 @@ export default function MultiSelectEdit({
                                 onClick={handleSubmit}
                                 disabled={saving}
                             >
-                                {t("common.inlineField.add")}
+                                {t('common.inlineField.add')}
                             </Button>
                         )}
                     </div>
 
                     {availableOptions.length === 0 && (
-                        <small className="text-muted">{t("common.multiValueEdit.noMoreAvailable")}</small>
+                        <small className="text-muted">{t('common.multiValueEdit.noMoreAvailable')}</small>
                     )}
                 </div>
 
@@ -265,16 +265,16 @@ export default function MultiSelectEdit({
                         <i
                             className="bi bi-pencil me-2"
                             aria-hidden="true"
-                            style={{cursor: "pointer"}}
+                            style={{cursor: 'pointer'}}
                             onClick={() => setEditing(true)}
-                            title={t("common.inlineField.edit")}
+                            title={t('common.inlineField.edit')}
                         />
                     )}
                     <span
                         className="editable-value"
-                        style={{cursor: "pointer"}}
+                        style={{cursor: 'pointer'}}
                         onClick={() => !editing && setEditing(true)}
-                        title={t("common.inlineField.edit")}
+                        title={t('common.inlineField.edit')}
                     >
                         {!editing && content}
                     </span>

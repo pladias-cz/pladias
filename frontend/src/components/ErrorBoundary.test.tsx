@@ -1,8 +1,8 @@
-import {cleanup, fireEvent, render, screen} from "@testing-library/react";
-import {afterEach, describe, expect, it, vi} from "vitest";
-import ErrorBoundary from "./ErrorBoundary";
-import {getRecentLogEntries, resetLogger} from "@/services/logger";
-import "@/i18n/i18n";
+import {cleanup, fireEvent, render, screen} from '@testing-library/react';
+import {afterEach, describe, expect, it, vi} from 'vitest';
+import ErrorBoundary from './ErrorBoundary';
+import {getRecentLogEntries, resetLogger} from '@/services/logger';
+import '@/i18n/i18n';
 
 /**
  * Testy globální error boundary: chyba renderu
@@ -10,7 +10,7 @@ import "@/i18n/i18n";
  */
 
 const Thrower = (): never => {
-    throw new Error("boom");
+    throw new Error('boom');
 };
 
 // Vitest bez globals: true nespouští auto-cleanup, proto ručně (logger se
@@ -20,15 +20,15 @@ afterEach(() => {
     resetLogger();
 });
 
-describe("ErrorBoundary", () => {
-    it("renders fallback UI with reload button instead of crashing the tree", () => {
+describe('ErrorBoundary', () => {
+    it('renders fallback UI with reload button instead of crashing the tree', () => {
         // React na chybu renderu sám loguje do console.error – v testu ticho
-        const consoleError = vi.spyOn(console, "error").mockImplementation(() => {
+        const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {
         });
         const reload = vi.fn();
-        Object.defineProperty(window, "location", {
+        Object.defineProperty(window, 'location', {
             configurable: true,
-            value: {reload, href: "http://localhost/"},
+            value: {reload, href: 'http://localhost/'},
         });
 
         render(
@@ -38,20 +38,20 @@ describe("ErrorBoundary", () => {
         );
 
         // Alert.Heading renderuje div.alert-heading, ne heading – hledáme text
-        expect(screen.getByText("Došlo k neočekávané chybě")).toBeInTheDocument();
-        const reloadButton = screen.getByRole("button", {name: "Obnovit stránku"});
+        expect(screen.getByText('Došlo k neočekávané chybě')).toBeInTheDocument();
+        const reloadButton = screen.getByRole('button', {name: 'Obnovit stránku'});
         fireEvent.click(reloadButton);
         expect(reload).toHaveBeenCalledTimes(1);
 
         consoleError.mockRestore();
     });
 
-    it("logs the error and component stack for developers", () => {
-        const consoleError = vi.spyOn(console, "error").mockImplementation(() => {
+    it('logs the error and component stack for developers', () => {
+        const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {
         });
-        Object.defineProperty(window, "location", {
+        Object.defineProperty(window, 'location', {
             configurable: true,
-            value: {reload: vi.fn(), href: "http://localhost/"},
+            value: {reload: vi.fn(), href: 'http://localhost/'},
         });
 
         render(
@@ -64,19 +64,19 @@ describe("ErrorBoundary", () => {
         // React sám loguje do console.error, proto spy výše drží test tichý
         const logged = getRecentLogEntries();
         expect(logged).toHaveLength(1);
-        expect(logged[0]).toMatchObject({message: "boom", context: {source: "errorBoundary"}});
+        expect(logged[0]).toMatchObject({message: 'boom', context: {source: 'errorBoundary'}});
         expect(logged[0].context?.componentStack).toEqual(expect.any(String));
 
         consoleError.mockRestore();
     });
 
-    it("renders children when nothing throws", () => {
+    it('renders children when nothing throws', () => {
         render(
             <ErrorBoundary>
                 <p>Obsah stránky</p>
             </ErrorBoundary>,
         );
 
-        expect(screen.getByText("Obsah stránky")).toBeInTheDocument();
+        expect(screen.getByText('Obsah stránky')).toBeInTheDocument();
     });
 });

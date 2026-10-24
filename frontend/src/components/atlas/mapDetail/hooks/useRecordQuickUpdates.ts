@@ -63,14 +63,14 @@ export function useRecordQuickUpdates() {
                     record: updatedRecord,
                 };
             } else if (payload?.error) {
-                pushNotification({type: "danger", message: payload.error});
+                pushNotification({type: 'danger', message: payload.error});
                 return {success: false, error: payload.error};
             } else {
-                pushNotification({type: "danger", message: i18n.t("common.table.updateFailed")});
+                pushNotification({type: 'danger', message: i18n.t('common.table.updateFailed')});
                 return {success: false, error: 'Unknown error'};
             }
         } catch (error) {
-            notifyApiError(error, i18n.t("common.table.updateFailed"));
+            notifyApiError(error, i18n.t('common.table.updateFailed'));
             const errorMsg = error instanceof Error ? error.message : 'Network error';
             return {success: false, error: errorMsg};
         }
@@ -84,7 +84,7 @@ export function useRecordQuickUpdates() {
             return await getRecordMapFields(recordId);
         } catch (error) {
             // obnova kaskádových polí po mutaci – selhání jen oznámíme, uložené zůstává
-            notifyApiError(error, i18n.t("record.loadFailed"));
+            notifyApiError(error, i18n.t('record.loadFailed'));
             return null;
         }
     }, []);

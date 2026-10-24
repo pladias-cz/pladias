@@ -1,13 +1,13 @@
-import {Button, Card, Form, Spinner} from "react-bootstrap";
-import {useState} from "react";
-import {useNavigate} from "react-router-dom";
-import {type Taxon} from "@/models/Taxon";
-import {type TaxonId} from "@/models/TaxonId";
-import TaxaPossibleParentAutocomplete from "@/components/autocomplete/TaxaPossibleParentAutocomplete";
-import {useConfirm} from "@/hooks/useConfirm";
+import {Button, Card, Form, Spinner} from 'react-bootstrap';
+import {useState} from 'react';
+import {useNavigate} from 'react-router-dom';
+import {type Taxon} from '@/models/Taxon';
+import {type TaxonId} from '@/models/TaxonId';
+import TaxaPossibleParentAutocomplete from '@/components/autocomplete/TaxaPossibleParentAutocomplete';
+import {useConfirm} from '@/hooks/useConfirm';
 import {useTranslation} from 'react-i18next';
-import {deleteTaxon, moveTaxon} from "@/services/taxonApi";
-import {notifyApiError} from "@/stores/notificationStore";
+import {deleteTaxon, moveTaxon} from '@/services/taxonApi';
+import {notifyApiError} from '@/stores/notificationStore';
 
 interface Props {
     taxon: Taxon;
@@ -32,7 +32,7 @@ export default function MoveTaxonCard({taxon, onMoved}: Props) {
             onMoved(await moveTaxon(taxon.id, selectedParentId.id));
             setSelectedParentId(null);
         } catch (e) {
-            notifyApiError(e, t("taxon.move.moveFailed"));
+            notifyApiError(e, t('taxon.move.moveFailed'));
         } finally {
             setIsMoving(false);
         }
@@ -40,8 +40,8 @@ export default function MoveTaxonCard({taxon, onMoved}: Props) {
 
     async function handleDelete() {
         if (!(await confirm({
-            message: t("taxon.move.deleteConfirm", {name: taxon.nameLat}),
-            confirmLabel: t("common.delete"),
+            message: t('taxon.move.deleteConfirm', {name: taxon.nameLat}),
+            confirmLabel: t('common.delete'),
         }))) {
             return;
         }
@@ -52,7 +52,7 @@ export default function MoveTaxonCard({taxon, onMoved}: Props) {
             await deleteTaxon(taxon.id);
             navigate(`/user/taxaAdministration/${taxon.parentId}`);
         } catch (e) {
-            notifyApiError(e, t("taxon.move.deleteFailed"));
+            notifyApiError(e, t('taxon.move.deleteFailed'));
         } finally {
             setIsDeleting(false);
         }
@@ -61,11 +61,11 @@ export default function MoveTaxonCard({taxon, onMoved}: Props) {
     return (
         <Card>
             {dialog}
-            <Card.Header>{t("taxon.move.title", {name: taxon.nameLat})}</Card.Header>
+            <Card.Header>{t('taxon.move.title', {name: taxon.nameLat})}</Card.Header>
             <Card.Body>
                 <Form>
                     <Form.Group className="mb-3">
-                        <Form.Label>{t("taxon.move.newParent")}</Form.Label>
+                        <Form.Label>{t('taxon.move.newParent')}</Form.Label>
                         <TaxaPossibleParentAutocomplete
                             taxonId={taxon.id}
                             onSelect={setSelectedParentId}
@@ -79,10 +79,10 @@ export default function MoveTaxonCard({taxon, onMoved}: Props) {
                         {isMoving ? (
                             <>
                                 <Spinner size="sm" className="me-2"/>
-                                {t("taxon.move.moving")}
+                                {t('taxon.move.moving')}
                             </>
                         ) : (
-                            t("taxon.move.moveButton")
+                            t('taxon.move.moveButton')
                         )}
                     </Button>
                 </Form>
@@ -90,7 +90,7 @@ export default function MoveTaxonCard({taxon, onMoved}: Props) {
                 <hr/>
 
                 <p>
-                    {t("taxon.move.deleteDescription")}
+                    {t('taxon.move.deleteDescription')}
                 </p>
 
                 <Button
@@ -101,10 +101,10 @@ export default function MoveTaxonCard({taxon, onMoved}: Props) {
                     {isDeleting ? (
                         <>
                             <Spinner size="sm" className="me-2"/>
-                            {t("taxon.move.deleting")}
+                            {t('taxon.move.deleting')}
                         </>
                     ) : (
-                        t("taxon.move.deleteButton")
+                        t('taxon.move.deleteButton')
                     )}
                 </Button>
             </Card.Body>

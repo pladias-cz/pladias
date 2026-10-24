@@ -1,9 +1,9 @@
-import React, {useState} from "react";
-import {Alert, Button, Col, Form, Row} from "react-bootstrap";
-import {usePageTitle} from "@/hooks/usePageTitle";
-import {useTranslation} from "react-i18next";
-import {changePassword, createApiToken} from "@/services/userApi";
-import {notifyApiError, useNotifications} from "@/stores/notificationStore";
+import React, {useState} from 'react';
+import {Alert, Button, Col, Form, Row} from 'react-bootstrap';
+import {usePageTitle} from '@/hooks/usePageTitle';
+import {useTranslation} from 'react-i18next';
+import {changePassword, createApiToken} from '@/services/userApi';
+import {notifyApiError, useNotifications} from '@/stores/notificationStore';
 
 interface ChangePasswordFormData {
     originalPassword: string;
@@ -14,11 +14,11 @@ interface ChangePasswordFormData {
 export default function ChangePassword() {
 
     const {t} = useTranslation();
-    usePageTitle(t("user.changePassword.title"));
+    usePageTitle(t('user.changePassword.title'));
     const [formData, setFormData] = useState<ChangePasswordFormData>({
-        originalPassword: "",
-        newPassword: "",
-        confirmNewPassword: ""
+        originalPassword: '',
+        newPassword: '',
+        confirmNewPassword: ''
     });
 
     const [loading, setLoading] = useState(false);
@@ -34,7 +34,7 @@ export default function ChangePassword() {
         try {
             setToken(await createApiToken());
         } catch (err) {
-            notifyApiError(err, t("user.changePassword.tokenError"));
+            notifyApiError(err, t('user.changePassword.tokenError'));
         } finally {
             setTokenLoading(false);
         }
@@ -54,15 +54,15 @@ export default function ChangePassword() {
 
         try {
             const successMessage = await changePassword(formData);
-            push({type: "success", message: successMessage || t("user.changePassword.success")});
+            push({type: 'success', message: successMessage || t('user.changePassword.success')});
             // Clear form
             setFormData({
-                originalPassword: "",
-                newPassword: "",
-                confirmNewPassword: ""
+                originalPassword: '',
+                newPassword: '',
+                confirmNewPassword: ''
             });
         } catch (err) {
-            notifyApiError(err, t("user.changePassword.networkError"));
+            notifyApiError(err, t('user.changePassword.networkError'));
         } finally {
             setLoading(false);
         }
@@ -71,19 +71,19 @@ export default function ChangePassword() {
     return (
         <Row>
             <Col sm={12} md={8} lg={6} xl={4} className="mx-auto">
-                <h3>{t("user.changePassword.title")}</h3>
-                <p>{t("user.changePassword.description")}</p>
+                <h3>{t('user.changePassword.title')}</h3>
+                <p>{t('user.changePassword.description')}</p>
 
                 {token && (
                     <Alert variant="info" dismissible onClose={() => setToken(null)}>
-                        {t("user.changePassword.tokenCreated")}
+                        {t('user.changePassword.tokenCreated')}
                         <div className="mt-2"><code className="user-select-all text-break">{token}</code></div>
                     </Alert>
                 )}
 
                 <Form onSubmit={handleSubmit}>
                     <Form.Group className="mb-3" controlId="originalPassword">
-                        <Form.Label>{t("user.changePassword.originalPassword")}</Form.Label>
+                        <Form.Label>{t('user.changePassword.originalPassword')}</Form.Label>
                         <Form.Control
                             type="password"
                             name="originalPassword"
@@ -94,7 +94,7 @@ export default function ChangePassword() {
                     </Form.Group>
 
                     <Form.Group className="mb-3" controlId="newPassword">
-                        <Form.Label>{t("user.changePassword.newPassword")}</Form.Label>
+                        <Form.Label>{t('user.changePassword.newPassword')}</Form.Label>
                         <Form.Control
                             type="password"
                             name="newPassword"
@@ -105,7 +105,7 @@ export default function ChangePassword() {
                     </Form.Group>
 
                     <Form.Group className="mb-3" controlId="confirmNewPassword">
-                        <Form.Label>{t("user.changePassword.confirmNewPassword")}</Form.Label>
+                        <Form.Label>{t('user.changePassword.confirmNewPassword')}</Form.Label>
                         <Form.Control
                             type="password"
                             name="confirmNewPassword"
@@ -120,7 +120,7 @@ export default function ChangePassword() {
                         type="submit"
                         disabled={loading}
                     >
-                        {loading ? t("user.changePassword.submitting") : t("user.changePassword.submit")}
+                        {loading ? t('user.changePassword.submitting') : t('user.changePassword.submit')}
                     </Button>
                     <Button
                         variant="secondary"
@@ -129,7 +129,7 @@ export default function ChangePassword() {
                         onClick={handleCreateToken}
                         disabled={tokenLoading}
                     >
-                        {tokenLoading ? t("user.changePassword.creatingToken") : t("user.changePassword.createToken")}
+                        {tokenLoading ? t('user.changePassword.creatingToken') : t('user.changePassword.createToken')}
                     </Button>
                 </Form>
             </Col>

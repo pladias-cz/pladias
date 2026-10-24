@@ -1,6 +1,6 @@
-import {useTranslation} from "react-i18next";
-import type {ProjectType} from "@/models/AtlasRecords";
-import type {RecordSourceConfig} from "./recordSources";
+import {useTranslation} from 'react-i18next';
+import type {ProjectType} from '@/models/AtlasRecords';
+import type {RecordSourceConfig} from './recordSources';
 
 interface RecordSourceTabTitleProps {
     /** Konfigurace zdroje (label, barva markeru). */
@@ -22,7 +22,7 @@ interface RecordSourceTabTitleProps {
  */
 export function RecordSourceTabTitle({source, count, visible, onToggleVisibility}: RecordSourceTabTitleProps) {
     const {t} = useTranslation();
-    const showOnMapLabel = t("atlas.mapDetail.showOnMap", {source: source.label});
+    const showOnMapLabel = t('atlas.mapDetail.showOnMap', {source: source.label});
 
     return (
         <span className="record-source-tab-title">

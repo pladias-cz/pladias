@@ -1,4 +1,4 @@
-import {afterEach, beforeEach, describe, expect, it, vi} from "vitest";
+import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 import {
     ApiError,
     apiDownload,
@@ -10,8 +10,8 @@ import {
     isAbortError,
     setForbiddenHandler,
     setNetworkErrorHandler,
-} from "./apiClient";
-import {getRecentLogEntries, resetLogger} from "./logger";
+} from './apiClient';
+import {getRecentLogEntries, resetLogger} from './logger';
 
 /**
  * Testy apiClientu: parsování obálky, 401/403
@@ -22,7 +22,7 @@ import {getRecentLogEntries, resetLogger} from "./logger";
 const jsonResponse = (payload: unknown, status = 200) =>
     new Response(JSON.stringify(payload), {
         status,
-        headers: {"Content-Type": "application/json"},
+        headers: {'Content-Type': 'application/json'},
     });
 
 const fetchMock = vi.fn<(input: RequestInfo | URL, init?: RequestInit) => Promise<Response>>();
@@ -31,13 +31,13 @@ let assignMock: ReturnType<typeof vi.fn>;
 
 beforeEach(() => {
     fetchMock.mockReset();
-    vi.stubGlobal("fetch", fetchMock);
+    vi.stubGlobal('fetch', fetchMock);
     resetLogger();
     // jsdom neumí navigaci – location se stubuje, apiClient na 401 přesměrovává
     assignMock = vi.fn();
-    Object.defineProperty(window, "location", {
+    Object.defineProperty(window, 'location', {
         configurable: true,
-        value: {assign: assignMock, href: "http://localhost/"},
+        value: {assign: assignMock, href: 'http://localhost/'},
     });
 });
 
@@ -48,259 +48,259 @@ afterEach(() => {
     vi.restoreAllMocks();
 });
 
-describe("apiGet", () => {
-    it("returns the parsed JsonResult envelope untouched (services own the shape)", async () => {
-        fetchMock.mockResolvedValue(jsonResponse({success: true, data: {token: "abc"}}));
+describe('apiGet', () => {
+    it('returns the parsed JsonResult envelope untouched (services own the shape)', async () => {
+        fetchMock.mockResolvedValue(jsonResponse({success: true, data: {token: 'abc'}}));
 
-        await expect(apiGet("/api/react/user/createToken")).resolves.toEqual({
+        await expect(apiGet('/api/react/user/createToken')).resolves.toEqual({
             success: true,
-            data: {token: "abc"},
+            data: {token: 'abc'},
         });
         expect(fetchMock).toHaveBeenCalledWith(
-            "/api/react/user/createToken",
-            expect.objectContaining({method: "GET", body: undefined}),
+            '/api/react/user/createToken',
+            expect.objectContaining({method: 'GET', body: undefined}),
         );
     });
 
-    it("appends params as a query string", async () => {
+    it('appends params as a query string', async () => {
         fetchMock.mockResolvedValue(jsonResponse({success: true}));
 
-        await apiGet("/api/react/taxa/queryAll", {params: {prefix: "Ace", page: "2"}});
+        await apiGet('/api/react/taxa/queryAll', {params: {prefix: 'Ace', page: '2'}});
 
         expect(fetchMock).toHaveBeenCalledWith(
-            "/api/react/taxa/queryAll?prefix=Ace&page=2",
+            '/api/react/taxa/queryAll?prefix=Ace&page=2',
             expect.anything(),
         );
     });
 
-    it("keeps soft envelope failures (success: false with HTTP 200) visible to the caller", async () => {
+    it('keeps soft envelope failures (success: false with HTTP 200) visible to the caller', async () => {
         // user settings: success:false znamená „hodnota nenastavena", ne chybu
-        fetchMock.mockResolvedValue(jsonResponse({success: false, value: ""}));
+        fetchMock.mockResolvedValue(jsonResponse({success: false, value: ''}));
 
-        await expect(apiGet("/api/react/user/settings/application_language")).resolves.toEqual({
+        await expect(apiGet('/api/react/user/settings/application_language')).resolves.toEqual({
             success: false,
-            value: "",
+            value: '',
         });
     });
 });
 
-describe("apiPost", () => {
-    it("sends JSON bodies with Content-Type application/json", async () => {
+describe('apiPost', () => {
+    it('sends JSON bodies with Content-Type application/json', async () => {
         fetchMock.mockResolvedValue(jsonResponse({success: true}));
 
-        await apiPost("/api/react/users", {name: "Jan", surname: "Novák"});
+        await apiPost('/api/react/users', {name: 'Jan', surname: 'Novák'});
 
         expect(fetchMock).toHaveBeenCalledWith(
-            "/api/react/users",
+            '/api/react/users',
             expect.objectContaining({
-                method: "POST",
-                body: JSON.stringify({name: "Jan", surname: "Novák"}),
-                headers: {"Content-Type": "application/json"},
+                method: 'POST',
+                body: JSON.stringify({name: 'Jan', surname: 'Novák'}),
+                headers: {'Content-Type': 'application/json'},
             }),
         );
     });
 
-    it("sends FormData without Content-Type (the browser adds the multipart boundary)", async () => {
+    it('sends FormData without Content-Type (the browser adds the multipart boundary)', async () => {
         fetchMock.mockResolvedValue(jsonResponse({success: true}));
 
         const formData = new FormData();
-        formData.append("taxonId", "1");
-        await apiPost("/api/react/atlas/pngMap/taxon/1", formData);
+        formData.append('taxonId', '1');
+        await apiPost('/api/react/atlas/pngMap/taxon/1', formData);
 
         const init = fetchMock.mock.calls[0][1] as RequestInit;
         expect(init.body).toBeInstanceOf(FormData);
-        expect((init.headers as Record<string, string>)["Content-Type"]).toBeUndefined();
+        expect((init.headers as Record<string, string>)['Content-Type']).toBeUndefined();
     });
 });
 
-describe("HTTP error branches", () => {
-    it("redirects to /login and throws ApiError on 401", async () => {
-        fetchMock.mockResolvedValue(jsonResponse({success: false, message: "unauthorized"}, 401));
+describe('HTTP error branches', () => {
+    it('redirects to /login and throws ApiError on 401', async () => {
+        fetchMock.mockResolvedValue(jsonResponse({success: false, message: 'unauthorized'}, 401));
 
-        await expect(apiGet("/api/react/atlasadmin/imports")).rejects.toBeInstanceOf(ApiError);
-        expect(assignMock).toHaveBeenCalledWith("/login");
+        await expect(apiGet('/api/react/atlasadmin/imports')).rejects.toBeInstanceOf(ApiError);
+        expect(assignMock).toHaveBeenCalledWith('/login');
         // 401 = expirovaná session s redirectem (očekávaný tok) – do logu nepatří
         expect(getRecentLogEntries()).toHaveLength(0);
     });
 
-    it("calls the forbidden handler and throws ApiError on 403", async () => {
-        fetchMock.mockResolvedValue(jsonResponse({success: false, message: "Nedostatečná oprávnění"}, 403));
+    it('calls the forbidden handler and throws ApiError on 403', async () => {
+        fetchMock.mockResolvedValue(jsonResponse({success: false, message: 'Nedostatečná oprávnění'}, 403));
         const handler = vi.fn();
         setForbiddenHandler(handler);
 
-        const promise = apiGet("/api/react/atlasadmin/imports");
-        await expect(promise).rejects.toMatchObject({status: 403, message: "Nedostatečná oprávnění"});
-        expect(handler).toHaveBeenCalledWith("Nedostatečná oprávnění");
+        const promise = apiGet('/api/react/atlasadmin/imports');
+        await expect(promise).rejects.toMatchObject({status: 403, message: 'Nedostatečná oprávnění'});
+        expect(handler).toHaveBeenCalledWith('Nedostatečná oprávnění');
         // každou ApiError z apiClientu vidí i centrální log (sekce F)
         const logged = getRecentLogEntries();
         expect(logged).toHaveLength(1);
         expect(logged[0]).toMatchObject({
             status: 403,
-            message: "Nedostatečná oprávnění",
-            context: {source: "apiClient", method: "GET", url: "/api/react/atlasadmin/imports"},
+            message: 'Nedostatečná oprávnění',
+            context: {source: 'apiClient', method: 'GET', url: '/api/react/atlasadmin/imports'},
         });
     });
 
-    it("throws ApiError with the message from the error payload on HTTP 400", async () => {
-        fetchMock.mockResolvedValue(jsonResponse({error: "Email již existuje"}, 400));
+    it('throws ApiError with the message from the error payload on HTTP 400', async () => {
+        fetchMock.mockResolvedValue(jsonResponse({error: 'Email již existuje'}, 400));
 
-        await expect(apiPost("/api/react/user/changeEmail", {
-            password: "x",
-            newEmail: "a@b.cz"
+        await expect(apiPost('/api/react/user/changeEmail', {
+            password: 'x',
+            newEmail: 'a@b.cz'
         })).rejects.toMatchObject({
             status: 400,
-            message: "Email již existuje",
+            message: 'Email již existuje',
         });
     });
 
-    it("falls back to the caller-provided errorMessage when the payload has none", async () => {
+    it('falls back to the caller-provided errorMessage when the payload has none', async () => {
         fetchMock.mockResolvedValue(jsonResponse({}, 500));
 
-        await expect(apiGet("/x", {errorMessage: "Export selhal."})).rejects.toMatchObject({
+        await expect(apiGet('/x', {errorMessage: 'Export selhal.'})).rejects.toMatchObject({
             status: 500,
-            message: "Export selhal.",
+            message: 'Export selhal.',
         });
     });
 
-    it("wraps network failures as ApiError", async () => {
-        fetchMock.mockRejectedValue(new TypeError("Failed to fetch"));
+    it('wraps network failures as ApiError', async () => {
+        fetchMock.mockRejectedValue(new TypeError('Failed to fetch'));
 
-        await expect(apiGet("/x")).rejects.toBeInstanceOf(ApiError);
+        await expect(apiGet('/x')).rejects.toBeInstanceOf(ApiError);
         // síťové chyby loguje apiClient v místě vzniku (url, metoda, silent)
         expect(getRecentLogEntries()[0].context).toEqual({
-            source: "apiClient",
-            kind: "network",
-            method: "GET",
-            url: "/x",
+            source: 'apiClient',
+            kind: 'network',
+            method: 'GET',
+            url: '/x',
             silent: false,
         });
     });
 
-    it("reports network failures to the central handler and marks the error notified (section F)", async () => {
-        fetchMock.mockRejectedValue(new TypeError("Failed to fetch"));
+    it('reports network failures to the central handler and marks the error notified (section F)', async () => {
+        fetchMock.mockRejectedValue(new TypeError('Failed to fetch'));
         const handler = vi.fn();
         setNetworkErrorHandler(handler);
 
-        await expect(apiGet("/x")).rejects.toMatchObject({notified: true});
+        await expect(apiGet('/x')).rejects.toMatchObject({notified: true});
         expect(handler).toHaveBeenCalledTimes(1);
         expect(handler.mock.calls[0][0]).toBeInstanceOf(ApiError);
     });
 
-    it("does not centrally report network failures of silent background requests", async () => {
-        fetchMock.mockRejectedValue(new TypeError("Failed to fetch"));
+    it('does not centrally report network failures of silent background requests', async () => {
+        fetchMock.mockRejectedValue(new TypeError('Failed to fetch'));
         const handler = vi.fn();
         setNetworkErrorHandler(handler);
 
-        await expect(apiGet("/api/react/infoGlobal", {silent: true})).rejects.toMatchObject({notified: false});
+        await expect(apiGet('/api/react/infoGlobal', {silent: true})).rejects.toMatchObject({notified: false});
         expect(handler).not.toHaveBeenCalled();
         // silent potlačuje jen notifikaci – v logu je záznam s příznakem
         expect(getRecentLogEntries()[0].context).toMatchObject({silent: true});
     });
 
-    it("marks 403 as centrally notified when a forbidden handler is wired", async () => {
-        fetchMock.mockResolvedValue(jsonResponse({success: false, message: "Nedostatečná oprávnění"}, 403));
+    it('marks 403 as centrally notified when a forbidden handler is wired', async () => {
+        fetchMock.mockResolvedValue(jsonResponse({success: false, message: 'Nedostatečná oprávnění'}, 403));
         setForbiddenHandler(vi.fn());
 
-        await expect(apiGet("/api/react/atlasadmin/imports")).rejects.toMatchObject({status: 403, notified: true});
+        await expect(apiGet('/api/react/atlasadmin/imports')).rejects.toMatchObject({status: 403, notified: true});
     });
 });
 
-describe("ensureSuccess", () => {
-    it("passes successful envelopes through", () => {
-        const payload = {success: true, message: "ok"};
+describe('ensureSuccess', () => {
+    it('passes successful envelopes through', () => {
+        const payload = {success: true, message: 'ok'};
         expect(ensureSuccess(payload)).toBe(payload);
     });
 
-    it("throws ApiError with message from a failed envelope", () => {
-        expect(() => ensureSuccess({success: false, message: "Novější verze existuje"})).toThrow(
-            "Novější verze existuje",
+    it('throws ApiError with message from a failed envelope', () => {
+        expect(() => ensureSuccess({success: false, message: 'Novější verze existuje'})).toThrow(
+            'Novější verze existuje',
         );
     });
 
-    it("throws with the error field and a fallback message", () => {
-        expect(() => ensureSuccess({success: false, error: "Import selhal"})).toThrow("Import selhal");
-        expect(() => ensureSuccess({success: false}, "Výchozí hláška")).toThrow("Výchozí hláška");
+    it('throws with the error field and a fallback message', () => {
+        expect(() => ensureSuccess({success: false, error: 'Import selhal'})).toThrow('Import selhal');
+        expect(() => ensureSuccess({success: false}, 'Výchozí hláška')).toThrow('Výchozí hláška');
     });
 });
 
-describe("apiPostFormUrlencoded", () => {
-    it("sends urlencoded bodies and keeps LF line breaks (gotcha: backend splits on \\R)", async () => {
+describe('apiPostFormUrlencoded', () => {
+    it('sends urlencoded bodies and keeps LF line breaks (gotcha: backend splits on \\R)', async () => {
         fetchMock.mockResolvedValue(jsonResponse({success: true}));
 
-        await apiPostFormUrlencoded("/export", {taxa: "Acer campestre\nAcer platanoides"});
+        await apiPostFormUrlencoded('/export', {taxa: 'Acer campestre\nAcer platanoides'});
 
         const init = fetchMock.mock.calls[0][1] as RequestInit;
-        expect(init.headers).toEqual({"Content-Type": "application/x-www-form-urlencoded;charset=UTF-8"});
+        expect(init.headers).toEqual({'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'});
         // LF zůstává LF (jako dosud u fetch + URLSearchParams) – viz gotchas
         // „Taxon lists are submitted as urlencoded form data"
-        expect(String(init.body)).toBe(new URLSearchParams({taxa: "Acer campestre\nAcer platanoides"}).toString());
+        expect(String(init.body)).toBe(new URLSearchParams({taxa: 'Acer campestre\nAcer platanoides'}).toString());
     });
 });
 
-describe("apiGetLegacyString", () => {
-    it("unquotes JSON string responses (TraitsController)", async () => {
+describe('apiGetLegacyString', () => {
+    it('unquotes JSON string responses (TraitsController)', async () => {
         fetchMock.mockResolvedValue(
-            new Response('"Import proběhl"', {headers: {"Content-Type": "application/json"}}),
+            new Response('"Import proběhl"', {headers: {'Content-Type': 'application/json'}}),
         );
 
-        await expect(apiGetLegacyString("/api/react/trait/delete/1")).resolves.toBe("Import proběhl");
+        await expect(apiGetLegacyString('/api/react/trait/delete/1')).resolves.toBe('Import proběhl');
     });
 
-    it("returns plain text bodies as-is", async () => {
-        fetchMock.mockResolvedValue(new Response("Error during trait export", {headers: {"Content-Type": "text/plain"}}));
+    it('returns plain text bodies as-is', async () => {
+        fetchMock.mockResolvedValue(new Response('Error during trait export', {headers: {'Content-Type': 'text/plain'}}));
 
-        await expect(apiGetLegacyString("/x")).resolves.toBe("Error during trait export");
+        await expect(apiGetLegacyString('/x')).resolves.toBe('Error during trait export');
     });
 });
 
-describe("apiDownload", () => {
-    it("returns the blob with the filename from Content-disposition", async () => {
+describe('apiDownload', () => {
+    it('returns the blob with the filename from Content-disposition', async () => {
         fetchMock.mockResolvedValue(
-            new Response("xlsx-bytes", {
+            new Response('xlsx-bytes', {
                 headers: {
-                    "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                    "Content-disposition": 'attachment; filename="exports.xlsx"',
+                    'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                    'Content-disposition': 'attachment; filename="exports.xlsx"',
                 },
             }),
         );
 
-        const file = await apiDownload("/api/react/atlasadmin/imports", {
-            params: {page: "1"},
-            fallbackFilename: "export.xlsx",
+        const file = await apiDownload('/api/react/atlasadmin/imports', {
+            params: {page: '1'},
+            fallbackFilename: 'export.xlsx',
         });
 
-        expect(file.filename).toBe("exports.xlsx");
-        expect(file.contentType).toContain("spreadsheetml.sheet");
-        await expect(file.blob.text()).resolves.toBe("xlsx-bytes");
+        expect(file.filename).toBe('exports.xlsx');
+        expect(file.contentType).toContain('spreadsheetml.sheet');
+        await expect(file.blob.text()).resolves.toBe('xlsx-bytes');
     });
 
-    it("throws ApiError with the message when the stream carries a JSON error (gotcha)", async () => {
+    it('throws ApiError with the message when the stream carries a JSON error (gotcha)', async () => {
         fetchMock.mockResolvedValue(
-            new Response(JSON.stringify({success: false, message: "Import selhal"}), {
+            new Response(JSON.stringify({success: false, message: 'Import selhal'}), {
                 status: 200,
-                headers: {"Content-Type": "application/json"},
+                headers: {'Content-Type': 'application/json'},
             }),
         );
 
-        await expect(apiDownload("/export")).rejects.toMatchObject({
-            message: "Import selhal",
+        await expect(apiDownload('/export')).rejects.toMatchObject({
+            message: 'Import selhal',
         });
     });
 
-    it("uses the fallback filename when Content-disposition is missing", async () => {
+    it('uses the fallback filename when Content-disposition is missing', async () => {
         fetchMock.mockResolvedValue(
-            new Response("data", {headers: {"Content-Type": "application/octet-stream"}}),
+            new Response('data', {headers: {'Content-Type': 'application/octet-stream'}}),
         );
 
-        const file = await apiDownload("/export", {fallbackFilename: "zaklad.xlsx"});
-        expect(file.filename).toBe("zaklad.xlsx");
+        const file = await apiDownload('/export', {fallbackFilename: 'zaklad.xlsx'});
+        expect(file.filename).toBe('zaklad.xlsx');
     });
 });
 
-describe("isAbortError", () => {
-    it("detects fetch AbortError", () => {
-        expect(isAbortError(new DOMException("Aborted", "AbortError"))).toBe(true);
-        expect(isAbortError(new TypeError("Failed to fetch"))).toBe(false);
-        expect(isAbortError(new ApiError("x"))).toBe(false);
+describe('isAbortError', () => {
+    it('detects fetch AbortError', () => {
+        expect(isAbortError(new DOMException('Aborted', 'AbortError'))).toBe(true);
+        expect(isAbortError(new TypeError('Failed to fetch'))).toBe(false);
+        expect(isAbortError(new ApiError('x'))).toBe(false);
     });
 });

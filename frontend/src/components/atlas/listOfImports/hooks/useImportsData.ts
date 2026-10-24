@@ -30,7 +30,7 @@ export function useImportsData(options: UseImportsDataOptions = {}) {
         if (sorting && sorting.length > 0) {
             const s = sorting[0];
             sortParams.sortBy = s.id;
-            sortParams.sortOrder = s.desc ? "desc" : "asc";
+            sortParams.sortOrder = s.desc ? 'desc' : 'asc';
         }
 
         // Extract filters - handle special cases for timestamp range
@@ -51,7 +51,7 @@ export function useImportsData(options: UseImportsDataOptions = {}) {
             }
         });
 
-        const payload = await apiGet<ServerSideDataResponse<ImportRecord>>("/api/react/importResult/imported", {
+        const payload = await apiGet<ServerSideDataResponse<ImportRecord>>('/api/react/importResult/imported', {
             params: {
                 page: String(page),
                 pageSize: String(pageSize),

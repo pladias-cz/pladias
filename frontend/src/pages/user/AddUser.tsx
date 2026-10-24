@@ -1,9 +1,9 @@
-import React, {useState} from "react";
-import {Button, Col, Form, Row} from "react-bootstrap";
-import {usePageTitle} from "@/hooks/usePageTitle";
-import {useTranslation} from "react-i18next";
-import {addUser} from "@/services/userApi";
-import {notifyApiError, useNotifications} from "@/stores/notificationStore";
+import React, {useState} from 'react';
+import {Button, Col, Form, Row} from 'react-bootstrap';
+import {usePageTitle} from '@/hooks/usePageTitle';
+import {useTranslation} from 'react-i18next';
+import {addUser} from '@/services/userApi';
+import {notifyApiError, useNotifications} from '@/stores/notificationStore';
 
 interface AddUserFormData {
     name: string;
@@ -13,11 +13,11 @@ interface AddUserFormData {
 
 export default function AddUser() {
     const {t} = useTranslation();
-    usePageTitle(t("user.addUser.title"));
+    usePageTitle(t('user.addUser.title'));
     const [formData, setFormData] = useState<AddUserFormData>({
-        name: "",
-        surname: "",
-        email: ""
+        name: '',
+        surname: '',
+        email: ''
     });
 
     const [loading, setLoading] = useState(false);
@@ -37,16 +37,16 @@ export default function AddUser() {
 
         try {
             const successMessage = await addUser(formData);
-            push({type: "success", message: successMessage || t("user.addUser.success")});
+            push({type: 'success', message: successMessage || t('user.addUser.success')});
 
             // Clear form
             setFormData({
-                name: "",
-                surname: "",
-                email: ""
+                name: '',
+                surname: '',
+                email: ''
             });
         } catch (err) {
-            notifyApiError(err, t("user.addUser.networkError"));
+            notifyApiError(err, t('user.addUser.networkError'));
         } finally {
             setLoading(false);
         }
@@ -55,11 +55,11 @@ export default function AddUser() {
     return (
         <Row>
             <Col sm={12} md={8} lg={6} xl={4} className="mx-auto">
-                <h3>{t("user.addUser.title")}</h3>
+                <h3>{t('user.addUser.title')}</h3>
 
                 <Form onSubmit={handleSubmit}>
                     <Form.Group className="mb-3" controlId="name">
-                        <Form.Label>{t("user.addUser.name")}</Form.Label>
+                        <Form.Label>{t('user.addUser.name')}</Form.Label>
                         <Form.Control
                             type="text"
                             name="name"
@@ -70,7 +70,7 @@ export default function AddUser() {
                     </Form.Group>
 
                     <Form.Group className="mb-3" controlId="surname">
-                        <Form.Label>{t("user.addUser.surname")}</Form.Label>
+                        <Form.Label>{t('user.addUser.surname')}</Form.Label>
                         <Form.Control
                             type="text"
                             name="surname"
@@ -81,7 +81,7 @@ export default function AddUser() {
                     </Form.Group>
 
                     <Form.Group className="mb-3" controlId="email">
-                        <Form.Label>{t("user.addUser.email")}</Form.Label>
+                        <Form.Label>{t('user.addUser.email')}</Form.Label>
                         <Form.Control
                             type="email"
                             name="email"
@@ -96,7 +96,7 @@ export default function AddUser() {
                         type="submit"
                         disabled={loading}
                     >
-                        {loading ? t("user.addUser.submitting") : t("user.addUser.submit")}
+                        {loading ? t('user.addUser.submitting') : t('user.addUser.submit')}
                     </Button>
                 </Form>
             </Col>

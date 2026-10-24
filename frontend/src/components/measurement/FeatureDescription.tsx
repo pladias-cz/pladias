@@ -1,13 +1,13 @@
-import {useEffect, useState} from "react";
-import type {Feature} from "@/models/Feature";
-import type {TraitDatatype} from "@/models/TraitDatatype";
-import type {TraitAggregationType} from "@/models/TraitAggregationType";
-import type {EnumerateValue} from "@/models/EnumerateValue";
-import {DatatypeDescriptionPopover} from "@/components/measurement/DatatypeDescriptionPopover";
-import RichTextMessage from "@/components/RichTextMessage";
-import {getEnumerateValues, getTraitAggregationTypes, getTraitDatatypes} from "@/services/traitApi";
-import {notifyApiError} from "@/stores/notificationStore";
-import {useTranslation} from "react-i18next";
+import {useEffect, useState} from 'react';
+import type {Feature} from '@/models/Feature';
+import type {TraitDatatype} from '@/models/TraitDatatype';
+import type {TraitAggregationType} from '@/models/TraitAggregationType';
+import type {EnumerateValue} from '@/models/EnumerateValue';
+import {DatatypeDescriptionPopover} from '@/components/measurement/DatatypeDescriptionPopover';
+import RichTextMessage from '@/components/RichTextMessage';
+import {getEnumerateValues, getTraitAggregationTypes, getTraitDatatypes} from '@/services/traitApi';
+import {notifyApiError} from '@/stores/notificationStore';
+import {useTranslation} from 'react-i18next';
 
 function BoolIcon({value}: { value: boolean }) {
     return value ? (
@@ -53,7 +53,7 @@ export default function FeatureDatatypeFlags({feature}: Props) {
                     setEnumerate(enumerates);
                 }
             } catch (e) {
-                notifyApiError(e, t("common.loadFailed"));
+                notifyApiError(e, t('common.loadFailed'));
             } finally {
                 if (!cancelled) setLoading(false);
             }

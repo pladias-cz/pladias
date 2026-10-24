@@ -1,5 +1,5 @@
-import {Card, Table} from "react-bootstrap";
-import {useTranslation} from "react-i18next";
+import {Card, Table} from 'react-bootstrap';
+import {useTranslation} from 'react-i18next';
 import type {RecordPladiasFull} from '@/models/RecordPladiasFull';
 import type {ReverseGeocodingResponse} from '@/models/ReverseGeocoding';
 import type {TownHierarchyEntry} from '@/models/GeoTypes';
@@ -73,15 +73,15 @@ export default function RecordLocation({record, proposedLocation}: RecordLocatio
     return (
         <Card>
             <Card.Header>
-                <strong>{t("record.position")}</strong>
+                <strong>{t('record.position')}</strong>
             </Card.Header>
             <Card.Body>
                 <Table className="table-sm">
                     <thead>
                     <tr>
                         <th></th>
-                        <th>{t("record.actualPosition")}</th>
-                        <th>{t("record.newPosition")}</th>
+                        <th>{t('record.actualPosition')}</th>
+                        <th>{t('record.newPosition')}</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -108,36 +108,36 @@ export default function RecordLocation({record, proposedLocation}: RecordLocatio
                         </td>
                     </tr>
                     <tr>
-                        <td className="text-muted small">{t("record.coordsOrigin")}</td>
+                        <td className="text-muted small">{t('record.coordsOrigin')}</td>
                         <td>{record.gpsCoordsSource}</td>
                         <td className="text-primary">{proposedCoords ? (
                             'Upřesněno v Pladias'
                         ) : '-'}</td>
                     </tr>
                     <tr>
-                        <td className="text-muted small">{t("record.coordsPrecision")}</td>
+                        <td className="text-muted small">{t('record.coordsPrecision')}</td>
                         <td>{record.gpsPrecision}</td>
                         <td className="text-primary">{proposedCoords ? (
                             'Vyplňte níže'
                         ) : '-'}</td>
                     </tr>
                     <tr>
-                        <td className="text-muted small">{t("record.nearestTownComputed")}</td>
+                        <td className="text-muted small">{t('record.nearestTownComputed')}</td>
                         <td>{record.nearestTownName}</td>
                         <td className="text-primary">{geocodeData ? formatTownHierarchy(geocodeData.townHierarchy) : '-'}</td>
                     </tr>
                     <tr>
-                        <td className="text-muted small">{t("record.district")}</td>
+                        <td className="text-muted small">{t('record.district')}</td>
                         <td>{record.districtComputed} </td>
                         <td className="text-primary">{geocodeData?.district?.name ?? '-'}</td>
                     </tr>
                     <tr>
-                        <td className="text-muted small">{t("record.quadrant")}</td>
+                        <td className="text-muted small">{t('record.quadrant')}</td>
                         <td>{record.quadrantCodeComputed}</td>
                         <td className="text-primary">{geocodeData?.quadrant?.code ?? '-'}</td>
                     </tr>
                     <tr>
-                        <td className="text-muted small">{t("record.phytochorion")}</td>
+                        <td className="text-muted small">{t('record.phytochorion')}</td>
                         <td>{record.phytochorionRelationName}</td>
                         <td className="text-primary">{geocodeData ? formatPhytochorions(geocodeData.phytochorions, record.phytochorionPhytoId) : '-'}</td>
                     </tr>

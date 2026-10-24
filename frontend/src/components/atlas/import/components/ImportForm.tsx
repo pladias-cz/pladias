@@ -45,14 +45,14 @@ export function ImportForm({onFileSelected, isUploading}: ImportFormProps) {
         <div className="row">
             <div className="col-sm-10 offset-sm-1">
                 <p>
-                    {t("atlas.import.component.documentationLink")}
+                    {t('atlas.import.component.documentationLink')}
                     {' '}
                     <a
                         href="//git.sorbus.ibot.cas.cz/pladias/pladias-core/documentation/-/blob/master/atlas/validation.md?ref_type=heads"
                         target="_blank"
                         rel="noopener noreferrer"
                     >
-                        {t("atlas.import.component.documentation")}
+                        {t('atlas.import.component.documentation')}
                     </a>.
                 </p>
                 <hr/>
@@ -76,7 +76,7 @@ export function ImportForm({onFileSelected, isUploading}: ImportFormProps) {
                                 value="validation"
                                 checked={operation === 'validation'}
                                 onChange={handleOperationChange}
-                                label={t("atlas.import.component.validate")}
+                                label={t('atlas.import.component.validate')}
                                 disabled={isUploading}
                             />
                         </div>
@@ -88,7 +88,7 @@ export function ImportForm({onFileSelected, isUploading}: ImportFormProps) {
                                 value="import"
                                 checked={operation === 'import'}
                                 onChange={handleOperationChange}
-                                label={t("atlas.import.component.import")}
+                                label={t('atlas.import.component.import')}
                                 disabled={isUploading}
                             />
                         </div>
@@ -114,16 +114,16 @@ export function ImportForm({onFileSelected, isUploading}: ImportFormProps) {
                 {isUploading && (
                     <div id="after-submit-message" className="mt-3">
                         <Alert variant="info" className="text-center">
-                            {t("atlas.import.component.processing")}
+                            {t('atlas.import.component.processing')}
                             <br/>
-                            {t("atlas.import.component.pleaseWait")}
+                            {t('atlas.import.component.pleaseWait')}
                         </Alert>
                     </div>
                 )}
 
-                <p>{t("atlas.import.component.recommendation")}</p>
-                <p>{t("atlas.import.component.emptyRowsWarning")}</p>
-                <p>{t("atlas.import.component.recordsLimitWarning")}</p>
+                <p>{t('atlas.import.component.recommendation')}</p>
+                <p>{t('atlas.import.component.emptyRowsWarning')}</p>
+                <p>{t('atlas.import.component.recordsLimitWarning')}</p>
 
             </div>
         </div>
@@ -149,7 +149,7 @@ function ProjectSelect({projectId, projects, isLoading, onChange, disabled}: Pro
             style={{width: '320px'}}
         >
             <option value="">
-                {isLoading ? t("common.loading") : t("atlas.import.component.projectSelect")}
+                {isLoading ? t('common.loading') : t('atlas.import.component.projectSelect')}
             </option>
             {projects.map((project) => (
                 <option key={project.id} value={project.id}>
@@ -180,10 +180,10 @@ function SubmitButton({isUploading, hasFile, hasProject}: SubmitButtonProps) {
             {isUploading ? (
                 <>
                     <Spinner size="sm" className="me-1"/>
-                    {t("common.submitting")}
+                    {t('common.submitting')}
                 </>
             ) : (
-                t("atlas.import.component.submit")
+                t('atlas.import.component.submit')
             )}
         </Button>
     );

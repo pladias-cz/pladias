@@ -61,7 +61,7 @@ export function DataTablePagination(props: DataTablePaginationProps) {
         <div className="d-flex justify-content-between align-items-center">
             <div>
                 <Form.Group controlId="pageSize" className="d-inline-block me-3">
-                    <Form.Label className="me-2">{t("common.table.rowsPerPage")}:</Form.Label>
+                    <Form.Label className="me-2">{t('common.table.rowsPerPage')}:</Form.Label>
                     <Form.Select
                         value={pageSize}
                         onChange={(e) => onPageSizeChange(Number(e.target.value))}

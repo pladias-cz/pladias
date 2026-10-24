@@ -32,7 +32,7 @@ export async function runBulkOperationSequential(
             await operation(record);
             successIds.push(record.id);
         } catch (error) {
-            const message = error instanceof Error ? error.message : "Unknown error";
+            const message = error instanceof Error ? error.message : 'Unknown error';
             failed.push({id: record.id, error: message});
         } finally {
             onProgress?.({processed: index + 1, total: records.length});

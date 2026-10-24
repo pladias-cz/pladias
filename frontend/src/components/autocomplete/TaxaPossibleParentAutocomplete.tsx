@@ -32,7 +32,7 @@ export default function TaxaPossibleParentAutocomplete({
                                                            onSelect,
                                                        }: Props) {
     const {t} = useTranslation();
-    const provider = createPossibleParentsProvider(taxonId, t("common.autocomplete.possibleParentsPlaceholder"));
+    const provider = createPossibleParentsProvider(taxonId, t('common.autocomplete.possibleParentsPlaceholder'));
 
     return (
         <Autocomplete<TaxonId>

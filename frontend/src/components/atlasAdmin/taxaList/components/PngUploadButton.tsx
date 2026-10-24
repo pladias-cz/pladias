@@ -21,7 +21,7 @@ export function PngUploadButton({taxonId, onUploadComplete}: PngUploadButtonProp
         if (!file) return;
 
         if (file.type !== 'image/png') {
-            setError(t("atlas.admin.taxaList.pngUpload.invalidFileType"));
+            setError(t('atlas.admin.taxaList.pngUpload.invalidFileType'));
             return;
         }
 
@@ -36,14 +36,14 @@ export function PngUploadButton({taxonId, onUploadComplete}: PngUploadButtonProp
             const payload = await apiPost<ApiResult>(`/api/react/atlas/pngMap/taxon/${taxonId}`, formData);
 
             if (payload.success) {
-                setSuccess(t("atlas.admin.taxaList.pngUpload.uploadSuccess"));
+                setSuccess(t('atlas.admin.taxaList.pngUpload.uploadSuccess'));
                 onUploadComplete(taxonId, true);
                 setTimeout(() => setSuccess(null), 3000);
             } else {
-                setError(payload.error || t("atlas.admin.taxaList.pngUpload.uploadFailed"));
+                setError(payload.error || t('atlas.admin.taxaList.pngUpload.uploadFailed'));
             }
         } catch (err) {
-            setError(err instanceof ApiError && err.message ? err.message : t("atlas.admin.taxaList.pngUpload.uploadFailed"));
+            setError(err instanceof ApiError && err.message ? err.message : t('atlas.admin.taxaList.pngUpload.uploadFailed'));
         } finally {
             setUploading(false);
             if (fileInputRef.current) {
@@ -67,12 +67,12 @@ export function PngUploadButton({taxonId, onUploadComplete}: PngUploadButtonProp
                 {uploading ? (
                     <>
                         <Spinner size="sm" className="me-1"/>
-                        {t("atlas.admin.taxaList.pngUpload.uploading")}
+                        {t('atlas.admin.taxaList.pngUpload.uploading')}
                     </>
                 ) : (
                     <>
                         <i className="bi bi-upload me-1"></i>
-                        {t("atlas.admin.taxaList.pngUpload.uploadPng")}
+                        {t('atlas.admin.taxaList.pngUpload.uploadPng')}
                     </>
                 )}
             </Button>

@@ -1,19 +1,19 @@
-import {useEffect, useMemo, useState} from "react";
-import {Accordion, Row, Spinner, Table} from "react-bootstrap";
-import {useTranslation} from "react-i18next";
-import {useNavigate} from "react-router-dom";
-import {useQuery} from "@tanstack/react-query";
-import {usePageTitle} from "@/hooks/usePageTitle";
-import type {Feature} from "@/models/Feature";
-import type {TraitDatatype} from "@/models/TraitDatatype";
-import {getFeatureGroups, getFeaturesOfGroup, getTraitDatatypes} from "@/services/traitApi";
-import {notifyApiError} from "@/stores/notificationStore";
+import {useEffect, useMemo, useState} from 'react';
+import {Accordion, Row, Spinner, Table} from 'react-bootstrap';
+import {useTranslation} from 'react-i18next';
+import {useNavigate} from 'react-router-dom';
+import {useQuery} from '@tanstack/react-query';
+import {usePageTitle} from '@/hooks/usePageTitle';
+import type {Feature} from '@/models/Feature';
+import type {TraitDatatype} from '@/models/TraitDatatype';
+import {getFeatureGroups, getFeaturesOfGroup, getTraitDatatypes} from '@/services/traitApi';
+import {notifyApiError} from '@/stores/notificationStore';
 
 
 export default function Data() {
     const {t} = useTranslation();
     const navigate = useNavigate();
-    usePageTitle(t("trait.data.title"));
+    usePageTitle(t('trait.data.title'));
 
     const [featuresByGroup, setFeaturesByGroup] =
         useState<Record<number, Feature[]>>({});
@@ -22,19 +22,19 @@ export default function Data() {
 
     // skupiny vlastností (číselník) – bez cache (sekce J), při mountu znovu;
     // chyba se zobrazí notifikací jako dřív
-    const groupsQuery = useQuery({queryKey: ["featureGroups"], queryFn: getFeatureGroups});
+    const groupsQuery = useQuery({queryKey: ['featureGroups'], queryFn: getFeatureGroups});
     useEffect(() => {
         if (groupsQuery.error) {
-            notifyApiError(groupsQuery.error, t("trait.data.loadFailed"));
+            notifyApiError(groupsQuery.error, t('trait.data.loadFailed'));
         }
     }, [groupsQuery.error, t]);
     const groups = groupsQuery.data ?? [];
 
     // číselník datatype – bez cache (sekce J), při mountu znovu
-    const datatypesQuery = useQuery({queryKey: ["traitDatatypes"], queryFn: getTraitDatatypes});
+    const datatypesQuery = useQuery({queryKey: ['traitDatatypes'], queryFn: getTraitDatatypes});
     useEffect(() => {
         if (datatypesQuery.error) {
-            notifyApiError(datatypesQuery.error, t("trait.data.loadFailed"));
+            notifyApiError(datatypesQuery.error, t('trait.data.loadFailed'));
         }
     }, [datatypesQuery.error, t]);
     const datatypes = useMemo(() => {
@@ -54,7 +54,7 @@ export default function Data() {
                 [groupId]: data
             }));
         } catch (e) {
-            notifyApiError(e, t("trait.data.loadFailed"));
+            notifyApiError(e, t('trait.data.loadFailed'));
         } finally {
             setLoadingGroup(null);
         }
@@ -74,7 +74,7 @@ export default function Data() {
 
     return (
         <Row>
-            <h3>{t("trait.data.title")}</h3>
+            <h3>{t('trait.data.title')}</h3>
 
             <Accordion activeKey={activeKey}>
                 {groups.map(group => {
@@ -88,7 +88,7 @@ export default function Data() {
                                     loadFeatures(group.id);
                                 }}
                             >
-                                {t("trait.data.section")} {group.name}
+                                {t('trait.data.section')} {group.name}
                             </Accordion.Header>
 
                             <Accordion.Body>
@@ -101,9 +101,9 @@ export default function Data() {
                                         <thead>
                                         <tr>
                                             <th>ID</th>
-                                            <th>{t("trait.feature.name")}</th>
-                                            <th>{t("trait.feature.admin")}</th>
-                                            <th>{t("trait.datatypes.datatype")}</th>
+                                            <th>{t('trait.feature.name')}</th>
+                                            <th>{t('trait.feature.admin')}</th>
+                                            <th>{t('trait.datatypes.datatype')}</th>
                                         </tr>
                                         </thead>
                                         <tbody>
@@ -119,7 +119,7 @@ export default function Data() {
                                                     {f.administrator}
                                                     {f.email && (
                                                         <>
-                                                            {" "}
+                                                            {' '}
                                                             <a
                                                                 href={`mailto:${f.email}`}
                                                                 onClick={e => e.stopPropagation()}

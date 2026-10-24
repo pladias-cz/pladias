@@ -1,8 +1,7 @@
-import {useEffect, useState} from "react";
-import type {TaxonStats} from "@/models/TaxonStats";
-import {useTranslation} from "react-i18next";
-import {getTaxonStatistics} from "@/services/taxonApi";
-import {notifyApiError} from "@/stores/notificationStore";
+import {useQuery} from '@tanstack/react-query';
+import {useTranslation} from 'react-i18next';
+import {getTaxonStatistics} from '@/services/taxonApi';
+import {useQueryErrorNotify} from '@/query/useQueryErrorNotify';
 
 
 interface Props {
@@ -11,16 +10,14 @@ interface Props {
 
 export default function TaxonRecordStats({taxonId}: Props) {
     const {t} = useTranslation();
-    const [stats, setStats] = useState<TaxonStats | null>(null);
 
-    useEffect(() => {
-        getTaxonStatistics(taxonId)
-            .then(setStats)
-            .catch(e => {
-                notifyApiError(e, t("taxon.stats.loadFailed"));
-                setStats(null);
-            });
-    }, [taxonId, t]);
+    // statistiky záznamů taxonu – bez cache (sekce J), při mountu znovu;
+    // při chybě se komponenta nezobrazí, detaily hlásí toast
+    const {data: stats, error} = useQuery({
+        queryKey: ['taxonStats', taxonId],
+        queryFn: () => getTaxonStatistics(taxonId),
+    });
+    useQueryErrorNotify(error, t('taxon.stats.loadFailed'));
 
     if (!stats) {
         return null; // případně spinner

@@ -63,7 +63,7 @@ function PladiasRecordMarkers({records, highlightedRecordId, onRecordHover}: Pla
                                 const recordedBy = 'recordedBy' in record ? record.recordedBy : record.recordAuthorsNames;
                                 return recordedBy && <span>Sběratel: {recordedBy}<br/></span>;
                             })()}
-                            <a href={`${import.meta.env.BASE_URL.replace(/\/$/, "")}/atlas/record/${record.id}`}
+                            <a href={`${import.meta.env.BASE_URL.replace(/\/$/, '')}/atlas/record/${record.id}`}
                                target="_blank" rel="noopener noreferrer">
                                 Otevřít záznam
                             </a>

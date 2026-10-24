@@ -56,7 +56,7 @@ export function useMapUsersData(options: UseMapUsersDataOptions = {}) {
         if (sorting && sorting.length > 0) {
             const s = sorting[0];
             sortParams.sortBy = s.id;
-            sortParams.sortOrder = s.desc ? "desc" : "asc";
+            sortParams.sortOrder = s.desc ? 'desc' : 'asc';
         }
 
         // Extract filters
@@ -67,7 +67,7 @@ export function useMapUsersData(options: UseMapUsersDataOptions = {}) {
         });
 
         // Fetch users
-        const usersPayload = await apiGet<UsersApiResponse>("/api/react/atlasadmin/users", {
+        const usersPayload = await apiGet<UsersApiResponse>('/api/react/atlasadmin/users', {
             params: {
                 page: String(page),
                 pageSize: String(pageSize),
@@ -89,8 +89,8 @@ export function useMapUsersData(options: UseMapUsersDataOptions = {}) {
         // Fetch rights for these users
         const userIds = users.map(u => u.id);
 
-        const rightsPayload = await apiGet<UserRightsApiResponse>("/api/react/atlasadmin/userrights", {
-            params: {userIds: userIds.join(",")},
+        const rightsPayload = await apiGet<UserRightsApiResponse>('/api/react/atlasadmin/userrights', {
+            params: {userIds: userIds.join(',')},
             signal,
         });
 

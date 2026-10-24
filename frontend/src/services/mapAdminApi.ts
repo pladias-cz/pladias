@@ -1,8 +1,8 @@
 /**
- * Doména správce mapy (controllers.atlas.MapStatusController – stavová
+ * Doména správce mapy (controllers.atlas: MapStatusController – stavová
  * číselníky taxonů; MapReportsController – přiřazení taxonů uživatelům;
- * MapAdminUserRightsController – projekty uživatelů). Komponenta nezná URL
- * ani tvar požadavku.
+ * MapAdminUserRightsController – projekty uživatelů; TaxonMapSettingsController –
+ * tabulka taxonů k administraci). Komponenta nezná URL ani tvar požadavku.
  *
  * Gotchasy backendu (docs/gotchas.md):
  *  - mutace práv odpovídají obálkou `{success, message}`; neúspěch může
@@ -11,7 +11,9 @@
  *  - `assignUserTaxon` posílá urlencoded formulář (`user`, `taxon`).
  */
 
-import {apiDelete, apiGet, apiPost, apiPostFormUrlencoded, requireData, requireEnvelope} from "./apiClient";
+import {apiDelete, apiGet, apiPost, apiPostFormUrlencoded, requireData, requireEnvelope} from './apiClient';
+import type {TaxonMapSettings} from '@/models/TaxonMapSettings';
+import type {ApiResult} from '@/models/ApiResponse';
 
 /** Stavová možnost taxonu (revize/publikace). */
 export interface TaxonStatusOption {
@@ -26,16 +28,16 @@ export interface TaxonStatusOption {
 /** GET /api/react/atlasadmin/revision-statuses – revizní stavy taxonů. */
 export async function getRevisionStatuses(): Promise<TaxonStatusOption[]> {
     return requireData<TaxonStatusOption[]>(
-        await apiGet("/api/react/atlasadmin/revision-statuses"),
-        "Načtení revizních stavů selhalo.",
+        await apiGet('/api/react/atlasadmin/revision-statuses'),
+        'Načtení revizních stavů selhalo.',
     );
 }
 
 /** GET /api/react/atlasadmin/publication-statuses – publikační stavy taxonů. */
 export async function getPublicationStatuses(): Promise<TaxonStatusOption[]> {
     return requireData<TaxonStatusOption[]>(
-        await apiGet("/api/react/atlasadmin/publication-statuses"),
-        "Načtení publikačních stavů selhalo.",
+        await apiGet('/api/react/atlasadmin/publication-statuses'),
+        'Načtení publikačních stavů selhalo.',
     );
 }
 
@@ -43,7 +45,7 @@ export async function getPublicationStatuses(): Promise<TaxonStatusOption[]> {
 export async function assignProjectToUser(userId: number, projectId: number): Promise<void> {
     requireEnvelope(
         await apiPost(`/api/react/atlasadmin/users/${userId}/projects`, {projectId}),
-        "Přiřazení projektu selhalo.",
+        'Přiřazení projektu selhalo.',
     );
 }
 
@@ -51,18 +53,18 @@ export async function assignProjectToUser(userId: number, projectId: number): Pr
 export async function removeProjectFromUser(userId: number, projectId: number): Promise<void> {
     requireEnvelope(
         await apiDelete(`/api/react/atlasadmin/users/${userId}/projects/${projectId}`),
-        "Odebrání projektu selhalo.",
+        'Odebrání projektu selhalo.',
     );
 }
 
 /** POST /api/react/atlasadmin/assignUserTaxon – přiřazení taxonu uživateli (urlencoded). */
 export async function assignUserTaxon(userId: number, taxonId: number): Promise<void> {
     requireEnvelope(
-        await apiPostFormUrlencoded("/api/react/atlasadmin/assignUserTaxon", {
+        await apiPostFormUrlencoded('/api/react/atlasadmin/assignUserTaxon', {
             user: String(userId),
             taxon: String(taxonId)
         }),
-        "Přiřazení taxonu selhalo.",
+        'Přiřazení taxonu selhalo.',
     );
 }
 
@@ -70,6 +72,90 @@ export async function assignUserTaxon(userId: number, taxonId: number): Promise<
 export async function removeUserTaxonFromUser(userId: number, taxonId: number): Promise<void> {
     requireEnvelope(
         await apiDelete(`/api/react/atlasadmin/removeUserTaxon/user/${userId}/taxon/${taxonId}`),
-        "Odebrání taxonu selhalo.",
+        'Odebrání taxonu selhalo.',
     );
+}
+
+/**
+ * Odpověď `/api/react/atlasadmin/taxa` i `/taxa/user` – řádky nese pole `taxa`
+ * (širší obálka bez `data`).
+ */
+interface TaxaTableResponse extends ApiResult {
+    taxa?: TaxonMapSettings[];
+    totalCount?: number;
+    filteredCount?: number;
+}
+
+/** Stránka tabulky taxonů – normalizovaný tvar pro `DataTable.fetchData`. */
+export interface TaxaTableData {
+    data: TaxonMapSettings[];
+    totalCount: number;
+    filteredCount: number;
+}
+
+/** Vstup `DataTable.fetchData` (custom fetcher kontrakt `core/dataTable`). */
+export interface TaxaTableParams {
+    page: number;
+    pageSize: number;
+    sorting: Array<{ id: string; desc: boolean }>;
+    columnFilters: Array<{ id: string; value: string }>;
+    additionalParams: Record<string, string>;
+    signal?: AbortSignal;
+}
+
+/**
+ * Query params taxa endpointu pro filtry vyplněné do filtrovacího řádku
+ * tabulky. Prázdné vstupy nejsou filtry, proto se vypouštějí (backend je
+ * stejně ignoruje). Sdílí je stránkovaný fetch i XLSX export
+ * (`DataTable.buildExportFilterParams`).
+ */
+export function extractTaxaFilters(columnFilters: Array<{ id: string; value: string }>): Record<string, string> {
+    const valueOf = (columnId: string) => columnFilters.find(f => f.id === columnId)?.value || '';
+    const filters: Record<string, string> = {
+        nameLatFilter: valueOf('taxonNameLat'),
+        isMappedFilter: valueOf('isMapped'),
+        commonThresholdFilter: valueOf('commonThreshold'),
+        isProtectedFilter: valueOf('isProtected'),
+        presliaFilter: valueOf('preslia'),
+        revisorsFilter: valueOf('revisors'),
+        revisionStatusFilter: valueOf('revisionStatusId'),
+        publicationStatusFilter: valueOf('publicationStatusId'),
+    };
+    return Object.fromEntries(
+        Object.entries(filters).filter(([, value]) => value.trim() !== '')
+    );
+}
+
+/**
+ * Načte stránku tabulky taxonů z `/api/react/atlasadmin/taxa` (administrace)
+ * nebo `/api/react/atlasadmin/taxa/user` (taxony aktuálního uživatele) – oba
+ * endpointy sdílejí filtry, stránkování i `sortField`/`sortDirection`
+ * (backend neznámé/nevyplněné pole fallbackuje na `t.name_lat ASC`).
+ */
+export async function getTaxaTable(endpoint: string, params: TaxaTableParams): Promise<TaxaTableData> {
+    const {page, pageSize, sorting, columnFilters, signal} = params;
+
+    const sort: Record<string, string> = sorting[0]
+        ? {sortField: sorting[0].id, sortDirection: sorting[0].desc ? 'DESC' : 'ASC'}
+        : {};
+
+    const payload = requireEnvelope(
+        await apiGet<TaxaTableResponse>(endpoint, {
+            params: {
+                page: String(page),
+                pageSize: String(pageSize),
+                ...sort,
+                ...extractTaxaFilters(columnFilters),
+            },
+            signal,
+        }),
+        'Načtení seznamu taxonů selhalo.',
+    ) as TaxaTableResponse;
+
+    const totalCount = payload.totalCount || 0;
+    return {
+        data: payload.taxa || [],
+        totalCount,
+        filteredCount: payload.filteredCount || totalCount,
+    };
 }

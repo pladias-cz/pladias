@@ -18,11 +18,11 @@
  * klientský state patří do zustand store (vedle `layerStore`).
  */
 
-import {create} from "zustand";
-import {ApiError, apiErrorMessage, isAbortError} from "@/services/apiClient";
-import {logError} from "@/services/logger";
+import {create} from 'zustand';
+import {ApiError, apiErrorMessage, isAbortError} from '@/services/apiClient';
+import {logError} from '@/services/logger';
 
-export type NotificationType = "success" | "danger" | "warning" | "info";
+export type NotificationType = 'success' | 'danger' | 'warning' | 'info';
 
 /** Vstup push – `message` (plain text) nebo `html` (backend rich-text). */
 export interface NotificationInput {
@@ -65,7 +65,7 @@ export const useNotificationStore = create<NotificationStore>((set) => ({
             notifications: [...state.notifications, {id, type: input.type, message: input.message, html: input.html}],
         }));
 
-        const timeout = input.timeout ?? (input.type === "danger" ? 0 : DEFAULT_TIMEOUT_MS);
+        const timeout = input.timeout ?? (input.type === 'danger' ? 0 : DEFAULT_TIMEOUT_MS);
         if (timeout > 0) {
             timers.set(id, setTimeout(() => useNotificationStore.getState().dismiss(id), timeout));
         }
@@ -112,7 +112,7 @@ export function notifyApiError(err: unknown, fallback: string): void {
     // Centrální log i pro chyby vzniklé mimo apiClient (custom throw v catchi);
     // ApiError z apiClientu už je zalogovaná – logError je idempotentní
     // per instance (WeakSet v loggeru).
-    logError(err, {source: "notifyApiError", fallback});
+    logError(err, {source: 'notifyApiError', fallback});
     if (err instanceof ApiError && err.notified) return;
-    pushNotification({type: "danger", message: apiErrorMessage(err, fallback)});
+    pushNotification({type: 'danger', message: apiErrorMessage(err, fallback)});
 }

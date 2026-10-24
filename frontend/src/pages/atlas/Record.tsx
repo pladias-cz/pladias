@@ -1,19 +1,19 @@
-import {Row, Col, Container, Spinner, Button} from "react-bootstrap";
-import {usePageTitle} from "@/hooks/usePageTitle";
-import {useTranslation} from "react-i18next";
-import {useParams} from "react-router-dom";
-import {useCallback, useEffect, useState} from "react";
-import {useQuery, useQueryClient} from "@tanstack/react-query";
+import {Row, Col, Container, Spinner, Button} from 'react-bootstrap';
+import {usePageTitle} from '@/hooks/usePageTitle';
+import {useTranslation} from 'react-i18next';
+import {useParams} from 'react-router-dom';
+import {useCallback, useEffect, useState} from 'react';
+import {useQuery, useQueryClient} from '@tanstack/react-query';
 import {
     RecordLocation,
     RecordRemarks,
     RecordComments,
     RecordMap, RecordHistory,
     RecordFloristic,
-} from "@/components/atlas/record";
-import type {RecordPladiasFull, ReverseGeocodingResponse} from "@/models";
-import {getRecordFull, moveRecordCoordinates} from "@/services/recordApi";
-import {notifyApiError, pushNotification} from "@/stores/notificationStore";
+} from '@/components/atlas/record';
+import type {RecordPladiasFull, ReverseGeocodingResponse} from '@/models';
+import {getRecordFull, moveRecordCoordinates} from '@/services/recordApi';
+import {notifyApiError, pushNotification} from '@/stores/notificationStore';
 
 interface ProposedLocation {
     coordinates: [number, number];
@@ -28,27 +28,27 @@ export default function Record() {
     const [proposedLocation, setProposedLocation] = useState<ProposedLocation | undefined>(undefined);
     const [moving, setMoving] = useState(false);
 
-    usePageTitle(`${t("record.titles.detail")} ${recordId ? ` ${recordId}` : ''}`);
+    usePageTitle(`${t('record.titles.detail')} ${recordId ? ` ${recordId}` : ''}`);
 
     // záznam se všemi relacemi – bez cache (sekce J), načtení při mountu
     const {data: record, isPending: loading, error} = useQuery({
-        queryKey: ["recordFull", recordId],
+        queryKey: ['recordFull', recordId],
         queryFn: () => getRecordFull(parseInt(recordId!, 10)),
         enabled: recordId !== undefined,
     });
     // chyby načtení – globální notifikace; render pak jen skryje obsah stránky
     useEffect(() => {
         if (!recordId) {
-            pushNotification({type: "danger", message: t("record.noRecordId")});
+            pushNotification({type: 'danger', message: t('record.noRecordId')});
         } else if (error) {
-            notifyApiError(error, t("record.loadFailed"));
+            notifyApiError(error, t('record.loadFailed'));
         }
     }, [recordId, error, t]);
 
     // Handle field updates from child components - update timestamp for conflict detection
     const handleFieldUpdated = useCallback((newTimestamp?: number) => {
         if (newTimestamp && recordId) {
-            queryClient.setQueryData<RecordPladiasFull>(["recordFull", recordId], prev => prev ? ({
+            queryClient.setQueryData<RecordPladiasFull>(['recordFull', recordId], prev => prev ? ({
                 ...prev,
                 lastEditTimestampNum: newTimestamp
             }) : prev);
@@ -82,7 +82,7 @@ export default function Record() {
             // Reload the page to show updated data
             window.location.reload();
         } catch (err) {
-            notifyApiError(err, t("record.moveFailed"));
+            notifyApiError(err, t('record.moveFailed'));
             setMoving(false);
         }
     };
@@ -100,7 +100,7 @@ export default function Record() {
             <Container className="py-4">
                 <Row className="justify-content-center">
                     <Spinner animation="border" role="status">
-                        <span className="visually-hidden">{t("common.loading")}</span>
+                        <span className="visually-hidden">{t('common.loading')}</span>
                     </Spinner>
                 </Row>
             </Container>
@@ -137,7 +137,7 @@ export default function Record() {
                                 <div className="p-3 bg-light border rounded">
                                     <div className="d-flex flex-wrap align-items-center gap-3">
                                         <div>
-                                            <strong>{t("record.newPosition")}: </strong>
+                                            <strong>{t('record.newPosition')}: </strong>
                                             {proposedLocation.coordinates[0].toFixed(6)}, {proposedLocation.coordinates[1].toFixed(6)}
                                         </div>
                                         <div>
@@ -165,7 +165,7 @@ export default function Record() {
                                                 onClick={handleConfirmMove}
                                                 disabled={moving}
                                             >
-                                                {moving ? '...' : t("common.yes")}
+                                                {moving ? '...' : t('common.yes')}
                                             </Button>
                                             <Button
                                                 variant="secondary"
@@ -173,7 +173,7 @@ export default function Record() {
                                                 onClick={handleCancelMove}
                                                 disabled={moving}
                                             >
-                                                {t("common.no")}
+                                                {t('common.no')}
                                             </Button>
                                         </div>
                                     </div>

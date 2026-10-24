@@ -1,10 +1,10 @@
-import {useTranslation} from "react-i18next";
-import {useEffect, useState} from "react";
-import type {TraitEntryType} from "@/models/TraitEntryType";
-import type {TaxonRankId} from "@/models/TaxonRankId";
-import {getExportableTaxonRanks} from "@/services/taxonApi";
-import {getTraitEntryTypes} from "@/services/traitApi";
-import {notifyApiError} from "@/stores/notificationStore";
+import {useTranslation} from 'react-i18next';
+import {useEffect, useState} from 'react';
+import type {TraitEntryType} from '@/models/TraitEntryType';
+import type {TaxonRankId} from '@/models/TaxonRankId';
+import {getExportableTaxonRanks} from '@/services/taxonApi';
+import {getTraitEntryTypes} from '@/services/traitApi';
+import {notifyApiError} from '@/stores/notificationStore';
 
 export default function ExportOptions() {
     const {t} = useTranslation();
@@ -14,17 +14,17 @@ export default function ExportOptions() {
     useEffect(() => {
         getExportableTaxonRanks()
             .then(setRank)
-            .catch(e => notifyApiError(e, t("trait.export.loadFailed")));
+            .catch(e => notifyApiError(e, t('trait.export.loadFailed')));
     }, [t]);
 
     useEffect(() => {
         getTraitEntryTypes()
             .then(setEntryTypes)
-            .catch(e => notifyApiError(e, t("trait.export.loadFailed")));
+            .catch(e => notifyApiError(e, t('trait.export.loadFailed')));
     }, [t]);
     return (
         <>
-            <h4>{t("trait.export.valueTypes")}</h4>
+            <h4>{t('trait.export.valueTypes')}</h4>
             {entryTypes.map(entryType => (
                 <div key={entryType.index}>
                     <label>
@@ -33,12 +33,12 @@ export default function ExportOptions() {
                             name="entryTypes[]"
                             value={entryType.index}
                         />
-                        {" "}{entryType.name}
+                        {' '}{entryType.name}
                     </label>
                 </div>
             ))}
 
-            <h4>{t("trait.export.taxaRanks")}</h4>
+            <h4>{t('trait.export.taxaRanks')}</h4>
             {ranks.map(rank => (
                 <div key={rank.nameEng}>
                     <label>
@@ -47,7 +47,7 @@ export default function ExportOptions() {
                             name="ranks[]"
                             value={rank.nameEng}
                         />
-                        {" "}{rank.nameEng}
+                        {' '}{rank.nameEng}
                     </label>
                 </div>
             ))}

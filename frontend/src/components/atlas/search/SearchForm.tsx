@@ -4,17 +4,17 @@
  * dotaz (useSearchQuery) a layout polí. Bez přímého fetche.
  */
 
-import {type FormEvent, useMemo} from "react";
-import {useTranslation} from "react-i18next";
-import {useInstanceConfig} from "@/context/InstanceConfigContext";
-import {useProjectName} from "@/context/ProjectNameContext";
-import {useUser} from "@/context/UserContext";
-import {createTaxaImportableProvider} from "@/components/autocomplete/TaxaImportableProvider";
-import BulkEdit from "@/components/atlas/search/BulkEdit";
-import {SearchFilterColumnOne, SearchFilterColumnTwo, SearchResultsView} from "./components";
-import {useSearchFilters, useSearchOptions, useSearchQuery} from "./hooks";
-import type {SortOption, TypeaheadOption} from "./types";
-import "./SearchForm.scss";
+import {type FormEvent, useMemo} from 'react';
+import {useTranslation} from 'react-i18next';
+import {useInstanceConfig} from '@/context/InstanceConfigContext';
+import {useProjectName} from '@/context/ProjectNameContext';
+import {useUser} from '@/context/UserContext';
+import {createTaxaImportableProvider} from '@/components/autocomplete/TaxaImportableProvider';
+import BulkEdit from '@/components/atlas/search/BulkEdit';
+import {SearchFilterColumnOne, SearchFilterColumnTwo, SearchResultsView} from './components';
+import {useSearchFilters, useSearchOptions, useSearchQuery} from './hooks';
+import type {SortOption, TypeaheadOption} from './types';
+import './SearchForm.scss';
 
 export default function SearchForm() {
     const {t} = useTranslation();
@@ -24,7 +24,7 @@ export default function SearchForm() {
 
     const isVascular = Boolean(config.isVascular);
 
-    const projectNameText = (projectName ?? "Pladias").trim() || "Pladias";
+    const projectNameText = (projectName ?? 'Pladias').trim() || 'Pladias';
 
     const options = useSearchOptions();
     const filters = useSearchFilters();
@@ -35,31 +35,31 @@ export default function SearchForm() {
 
     const excelExportTitle = useMemo(() => {
         if (user.isMapAdmin) {
-            return t("atlas.search.form.excelExportTitleAdmin");
+            return t('atlas.search.form.excelExportTitleAdmin');
         }
-        return t("atlas.search.form.excelExportTitleRestricted");
+        return t('atlas.search.form.excelExportTitleRestricted');
     }, [t, user.isMapAdmin]);
 
     const taxonProvider = useMemo(
-        () => createTaxaImportableProvider(t("atlas.search.form.taxonAutocompletePlaceholder")),
+        () => createTaxaImportableProvider(t('atlas.search.form.taxonAutocompletePlaceholder')),
         [t]
     );
 
     const validationStatusOptions = useMemo<TypeaheadOption[]>(() => ([
-        {id: 3, label: t("atlas.search.form.options.validationValid")},
-        {id: 2, label: t("atlas.search.form.options.validationInvalid")},
-        {id: 1, label: t("atlas.search.form.options.validationUncertain")},
-        {id: 0, label: t("atlas.search.form.options.validationNotValidated")},
+        {id: 3, label: t('atlas.search.form.options.validationValid')},
+        {id: 2, label: t('atlas.search.form.options.validationInvalid')},
+        {id: 1, label: t('atlas.search.form.options.validationUncertain')},
+        {id: 0, label: t('atlas.search.form.options.validationNotValidated')},
     ]), [t]);
 
     const sortOptions = useMemo<SortOption[]>(() => [
-        {value: "taxonName", label: t("atlas.search.form.sortOptions.taxonName")},
-        {value: "locality", label: t("atlas.search.form.sortOptions.locality")},
-        {value: "nearestTownName", label: t("atlas.search.form.sortOptions.nearestTownName")},
-        {value: "date", label: t("atlas.search.form.sortOptions.date")},
-        {value: "validationStatus", label: t("atlas.search.form.sortOptions.validationStatus")},
-        {value: "square", label: t("atlas.search.form.sortOptions.square")},
-        ...(isVascular ? [{value: "phytochorion", label: t("atlas.search.form.sortOptions.phytochorion")}] : []),
+        {value: 'taxonName', label: t('atlas.search.form.sortOptions.taxonName')},
+        {value: 'locality', label: t('atlas.search.form.sortOptions.locality')},
+        {value: 'nearestTownName', label: t('atlas.search.form.sortOptions.nearestTownName')},
+        {value: 'date', label: t('atlas.search.form.sortOptions.date')},
+        {value: 'validationStatus', label: t('atlas.search.form.sortOptions.validationStatus')},
+        {value: 'square', label: t('atlas.search.form.sortOptions.square')},
+        ...(isVascular ? [{value: 'phytochorion', label: t('atlas.search.form.sortOptions.phytochorion')}] : []),
     ], [isVascular, t]);
 
     const handleSearchSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -90,18 +90,18 @@ export default function SearchForm() {
                                     <span className="spinner-border spinner-border-sm me-2" role="status"
                                           aria-hidden="true"/>
                                 )}
-                                {query.isLoading ? t("atlas.search.form.processingRequest") : t("atlas.search.form.submit")}
+                                {query.isLoading ? t('atlas.search.form.processingRequest') : t('atlas.search.form.submit')}
                             </button>
                             {query.submitMessage && <div className="text-muted mt-2 small">{query.submitMessage}</div>}
                             {query.isLoading &&
-                                <div className="text-muted mt-2 small">{t("atlas.search.form.waitingForData")}</div>}
+                                <div className="text-muted mt-2 small">{t('atlas.search.form.waitingForData')}</div>}
                             <br/>
                         </div>
                         <div className="btn-group col-md-4" role="group">
                             <div className="radio-inline">
                                 <label>
                                     <input type="radio" name="export_type" value="browser" defaultChecked/>
-                                    {t("atlas.search.form.exportBrowser")}
+                                    {t('atlas.search.form.exportBrowser')}
                                 </label>
                             </div>
                             <div className="radio-inline">
@@ -117,7 +117,7 @@ export default function SearchForm() {
                                     >
                                         <input type="radio" name="export_type" value="excel"/>
                                     </a>
-                                    {t("atlas.search.form.exportExcel")}
+                                    {t('atlas.search.form.exportExcel')}
                                 </label>
                             </div>
                         </div>
@@ -154,12 +154,12 @@ export default function SearchForm() {
                     sortOptions={sortOptions}
                     onPageChange={query.changePage}
                     onSortChange={(nextSortBy) => {
-                        void query.changeSort(nextSortBy, query.sortDescending ? "desc" : "asc");
+                        void query.changeSort(nextSortBy, query.sortDescending ? 'desc' : 'asc');
                     }}
                     onSortDescendingChange={(nextDescending) => {
                         query.setSortDescending(nextDescending);
                         if (query.sortBy) {
-                            void query.changeSort(query.sortBy, nextDescending ? "desc" : "asc");
+                            void query.changeSort(query.sortBy, nextDescending ? 'desc' : 'asc');
                         }
                     }}
                     onNewSearch={handleNewSearch}

@@ -1,63 +1,63 @@
-import {lazy, Suspense, useEffect} from "react";
-import {BrowserRouter, Route, Routes} from "react-router-dom";
-import {useQuery} from "@tanstack/react-query";
-import Layout from "./Layout";
-import ErrorBoundary from "./components/ErrorBoundary";
-import {InstanceConfigProvider} from "./context/InstanceConfigContext";
-import {UserProvider} from "./context/UserContext";
-import {ProjectNameProvider} from "./context/ProjectNameContext";
-import i18n, {changeLanguage} from "./i18n/i18n";
-import {loadReactConfig} from "./services/userApi";
-import {setForbiddenHandler, setNetworkErrorHandler} from "./services/apiClient";
-import {pushNotification} from "./stores/notificationStore";
-import ProtectedRoute from "./components/ProtectedRoute";
+import {lazy, Suspense, useEffect} from 'react';
+import {BrowserRouter, Route, Routes} from 'react-router-dom';
+import {useQuery} from '@tanstack/react-query';
+import Layout from './Layout';
+import ErrorBoundary from './components/ErrorBoundary';
+import {InstanceConfigProvider} from './context/InstanceConfigContext';
+import {UserProvider} from './context/UserContext';
+import {ProjectNameProvider} from './context/ProjectNameContext';
+import i18n, {changeLanguage} from './i18n/i18n';
+import {loadReactConfig} from './services/userApi';
+import {setForbiddenHandler, setNetworkErrorHandler} from './services/apiClient';
+import {pushNotification} from './stores/notificationStore';
+import ProtectedRoute from './components/ProtectedRoute';
 
 // Lazy-loaded pages
-const Home = lazy(() => import("./pages/Home"));
-const UnauthorizedPage = lazy(() => import("./pages/Unauthorized"));
+const Home = lazy(() => import('./pages/Home'));
+const UnauthorizedPage = lazy(() => import('./pages/Unauthorized'));
 
 // Atlas
-const NewComments = lazy(() => import("./pages/atlas/NewComments"));
-const AtlasSearch = lazy(() => import("./pages/atlas/Search"));
-const ListOfControls = lazy(() => import("./pages/atlas/ListOfControls"));
-const AtlasListOfImports = lazy(() => import("./pages/atlas/ListOfImports"));
-const AtlasListOfTaxa = lazy(() => import("./pages/atlas/ListOfTaxa"));
-const Import = lazy(() => import("./pages/atlas/Import"));
-const ImportCSV = lazy(() => import("./pages/atlas/ImportCSV"));
-const MapMain = lazy(() => import("./pages/atlas/MapMain"));
-const MapPreview = lazy(() => import("./pages/atlas/MapPreview"));
-const MapDetail = lazy(() => import("./pages/atlas/MapDetail"));
-const Record = lazy(() => import("./pages/atlas/Record"));
+const NewComments = lazy(() => import('./pages/atlas/NewComments'));
+const AtlasSearch = lazy(() => import('./pages/atlas/Search'));
+const ListOfControls = lazy(() => import('./pages/atlas/ListOfControls'));
+const AtlasListOfImports = lazy(() => import('./pages/atlas/ListOfImports'));
+const AtlasListOfTaxa = lazy(() => import('./pages/atlas/ListOfTaxa'));
+const Import = lazy(() => import('./pages/atlas/Import'));
+const ImportCSV = lazy(() => import('./pages/atlas/ImportCSV'));
+const MapMain = lazy(() => import('./pages/atlas/MapMain'));
+const MapPreview = lazy(() => import('./pages/atlas/MapPreview'));
+const MapDetail = lazy(() => import('./pages/atlas/MapDetail'));
+const Record = lazy(() => import('./pages/atlas/Record'));
 
 // AtlasAdmin
-const AtlasAdminListOfImports = lazy(() => import("./pages/atlasAdmin/ListOfImports"));
-const ListOfUsers = lazy(() => import("./pages/atlasAdmin/ListOfUsers"));
-const AtlasAdminListOfTaxa = lazy(() => import("./pages/atlasAdmin/ListOfTaxa"));
+const AtlasAdminListOfImports = lazy(() => import('./pages/atlasAdmin/ListOfImports'));
+const ListOfUsers = lazy(() => import('./pages/atlasAdmin/ListOfUsers'));
+const AtlasAdminListOfTaxa = lazy(() => import('./pages/atlasAdmin/ListOfTaxa'));
 
 // Biblio
-const Bibliography = lazy(() => import("./pages/biblio/Bibliography"));
+const Bibliography = lazy(() => import('./pages/biblio/Bibliography'));
 
 // Measurements
-const General = lazy(() => import("./pages/measurements/General"));
-const Datatypes = lazy(() => import("./pages/measurements/Datatypes"));
-const AggregationTypes = lazy(() => import("./pages/measurements/AggregationTypes"));
-const Data = lazy(() => import("./pages/measurements/Data"));
-const Export = lazy(() => import("./pages/measurements/Export"));
-const Backup = lazy(() => import("./pages/measurements/Backup"));
-const FeatureDetail = lazy(() => import("./pages/measurements/FeatureDetail"));
+const General = lazy(() => import('./pages/measurements/General'));
+const Datatypes = lazy(() => import('./pages/measurements/Datatypes'));
+const AggregationTypes = lazy(() => import('./pages/measurements/AggregationTypes'));
+const Data = lazy(() => import('./pages/measurements/Data'));
+const Export = lazy(() => import('./pages/measurements/Export'));
+const Backup = lazy(() => import('./pages/measurements/Backup'));
+const FeatureDetail = lazy(() => import('./pages/measurements/FeatureDetail'));
 
 // Downloads
-const DownloadsIndex = lazy(() => import("./pages/downloads/Index"));
+const DownloadsIndex = lazy(() => import('./pages/downloads/Index'));
 
 // User
-const ChangePassword = lazy(() => import("./pages/user/ChangePassword"));
-const ChangeEmail = lazy(() => import("./pages/user/ChangeEmail"));
-const Settings = lazy(() => import("./pages/user/Settings"));
-const UsersAdministration = lazy(() => import("./pages/user/UsersAdministration"));
-const TaxaAdministration = lazy(() => import("./pages/user/TaxaAdministration"));
-const AddUser = lazy(() => import("./pages/user/AddUser"));
-const PlayMessages = lazy(() => import("./pages/user/PlayMessages"));
-const Docs = lazy(() => import("./pages/user/Docs"));
+const ChangePassword = lazy(() => import('./pages/user/ChangePassword'));
+const ChangeEmail = lazy(() => import('./pages/user/ChangeEmail'));
+const Settings = lazy(() => import('./pages/user/Settings'));
+const UsersAdministration = lazy(() => import('./pages/user/UsersAdministration'));
+const TaxaAdministration = lazy(() => import('./pages/user/TaxaAdministration'));
+const AddUser = lazy(() => import('./pages/user/AddUser'));
+const PlayMessages = lazy(() => import('./pages/user/PlayMessages'));
+const Docs = lazy(() => import('./pages/user/Docs'));
 
 export default function App() {
 
@@ -65,9 +65,9 @@ export default function App() {
         // Centrální notifikace z apiClientu (sekce F): 403 a síťové chyby se
         // zobrazí bez práce komponenty. Texty se překládají až v okamžiku
         // zobrazení (jazyk se mezitím může změnit).
-        setForbiddenHandler((message) => pushNotification({type: "danger", message}));
+        setForbiddenHandler((message) => pushNotification({type: 'danger', message}));
         setNetworkErrorHandler(() =>
-            pushNotification({type: "danger", message: i18n.t("common.notification.networkError")}),
+            pushNotification({type: 'danger', message: i18n.t('common.notification.networkError')}),
         );
         return () => {
             setForbiddenHandler(null);
@@ -78,7 +78,7 @@ export default function App() {
     // Konfigurace instance + přihlášený uživatel – deklarativně (sekce J);
     // App se mountuje jednou, refetch ani sdílená cache nepřicházejí v úvahu.
     const {data: config} = useQuery({
-        queryKey: ["reactConfig"],
+        queryKey: ['reactConfig'],
         queryFn: loadReactConfig,
     });
 

@@ -1,5 +1,5 @@
-import {OverlayTrigger, Popover, Badge} from "react-bootstrap";
-import RichTextMessage from "@/components/RichTextMessage";
+import {OverlayTrigger, Popover, Badge} from 'react-bootstrap';
+import RichTextMessage from '@/components/RichTextMessage';
 
 interface Props {
     description?: string | null;

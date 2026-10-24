@@ -1,9 +1,9 @@
-import React, {useState} from "react";
-import {Alert, Button, Col, Form, Row} from "react-bootstrap";
-import {usePageTitle} from "@/hooks/usePageTitle";
-import {useTranslation} from "react-i18next";
-import {changeEmail} from "@/services/userApi";
-import {notifyApiError, useNotifications} from "@/stores/notificationStore";
+import React, {useState} from 'react';
+import {Alert, Button, Col, Form, Row} from 'react-bootstrap';
+import {usePageTitle} from '@/hooks/usePageTitle';
+import {useTranslation} from 'react-i18next';
+import {changeEmail} from '@/services/userApi';
+import {notifyApiError, useNotifications} from '@/stores/notificationStore';
 
 interface ChangeEmailFormData {
     password: string;
@@ -14,11 +14,11 @@ interface ChangeEmailFormData {
 export default function ChangeEmail() {
 
     const {t} = useTranslation();
-    usePageTitle(t("user.changeEmail.title"));
+    usePageTitle(t('user.changeEmail.title'));
     const [formData, setFormData] = useState<ChangeEmailFormData>({
-        password: "",
-        newEmail: "",
-        confirmNewEmail: ""
+        password: '',
+        newEmail: '',
+        confirmNewEmail: ''
     });
 
     const [loading, setLoading] = useState(false);
@@ -39,7 +39,7 @@ export default function ChangeEmail() {
         setValidationError(null);
 
         if (formData.newEmail !== formData.confirmNewEmail) {
-            setValidationError(t("user.changeEmail.emailsDoNotMatch"));
+            setValidationError(t('user.changeEmail.emailsDoNotMatch'));
             return;
         }
 
@@ -50,15 +50,15 @@ export default function ChangeEmail() {
                 password: formData.password,
                 newEmail: formData.newEmail
             });
-            push({type: "success", message: successMessage || t("user.changeEmail.success")});
+            push({type: 'success', message: successMessage || t('user.changeEmail.success')});
             // Clear form
             setFormData({
-                password: "",
-                newEmail: "",
-                confirmNewEmail: ""
+                password: '',
+                newEmail: '',
+                confirmNewEmail: ''
             });
         } catch (err) {
-            notifyApiError(err, t("user.changeEmail.networkError"));
+            notifyApiError(err, t('user.changeEmail.networkError'));
         } finally {
             setLoading(false);
         }
@@ -67,14 +67,14 @@ export default function ChangeEmail() {
     return (
         <Row>
             <Col sm={12} md={8} lg={6} xl={4} className="mx-auto">
-                <h3>{t("user.changeEmail.title")}</h3>
-                <p>{t("user.changeEmail.description")}</p>
+                <h3>{t('user.changeEmail.title')}</h3>
+                <p>{t('user.changeEmail.description')}</p>
 
                 {validationError && <Alert variant="danger">{validationError}</Alert>}
 
                 <Form onSubmit={handleSubmit}>
                     <Form.Group className="mb-3" controlId="password">
-                        <Form.Label>{t("user.changeEmail.password")}</Form.Label>
+                        <Form.Label>{t('user.changeEmail.password')}</Form.Label>
                         <Form.Control
                             type="password"
                             name="password"
@@ -85,7 +85,7 @@ export default function ChangeEmail() {
                     </Form.Group>
 
                     <Form.Group className="mb-3" controlId="newEmail">
-                        <Form.Label>{t("user.changeEmail.newEmail")}</Form.Label>
+                        <Form.Label>{t('user.changeEmail.newEmail')}</Form.Label>
                         <Form.Control
                             type="email"
                             name="newEmail"
@@ -96,7 +96,7 @@ export default function ChangeEmail() {
                     </Form.Group>
 
                     <Form.Group className="mb-3" controlId="confirmNewEmail">
-                        <Form.Label>{t("user.changeEmail.confirmNewEmail")}</Form.Label>
+                        <Form.Label>{t('user.changeEmail.confirmNewEmail')}</Form.Label>
                         <Form.Control
                             type="email"
                             name="confirmNewEmail"
@@ -111,7 +111,7 @@ export default function ChangeEmail() {
                         type="submit"
                         disabled={loading}
                     >
-                        {loading ? t("user.changeEmail.submitting") : t("user.changeEmail.submit")}
+                        {loading ? t('user.changeEmail.submitting') : t('user.changeEmail.submit')}
                     </Button>
                 </Form>
             </Col>

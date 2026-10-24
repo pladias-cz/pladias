@@ -3,12 +3,12 @@
  * řazení, Excel export a hlášky o výsledcích.
  */
 
-import {useCallback, useState} from "react";
-import {useTranslation} from "react-i18next";
-import type {RecordPladias} from "@/models";
-import {downloadBlob} from "@/core/dataTable/export";
-import {ApiError, apiErrorMessage} from "@/services/apiClient";
-import {exportSearchExcel, searchRecords} from "@/services/searchApi";
+import {useCallback, useState} from 'react';
+import {useTranslation} from 'react-i18next';
+import type {RecordPladias} from '@/models';
+import {downloadBlob} from '@/core/dataTable/export';
+import {ApiError, apiErrorMessage} from '@/services/apiClient';
+import {exportSearchExcel, searchRecords} from '@/services/searchApi';
 import {
     EXCEL_EXPORT_PAGE_SIZE,
     EXCEL_EXPORT_TYPE,
@@ -16,7 +16,7 @@ import {
     getExportTypeFromPayload,
     resolvePageSize,
     shouldForceCount,
-} from "../searchRequest";
+} from '../searchRequest';
 
 export type SearchPayloadEntries = Array<[string, FormDataEntryValue]>;
 
@@ -27,17 +27,17 @@ export function useSearchQuery() {
     const [currentPage, setCurrentPage] = useState<number>(1);
     const [totalCount, setTotalCount] = useState<number | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(false);
-    const [submitMessage, setSubmitMessage] = useState<string>("");
+    const [submitMessage, setSubmitMessage] = useState<string>('');
     const [lastPayloadEntries, setLastPayloadEntries] = useState<SearchPayloadEntries>([]);
-    const [sortBy, setSortBy] = useState<string | null>("taxonName");
-    const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+    const [sortBy, setSortBy] = useState<string | null>('taxonName');
+    const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
     const [sortDescending, setSortDescending] = useState<boolean>(false);
 
     const fetchSearchPage = useCallback(async (
         page: number,
         getCount: boolean,
         payloadEntries: SearchPayloadEntries,
-        activeSort?: { sortBy: string | null; sortOrder: "asc" | "desc" }
+        activeSort?: { sortBy: string | null; sortOrder: 'asc' | 'desc' }
     ) => {
         const effectiveSort = activeSort ?? {sortBy, sortOrder};
         const formData = buildSearchFormData(payloadEntries, effectiveSort.sortBy, effectiveSort.sortOrder);
@@ -55,17 +55,17 @@ export function useSearchQuery() {
 
                 if (file.totalRecords != null) {
                     if (file.recordsExported >= file.totalRecords) {
-                        setSubmitMessage(t("atlas.search.form.excelExportedAll", {
+                        setSubmitMessage(t('atlas.search.form.excelExportedAll', {
                             recordsCount: file.recordsExported,
                         }));
                     } else {
-                        setSubmitMessage(t("atlas.search.form.excelExportedPartial", {
+                        setSubmitMessage(t('atlas.search.form.excelExportedPartial', {
                             exported: file.recordsExported,
                             total: file.totalRecords,
                         }));
                     }
                 } else {
-                    setSubmitMessage("");
+                    setSubmitMessage('');
                 }
                 return true;
             }
@@ -75,13 +75,13 @@ export function useSearchQuery() {
             setRecords(nextRecords);
 
             if (getCount) {
-                setTotalCount(typeof payload.totalCount === "number" ? payload.totalCount : null);
+                setTotalCount(typeof payload.totalCount === 'number' ? payload.totalCount : null);
             }
 
             const effectiveTotal = getCount
-                ? (typeof payload.totalCount === "number" ? payload.totalCount : nextRecords.length)
+                ? (typeof payload.totalCount === 'number' ? payload.totalCount : nextRecords.length)
                 : (totalCount ?? nextRecords.length);
-            setSubmitMessage(t("atlas.search.form.foundRecords", {
+            setSubmitMessage(t('atlas.search.form.foundRecords', {
                 recordsCount: nextRecords.length,
                 totalCount: effectiveTotal,
             }));
@@ -89,9 +89,9 @@ export function useSearchQuery() {
         } catch (err) {
             if (err instanceof ApiError && err.payload !== undefined) {
                 // hláška z obálky (příliš mnoho záznamů apod.) nebo fallback
-                setSubmitMessage(apiErrorMessage(err, t("atlas.search.form.searchFailed")));
+                setSubmitMessage(apiErrorMessage(err, t('atlas.search.form.searchFailed')));
             } else {
-                setSubmitMessage(t("atlas.search.form.submitFailed"));
+                setSubmitMessage(t('atlas.search.form.submitFailed'));
             }
             return false;
         } finally {
@@ -101,7 +101,7 @@ export function useSearchQuery() {
 
     /** Submit formuláře – první stránka s přepočtem total. */
     const search = useCallback(async (payloadEntries: SearchPayloadEntries) => {
-        setSubmitMessage("");
+        setSubmitMessage('');
         setLastPayloadEntries(payloadEntries);
         const loaded = await fetchSearchPage(1, true, payloadEntries, {sortBy, sortOrder});
         if (loaded) {
@@ -122,8 +122,8 @@ export function useSearchQuery() {
     }, [fetchSearchPage, lastPayloadEntries, sortBy, sortOrder]);
 
     /** Změna řazení – vždy od první stránky s přepočtem total. */
-    const changeSort = useCallback(async (nextSortBy: string | null, nextSortOrder: "asc" | "desc" = "asc") => {
-        const resolvedSortBy = nextSortBy ?? "taxonName";
+    const changeSort = useCallback(async (nextSortBy: string | null, nextSortOrder: 'asc' | 'desc' = 'asc') => {
+        const resolvedSortBy = nextSortBy ?? 'taxonName';
         setSortBy(resolvedSortBy);
         setSortOrder(nextSortOrder);
 
@@ -154,9 +154,9 @@ export function useSearchQuery() {
         setRecords([]);
         setCurrentPage(1);
         setTotalCount(null);
-        setSubmitMessage("");
-        setSortBy("taxonName");
-        setSortOrder("asc");
+        setSubmitMessage('');
+        setSortBy('taxonName');
+        setSortOrder('asc');
         setSortDescending(false);
     }, []);
 

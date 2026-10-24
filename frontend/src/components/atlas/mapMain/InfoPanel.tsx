@@ -95,11 +95,11 @@ export function InfoPanel({taxonName, taxonId}: InfoPanelProps) {
 
     // chyby: statistiky se zobrazí inline, nastavení notifikací (jako dřív)
     const loading = statisticsQuery.isPending || settingsQuery.isPending;
-    const error = statisticsQuery.error ? t("atlas.mapMain.infoPanel.loadingStatistics") : null;
+    const error = statisticsQuery.error ? t('atlas.mapMain.infoPanel.loadingStatistics') : null;
 
     useEffect(() => {
         if (settingsQuery.error) {
-            notifyApiError(settingsQuery.error, t("atlas.mapMain.infoPanel.loadError"));
+            notifyApiError(settingsQuery.error, t('atlas.mapMain.infoPanel.loadError'));
         }
     }, [settingsQuery.error, t]);
 
@@ -110,7 +110,7 @@ export function InfoPanel({taxonName, taxonId}: InfoPanelProps) {
                 const newTimestamp = await updateRevisorsComment(taxonId, value, lastEditTimestamp);
                 setLastEditTimestamp(newTimestamp);
             } catch (err) {
-                notifyApiError(err, t("atlas.mapMain.infoPanel.saveError"));
+                notifyApiError(err, t('atlas.mapMain.infoPanel.saveError'));
             }
         }
     };
@@ -122,7 +122,7 @@ export function InfoPanel({taxonName, taxonId}: InfoPanelProps) {
                 const newTimestamp = await updateRevisorsPrintMapComment(taxonId, value, lastEditTimestamp);
                 setLastEditTimestamp(newTimestamp);
             } catch (err) {
-                notifyApiError(err, t("atlas.mapMain.infoPanel.saveError"));
+                notifyApiError(err, t('atlas.mapMain.infoPanel.saveError'));
             }
         }
     };
@@ -134,7 +134,7 @@ export function InfoPanel({taxonName, taxonId}: InfoPanelProps) {
                 const newTimestamp = await updateMapType(taxonId, newMapType, lastEditTimestamp);
                 setLastEditTimestamp(newTimestamp);
             } catch (err) {
-                notifyApiError(err, t("atlas.mapMain.infoPanel.saveError"));
+                notifyApiError(err, t('atlas.mapMain.infoPanel.saveError'));
             }
         }
     };
@@ -149,7 +149,7 @@ export function InfoPanel({taxonName, taxonId}: InfoPanelProps) {
             setLastEditTimestamp(newTimestamp);
             setRevisionStatusId(newStatus);
         } catch (err) {
-            notifyApiError(err, t("atlas.mapMain.infoPanel.saveError"));
+            notifyApiError(err, t('atlas.mapMain.infoPanel.saveError'));
         } finally {
             setRevisionUpdating(false);
         }
@@ -168,12 +168,12 @@ export function InfoPanel({taxonName, taxonId}: InfoPanelProps) {
             </div>
             <div className="flex-grow-1 overflow-auto">
                 <Accordion defaultActiveKey="0" alwaysOpen>
-                    <InfoSection eventKey="0" title={t("atlas.mapMain.infoPanel.recordCounts")}>
-                        {loading && <p className="text-muted">{t("atlas.mapMain.infoPanel.loadingStatistics")}</p>}
+                    <InfoSection eventKey="0" title={t('atlas.mapMain.infoPanel.recordCounts')}>
+                        {loading && <p className="text-muted">{t('atlas.mapMain.infoPanel.loadingStatistics')}</p>}
                         {error && <p className="text-danger">{error}</p>}
                         {!loading && !error && statistics && (
                             <>
-                                <p><b>{t("atlas.mapMain.infoPanel.records")}</b>
+                                <p><b>{t('atlas.mapMain.infoPanel.records')}</b>
                                     <br/>
                                     (OK/inMap/declined/uncertain/not set/SUM)
                                     <br/>
@@ -193,19 +193,19 @@ export function InfoPanel({taxonName, taxonId}: InfoPanelProps) {
                                 {/*    <span className="text-unprocessed">{statistics.quadrantsUnprocessed}</span> /*/}
                                 {/*    <span>{statistics.quadrantsValidated + statistics.quadrantsDeclined + statistics.quadrantsUncertain + statistics.quadrantsUnprocessed}</span>*/}
                                 {/*</p>*/}
-                                <p><b>{t("atlas.mapMain.infoPanel.ofWhich")}</b></p>
+                                <p><b>{t('atlas.mapMain.infoPanel.ofWhich')}</b></p>
                                 <p>
                                     {/*TODO deprecated*/}
                                     {/*{statistics.recordsBoundToQuadrants} {t("atlas.mapMain.infoPanel.boundToQuadrant")}<br/>*/}
                                     {/*{statistics.recordsBoundToSquares} {t("atlas.mapMain.infoPanel.boundToSquare")}<br/>*/}
-                                    {statistics.recordsBoundToCoords} {t("atlas.mapMain.infoPanel.hasCoordinates")}<br/>
-                                    {statistics.recordsNotBoundToCoords} {t("atlas.mapMain.infoPanel.noLocation")}<br/>
-                                    {statistics.recordsCommented} {t("atlas.mapMain.infoPanel.hasComment")}
+                                    {statistics.recordsBoundToCoords} {t('atlas.mapMain.infoPanel.hasCoordinates')}<br/>
+                                    {statistics.recordsNotBoundToCoords} {t('atlas.mapMain.infoPanel.noLocation')}<br/>
+                                    {statistics.recordsCommented} {t('atlas.mapMain.infoPanel.hasComment')}
                                 </p>
                             </>
                         )}
                     </InfoSection>
-                    <InfoSection eventKey="1" title={t("atlas.mapMain.infoPanel.mapAuthors")}>
+                    <InfoSection eventKey="1" title={t('atlas.mapMain.infoPanel.mapAuthors')}>
                         {!loading && !error && statistics?.supervisors && statistics.supervisors.length > 0 ? (
                             <p className="mb-0 fst-italic">
                                 {statistics.supervisors.map((supervisor, index) => (
@@ -215,10 +215,10 @@ export function InfoPanel({taxonName, taxonId}: InfoPanelProps) {
                                 ))}
                             </p>
                         ) : (
-                            <p>{t("atlas.mapMain.infoPanel.noSupervisors")}</p>
+                            <p>{t('atlas.mapMain.infoPanel.noSupervisors')}</p>
                         )}
                     </InfoSection>
-                    <InfoSection eventKey="2" title={t("atlas.mapMain.infoPanel.mapAuthorsNote")}>
+                    <InfoSection eventKey="2" title={t('atlas.mapMain.infoPanel.mapAuthorsNote')}>
                         {currentUserIsRevisor ? (
                             <textarea
                                 className="form-control"
@@ -230,7 +230,7 @@ export function InfoPanel({taxonName, taxonId}: InfoPanelProps) {
                             <p className="mb-0">{revisorsComment || t('atlas.mapMain.infoPanel.noComment')}</p>
                         )}
                     </InfoSection>
-                    <InfoSection eventKey="3" title={t("atlas.mapMain.infoPanel.printMapNote")}>
+                    <InfoSection eventKey="3" title={t('atlas.mapMain.infoPanel.printMapNote')}>
                         {currentUserIsRevisor ? (
                             <textarea
                                 className="form-control"
@@ -242,11 +242,11 @@ export function InfoPanel({taxonName, taxonId}: InfoPanelProps) {
                             <p className="mb-0">{revisorsPrintMapComment || t('atlas.mapMain.infoPanel.noComment')}</p>
                         )}
                     </InfoSection>
-                    <InfoSection eventKey="4" title={t("atlas.mapMain.infoPanel.mapTypeSelection")}>
+                    <InfoSection eventKey="4" title={t('atlas.mapMain.infoPanel.mapTypeSelection')}>
                         <p id="revision-status" className="mb-3">
                             {currentUserIsRevisor && isMapped && revisionStatusId < REVISION_STATUS_MAP_SUBMITTED && (
                                 <>
-                                    {t("atlas.mapMain.infoPanel.revisionStatus.submit")}
+                                    {t('atlas.mapMain.infoPanel.revisionStatus.submit')}
                                     {' '}
                                     <Button
                                         variant="warning"
@@ -255,19 +255,19 @@ export function InfoPanel({taxonName, taxonId}: InfoPanelProps) {
                                         disabled={revisionUpdating}
                                         onClick={() => handleRevisionStatusChange(REVISION_STATUS_MAP_SUBMITTED)}
                                     >
-                                        {t("atlas.mapMain.infoPanel.revisionStatus.submitButton")}
+                                        {t('atlas.mapMain.infoPanel.revisionStatus.submitButton')}
                                     </Button>
                                 </>
                             )}
                             {currentUserIsRevisor && revisionStatusId === REVISION_STATUS_MAP_SUBMITTED && (
-                                <>{t("atlas.mapMain.infoPanel.revisionStatus.submited")}</>
+                                <>{t('atlas.mapMain.infoPanel.revisionStatus.submited')}</>
                             )}
                             {currentUserIsRevisor && revisionStatusId === REVISION_STATUS_REVIEW && (
-                                <>{t("atlas.mapMain.infoPanel.revisionStatus.supervised")}</>
+                                <>{t('atlas.mapMain.infoPanel.revisionStatus.supervised')}</>
                             )}
                             {currentUserIsRevisor && revisionStatusId === REVISION_STATUS_COMPLETING && (
                                 <>
-                                    {t("atlas.mapMain.infoPanel.revisionStatus.finishing")}
+                                    {t('atlas.mapMain.infoPanel.revisionStatus.finishing')}
                                     {' '}
                                     <Button
                                         variant="warning"
@@ -276,12 +276,12 @@ export function InfoPanel({taxonName, taxonId}: InfoPanelProps) {
                                         disabled={revisionUpdating}
                                         onClick={() => handleRevisionStatusChange(REVISION_STATUS_CLOSED)}
                                     >
-                                        {t("atlas.mapMain.infoPanel.revisionStatus.feedbackProceeded")}
+                                        {t('atlas.mapMain.infoPanel.revisionStatus.feedbackProceeded')}
                                     </Button>
                                 </>
                             )}
                         </p>
-                        <p>{t("atlas.mapMain.infoPanel.mapTypeDescription")}</p>
+                        <p>{t('atlas.mapMain.infoPanel.mapTypeDescription')}</p>
                         {taxonId && (
                             <div className="d-flex flex-column gap-2">
                                 {MAP_TYPES.map((mapTypeOption) => (
@@ -301,15 +301,15 @@ export function InfoPanel({taxonName, taxonId}: InfoPanelProps) {
                                         </label>
                                         <a href={`/atlas/mapPreview/${taxonId}/${mapTypeOption.id}`}
                                            className="ms-2 small">
-                                            {t("atlas.mapMain.infoPanel.preview")}
+                                            {t('atlas.mapMain.infoPanel.preview')}
                                         </a>
                                     </div>
                                 ))}
                             </div>
                         )}
                     </InfoSection>
-                    <InfoSection eventKey="5" title={t("atlas.mapMain.infoPanel.sourceProjects")}>
-                        {loading && <p className="text-muted">{t("atlas.mapMain.infoPanel.loadingStatistics")}</p>}
+                    <InfoSection eventKey="5" title={t('atlas.mapMain.infoPanel.sourceProjects')}>
+                        {loading && <p className="text-muted">{t('atlas.mapMain.infoPanel.loadingStatistics')}</p>}
                         {error && <p className="text-danger">{error}</p>}
                         {!loading && !error && statistics?.recordsByProject && statistics.recordsByProject.length > 0 ? (
                             <ul className="mb-0">
@@ -320,7 +320,7 @@ export function InfoPanel({taxonName, taxonId}: InfoPanelProps) {
                                 ))}
                             </ul>
                         ) : (
-                            <p>{t("atlas.mapMain.infoPanel.projectsLoading")}</p>
+                            <p>{t('atlas.mapMain.infoPanel.projectsLoading')}</p>
                         )}
                     </InfoSection>
                 </Accordion>

@@ -1,29 +1,18 @@
-import {useEffect, useState} from "react";
-import {Table, Spinner} from "react-bootstrap";
-import {useTranslation} from "react-i18next";
-import type {TraitBackup} from "@/models/TraitBackup";
-import {getTraitBackups} from "@/services/traitApi";
-import {notifyApiError} from "@/stores/notificationStore";
+import {Table, Spinner} from 'react-bootstrap';
+import {useTranslation} from 'react-i18next';
+import {useQuery} from '@tanstack/react-query';
+import {getTraitBackups} from '@/services/traitApi';
+import {useQueryErrorNotify} from '@/query/useQueryErrorNotify';
 
 export default function BackupTable() {
     const {t} = useTranslation();
 
-    const [backups, setBackups] = useState<TraitBackup[]>([]);
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        const load = async () => {
-            try {
-                setBackups(await getTraitBackups());
-            } catch (e) {
-                notifyApiError(e, t("common.loadFailed"));
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        load();
-    }, [t]);
+    // dostupné zálohy – bez cache (sekce J), při mountu znovu; chyba jde do toastu
+    const {data: backups = [], isPending: loading, error} = useQuery({
+        queryKey: ['traitBackups'],
+        queryFn: getTraitBackups,
+    });
+    useQueryErrorNotify(error, t('common.loadFailed'));
 
     if (loading) {
         return (
@@ -34,23 +23,23 @@ export default function BackupTable() {
     }
 
     const formatDate = (iso?: string | null) =>
-        iso ? new Date(iso).toLocaleString("cs-CZ") : "—";
+        iso ? new Date(iso).toLocaleString('cs-CZ') : '—';
 
     return (
         <Table striped bordered hover responsive>
             <thead>
             <tr>
-                <th>{t("trait.backup.description")}</th>
-                <th>{t("trait.backup.createdAt")}</th>
+                <th>{t('trait.backup.description')}</th>
+                <th>{t('trait.backup.createdAt')}</th>
                 <th className="text-center">
-                    {t("trait.backup.download")}
+                    {t('trait.backup.download')}
                 </th>
             </tr>
             </thead>
             <tbody>
             {backups.map((b) => (
                 <tr key={b.id}>
-                    <td>{b.description ?? "—"}</td>
+                    <td>{b.description ?? '—'}</td>
                     <td>{formatDate(b.createdAt)}</td>
                     <td className="text-center">
                         <a
@@ -59,7 +48,7 @@ export default function BackupTable() {
                             rel="noopener noreferrer"
                             className="btn btn-sm btn-primary"
                         >
-                            {t("trait.backup.download")}
+                            {t('trait.backup.download')}
                         </a>
                     </td>
                 </tr>

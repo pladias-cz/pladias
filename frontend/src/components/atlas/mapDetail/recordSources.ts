@@ -5,7 +5,7 @@
  * barvy markerů na mapě – nový zdroj = jeden záznam v RECORD_SOURCES.
  */
 
-import type {ProjectType} from "@/models/AtlasRecords";
+import type {ProjectType} from '@/models/AtlasRecords';
 
 /** Konfigurace jednoho zdroje záznamů. */
 export interface RecordSourceConfig {
@@ -21,11 +21,11 @@ export interface RecordSourceConfig {
 export const RECORD_SOURCES: readonly RecordSourceConfig[] = [
     // markery PLADIAS jsou vícebarevné dle validationStatus (výplň z backendu)
     // – tečka používá černou barvu okraje markeru
-    {id: "pladias", label: "PLADIAS", markerColor: "#000000"},
+    {id: 'pladias', label: 'PLADIAS', markerColor: '#000000'},
     // fixní barva výplně GBIF markerů (backend dto.atlas.RecordGbifMinimalDto)
-    {id: "gbif", label: "GBIF", markerColor: "#C95740"},
+    {id: 'gbif', label: 'GBIF', markerColor: '#C95740'},
     // barva okraje iNaturalist markerů (RecordMarkers)
-    {id: "inaturalist", label: "iNaturalist", markerColor: "#00AA00"},
+    {id: 'inaturalist', label: 'iNaturalist', markerColor: '#00AA00'},
 ];
 
 /** Viditelnost skupin záznamů na mapě (checkboxy v hlavičkách tabů). */
@@ -76,13 +76,13 @@ export function parseSavedVisibility(saved: string | null): RecordSourceVisibili
         return null;
     }
     const known = parsed.filter((id): id is ProjectType =>
-        typeof id === "string" && RECORD_SOURCES.some(source => source.id === id));
+        typeof id === 'string' && RECORD_SOURCES.some(source => source.id === id));
     if (known.length === 0 && parsed.length > 0) {
         return null;
     }
     return {
-        pladias: known.includes("pladias"),
-        gbif: known.includes("gbif"),
-        inaturalist: known.includes("inaturalist"),
+        pladias: known.includes('pladias'),
+        gbif: known.includes('gbif'),
+        inaturalist: known.includes('inaturalist'),
     };
 }

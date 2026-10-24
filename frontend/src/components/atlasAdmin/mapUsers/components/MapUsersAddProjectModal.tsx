@@ -30,14 +30,14 @@ export function MapUsersAddProjectModal({
     return (
         <Modal show={show} onHide={onClose}>
             <Modal.Header closeButton>
-                <Modal.Title>{t("user.usersAdministration.addProject")}</Modal.Title>
+                <Modal.Title>{t('user.usersAdministration.addProject')}</Modal.Title>
             </Modal.Header>
             <Modal.Body>
                 <Form.Group controlId="projectSelect">
-                    <Form.Label>{t("user.usersAdministration.selectProject")}</Form.Label>
+                    <Form.Label>{t('user.usersAdministration.selectProject')}</Form.Label>
                     {projectsLoading ? (
                         <Form.Control as="select" disabled>
-                            <option>{t("common.loading")}</option>
+                            <option>{t('common.loading')}</option>
                         </Form.Control>
                     ) : (
                         <Form.Control
@@ -45,7 +45,7 @@ export function MapUsersAddProjectModal({
                             value={selectedProjectId}
                             onChange={(e) => onProjectSelect(e.target.value)}
                         >
-                            <option value="">{t("user.usersAdministration.chooseProject")}</option>
+                            <option value="">{t('user.usersAdministration.chooseProject')}</option>
                             {projects.map(project => (
                                 <option key={project.id} value={project.id}>
                                     {project.abbrev || project.name}
@@ -57,14 +57,14 @@ export function MapUsersAddProjectModal({
             </Modal.Body>
             <Modal.Footer>
                 <Button variant="secondary" onClick={onClose}>
-                    {t("common.cancel")}
+                    {t('common.cancel')}
                 </Button>
                 <Button
                     variant="primary"
                     onClick={onAdd}
                     disabled={!selectedProjectId || projectsLoading}
                 >
-                    {t("user.usersAdministration.add")}
+                    {t('user.usersAdministration.add')}
                 </Button>
             </Modal.Footer>
         </Modal>

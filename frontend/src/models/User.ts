@@ -1,4 +1,4 @@
-import type {UserRole} from "./UserRole";
+import type {UserRole} from './UserRole';
 
 export interface UserData {
     id: number;
@@ -19,8 +19,8 @@ export default class User {
     constructor(data: UserData) {
         this.id = data.id;
         this.roles = data.roles ?? [];
-        this.userEmail = data.userEmail ?? "";
-        this.language = data.language ?? "cs";
+        this.userEmail = data.userEmail ?? '';
+        this.language = data.language ?? 'cs';
         this.supervisedTaxonIds = data.supervisedTaxonIds ?? [];
     }
 
@@ -31,31 +31,31 @@ export default class User {
     // Derived role flags (kept for readability at call sites; mapAdmin implies bulkEditor, see backend UserRole.keysOf)
 
     get isMapAdmin(): boolean {
-        return this.hasRole("mapAdmin");
+        return this.hasRole('mapAdmin');
     }
 
     get isBulkEditor(): boolean {
-        return this.hasRole("bulkEditor");
+        return this.hasRole('bulkEditor');
     }
 
     get isTraitAdmin(): boolean {
-        return this.hasRole("traitAdmin");
+        return this.hasRole('traitAdmin');
     }
 
     get isSysAdmin(): boolean {
-        return this.hasRole("sysAdmin");
+        return this.hasRole('sysAdmin');
     }
 
     get isTaxonAdmin(): boolean {
-        return this.hasRole("taxonAdmin");
+        return this.hasRole('taxonAdmin');
     }
 
     get isAsyncImporter(): boolean {
-        return this.hasRole("asyncImporter");
+        return this.hasRole('asyncImporter');
     }
 
     get isBiblioAdmin(): boolean {
-        return this.hasRole("biblioAdmin");
+        return this.hasRole('biblioAdmin');
     }
 
     isSupervisorOfTaxon(taxonId: number): boolean {

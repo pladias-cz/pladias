@@ -46,12 +46,12 @@ export function ExternalRecordsTable({
         <Table striped bordered hover size="sm">
             <thead>
             <tr>
-                <th>{t("atlas.mapDetail.recordId")}</th>
-                <th>{t("atlas.mapDetail.source")}</th>
-                <th>{t("atlas.mapDetail.year")}</th>
-                <th>{t("atlas.mapDetail.latitude")}</th>
-                <th>{t("atlas.mapDetail.longitude")}</th>
-                <th>{t("atlas.mapDetail.collectors")}</th>
+                <th>{t('atlas.mapDetail.recordId')}</th>
+                <th>{t('atlas.mapDetail.source')}</th>
+                <th>{t('atlas.mapDetail.year')}</th>
+                <th>{t('atlas.mapDetail.latitude')}</th>
+                <th>{t('atlas.mapDetail.longitude')}</th>
+                <th>{t('atlas.mapDetail.collectors')}</th>
             </tr>
             </thead>
             <tbody>
@@ -77,7 +77,7 @@ export function ExternalRecordsTable({
                             <span className="text-uppercase fw-semibold">{record.project}</span>
                         </td>
                         <td>
-                            {record.year || t("atlas.mapDetail.unknownYear")}
+                            {record.year || t('atlas.mapDetail.unknownYear')}
                         </td>
                         <td className="text-nowrap">
                             {record.latitude.toFixed(4)}

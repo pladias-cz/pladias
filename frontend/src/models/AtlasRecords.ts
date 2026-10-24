@@ -1,10 +1,10 @@
-import type {RecordPladias} from "./RecordPladias";
+import type {RecordPladias} from './RecordPladias';
 
 /** Projekt mapového detailu (vlastní data PLADIAS vs. externí GBIF/iNaturalist). */
-export type ProjectType = "pladias" | "gbif" | "inaturalist";
+export type ProjectType = 'pladias' | 'gbif' | 'inaturalist';
 
 /** Externí projekty sdílející stejné minimální DTO záznamu. */
-export type ExternalProject = Exclude<ProjectType, "pladias">;
+export type ExternalProject = Exclude<ProjectType, 'pladias'>;
 
 /**
  * PLADIAS record – minimal data for map display.
@@ -44,7 +44,7 @@ export interface RecordGbifMinimal {
 }
 
 /** Wire typ externího záznamu – data z backendu bez diskriminátoru `project`. */
-export type RecordGbifMinimalData = Omit<RecordGbifMinimal, "project">;
+export type RecordGbifMinimalData = Omit<RecordGbifMinimal, 'project'>;
 
 /** Union type for all record types that have a project property */
 export type RecordWithProject = RecordGbifMinimal;

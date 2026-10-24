@@ -27,7 +27,7 @@ export function MapUsersTaxaCell({row, onAddTaxon, onRemoveTaxon}: MapUsersTaxaC
                     <span
                         style={{cursor: 'pointer'}}
                         onClick={() => onRemoveTaxon(row.id, taxon.id)}
-                        title={t("user.usersAdministration.removeTaxon")}
+                        title={t('user.usersAdministration.removeTaxon')}
                     >
                         &times;
                     </span>
@@ -39,7 +39,7 @@ export function MapUsersTaxaCell({row, onAddTaxon, onRemoveTaxon}: MapUsersTaxaC
                 onClick={() => onAddTaxon(row.id)}
                 className="py-0 px-1 d-inline-flex align-items-center justify-content-center"
                 style={{lineHeight: 1, minHeight: '1.5em'}}
-                aria-label={t("user.usersAdministration.addTaxon")}
+                aria-label={t('user.usersAdministration.addTaxon')}
             >
                 +
             </Button>

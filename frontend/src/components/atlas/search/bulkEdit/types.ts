@@ -2,7 +2,7 @@
  * Typy hromadných úprav (atlas/search/bulkEdit).
  */
 
-import type {BulkOperationFailure} from "../bulkEditOperations";
+import type {BulkOperationFailure} from '../bulkEditOperations';
 
 /** Možnost semaforu (validačního statusu) v hromadných úpravách. */
 export type SemaforOption = {

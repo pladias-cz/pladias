@@ -1,8 +1,8 @@
-import {useState, useEffect} from "react";
-import {Col, Form, Row, Spinner, Button} from "react-bootstrap";
-import {useTranslation} from "react-i18next";
-import {patchRecordField} from "@/services/recordApi";
-import {ApiError, apiErrorMessage} from "@/services/apiClient";
+import {useState, useEffect} from 'react';
+import {Col, Form, Row, Spinner, Button} from 'react-bootstrap';
+import {useTranslation} from 'react-i18next';
+import {patchRecordField} from '@/services/recordApi';
+import {ApiError, apiErrorMessage} from '@/services/apiClient';
 
 /** Volba selectu (hodnota i popisek jsou řetězce – pole záznamu po editaci). */
 interface Option {
@@ -17,7 +17,7 @@ interface Props {
     recordId: number;
     field: string;
     value: string | string[] | boolean | null;
-    type?: "text" | "select" | "boolean" | "multi-value";
+    type?: 'text' | 'select' | 'boolean' | 'multi-value';
     options?: Option[];
     render?: (v: string | string[] | boolean | null) => React.ReactNode;
     onUpdated?: (data: { updatedValue: string | null, newTimestamp: number }) => void;
@@ -30,7 +30,7 @@ export default function RecordInlineField({
                                               recordId,
                                               field,
                                               value,
-                                              type = "text",
+                                              type = 'text',
                                               options,
                                               render,
                                               onUpdated,
@@ -73,7 +73,7 @@ export default function RecordInlineField({
         } catch (e) {
             // 403 apod. notifikuje centrálně apiClient – zde jen propagujeme
             if (!(e instanceof ApiError && e.notified)) {
-                setError(apiErrorMessage(e, t("common.inlineField.saveFailed")));
+                setError(apiErrorMessage(e, t('common.inlineField.saveFailed')));
             }
         } finally {
             setSaving(false);
@@ -96,15 +96,15 @@ export default function RecordInlineField({
         <i
             className="bi bi-pencil ms-2"
             aria-hidden="true"
-            style={{cursor: "pointer"}}
+            style={{cursor: 'pointer'}}
             onClick={onClick}
-            title={t("common.inlineField.edit")}
+            title={t('common.inlineField.edit')}
         />
     );
 
     let content: React.ReactNode;
 
-    if (type === "boolean") {
+    if (type === 'boolean') {
         content = (
             <Form.Check
                 type="switch"
@@ -124,17 +124,17 @@ export default function RecordInlineField({
                     <EditIcon onClick={() => setEditing(true)}/>
                     <span
                         className="editable-value ms-1"
-                        style={{cursor: "pointer"}}
+                        style={{cursor: 'pointer'}}
                         onClick={() => setEditing(true)}
                     >
                         {render ? render(draft) : draft ||
-                            <span className="text-muted">{t("common.inlineField.add")}</span>}
+                            <span className="text-muted">{t('common.inlineField.add')}</span>}
                     </span>
                 </span>
             );
-        } else if (type === "select") {
+        } else if (type === 'select') {
             content = renderSelect(options, draft as string | null, saving, save, setEditing);
-        } else if (type === "multi-value") {
+        } else if (type === 'multi-value') {
             content = <MultiValueEditor value={draft as string[] | null} saving={saving} onSave={save}
                                         onDone={() => setEditing(false)}/>;
         } else {
@@ -142,21 +142,21 @@ export default function RecordInlineField({
                 <Form.Control
                     size="sm"
                     autoFocus
-                    value={(draft as string | null) || ""}
+                    value={(draft as string | null) || ''}
                     disabled={saving}
                     onChange={(e) => {
                         setDraft(e.target.value);
                         setError(null);
                     }}
                     onKeyDown={e => {
-                        if (e.key === "Enter") {
+                        if (e.key === 'Enter') {
                             e.preventDefault();
                             handleSaveWithValidation();
-                        } else if (e.key === "Escape") {
+                        } else if (e.key === 'Escape') {
                             setEditing(false);
                         }
                     }}
-                    style={{maxWidth: "350px", display: "inline-block"}}
+                    style={{maxWidth: '350px', display: 'inline-block'}}
                 />
             );
         }
@@ -181,11 +181,11 @@ function renderSelect(options: Option[] | undefined, draft: string | null, savin
         <Form.Select
             size="sm"
             autoFocus
-            value={draft ?? ""}
+            value={draft ?? ''}
             disabled={saving}
             onChange={e => save(e.target.value)}
             onBlur={() => setEditing(false)}
-            style={{maxWidth: "250px"}}
+            style={{maxWidth: '250px'}}
         >
             {options?.map(o => (
                 <option key={o.value} value={o.value}>
@@ -257,9 +257,9 @@ function MultiValueEditor({value, saving, onSave, onDone}: {
                             handleAddTag();
                         }
                     }}
-                    placeholder={t("common.inlineField.add")}
+                    placeholder={t('common.inlineField.add')}
                     disabled={saving}
-                    style={{maxWidth: "200px"}}
+                    style={{maxWidth: '200px'}}
                 />
                 <Button
                     variant="outline-secondary"

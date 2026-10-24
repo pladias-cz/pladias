@@ -8,28 +8,28 @@
 
 export const DEFAULT_PAGE_SIZE = 50;
 export const EXCEL_EXPORT_PAGE_SIZE = 100000;
-export const EXCEL_EXPORT_TYPE = "excel";
-export const BROWSER_EXPORT_TYPE = "browser";
+export const EXCEL_EXPORT_TYPE = 'excel';
+export const BROWSER_EXPORT_TYPE = 'browser';
 
 /** Typ exportu z odeslaného formuláře (radio export_type). */
 export function getExportTypeFromPayload(payloadEntries: Array<[string, FormDataEntryValue]>): string {
-    const exportTypeEntry = payloadEntries.find(([key]) => key === "export_type");
-    return typeof exportTypeEntry?.[1] === "string" ? exportTypeEntry[1] : BROWSER_EXPORT_TYPE;
+    const exportTypeEntry = payloadEntries.find(([key]) => key === 'export_type');
+    return typeof exportTypeEntry?.[1] === 'string' ? exportTypeEntry[1] : BROWSER_EXPORT_TYPE;
 }
 
 /** FormData pro searchRecords: filtry + volitelné řazení (sortBy/sortOrder). */
 export function buildSearchFormData(
     payloadEntries: Array<[string, FormDataEntryValue]>,
     sortBy: string | null,
-    sortOrder: "asc" | "desc"
+    sortOrder: 'asc' | 'desc'
 ): FormData {
     const formData = new FormData();
     for (const [key, value] of payloadEntries) {
         formData.append(key, value);
     }
     if (sortBy) {
-        formData.append("sortBy", sortBy);
-        formData.append("sortOrder", sortOrder);
+        formData.append('sortBy', sortBy);
+        formData.append('sortOrder', sortOrder);
     }
     return formData;
 }

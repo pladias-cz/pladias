@@ -32,7 +32,7 @@ export function useMapUsersTaxa(
 ): UseMapUsersTaxaReturn {
     const [taxa, setTaxa] = useState<SupervisedTaxon[]>([]);
     const [taxaLoading, setTaxaLoading] = useState(false);
-    const [taxonSearchTerm, setTaxonSearchTerm] = useState("");
+    const [taxonSearchTerm, setTaxonSearchTerm] = useState('');
     const [submitting, setSubmitting] = useState(false);
     const [selectedTaxon, setSelectedTaxon] = useState<SupervisedTaxon | null>(null);
     const [selectedTaxonUserId, setSelectedTaxonUserId] = useState<number | null>(null);
@@ -44,7 +44,7 @@ export function useMapUsersTaxa(
         try {
             setTaxa(await searchTaxaByPrefix(searchTerm));
         } catch (err) {
-            notifyApiError(err, t("common.autocomplete.searchFailed"));
+            notifyApiError(err, t('common.autocomplete.searchFailed'));
         } finally {
             setTaxaLoading(false);
         }
@@ -71,7 +71,7 @@ export function useMapUsersTaxa(
 
     const handleOpenAddTaxonModal = useCallback((userId: number) => {
         setSelectedTaxonUserId(userId);
-        setTaxonSearchTerm("");
+        setTaxonSearchTerm('');
         setTaxa([]);
         setSubmitting(false);
         setSelectedTaxon(null);
@@ -81,7 +81,7 @@ export function useMapUsersTaxa(
     const handleCloseTaxonModal = useCallback(() => {
         setShowAddTaxonModal(false);
         setSelectedTaxonUserId(null);
-        setTaxonSearchTerm("");
+        setTaxonSearchTerm('');
         setTaxa([]);
         setSubmitting(false);
         setSelectedTaxon(null);
@@ -97,11 +97,11 @@ export function useMapUsersTaxa(
         try {
             await assignUserTaxon(selectedTaxonUserId, taxon.id);
 
-            showFlash('success', t("user.usersAdministration.taxonAdded"));
+            showFlash('success', t('user.usersAdministration.taxonAdded'));
             onTaxonChange?.();
             setTimeout(() => handleCloseTaxonModal(), 1000);
         } catch (err) {
-            showFlash('danger', apiErrorMessage(err, t("user.usersAdministration.error")));
+            showFlash('danger', apiErrorMessage(err, t('user.usersAdministration.error')));
             setSubmitting(false);
             setSelectedTaxon(null);
         }

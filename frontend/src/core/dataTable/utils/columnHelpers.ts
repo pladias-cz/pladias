@@ -228,13 +228,13 @@ export function getFilterPlaceholder<T>(column: DataTableColumnDef<T>, t: TFunct
     }
     switch (column.type) {
         case 'text':
-            return t("common.table.filter.all");
+            return t('common.table.filter.all');
         case 'boolean':
-            return t("common.table.filter.all");
+            return t('common.table.filter.all');
         case 'number':
-            return t("common.table.filter.all");
+            return t('common.table.filter.all');
         case 'date':
-            return t("common.table.filter.all");
+            return t('common.table.filter.all');
         case 'action':
             return '';
         default:

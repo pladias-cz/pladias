@@ -749,6 +749,7 @@
     "description": "Popis",
     "download": "download",
     "downloadFailed": "Stažení souboru selhalo.",
+    "loadFailed": "Načtení souborů ke stažení selhalo.",
     "manager": "Odpovědná osoba",
     "version": "Datum verze"
   },

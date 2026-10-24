@@ -33,14 +33,14 @@ export function useMapUsersProjects(
     const [projectsLoading, setProjectsLoading] = useState(false);
     const [showAddModal, setShowAddModal] = useState(false);
     const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
-    const [selectedProjectId, setSelectedProjectId] = useState<string>("");
+    const [selectedProjectId, setSelectedProjectId] = useState<string>('');
 
     const fetchProjects = useCallback(async () => {
         setProjectsLoading(true);
         try {
             setProjects(await getProjects());
         } catch (err) {
-            notifyApiError(err, t("common.loadFailed"));
+            notifyApiError(err, t('common.loadFailed'));
         } finally {
             setProjectsLoading(false);
         }
@@ -48,7 +48,7 @@ export function useMapUsersProjects(
 
     const handleOpenAddModal = useCallback((userId: number) => {
         setSelectedUserId(userId);
-        setSelectedProjectId("");
+        setSelectedProjectId('');
         fetchProjects();
         setShowAddModal(true);
     }, [fetchProjects]);
@@ -56,23 +56,23 @@ export function useMapUsersProjects(
     const handleCloseModal = useCallback(() => {
         setShowAddModal(false);
         setSelectedUserId(null);
-        setSelectedProjectId("");
+        setSelectedProjectId('');
     }, []);
 
     const handleAddProject = useCallback(async () => {
         if (!selectedUserId || !selectedProjectId) {
-            showFlash('danger', t("user.usersAdministration.selectProject"));
+            showFlash('danger', t('user.usersAdministration.selectProject'));
             return;
         }
 
         try {
             await assignProjectToUser(selectedUserId, parseInt(selectedProjectId, 10));
 
-            showFlash('success', t("user.usersAdministration.projectAdded"));
+            showFlash('success', t('user.usersAdministration.projectAdded'));
             handleCloseModal();
             onProjectChange?.();
         } catch (err) {
-            showFlash('danger', apiErrorMessage(err, t("user.usersAdministration.error")));
+            showFlash('danger', apiErrorMessage(err, t('user.usersAdministration.error')));
         }
     }, [selectedUserId, selectedProjectId, showFlash, t, handleCloseModal, onProjectChange]);
 
@@ -80,10 +80,10 @@ export function useMapUsersProjects(
         try {
             await removeProjectFromUser(userId, projectId);
 
-            showFlash('success', t("user.usersAdministration.projectRemoved"));
+            showFlash('success', t('user.usersAdministration.projectRemoved'));
             onProjectChange?.();
         } catch (err) {
-            showFlash('danger', apiErrorMessage(err, t("user.usersAdministration.error")));
+            showFlash('danger', apiErrorMessage(err, t('user.usersAdministration.error')));
         }
     }, [showFlash, t, onProjectChange]);
 

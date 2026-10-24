@@ -1,7 +1,7 @@
-import {Alert} from "react-bootstrap";
-import {useTranslation} from "react-i18next";
-import RichTextMessage from "./RichTextMessage";
-import {useNotificationStore} from "@/stores/notificationStore";
+import {Alert} from 'react-bootstrap';
+import {useTranslation} from 'react-i18next';
+import RichTextMessage from './RichTextMessage';
+import {useNotificationStore} from '@/stores/notificationStore';
 
 /**
  * Prezentační výstup globálního notifikačního store.
@@ -24,14 +24,14 @@ function Toasts() {
         <div
             aria-live="polite"
             className="position-fixed bottom-0 end-0 p-3"
-            style={{zIndex: 1080, maxWidth: 380, width: "100%"}}
+            style={{zIndex: 1080, maxWidth: 380, width: '100%'}}
         >
             {notifications.map((notification) => (
                 <Alert
                     key={notification.id}
                     variant={notification.type}
                     dismissible
-                    closeLabel={t("common.close")}
+                    closeLabel={t('common.close')}
                     onClose={() => dismiss(notification.id)}
                 >
                     {notification.html

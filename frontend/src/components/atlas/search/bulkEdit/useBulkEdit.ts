@@ -8,12 +8,12 @@
  * `services/bulkEditApi`, sekvenční běh dávky `bulkEditOperations`.
  * Parsery vstupů jsou čisté funkce v `valueParsing.ts` (s testy).
  */
-import {useCallback, useEffect, useMemo, useState} from "react";
-import {useTranslation} from "react-i18next";
-import {createTaxaImportableProvider} from "@/components/autocomplete/TaxaImportableProvider";
-import {useConfirm} from "@/hooks/useConfirm";
-import type {RecordPladias} from "@/models";
-import type {TaxonId} from "@/models/TaxonId";
+import {useCallback, useEffect, useMemo, useState} from 'react';
+import {useTranslation} from 'react-i18next';
+import {createTaxaImportableProvider} from '@/components/autocomplete/TaxaImportableProvider';
+import {useConfirm} from '@/hooks/useConfirm';
+import type {RecordPladias} from '@/models';
+import type {TaxonId} from '@/models/TaxonId';
 import {
     fetchRecordEditTimestamps,
     moveCoordinates,
@@ -27,14 +27,14 @@ import {
     updateFinder,
     updateTaxon,
     updateValidationStatus,
-} from "@/services/bulkEditApi";
-import {getPhytochorions} from "@/services/searchApi";
-import {getUnassignedAuthors} from "@/services/recordApi";
-import {useCatalogQuery} from "@/query/useCatalogQuery";
-import {runBulkOperationSequential, type BulkRecordVersion} from "../bulkEditOperations";
-import {formatCoord, isValidDateValue, parseCoordinatePair} from "./valueParsing";
-import type {BulkOperationSummary, SemaforOption} from "./types";
-import type {TypeaheadOption} from "../types";
+} from '@/services/bulkEditApi';
+import {getPhytochorions} from '@/services/searchApi';
+import {getUnassignedAuthors} from '@/services/recordApi';
+import {useCatalogQuery} from '@/query/useCatalogQuery';
+import {runBulkOperationSequential, type BulkRecordVersion} from '../bulkEditOperations';
+import {formatCoord, isValidDateValue, parseCoordinatePair} from './valueParsing';
+import type {BulkOperationSummary, SemaforOption} from './types';
+import type {TypeaheadOption} from '../types';
 
 /** Bezpečnostní strop dávky – nad limit raději upravit ručně po menších kusech. */
 export const MAX_BULK_EDIT_RECORDS = 1000;
@@ -56,17 +56,17 @@ export function useBulkEdit({records, totalCount, searchPayloadEntries, onBulkEd
     const {confirm, dialog: confirmDialog} = useConfirm();
 
     // poloha + buffer (sekce 0 a 1)
-    const [rawCoords, setRawCoords] = useState<string>("");
-    const [rawCoordsError, setRawCoordsError] = useState<string>("");
+    const [rawCoords, setRawCoords] = useState<string>('');
+    const [rawCoordsError, setRawCoordsError] = useState<string>('');
     const [requiredCoordErrors, setRequiredCoordErrors] = useState<{ lat: boolean; lon: boolean; buffer: boolean }>({
         lat: false,
         lon: false,
         buffer: false,
     });
-    const [newLon, setNewLon] = useState<string>("");
-    const [newLat, setNewLat] = useState<string>("");
-    const [coordBuffer, setCoordBuffer] = useState<string>("200");
-    const [bufferSingle, setBufferSingle] = useState<string>("200");
+    const [newLon, setNewLon] = useState<string>('');
+    const [newLat, setNewLat] = useState<string>('');
+    const [coordBuffer, setCoordBuffer] = useState<string>('200');
+    const [bufferSingle, setBufferSingle] = useState<string>('200');
     const [bufferSingleError, setBufferSingleError] = useState<boolean>(false);
     // validace ostatních polí
     const [dateSingleError, setDateSingleError] = useState<boolean>(false);
@@ -77,17 +77,17 @@ export function useBulkEdit({records, totalCount, searchPayloadEntries, onBulkEd
     const [taxonError, setTaxonError] = useState<boolean>(false);
     const [semaforError, setSemaforError] = useState<boolean>(false);
     // hodnoty polí
-    const [newDate, setNewDate] = useState<string>("");
+    const [newDate, setNewDate] = useState<string>('');
     const [selectedPhytochorion, setSelectedPhytochorion] = useState<TypeaheadOption[]>([]);
-    const [newLocality, setNewLocality] = useState<string>("");
-    const [newNearestTownName, setNewNearestTownName] = useState<string>("");
-    const [newSource, setNewSource] = useState<string>("");
-    const [newImportComment, setNewImportComment] = useState<string>("");
+    const [newLocality, setNewLocality] = useState<string>('');
+    const [newNearestTownName, setNewNearestTownName] = useState<string>('');
+    const [newSource, setNewSource] = useState<string>('');
+    const [newImportComment, setNewImportComment] = useState<string>('');
     const [selectedFinder, setSelectedFinder] = useState<TypeaheadOption[]>([]);
     const [selectedTaxon, setSelectedTaxon] = useState<TaxonId | null>(null);
-    const [newSemafor, setNewSemafor] = useState<string>("");
+    const [newSemafor, setNewSemafor] = useState<string>('');
     // běh dávky
-    const [formMessage, setFormMessage] = useState<string>("");
+    const [formMessage, setFormMessage] = useState<string>('');
     const [isRunning, setIsRunning] = useState<boolean>(false);
     const [batchProgress, setBatchProgress] = useState<{ processed: number; total: number }>({processed: 0, total: 0});
     const [batchSummary, setBatchSummary] = useState<BulkOperationSummary | null>(null);
@@ -97,22 +97,22 @@ export function useBulkEdit({records, totalCount, searchPayloadEntries, onBulkEd
     const canRunActions = effectiveRecordCount > 0;
 
     const semaforOptions = useMemo<SemaforOption[]>(() => ([
-        {value: "0", label: t("atlas.search.bulkEdit.semaforOptions.unreviewed")},
-        {value: "1", label: t("atlas.search.bulkEdit.semaforOptions.uncertain")},
-        {value: "2", label: t("atlas.search.bulkEdit.semaforOptions.rejected")},
-        {value: "3", label: t("atlas.search.bulkEdit.semaforOptions.accepted")},
+        {value: '0', label: t('atlas.search.bulkEdit.semaforOptions.unreviewed')},
+        {value: '1', label: t('atlas.search.bulkEdit.semaforOptions.uncertain')},
+        {value: '2', label: t('atlas.search.bulkEdit.semaforOptions.rejected')},
+        {value: '3', label: t('atlas.search.bulkEdit.semaforOptions.accepted')},
     ]), [t]);
     const taxonProvider = useMemo(
-        () => createTaxaImportableProvider(t("atlas.search.form.taxonAutocompletePlaceholder")),
+        () => createTaxaImportableProvider(t('atlas.search.form.taxonAutocompletePlaceholder')),
         [t],
     );
     // číselníky (sekce J, TanStack Query bez cache – jsou dynamická):
     // fytochoriony + autoři nepřiřazení k prvnímu záznamu výběru; při selhání
     // zůstane pole použitelné s prázdným číselníkem
-    const phytochorions = useCatalogQuery(["phytochorions"], getPhytochorions);
+    const phytochorions = useCatalogQuery(['phytochorions'], getPhytochorions);
     const firstRecordId = recordIds[0];
     const finderAuthors = useCatalogQuery(
-        ["unassignedAuthors", firstRecordId],
+        ['unassignedAuthors', firstRecordId],
         // queryFn běží jen při firstRecordId != null (enabled níže)
         () => getUnassignedAuthors(firstRecordId as number),
         {enabled: firstRecordId != null},
@@ -140,41 +140,41 @@ export function useBulkEdit({records, totalCount, searchPayloadEntries, onBulkEd
     const changeRawCoords = (value: string) => {
         setRawCoords(value);
         if (rawCoordsError) {
-            setRawCoordsError("");
+            setRawCoordsError('');
         }
     };
 
     const changeNewLat = (value: string) => {
         setNewLat(value);
-        if (requiredCoordErrors.lat && value.trim() !== "") {
+        if (requiredCoordErrors.lat && value.trim() !== '') {
             setRequiredCoordErrors((prev) => ({...prev, lat: false}));
         }
     };
 
     const changeNewLon = (value: string) => {
         setNewLon(value);
-        if (requiredCoordErrors.lon && value.trim() !== "") {
+        if (requiredCoordErrors.lon && value.trim() !== '') {
             setRequiredCoordErrors((prev) => ({...prev, lon: false}));
         }
     };
 
     const changeCoordBuffer = (value: string) => {
         setCoordBuffer(value);
-        if (requiredCoordErrors.buffer && value.trim() !== "") {
+        if (requiredCoordErrors.buffer && value.trim() !== '') {
             setRequiredCoordErrors((prev) => ({...prev, buffer: false}));
         }
     };
 
     const changeBufferSingle = (value: string) => {
         setBufferSingle(value);
-        if (bufferSingleError && value.trim() !== "") {
+        if (bufferSingleError && value.trim() !== '') {
             setBufferSingleError(false);
         }
     };
 
     const changeNewDate = (value: string) => {
         setNewDate(value);
-        if (dateSingleError && value.trim() !== "" && isValidDateValue(value.trim())) {
+        if (dateSingleError && value.trim() !== '' && isValidDateValue(value.trim())) {
             setDateSingleError(false);
         }
     };
@@ -188,14 +188,14 @@ export function useBulkEdit({records, totalCount, searchPayloadEntries, onBulkEd
 
     const changeNewLocality = (value: string) => {
         setNewLocality(value);
-        if (localityError && value.trim() !== "") {
+        if (localityError && value.trim() !== '') {
             setLocalityError(false);
         }
     };
 
     const changeNewNearestTownName = (value: string) => {
         setNewNearestTownName(value);
-        if (nearestTownError && value.trim() !== "") {
+        if (nearestTownError && value.trim() !== '') {
             setNearestTownError(false);
         }
     };
@@ -224,17 +224,17 @@ export function useBulkEdit({records, totalCount, searchPayloadEntries, onBulkEd
 
     const changeNewSemafor = (value: string) => {
         setNewSemafor(value);
-        if (semaforError && value !== "") {
+        if (semaforError && value !== '') {
             setSemaforError(false);
         }
     };
 
     /** Naparsuje surové souřadnice a předplní lat/lon. */
     const parseRawCoords = () => {
-        setRawCoordsError("");
+        setRawCoordsError('');
         const parsed = parseCoordinatePair(rawCoords);
         if (parsed == null) {
-            const errorMessage = t("atlas.search.bulkEdit.messages.coordsParseFailed");
+            const errorMessage = t('atlas.search.bulkEdit.messages.coordsParseFailed');
             setRawCoordsError(errorMessage);
             setFormMessage(errorMessage);
             return;
@@ -243,8 +243,8 @@ export function useBulkEdit({records, totalCount, searchPayloadEntries, onBulkEd
         setNewLat(formatCoord(parsed.lat));
         setNewLon(formatCoord(parsed.lon));
         setRequiredCoordErrors((prev) => ({...prev, lat: false, lon: false}));
-        setRawCoordsError("");
-        setFormMessage(t("atlas.search.bulkEdit.messages.coordsPrefilled"));
+        setRawCoordsError('');
+        setFormMessage(t('atlas.search.bulkEdit.messages.coordsPrefilled'));
     };
 
     // --- běh dávky ---
@@ -254,27 +254,27 @@ export function useBulkEdit({records, totalCount, searchPayloadEntries, onBulkEd
         operation: (record: BulkRecordVersion) => Promise<void>,
     ) => {
         if (!canRunActions) {
-            setFormMessage(t("atlas.search.bulkEdit.messages.noRecords"));
+            setFormMessage(t('atlas.search.bulkEdit.messages.noRecords'));
             return;
         }
         if (searchPayloadEntries.length === 0) {
-            setFormMessage(t("atlas.search.bulkEdit.messages.searchFirst"));
+            setFormMessage(t('atlas.search.bulkEdit.messages.searchFirst'));
             return;
         }
 
         setIsRunning(true);
         setBatchProgress({processed: 0, total: 0});
         setBatchSummary(null);
-        setFormMessage(t("atlas.search.bulkEdit.messages.loadingCandidates"));
+        setFormMessage(t('atlas.search.bulkEdit.messages.loadingCandidates'));
 
         try {
             const candidates = await fetchRecordEditTimestamps(searchPayloadEntries);
             if (candidates.length === 0) {
-                setFormMessage(t("atlas.search.bulkEdit.messages.noRecords"));
+                setFormMessage(t('atlas.search.bulkEdit.messages.noRecords'));
                 return;
             }
             if (candidates.length > MAX_BULK_EDIT_RECORDS) {
-                setFormMessage(t("atlas.search.bulkEdit.messages.tooManyRecords", {
+                setFormMessage(t('atlas.search.bulkEdit.messages.tooManyRecords', {
                     count: candidates.length,
                     max: MAX_BULK_EDIT_RECORDS,
                 }));
@@ -290,7 +290,7 @@ export function useBulkEdit({records, totalCount, searchPayloadEntries, onBulkEd
                 successIds: result.successIds,
                 failed: result.failed,
             });
-            setFormMessage(t("atlas.search.bulkEdit.messages.batchFinished", {
+            setFormMessage(t('atlas.search.bulkEdit.messages.batchFinished', {
                 operationName,
                 success: result.successIds.length,
                 failed: result.failed.length,
@@ -301,7 +301,7 @@ export function useBulkEdit({records, totalCount, searchPayloadEntries, onBulkEd
                 await onBulkEditComplete();
             }
         } catch (error) {
-            const errorMessage = error instanceof Error ? error.message : t("atlas.search.bulkEdit.messages.batchStartFailed");
+            const errorMessage = error instanceof Error ? error.message : t('atlas.search.bulkEdit.messages.batchStartFailed');
             setFormMessage(errorMessage);
         } finally {
             setIsRunning(false);
@@ -311,9 +311,9 @@ export function useBulkEdit({records, totalCount, searchPayloadEntries, onBulkEd
     // --- submit akce jednotlivých sekcí ---
 
     const submitCoordsChange = async () => {
-        const latMissing = newLat.trim() === "";
-        const lonMissing = newLon.trim() === "";
-        const bufferMissing = coordBuffer.trim() === "";
+        const latMissing = newLat.trim() === '';
+        const lonMissing = newLon.trim() === '';
+        const bufferMissing = coordBuffer.trim() === '';
         setRequiredCoordErrors({
             lat: latMissing,
             lon: lonMissing,
@@ -321,11 +321,11 @@ export function useBulkEdit({records, totalCount, searchPayloadEntries, onBulkEd
         });
 
         if (latMissing || lonMissing) {
-            setFormMessage(t("atlas.search.bulkEdit.messages.coordsRequired"));
+            setFormMessage(t('atlas.search.bulkEdit.messages.coordsRequired'));
             return;
         }
         if (bufferMissing) {
-            setFormMessage(t("atlas.search.bulkEdit.messages.invalidBuffer"));
+            setFormMessage(t('atlas.search.bulkEdit.messages.invalidBuffer'));
             return;
         }
 
@@ -333,20 +333,20 @@ export function useBulkEdit({records, totalCount, searchPayloadEntries, onBulkEd
         const longitude = Number.parseFloat(newLon);
         const gpsPrecision = Number.parseInt(coordBuffer, 10);
         if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
-            setFormMessage(t("atlas.search.bulkEdit.messages.coordsParseFailed"));
+            setFormMessage(t('atlas.search.bulkEdit.messages.coordsParseFailed'));
             return;
         }
         if (Math.abs(latitude) > 90 || Math.abs(longitude) > 180) {
-            setFormMessage(t("atlas.search.bulkEdit.messages.coordsParseFailed"));
+            setFormMessage(t('atlas.search.bulkEdit.messages.coordsParseFailed'));
             return;
         }
         if (!Number.isFinite(gpsPrecision) || gpsPrecision <= 0) {
-            setFormMessage(t("atlas.search.bulkEdit.messages.invalidBuffer"));
+            setFormMessage(t('atlas.search.bulkEdit.messages.invalidBuffer'));
             return;
         }
 
         await executeBulkOperation(
-            t("atlas.search.bulkEdit.messages.locationChangeReady", {buffer: coordBuffer}),
+            t('atlas.search.bulkEdit.messages.locationChangeReady', {buffer: coordBuffer}),
             (record) => moveCoordinates(record, latitude, longitude, gpsPrecision),
         );
     };
@@ -354,18 +354,18 @@ export function useBulkEdit({records, totalCount, searchPayloadEntries, onBulkEd
     const submitSemafor = async () => {
         if (!newSemafor) {
             setSemaforError(true);
-            setFormMessage(t("atlas.search.bulkEdit.messages.selectSemafor"));
+            setFormMessage(t('atlas.search.bulkEdit.messages.selectSemafor'));
             return;
         }
 
         setSemaforError(false);
 
-        if (!(await confirm({message: t("atlas.search.bulkEdit.messages.confirmSemafor")}))) {
+        if (!(await confirm({message: t('atlas.search.bulkEdit.messages.confirmSemafor')}))) {
             return;
         }
 
         await executeBulkOperation(
-            t("atlas.search.bulkEdit.messages.semaforChangeReady"),
+            t('atlas.search.bulkEdit.messages.semaforChangeReady'),
             (record) => updateValidationStatus(record, newSemafor),
         );
     };
@@ -376,13 +376,13 @@ export function useBulkEdit({records, totalCount, searchPayloadEntries, onBulkEd
 
         if (!trimmed || !Number.isFinite(gpsPrecision) || gpsPrecision <= 0) {
             setBufferSingleError(true);
-            setFormMessage(t("atlas.search.bulkEdit.messages.invalidBuffer"));
+            setFormMessage(t('atlas.search.bulkEdit.messages.invalidBuffer'));
             return;
         }
 
         setBufferSingleError(false);
         await executeBulkOperation(
-            t("atlas.search.bulkEdit.messages.bufferChangeReady", {value: trimmed}),
+            t('atlas.search.bulkEdit.messages.bufferChangeReady', {value: trimmed}),
             (record) => updateCoordsPrecision(record, gpsPrecision),
         );
     };
@@ -392,19 +392,19 @@ export function useBulkEdit({records, totalCount, searchPayloadEntries, onBulkEd
 
         if (!value) {
             setDateSingleError(true);
-            setFormMessage(t("atlas.search.bulkEdit.messages.requiredDate", {defaultValue: "Datum je povinné."}));
+            setFormMessage(t('atlas.search.bulkEdit.messages.requiredDate', {defaultValue: 'Datum je povinné.'}));
             return;
         }
 
         if (!isValidDateValue(value)) {
             setDateSingleError(true);
-            setFormMessage(t("atlas.search.bulkEdit.messages.invalidDateFormat"));
+            setFormMessage(t('atlas.search.bulkEdit.messages.invalidDateFormat'));
             return;
         }
 
         setDateSingleError(false);
         await executeBulkOperation(
-            t("atlas.search.bulkEdit.messages.dateChangeReady", {value: value || t("atlas.search.bulkEdit.emptyValue")}),
+            t('atlas.search.bulkEdit.messages.dateChangeReady', {value: value || t('atlas.search.bulkEdit.emptyValue')}),
             (record) => updateDate(record, value),
         );
     };
@@ -413,7 +413,7 @@ export function useBulkEdit({records, totalCount, searchPayloadEntries, onBulkEd
         const selectedOption = selectedPhytochorion[0];
         if (!selectedOption) {
             setPhytochorionError(true);
-            setFormMessage(t("atlas.search.bulkEdit.messages.selectPhytochorion", {defaultValue: "Vyberte fytochorion."}));
+            setFormMessage(t('atlas.search.bulkEdit.messages.selectPhytochorion', {defaultValue: 'Vyberte fytochorion.'}));
             return;
         }
 
@@ -422,7 +422,7 @@ export function useBulkEdit({records, totalCount, searchPayloadEntries, onBulkEd
         const label = selectedOption.label;
 
         await executeBulkOperation(
-            t("atlas.search.bulkEdit.messages.phytochorionChangeReady", {value: label}),
+            t('atlas.search.bulkEdit.messages.phytochorionChangeReady', {value: label}),
             (record) => updatePhytochorion(record, value),
         );
     };
@@ -432,14 +432,14 @@ export function useBulkEdit({records, totalCount, searchPayloadEntries, onBulkEd
 
         if (!value) {
             setLocalityError(true);
-            setFormMessage(t("atlas.search.bulkEdit.messages.requiredLocality", {defaultValue: "Lokalita je povinná."}));
+            setFormMessage(t('atlas.search.bulkEdit.messages.requiredLocality', {defaultValue: 'Lokalita je povinná.'}));
             return;
         }
 
         setLocalityError(false);
 
         await executeBulkOperation(
-            t("atlas.search.bulkEdit.messages.localityChangeReady"),
+            t('atlas.search.bulkEdit.messages.localityChangeReady'),
             (record) => updateLocality(record, value),
         );
     };
@@ -449,14 +449,14 @@ export function useBulkEdit({records, totalCount, searchPayloadEntries, onBulkEd
 
         if (!value) {
             setNearestTownError(true);
-            setFormMessage(t("atlas.search.bulkEdit.messages.requiredNearestTown", {defaultValue: "Nejbližší obec je povinná."}));
+            setFormMessage(t('atlas.search.bulkEdit.messages.requiredNearestTown', {defaultValue: 'Nejbližší obec je povinná.'}));
             return;
         }
 
         setNearestTownError(false);
 
         await executeBulkOperation(
-            t("atlas.search.bulkEdit.messages.nearestTownChangeReady", {value: value || t("atlas.search.bulkEdit.emptyValue")}),
+            t('atlas.search.bulkEdit.messages.nearestTownChangeReady', {value: value || t('atlas.search.bulkEdit.emptyValue')}),
             (record) => updateNearestTownName(record, value),
         );
     };
@@ -464,12 +464,12 @@ export function useBulkEdit({records, totalCount, searchPayloadEntries, onBulkEd
     const submitSourceChange = async () => {
         const value = newSource.trim();
 
-        if (!value && !(await confirm({message: t("atlas.search.bulkEdit.messages.confirmEmptySource")}))) {
+        if (!value && !(await confirm({message: t('atlas.search.bulkEdit.messages.confirmEmptySource')}))) {
             return;
         }
 
         await executeBulkOperation(
-            t("atlas.search.bulkEdit.messages.sourceChangeReady"),
+            t('atlas.search.bulkEdit.messages.sourceChangeReady'),
             (record) => updateSource(record, value),
         );
     };
@@ -477,12 +477,12 @@ export function useBulkEdit({records, totalCount, searchPayloadEntries, onBulkEd
     const submitNoteChange = async () => {
         const value = newImportComment.trim();
 
-        if (!value && !(await confirm({message: t("atlas.search.bulkEdit.messages.confirmEmptyNote")}))) {
+        if (!value && !(await confirm({message: t('atlas.search.bulkEdit.messages.confirmEmptyNote')}))) {
             return;
         }
 
         await executeBulkOperation(
-            t("atlas.search.bulkEdit.messages.noteChangeReady"),
+            t('atlas.search.bulkEdit.messages.noteChangeReady'),
             (record) => updateNote(record, value),
         );
     };
@@ -492,14 +492,14 @@ export function useBulkEdit({records, totalCount, searchPayloadEntries, onBulkEd
 
         if (selectedFinderId == null) {
             setFinderError(true);
-            setFormMessage(t("atlas.search.bulkEdit.messages.selectFinder", {defaultValue: "Vyberte nálezce."}));
+            setFormMessage(t('atlas.search.bulkEdit.messages.selectFinder', {defaultValue: 'Vyberte nálezce.'}));
             return;
         }
 
         setFinderError(false);
 
         await executeBulkOperation(
-            t("atlas.search.bulkEdit.messages.finderAddReady"),
+            t('atlas.search.bulkEdit.messages.finderAddReady'),
             (record) => updateFinder(record, String(selectedFinderId)),
         );
     };
@@ -507,18 +507,18 @@ export function useBulkEdit({records, totalCount, searchPayloadEntries, onBulkEd
     const submitTaxonChange = async () => {
         if (selectedTaxon == null) {
             setTaxonError(true);
-            setFormMessage(t("atlas.search.bulkEdit.messages.selectTaxon", {defaultValue: "Vyberte taxon."}));
+            setFormMessage(t('atlas.search.bulkEdit.messages.selectTaxon', {defaultValue: 'Vyberte taxon.'}));
             return;
         }
 
         setTaxonError(false);
 
-        if (!(await confirm({message: t("atlas.search.bulkEdit.messages.confirmTaxon")}))) {
+        if (!(await confirm({message: t('atlas.search.bulkEdit.messages.confirmTaxon')}))) {
             return;
         }
 
         await executeBulkOperation(
-            t("atlas.search.bulkEdit.messages.taxonChangeReady"),
+            t('atlas.search.bulkEdit.messages.taxonChangeReady'),
             (record) => updateTaxon(record, String(selectedTaxon.id)),
         );
     };

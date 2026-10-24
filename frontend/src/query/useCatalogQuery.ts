@@ -5,7 +5,7 @@
  * zůstane použitelný); 403 a síťové chyby hlásí centrálně apiClient (sekce F).
  */
 
-import {useQuery} from "@tanstack/react-query";
+import {useQuery} from '@tanstack/react-query';
 
 export function useCatalogQuery<T>(
     queryKey: readonly unknown[],

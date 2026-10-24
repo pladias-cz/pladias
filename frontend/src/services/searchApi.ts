@@ -11,8 +11,8 @@
  *    se čtou z `DownloadedFile.headers`.
  */
 
-import {apiDownload, apiGet, apiPost, requireData, requireEnvelope} from "./apiClient";
-import type {RecordPladias} from "@/models";
+import {apiDownload, apiGet, apiPost, requireData, requireEnvelope} from './apiClient';
+import type {RecordPladias} from '@/models';
 
 /** Projekty výskytů (select vyhledávacího formuláře). */
 export interface ProjectOption {
@@ -73,37 +73,37 @@ export interface SearchExcelExport {
 
 /** GET /api/react/occurrence/projects – projekty výskytů. */
 export async function getProjects(): Promise<ProjectOption[]> {
-    return requireData<ProjectOption[]>(await apiGet("/api/react/occurrence/projects"), "Načtení projektů selhalo.");
+    return requireData<ProjectOption[]>(await apiGet('/api/react/occurrence/projects'), 'Načtení projektů selhalo.');
 }
 
 /** GET /api/react/atlas/common/herbariums – herbáři. */
 export async function getHerbariums(): Promise<HerbariumOption[]> {
-    return requireData<HerbariumOption[]>(await apiGet("/api/react/atlas/common/herbariums"), "Načtení herbářů selhalo.");
+    return requireData<HerbariumOption[]>(await apiGet('/api/react/atlas/common/herbariums'), 'Načtení herbářů selhalo.');
 }
 
 /** GET /api/react/atlas/common/institutions – instituce. */
 export async function getInstitutions(): Promise<InstitutionOption[]> {
-    return requireData<InstitutionOption[]>(await apiGet("/api/react/atlas/common/institutions"), "Načtení institucí selhalo.");
+    return requireData<InstitutionOption[]>(await apiGet('/api/react/atlas/common/institutions'), 'Načtení institucí selhalo.');
 }
 
 /** GET /api/react/atlas/common/committers – zpracovatelé. */
 export async function getCommitters(): Promise<CommitterOption[]> {
-    return requireData<CommitterOption[]>(await apiGet("/api/react/atlas/common/committers"), "Načtení zpracovatelů selhalo.");
+    return requireData<CommitterOption[]>(await apiGet('/api/react/atlas/common/committers'), 'Načtení zpracovatelů selhalo.');
 }
 
 /** GET /api/react/atlas/common/licenses – licence. */
 export async function getLicenses(): Promise<LicenseOption[]> {
-    return requireData<LicenseOption[]>(await apiGet("/api/react/atlas/common/licenses"), "Načtení licencí selhalo.");
+    return requireData<LicenseOption[]>(await apiGet('/api/react/atlas/common/licenses'), 'Načtení licencí selhalo.');
 }
 
 /** GET /api/react/atlas/common/history-flags – příznaky historie. */
 export async function getHistoryFlags(): Promise<HistoryFlagOption[]> {
-    return requireData<HistoryFlagOption[]>(await apiGet("/api/react/atlas/common/history-flags"), "Načtení příznaků historie selhalo.");
+    return requireData<HistoryFlagOption[]>(await apiGet('/api/react/atlas/common/history-flags'), 'Načtení příznaků historie selhalo.');
 }
 
 /** GET /api/react/atlas/common/phytochorions – fytogeografická území. */
 export async function getPhytochorions(): Promise<PhytochorionOption[]> {
-    return requireData<PhytochorionOption[]>(await apiGet("/api/react/atlas/common/phytochorions"), "Načtení fytogeografických území selhalo.");
+    return requireData<PhytochorionOption[]>(await apiGet('/api/react/atlas/common/phytochorions'), 'Načtení fytogeografických území selhalo.');
 }
 
 /**
@@ -114,7 +114,7 @@ export async function getPhytochorions(): Promise<PhytochorionOption[]> {
 export async function searchRecords(page: number, pageSize: number, getCount: boolean, formData: FormData): Promise<SearchPage> {
     const envelope = requireEnvelope(
         await apiPost(`/api/react/atlas/search/page/${page}/pageSize/${pageSize}/getCount/${getCount}`, formData),
-        "Vyhledávání selhalo.",
+        'Vyhledávání selhalo.',
     );
     return (envelope.data ?? {}) as SearchPage;
 }
@@ -127,18 +127,18 @@ export async function searchRecords(page: number, pageSize: number, getCount: bo
  */
 export async function exportSearchExcel(pageSize: number, formData: FormData): Promise<SearchExcelExport> {
     const file = await apiDownload(`/api/react/atlas/search/page/1/pageSize/${pageSize}/getCount/true`, {
-        method: "POST",
+        method: 'POST',
         body: formData,
-        fallbackFilename: "PladiasExport.xlsx",
-        errorMessage: "Export selhal.",
+        fallbackFilename: 'PladiasExport.xlsx',
+        errorMessage: 'Export selhal.',
     });
 
-    const totalRecordsHeader = file.headers.get("X-Excel-Total-Records");
+    const totalRecordsHeader = file.headers.get('X-Excel-Total-Records');
     const parsedTotal = totalRecordsHeader != null ? parseInt(totalRecordsHeader, 10) : null;
     return {
         blob: file.blob,
         filename: file.filename,
-        recordsExported: parseInt(file.headers.get("X-Excel-Records-Exported") ?? "0", 10),
+        recordsExported: parseInt(file.headers.get('X-Excel-Records-Exported') ?? '0', 10),
         totalRecords: parsedTotal != null && !Number.isNaN(parsedTotal) ? parsedTotal : null,
     };
 }

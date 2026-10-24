@@ -19,11 +19,11 @@
  *    (`ApiError.notified`) – volající uživateli hlášku neduplikuje.
  */
 
-import {apiDelete, apiGet, apiPatch, apiPost, apiPut, requireData, requireEnvelope} from "./apiClient";
-import type {MultiValueOption} from "@/models/MultiValueOption";
-import type {RecordComment} from "@/models/RecordComment";
-import type {RecordPladiasFull} from "@/models/RecordPladiasFull";
-import type {ReverseGeocodingResponse} from "@/models/ReverseGeocoding";
+import {apiDelete, apiGet, apiPatch, apiPost, apiPut, requireData, requireEnvelope} from './apiClient';
+import type {MultiValueOption} from '@/models/MultiValueOption';
+import type {RecordComment} from '@/models/RecordComment';
+import type {RecordPladiasFull} from '@/models/RecordPladiasFull';
+import type {ReverseGeocodingResponse} from '@/models/ReverseGeocoding';
 
 /** Výsledek PATCH editField – nová hodnota pole a čas poslední editace (ms). */
 export interface RecordFieldPatchResult {
@@ -35,7 +35,7 @@ export interface RecordFieldPatchResult {
 export async function getRecordFull(recordId: number): Promise<RecordPladiasFull> {
     const record = requireData<RecordPladiasFull>(
         await apiGet(`/api/react/atlas/record/${recordId}/full`),
-        "Načtení záznamu selhalo.",
+        'Načtení záznamu selhalo.',
     );
     // lastEditTimestamp (ISO) → lastEditTimestampNum (ms) pro detekci konfliktů
     if (record.lastEditTimestamp) {
@@ -48,38 +48,38 @@ export async function getRecordFull(recordId: number): Promise<RecordPladiasFull
 export async function getRecordComments(recordId: number): Promise<RecordComment[]> {
     return requireData<RecordComment[]>(
         await apiGet(`/api/react/atlas/record/comments/${recordId}`),
-        "Načtení komentářů selhalo.",
+        'Načtení komentářů selhalo.',
     );
 }
 
 /** POST /api/react/atlas/record/comment – nový komentář (JSON {recordId, message}). */
 export async function createComment(recordId: number, message: string): Promise<void> {
-    requireEnvelope(await apiPost("/api/react/atlas/record/comment", {
+    requireEnvelope(await apiPost('/api/react/atlas/record/comment', {
         recordId,
         message
-    }), "Vytvoření komentáře selhalo.");
+    }), 'Vytvoření komentáře selhalo.');
 }
 
 /** PUT /api/react/atlas/record/comment/{id} – úprava textu komentáře. */
 export async function updateComment(commentId: number, message: string): Promise<void> {
-    requireEnvelope(await apiPut(`/api/react/atlas/record/comment/${commentId}`, {message}), "Uložení komentáře selhalo.");
+    requireEnvelope(await apiPut(`/api/react/atlas/record/comment/${commentId}`, {message}), 'Uložení komentáře selhalo.');
 }
 
 /** POST /api/react/atlas/record/comment/{id}/resolve – vyřešení komentáře. */
 export async function resolveComment(commentId: number): Promise<void> {
-    requireEnvelope(await apiPost(`/api/react/atlas/record/comment/${commentId}/resolve`), "Vyřešení komentáře selhalo.");
+    requireEnvelope(await apiPost(`/api/react/atlas/record/comment/${commentId}/resolve`), 'Vyřešení komentáře selhalo.');
 }
 
 /** DELETE /api/react/atlas/record/comment/{id} – soft delete komentáře. */
 export async function deleteComment(commentId: number): Promise<void> {
-    requireEnvelope(await apiDelete(`/api/react/atlas/record/comment/${commentId}`), "Smazání komentáře selhalo.");
+    requireEnvelope(await apiDelete(`/api/react/atlas/record/comment/${commentId}`), 'Smazání komentáře selhalo.');
 }
 
 /** DELETE /api/react/atlas/record/comment-assoc/{id}/linked-user/{userId} – označí komentář za přečtený. */
 export async function markCommentAsRead(commentId: number, boundUserId: number): Promise<void> {
     requireEnvelope(
         await apiDelete(`/api/react/atlas/record/comment-assoc/${commentId}/linked-user/${boundUserId}`),
-        "Označení komentáře za přečtené selhalo.",
+        'Označení komentáře za přečtené selhalo.',
     );
 }
 
@@ -97,11 +97,11 @@ export async function patchRecordField(
 ): Promise<RecordFieldPatchResult> {
     const data = requireData<Record<string, unknown>>(
         await apiPatch(`/api/react/atlas/record/${recordId}`, {key, value, lastEditTimestampNum}),
-        "Uložení záznamu selhalo.",
+        'Uložení záznamu selhalo.',
     );
     return {
         updatedValue: (data[key.toLowerCase()] as string | null | undefined) ?? null,
-        lastEditTimestampNum: typeof data.lastEditTimestampNum === "number" ? data.lastEditTimestampNum : 0,
+        lastEditTimestampNum: typeof data.lastEditTimestampNum === 'number' ? data.lastEditTimestampNum : 0,
     };
 }
 
@@ -135,14 +135,14 @@ export async function moveRecordCoordinates(
     lastEditTimestampNum: number,
 ): Promise<void> {
     requireEnvelope(
-        await apiPost("/api/react/atlas/record/moveCoordinates", {
+        await apiPost('/api/react/atlas/record/moveCoordinates', {
             recordId,
             latitude,
             longitude,
             gpsPrecision,
             lastEditTimestampNum
         }),
-        "Přesun záznamu selhal.",
+        'Přesun záznamu selhal.',
     );
 }
 
@@ -180,7 +180,7 @@ export async function getImportableTaxaForRecord(recordId: number): Promise<Mult
 
 /** GET /api/react/selectOptions/phytochorions – fytogeografická území. */
 export async function getPhytochorionOptions(): Promise<MultiValueOption[]> {
-    return fetchOptions("/api/react/selectOptions/phytochorions");
+    return fetchOptions('/api/react/selectOptions/phytochorions');
 }
 
 /**
@@ -190,11 +190,11 @@ export async function getPhytochorionOptions(): Promise<MultiValueOption[]> {
 async function fetchOptions(url: string): Promise<MultiValueOption[]> {
     const data = requireData<{ id: number; name?: string; nameLat?: string; label?: string; nameHtml?: string }[]>(
         await apiGet(url),
-        "Načtení možností selhalo.",
+        'Načtení možností selhalo.',
     );
     return data.map(item => ({
         id: item.id,
-        name: item.name ?? item.nameLat ?? "",
+        name: item.name ?? item.nameLat ?? '',
         label: item.label ?? item.nameHtml,
     }));
 }

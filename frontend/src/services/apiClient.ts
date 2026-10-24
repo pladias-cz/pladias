@@ -20,8 +20,8 @@
  * detekuje `isAbortError`.
  */
 
-import type {ApiResult} from "@/models/ApiResponse";
-import {logError} from "./logger";
+import type {ApiResult} from '@/models/ApiResponse';
+import {logError} from './logger';
 
 /** Chyba HTTP komunikace – včetně 401/403 a chybových obálek `JsonResult`. */
 export class ApiError extends Error {
@@ -38,7 +38,7 @@ export class ApiError extends Error {
 
     constructor(message: string, status?: number, payload?: unknown) {
         super(message);
-        this.name = "ApiError";
+        this.name = 'ApiError';
         this.status = status;
         this.payload = payload;
     }
@@ -64,7 +64,7 @@ export interface ApiOptions {
  * proto duck typing podle name).
  */
 export function isAbortError(err: unknown): boolean {
-    return typeof err === "object" && err !== null && (err as { name?: unknown }).name === "AbortError";
+    return typeof err === 'object' && err !== null && (err as { name?: unknown }).name === 'AbortError';
 }
 
 let forbiddenHandler: ((message: string) => void) | null = null;
@@ -90,25 +90,25 @@ export function setNetworkErrorHandler(handler: ((error: ApiError) => void) | nu
 
 /** Vytáhne chybovou hlášku z parsovaného těla – obálka nese `message`, `error` (JsonResult) nebo `errorMessage` (import kontrolery), výjimečně plain text. */
 function extractErrorMessage(payload: unknown): string | undefined {
-    if (payload !== null && typeof payload === "object") {
+    if (payload !== null && typeof payload === 'object') {
         const {message, error, errorMessage} = payload as {
             message?: unknown;
             error?: unknown;
             errorMessage?: unknown
         };
-        if (typeof message === "string" && message !== "") return message;
-        if (typeof error === "string" && error !== "") return error;
-        if (typeof errorMessage === "string" && errorMessage !== "") return errorMessage;
+        if (typeof message === 'string' && message !== '') return message;
+        if (typeof error === 'string' && error !== '') return error;
+        if (typeof errorMessage === 'string' && errorMessage !== '') return errorMessage;
         return undefined;
     }
-    if (typeof payload === "string" && payload !== "") return payload;
+    if (typeof payload === 'string' && payload !== '') return payload;
     return undefined;
 }
 
 function withParams(url: string, params: Record<string, string>): string {
     const query = new URLSearchParams(params).toString();
     if (!query) return url;
-    return `${url}${url.includes("?") ? "&" : "?"}${query}`;
+    return `${url}${url.includes('?') ? '&' : '?'}${query}`;
 }
 
 /**
@@ -116,10 +116,10 @@ function withParams(url: string, params: Record<string, string>): string {
  * přihlašovací stránku (centrální místo, sekce A/G).
  */
 function handleUnauthorized(): never {
-    if (typeof window !== "undefined") {
-        window.location.assign("/login");
+    if (typeof window !== 'undefined') {
+        window.location.assign('/login');
     }
-    throw new ApiError("Neautentizovaný požadavek (401) – přesměrování na přihlášení.", 401);
+    throw new ApiError('Neautentizovaný požadavek (401) – přesměrování na přihlášení.', 401);
 }
 
 /**
@@ -153,13 +153,13 @@ async function performRequest(
         });
     } catch (err) {
         if (isAbortError(err)) throw err;
-        const apiError = new ApiError(err instanceof Error ? err.message : "Síťová chyba.", undefined);
+        const apiError = new ApiError(err instanceof Error ? err.message : 'Síťová chyba.', undefined);
         // silent potlačuje jen uživatelskou notifikaci, ne log – z kontextu je
         // vidět, že jde o background požadavek (heartbeat offline generuje
         // hluk záměrně; HTTP transport si ho umí odfiltrovat)
         logError(apiError, {
-            source: "apiClient",
-            kind: "network",
+            source: 'apiClient',
+            kind: 'network',
             method,
             url: requestUrl,
             silent: options.silent ?? false,
@@ -177,11 +177,11 @@ async function performRequest(
 
     if (response.status === 403) {
         const payload = await parseBody(response);
-        const message = extractErrorMessage(payload) ?? "K operaci nemáte oprávnění.";
+        const message = extractErrorMessage(payload) ?? 'K operaci nemáte oprávnění.';
         if (forbiddenHandler) {
             forbiddenHandler(message);
         }
-        const error = loggedApiError(message, 403, payload, {source: "apiClient", method, url: requestUrl});
+        const error = loggedApiError(message, 403, payload, {source: 'apiClient', method, url: requestUrl});
         error.notified = forbiddenHandler !== null;
         throw error;
     }
@@ -192,7 +192,7 @@ async function performRequest(
             extractErrorMessage(payload) ?? options.errorMessage ?? `Požadavek selhal (HTTP ${response.status}).`,
             response.status,
             payload,
-            {source: "apiClient", method, url: requestUrl},
+            {source: 'apiClient', method, url: requestUrl},
         );
     }
 
@@ -207,9 +207,9 @@ async function performRequest(
  */
 async function parseBody(response: Response): Promise<unknown> {
     if (response.status === 204) return undefined;
-    const contentType = response.headers.get("content-type") ?? "";
-    const isJson = contentType.includes("application/json");
-    if (!isJson && contentType !== "" && !contentType.startsWith("text/")) {
+    const contentType = response.headers.get('content-type') ?? '';
+    const isJson = contentType.includes('application/json');
+    if (!isJson && contentType !== '' && !contentType.startsWith('text/')) {
         return undefined;
     }
     const text = await response.text();
@@ -227,13 +227,13 @@ async function request<T>(method: string, url: string, body: unknown, options?: 
     let requestHeaders: Record<string, string> | undefined;
 
     if (body !== undefined) {
-        if (body instanceof FormData || body instanceof URLSearchParams || typeof body === "string") {
+        if (body instanceof FormData || body instanceof URLSearchParams || typeof body === 'string') {
             // FormData: Content-Type nastaví prohlížeč (multipart + boundary),
             // urlencoded/text: hlavičku řeší specializovaný helper/volající
             requestBody = body;
         } else {
             requestBody = JSON.stringify(body);
-            requestHeaders = {"Content-Type": "application/json"};
+            requestHeaders = {'Content-Type': 'application/json'};
         }
     }
 
@@ -243,24 +243,24 @@ async function request<T>(method: string, url: string, body: unknown, options?: 
 
 /** GET vracející JSON (včetně širších obálek – typuje service modul, viz `ApiResult`). */
 export function apiGet<T = unknown>(url: string, options?: ApiOptions): Promise<T> {
-    return request<T>("GET", url, undefined, options);
+    return request<T>('GET', url, undefined, options);
 }
 
 /** POST s JSON tělem; `FormData` posílá multipart (Content-Type doplní prohlížeč). */
 export function apiPost<T = unknown>(url: string, body?: unknown, options?: ApiOptions): Promise<T> {
-    return request<T>("POST", url, body, options);
+    return request<T>('POST', url, body, options);
 }
 
 export function apiPut<T = unknown>(url: string, body?: unknown, options?: ApiOptions): Promise<T> {
-    return request<T>("PUT", url, body, options);
+    return request<T>('PUT', url, body, options);
 }
 
 export function apiPatch<T = unknown>(url: string, body?: unknown, options?: ApiOptions): Promise<T> {
-    return request<T>("PATCH", url, body, options);
+    return request<T>('PATCH', url, body, options);
 }
 
 export function apiDelete<T = unknown>(url: string, options?: ApiOptions): Promise<T> {
-    return request<T>("DELETE", url, undefined, options);
+    return request<T>('DELETE', url, undefined, options);
 }
 
 /**
@@ -270,9 +270,9 @@ export function apiDelete<T = unknown>(url: string, options?: ApiOptions): Promi
  */
 export async function apiPostFormUrlencoded<T = unknown>(url: string, params: Record<string, string> | URLSearchParams, options?: ApiOptions): Promise<T> {
     const body = params instanceof URLSearchParams ? params : new URLSearchParams(params);
-    return request<T>("POST", url, body, {
+    return request<T>('POST', url, body, {
         ...options,
-        headers: {"Content-Type": "application/x-www-form-urlencoded;charset=UTF-8", ...options?.headers},
+        headers: {'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8', ...options?.headers},
     });
 }
 
@@ -282,7 +282,7 @@ export async function apiPostFormUrlencoded<T = unknown>(url: string, params: Re
  * jako jinde přichází přes HTTP status s obálkou.
  */
 export async function apiGetLegacyString(url: string, options?: ApiOptions): Promise<string> {
-    const response = await performRequest(url, "GET", {}, options);
+    const response = await performRequest(url, 'GET', {}, options);
     const text = await response.text();
     try {
         return JSON.parse(text) as string;
@@ -303,7 +303,7 @@ export interface DownloadOptions extends ApiOptions {
     /** Použije se, když odpověď nese Content-disposition bez jména souboru. */
     fallbackFilename?: string;
     /** HTTP metoda (default GET) – urlencoded formuláře se posílají POSTem. */
-    method?: "GET" | "POST";
+    method?: 'GET' | 'POST';
     /** Tělo požadavku pro POST (např. `URLSearchParams` formuláře exportu). */
     body?: BodyInit;
 }
@@ -316,22 +316,22 @@ export interface DownloadOptions extends ApiOptions {
  * aby volající mohl číst custom metadata (např. `X-Excel-*`).
  */
 export async function apiDownload(url: string, options: DownloadOptions = {}): Promise<DownloadedFile> {
-    const response = await performRequest(url, options.method ?? "GET", {body: options.body}, options);
-    const contentType = response.headers.get("content-type") ?? "";
+    const response = await performRequest(url, options.method ?? 'GET', {body: options.body}, options);
+    const contentType = response.headers.get('content-type') ?? '';
 
-    if (contentType.includes("application/json")) {
+    if (contentType.includes('application/json')) {
         const payload = await parseBody(response);
         throw loggedApiError(
-            extractErrorMessage(payload) ?? options.errorMessage ?? "Stažení souboru selhalo.",
+            extractErrorMessage(payload) ?? options.errorMessage ?? 'Stažení souboru selhalo.',
             response.status,
             payload,
-            {source: "apiClient", method: options.method ?? "GET", url},
+            {source: 'apiClient', method: options.method ?? 'GET', url},
         );
     }
 
     return {
         blob: await response.blob(),
-        filename: resolveFilename(response.headers.get("content-disposition"), options.fallbackFilename ?? "export.bin"),
+        filename: resolveFilename(response.headers.get('content-disposition'), options.fallbackFilename ?? 'export.bin'),
         contentType,
         headers: response.headers,
     };
@@ -353,13 +353,13 @@ export function resolveFilename(contentDisposition: string | null, fallback: str
  * způsoby – jako chybu (importy, ukládání) i jako „hodnota nenastavena"
  * (user settings); tam se `ensureSuccess` nevolá.
  */
-export function ensureSuccess<T extends ApiResult>(payload: T, fallbackMessage = "Požadavek selhal."): T {
+export function ensureSuccess<T extends ApiResult>(payload: T, fallbackMessage = 'Požadavek selhal.'): T {
     if (payload?.success !== true) {
         throw loggedApiError(
             extractErrorMessage(payload) ?? fallbackMessage,
             undefined,
             payload,
-            {source: "apiClient", kind: "envelope"},
+            {source: 'apiClient', kind: 'envelope'},
         );
     }
     return payload;
@@ -371,8 +371,8 @@ export function ensureSuccess<T extends ApiResult>(payload: T, fallbackMessage =
  * uživateli nemá co říct, použije se fallback hláška.
  */
 export function requireEnvelope(payload: unknown, fallbackMessage: string): ApiResult {
-    if (typeof payload !== "object" || payload === null) {
-        throw loggedApiError(fallbackMessage, undefined, undefined, {source: "apiClient", kind: "envelope"});
+    if (typeof payload !== 'object' || payload === null) {
+        throw loggedApiError(fallbackMessage, undefined, undefined, {source: 'apiClient', kind: 'envelope'});
     }
     return ensureSuccess(payload as ApiResult, fallbackMessage);
 }
@@ -384,7 +384,7 @@ export function requireEnvelope(payload: unknown, fallbackMessage: string): ApiR
 export function requireData<T>(payload: unknown, fallbackMessage: string): T {
     const envelope = requireEnvelope(payload, fallbackMessage) as ApiResult<T>;
     if (envelope.data === undefined) {
-        throw loggedApiError(fallbackMessage, undefined, undefined, {source: "apiClient", kind: "envelope"});
+        throw loggedApiError(fallbackMessage, undefined, undefined, {source: 'apiClient', kind: 'envelope'});
     }
     return envelope.data;
 }

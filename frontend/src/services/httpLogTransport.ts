@@ -15,7 +15,7 @@
  *    (bez dispose API – transporty se v runtime neodebírají).
  */
 
-import type {LogEntry, LogTransport} from "./logger";
+import type {LogEntry, LogTransport} from './logger';
 
 export interface HttpLogTransportOptions {
     /** URL endpointu, který přijímá POST s JSON polem `LogEntry`. */
@@ -51,8 +51,8 @@ export function createHttpLogTransport(options: HttpLogTransportOptions): LogTra
         const batch = buffer.splice(0, buffer.length);
         try {
             const response = await fetch(url, {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(batch),
                 keepalive: true,
             });
@@ -69,13 +69,13 @@ export function createHttpLogTransport(options: HttpLogTransportOptions): LogTra
         if (buffer.length === 0) return;
         const batch = buffer.splice(0, buffer.length);
         const payload = JSON.stringify(batch);
-        if (typeof navigator !== "undefined" && typeof navigator.sendBeacon === "function") {
-            navigator.sendBeacon(url, new Blob([payload], {type: "application/json"}));
+        if (typeof navigator !== 'undefined' && typeof navigator.sendBeacon === 'function') {
+            navigator.sendBeacon(url, new Blob([payload], {type: 'application/json'}));
             return;
         }
         void fetch(url, {
-            method: "POST",
-            headers: {"Content-Type": "application/json"},
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
             body: payload,
             keepalive: true,
         }).catch(() => {
@@ -83,12 +83,12 @@ export function createHttpLogTransport(options: HttpLogTransportOptions): LogTra
         });
     }
 
-    if (typeof window !== "undefined") {
-        window.addEventListener("pagehide", flushOnPageHide);
+    if (typeof window !== 'undefined') {
+        window.addEventListener('pagehide', flushOnPageHide);
     }
 
     return {
-        name: "http",
+        name: 'http',
         send(entry) {
             buffer.push(entry);
             while (buffer.length > maxBufferSize) {

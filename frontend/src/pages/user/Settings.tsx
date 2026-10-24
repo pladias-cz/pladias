@@ -1,26 +1,26 @@
-import {useEffect, useState} from "react";
-import {Col, Row} from "react-bootstrap";
-import {useQuery, useQueryClient} from "@tanstack/react-query";
-import {usePageTitle} from "@/hooks/usePageTitle";
-import {useTranslation} from "react-i18next";
-import ResetSettings from "@/components/settings/ResetSettings";
-import LanguageSettings from "@/components/settings/LanguageSettings";
-import TraitsSettings from "@/components/settings/TraitsSettings";
-import {useUser} from "@/context/UserContext";
-import {changeLanguage} from "@/i18n/i18n";
-import {useUserSettings} from "@/hooks/useUserSettings";
-import {getUserSetting, isBooleanSetting, mapBackendKeyToStateKey, resetUserSettings} from "@/services/settingsApi";
-import {notifyApiError, useNotifications} from "@/stores/notificationStore";
-import type {UserSettingsState} from "@/components/settings/types";
+import {useEffect, useState} from 'react';
+import {Col, Row} from 'react-bootstrap';
+import {useQuery, useQueryClient} from '@tanstack/react-query';
+import {usePageTitle} from '@/hooks/usePageTitle';
+import {useTranslation} from 'react-i18next';
+import ResetSettings from '@/components/settings/ResetSettings';
+import LanguageSettings from '@/components/settings/LanguageSettings';
+import TraitsSettings from '@/components/settings/TraitsSettings';
+import {useUser} from '@/context/UserContext';
+import {changeLanguage} from '@/i18n/i18n';
+import {useUserSettings} from '@/hooks/useUserSettings';
+import {getUserSetting, isBooleanSetting, mapBackendKeyToStateKey, resetUserSettings} from '@/services/settingsApi';
+import {notifyApiError, useNotifications} from '@/stores/notificationStore';
+import type {UserSettingsState} from '@/components/settings/types';
 
 /** Trait nastavení spravovaná trait adminem (backend klíče). */
 const TRAIT_SETTING_KEYS = [
-    "traits_substitute_false",
-    "traits_substitute_true",
-    "traits_substitute_null",
-    "traits_substitute_unmeasurable",
-    "traits_substitute_percentasinteger",
-    "traits_substitute_english"
+    'traits_substitute_false',
+    'traits_substitute_true',
+    'traits_substitute_null',
+    'traits_substitute_unmeasurable',
+    'traits_substitute_percentasinteger',
+    'traits_substitute_english'
 ] as const;
 
 /**
@@ -30,17 +30,17 @@ const TRAIT_SETTING_KEYS = [
 async function fetchUserSettings(language: string, isTraitAdmin: boolean): Promise<UserSettingsState> {
     // Initialize with default values
     const settings: UserSettingsState = {
-        applicationLanguage: language || "cs",
-        traitsSubstituteFalse: "",
-        traitsSubstituteTrue: "",
-        traitsSubstituteNull: "",
-        traitsSubstituteUnmeasurable: "",
+        applicationLanguage: language || 'cs',
+        traitsSubstituteFalse: '',
+        traitsSubstituteTrue: '',
+        traitsSubstituteNull: '',
+        traitsSubstituteUnmeasurable: '',
         traitsSubstitutePercentInteger: false,
         traitsSubstituteInEnglish: false
     };
 
     // Load application language setting
-    const appLanguage = await getUserSetting("application_language");
+    const appLanguage = await getUserSetting('application_language');
     if (appLanguage !== null) {
         settings.applicationLanguage = appLanguage;
     }
@@ -52,7 +52,7 @@ async function fetchUserSettings(language: string, isTraitAdmin: boolean): Promi
             const value = await getUserSetting(key);
             if (value !== null) {
                 const stateKey = mapBackendKeyToStateKey(key) as keyof UserSettingsState;
-                settingsRecord[stateKey] = isBooleanSetting(key) ? value === "true" : value;
+                settingsRecord[stateKey] = isBooleanSetting(key) ? value === 'true' : value;
             }
         }
     }
@@ -62,16 +62,16 @@ async function fetchUserSettings(language: string, isTraitAdmin: boolean): Promi
 
 export default function Settings() {
     const {t} = useTranslation();
-    usePageTitle(t("user.settings.title"));
+    usePageTitle(t('user.settings.title'));
     const {isTraitAdmin, language} = useUser();
     const queryClient = useQueryClient();
 
     const [userSettings, setUserSettings] = useState<UserSettingsState>({
-        applicationLanguage: language || "cs",
-        traitsSubstituteFalse: "FALSE",
-        traitsSubstituteTrue: "TRUE",
-        traitsSubstituteNull: "NULL",
-        traitsSubstituteUnmeasurable: "unmeasurable",
+        applicationLanguage: language || 'cs',
+        traitsSubstituteFalse: 'FALSE',
+        traitsSubstituteTrue: 'TRUE',
+        traitsSubstituteNull: 'NULL',
+        traitsSubstituteUnmeasurable: 'unmeasurable',
         traitsSubstitutePercentInteger: false,
         traitsSubstituteInEnglish: false
     });
@@ -90,7 +90,7 @@ export default function Settings() {
             ...prev,
             [stateKey]: value
         }));
-        push({type: "success", message: t("user.settings.success")});
+        push({type: 'success', message: t('user.settings.success')});
     });
 
     // Load user settings on component mount (declarative, bez cache – sekce J)
@@ -99,8 +99,8 @@ export default function Settings() {
         isFetching: loadingSettings,
         error: settingsError,
     } = useQuery({
-        queryKey: ["userSettings", isTraitAdmin],
-        queryFn: () => fetchUserSettings(language || "cs", isTraitAdmin),
+        queryKey: ['userSettings', isTraitAdmin],
+        queryFn: () => fetchUserSettings(language || 'cs', isTraitAdmin),
     });
 
     useEffect(() => {
@@ -114,7 +114,7 @@ export default function Settings() {
     // Chyba načtení → globální notifikace (stejně jako feedback akcí, sekce F)
     useEffect(() => {
         if (settingsError) {
-            notifyApiError(settingsError, t("user.settings.networkError"));
+            notifyApiError(settingsError, t('user.settings.networkError'));
         }
     }, [settingsError, t]);
 
@@ -141,17 +141,17 @@ export default function Settings() {
         try {
             await resetUserSettings(keyPrefix);
             // Reload settings after reset – invalidace spustí refetch query
-            await queryClient.invalidateQueries({queryKey: ["userSettings"]});
-            push({type: "success", message: t("user.settings.success")});
+            await queryClient.invalidateQueries({queryKey: ['userSettings']});
+            push({type: 'success', message: t('user.settings.success')});
         } catch (err) {
-            notifyApiError(err, t("user.settings.networkError"));
+            notifyApiError(err, t('user.settings.networkError'));
         }
     };
 
     return (
         <Row>
             <Col xs={12} md={{span: 10, offset: 1}} lg={{span: 6, offset: 2}}>
-                <h2>{t("user.settings.title")}</h2>
+                <h2>{t('user.settings.title')}</h2>
 
                 {/* Reset default settings section */}
                 <ResetSettings

@@ -14,7 +14,7 @@ export function ImportsListDownloadCell({row}: ImportsListDownloadCellProps) {
             target="_blank"
             rel="noopener noreferrer"
         >
-            {t("atlas.admin.importsList.downloadModified")}
+            {t('atlas.admin.importsList.downloadModified')}
         </a>
     );
 }

@@ -12,21 +12,21 @@
  *  - chyby přichází přes HTTP status s obálkou (řeší apiClient).
  */
 
-import {apiGet, requireData} from "./apiClient";
+import {apiGet, requireData} from './apiClient';
 import type {
     ExternalProject,
     RecordGbifMinimal,
     RecordGbifMinimalData,
     RecordPladiasMinimal,
-} from "@/models/AtlasRecords";
-import type {RecordPladias} from "@/models/RecordPladias";
-import type {TaxonMapSettings} from "@/models/TaxonMapSettings";
+} from '@/models/AtlasRecords';
+import type {RecordPladias} from '@/models/RecordPladias';
+import type {TaxonMapSettings} from '@/models/TaxonMapSettings';
 
 /** GET /api/react/atlas/records/{square}/{taxonId}/pladias – data pro mapu (okolní kvadranty). */
 export async function getNearbyPladiasRecords(squareCode: string, taxonId: number): Promise<RecordPladiasMinimal[]> {
     return requireData<RecordPladiasMinimal[]>(
         await apiGet(`/api/react/atlas/records/${squareCode}/${taxonId}/pladias`),
-        "Načtení záznamů selhalo.",
+        'Načtení záznamů selhalo.',
     );
 }
 
@@ -38,7 +38,7 @@ export async function getNearbyExternalRecords(
 ): Promise<RecordGbifMinimal[]> {
     const records = requireData<RecordGbifMinimalData[]>(
         await apiGet(`/api/react/atlas/records/${squareCode}/${taxonId}/${project}`),
-        "Načtení záznamů selhalo.",
+        'Načtení záznamů selhalo.',
     );
     return records.map(record => ({...record, project}));
 }
@@ -47,7 +47,7 @@ export async function getNearbyExternalRecords(
 export async function getSquarePladiasRecords(squareCode: string, taxonId: number): Promise<RecordPladias[]> {
     const records = requireData<RecordPladias[]>(
         await apiGet(`/api/react/atlas/records-square/${squareCode}/${taxonId}/pladias`),
-        "Načtení záznamů selhalo.",
+        'Načtení záznamů selhalo.',
     );
     // lastEditTimestamp (ISO) → lastEditTimestampNum (ms) pro detekci konfliktů
     return records.map(record => ({
@@ -64,7 +64,7 @@ export async function getSquareExternalRecords(
 ): Promise<RecordGbifMinimal[]> {
     const records = requireData<RecordGbifMinimalData[]>(
         await apiGet(`/api/react/atlas/records-square/${squareCode}/${taxonId}/${project}`),
-        "Načtení záznamů selhalo.",
+        'Načtení záznamů selhalo.',
     );
     return records.map(record => ({...record, project}));
 }
@@ -75,8 +75,8 @@ export async function getSquareExternalRecords(
  */
 export async function getRecordsWithComments(): Promise<RecordPladias[]> {
     const data = requireData<{ records?: RecordPladias[] }>(
-        await apiGet("/api/react/atlas/search/records-with-comments"),
-        "Načtení záznamů s komentáři selhalo.",
+        await apiGet('/api/react/atlas/search/records-with-comments'),
+        'Načtení záznamů s komentáři selhalo.',
     );
     return Array.isArray(data.records) ? data.records : [];
 }
@@ -85,7 +85,7 @@ export async function getRecordsWithComments(): Promise<RecordPladias[]> {
 export async function getTaxonMapSettings(taxonId: number): Promise<TaxonMapSettings> {
     return requireData<TaxonMapSettings>(
         await apiGet(`/api/react/atlas/taxonMapSettings/${taxonId}`),
-        "Načtení nastavení mapy taxonu selhalo.",
+        'Načtení nastavení mapy taxonu selhalo.',
     );
 }
 
@@ -116,6 +116,6 @@ export interface SquareInfoResponse {
 export async function getSquareInfo(squareCode: number, taxonId: number): Promise<SquareInfoResponse> {
     return requireData<SquareInfoResponse>(
         await apiGet(`/api/react/atlas/squareInfo/${squareCode}/${taxonId}`),
-        "Načtení informací o kvadrantu selhalo.",
+        'Načtení informací o kvadrantu selhalo.',
     );
 }

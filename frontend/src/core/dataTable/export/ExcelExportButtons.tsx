@@ -29,7 +29,7 @@ export function ExcelExportButtons({
         columnFilters,
         buildFilterParams,
         additionalParams,
-        errorMessage: t("common.table.exportFailed"),
+        errorMessage: t('common.table.exportFailed'),
     });
 
     const button = (variant: ExcelExportVariant, label: string) => (
@@ -46,8 +46,8 @@ export function ExcelExportButtons({
 
     return (
         <div className="d-flex align-items-center gap-2 flex-wrap">
-            {button('all', t("common.table.excelAll"))}
-            {button('filtered', t("common.table.excelFiltered"))}
+            {button('all', t('common.table.excelAll'))}
+            {button('filtered', t('common.table.excelFiltered'))}
             {error && <span className="text-danger small">{error}</span>}
         </div>
     );

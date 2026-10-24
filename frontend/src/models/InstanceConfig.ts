@@ -6,7 +6,7 @@ export interface InstanceConfigData {
 }
 
 /** Modul instance dostupný podle konfigurace (`ConfigController.config`). */
-export type InstanceModule = "atlas" | "biblio" | "measurements";
+export type InstanceModule = 'atlas' | 'biblio' | 'measurements';
 
 class InstanceConfig {
     isVascular: boolean;
@@ -27,11 +27,11 @@ class InstanceConfig {
      */
     hasModule(module: InstanceModule): boolean {
         switch (module) {
-            case "atlas":
+            case 'atlas':
                 return this.hasAtlasModule;
-            case "biblio":
+            case 'biblio':
                 return this.hasBiblioModule;
-            case "measurements":
+            case 'measurements':
                 return this.hasMeasurementsModule;
         }
     }

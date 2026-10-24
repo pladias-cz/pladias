@@ -19,7 +19,7 @@
  *  - výjimka z transportu se polyká – logování nikdy nesmí shodit aplikaci.
  */
 
-export type LogLevel = "error" | "warn" | "info";
+export type LogLevel = 'error' | 'warn' | 'info';
 
 /** Normalizovaný záznam logu – společný vstup všech transportů. */
 export interface LogEntry {
@@ -53,10 +53,10 @@ export interface LogTransport {
  */
 export function createConsoleTransport(): LogTransport {
     return {
-        name: "console",
+        name: 'console',
         send(entry) {
-            const method = entry.level === "error" ? console.error : entry.level === "warn" ? console.warn : console.info;
-            const args: unknown[] = [`[pladias] ${entry.name ? `${entry.name}: ` : ""}${entry.message}`];
+            const method = entry.level === 'error' ? console.error : entry.level === 'warn' ? console.warn : console.info;
+            const args: unknown[] = [`[pladias] ${entry.name ? `${entry.name}: ` : ''}${entry.message}`];
             if (entry.context !== undefined) {
                 args.push(entry.context);
             }
@@ -86,15 +86,15 @@ let dispatching = false;
 /** Hláška libovolné „chyby“ z catch bloku (Error, string, cokoliv jiného). */
 function messageOf(err: unknown): string {
     if (err instanceof Error) return err.message;
-    if (typeof err === "string") return err;
+    if (typeof err === 'string') return err;
     return String(err);
 }
 
 /** HTTP status duck typingem (`ApiError.status`) – bez importu apiClientu. */
 function statusOf(err: unknown): number | undefined {
-    if (typeof err === "object" && err !== null) {
+    if (typeof err === 'object' && err !== null) {
         const status = (err as { status?: unknown }).status;
-        if (typeof status === "number") {
+        if (typeof status === 'number') {
             return status;
         }
     }
@@ -139,21 +139,21 @@ function dispatch(entry: LogEntry): void {
  * (apiClient → notifyApiError → unhandledrejection) se zapíše jen jednou.
  */
 export function logError(err: unknown, context?: Record<string, unknown>): void {
-    if (typeof err === "object" && err !== null) {
+    if (typeof err === 'object' && err !== null) {
         if (loggedErrors.has(err)) return;
         loggedErrors.add(err);
     }
-    dispatch(toEntry("error", err, context));
+    dispatch(toEntry('error', err, context));
 }
 
 /** Zaloguje varování (degradace, neočekávaný, ale ošetřený stav). */
 export function logWarn(message: string, context?: Record<string, unknown>): void {
-    dispatch(toEntry("warn", message, context));
+    dispatch(toEntry('warn', message, context));
 }
 
 /** Zaloguje informativní záznam (diagnostika, např. mapových vrstev). */
 export function logInfo(message: string, context?: Record<string, unknown>): void {
-    dispatch(toEntry("info", message, context));
+    dispatch(toEntry('info', message, context));
 }
 
 /**
@@ -191,19 +191,19 @@ let globalHandlersInstalled = false;
  * bez catch). Volá se jednou z `index.tsx` před renderem; idempotentní.
  */
 export function installGlobalErrorHandlers(): void {
-    if (globalHandlersInstalled || typeof window === "undefined") return;
+    if (globalHandlersInstalled || typeof window === 'undefined') return;
     globalHandlersInstalled = true;
 
-    window.addEventListener("error", (event) => {
+    window.addEventListener('error', (event) => {
         // ErrorEvent runtime výjimky; selhání resource loadu (img, script)
         // nenesou error ani message – do logu nepatří.
         const err = event.error ?? event.message;
         if (err !== undefined) {
-            logError(err, {source: "window.onerror"});
+            logError(err, {source: 'window.onerror'});
         }
     });
 
-    window.addEventListener("unhandledrejection", (event) => {
-        logError(event.reason, {source: "unhandledrejection"});
+    window.addEventListener('unhandledrejection', (event) => {
+        logError(event.reason, {source: 'unhandledrejection'});
     });
 }

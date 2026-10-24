@@ -28,11 +28,11 @@ export function DataTableHeaderCell(props: DataTableHeaderCellProps) {
         if (!canSort) return '';
         switch (sortIndicator) {
             case 'asc':
-                return t("common.table.sort.ascending");
+                return t('common.table.sort.ascending');
             case 'desc':
-                return t("common.table.sort.descending");
+                return t('common.table.sort.descending');
             default:
-                return t("common.table.sort.clickToSort");
+                return t('common.table.sort.clickToSort');
         }
     };
 

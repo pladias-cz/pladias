@@ -20,10 +20,10 @@ export function useImportsActions(
         setDeletingBatchId(batchId);
         try {
             await prepareBatchDelete(batchId);
-            showFlash('success', t("atlas.admin.importsList.markedForDeletion"));
+            showFlash('success', t('atlas.admin.importsList.markedForDeletion'));
             onImportChange?.();
         } catch (err) {
-            showFlash('danger', apiErrorMessage(err, t("atlas.admin.importsList.error")));
+            showFlash('danger', apiErrorMessage(err, t('atlas.admin.importsList.error')));
         } finally {
             setDeletingBatchId(null);
         }

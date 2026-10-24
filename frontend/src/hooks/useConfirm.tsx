@@ -1,5 +1,5 @@
-import React, {useCallback, useState} from "react";
-import {ConfirmDialog, type ConfirmOptions} from "@/components/ConfirmDialog";
+import React, {useCallback, useState} from 'react';
+import {ConfirmDialog, type ConfirmOptions} from '@/components/ConfirmDialog';
 
 interface PendingConfirm {
     options: ConfirmOptions;

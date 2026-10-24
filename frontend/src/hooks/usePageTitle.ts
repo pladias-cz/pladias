@@ -1,5 +1,5 @@
-import {useEffect} from "react";
-import {useProjectName} from "@/context/ProjectNameContext";
+import {useEffect} from 'react';
+import {useProjectName} from '@/context/ProjectNameContext';
 
 /**
  * usePageTitle - A hook that sets the document title with the project name.

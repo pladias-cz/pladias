@@ -19,12 +19,12 @@ export function DataRowCount(props: DataRowCountProps) {
     if (loading) {
         return (
             <p className="mb-0">
-                <Badge bg="secondary">{t("common.loading")}</Badge>
+                <Badge bg="secondary">{t('common.loading')}</Badge>
             </p>
         );
     }
 
-    const text = t("common.table.showing", {
+    const text = t('common.table.showing', {
         from: fromIndex,
         to: toIndex,
         total,

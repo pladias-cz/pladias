@@ -1,8 +1,8 @@
-import {Row} from "react-bootstrap";
-import {usePageTitle} from "@/hooks/usePageTitle";
+import {Row} from 'react-bootstrap';
+import {usePageTitle} from '@/hooks/usePageTitle';
 
 export default function General() {
-    usePageTitle("General");
+    usePageTitle('General');
     return (
         <Row>
             <blockquote className="blockquote">

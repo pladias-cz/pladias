@@ -1,16 +1,16 @@
-import {Card, Col, Row} from "react-bootstrap";
-import {useCallback, useEffect, useMemo, useState} from "react";
-import {useTranslation} from "react-i18next";
+import {Card, Col, Row} from 'react-bootstrap';
+import {useCallback, useEffect, useMemo, useState} from 'react';
+import {useTranslation} from 'react-i18next';
 import type {RecordPladiasFull} from '@/models/RecordPladiasFull';
-import RecordInlineField from "./RecordInlineField";
-import RichTextMessage from "@/components/RichTextMessage";
-import {useRecordPermissions} from ".";
-import RecordReadonlyField from "@/components/atlas/record/RecordReadonlyField";
-import MultiSelectEdit from "@/components/atlas/record/MultiSelectEdit";
-import SingleSelectEdit from "@/components/atlas/record/SingleSelectEdit";
-import type {MultiValueOption} from "@/models/MultiValueOption";
-import {getImportableTaxaForRecord, getPhytochorionOptions, getUnassignedAuthors} from "@/services/recordApi";
-import {useInstanceConfig} from "@/context/InstanceConfigContext";
+import RecordInlineField from './RecordInlineField';
+import RichTextMessage from '@/components/RichTextMessage';
+import {useRecordPermissions} from '.';
+import RecordReadonlyField from '@/components/atlas/record/RecordReadonlyField';
+import MultiSelectEdit from '@/components/atlas/record/MultiSelectEdit';
+import SingleSelectEdit from '@/components/atlas/record/SingleSelectEdit';
+import type {MultiValueOption} from '@/models/MultiValueOption';
+import {getImportableTaxaForRecord, getPhytochorionOptions, getUnassignedAuthors} from '@/services/recordApi';
+import {useInstanceConfig} from '@/context/InstanceConfigContext';
 
 // Date format validation: YYYY, YYYY-MM, YYYY-MM-DD, or "s. d." (sine data - without date)
 const validateDateFormat = (value: string): string | null => {
@@ -93,7 +93,7 @@ export default function RecordFloristic({record, onFieldUpdated}: RecordFloristi
     const authorsOptions = useMemo(() => localRecord.recordAuthors.map((a): MultiValueOption => ({
         id: a.authorId,
         name: a.authorFullName,
-        label: ""
+        label: ''
     })), [localRecord.recordAuthors]);
 
     // Taxon as single select option
@@ -101,8 +101,8 @@ export default function RecordFloristic({record, onFieldUpdated}: RecordFloristi
         if (!localRecord.taxonId) return null;
         return {
             id: localRecord.taxonId,
-            name: localRecord.taxonNameLat ?? "",
-            label: localRecord.taxonNameHtml ?? localRecord.taxonNameLat ?? ""
+            name: localRecord.taxonNameLat ?? '',
+            label: localRecord.taxonNameHtml ?? localRecord.taxonNameLat ?? ''
         };
     }, [localRecord.taxonId, localRecord.taxonNameLat, localRecord.taxonNameHtml]);
 
@@ -111,8 +111,8 @@ export default function RecordFloristic({record, onFieldUpdated}: RecordFloristi
         if (!localRecord.phytochorionRelationId) return null;
         return {
             id: parseInt(localRecord.phytochorionRelationId, 10),
-            name: localRecord.phytochorionRelationName ?? "",
-            label: localRecord.phytochorionRelationName ?? ""
+            name: localRecord.phytochorionRelationName ?? '',
+            label: localRecord.phytochorionRelationName ?? ''
         };
     }, [localRecord.phytochorionRelationId, localRecord.phytochorionRelationName]);
 
@@ -153,12 +153,12 @@ export default function RecordFloristic({record, onFieldUpdated}: RecordFloristi
             <Col>
                 <Card>
                     <Card.Header>
-                        <strong>{t("record.titles.floristic")}</strong>
+                        <strong>{t('record.titles.floristic')}</strong>
                     </Card.Header>
                     <Card.Body>
                         {canEdit && <>
                             <SingleSelectEdit
-                                label={t("record.taxon")}
+                                label={t('record.taxon')}
                                 recordId={localRecord.id}
                                 currentValue={taxonOption}
                                 loadOptions={loadTaxonOptions}
@@ -191,7 +191,7 @@ export default function RecordFloristic({record, onFieldUpdated}: RecordFloristi
                             />
                             {isVascular && (
                                 <SingleSelectEdit
-                                    label={t("record.phytochorion")}
+                                    label={t('record.phytochorion')}
                                     recordId={localRecord.id}
                                     currentValue={phytochorionOption}
                                     loadOptions={loadPhytochorionOptions}
@@ -221,18 +221,18 @@ export default function RecordFloristic({record, onFieldUpdated}: RecordFloristi
 
                             {(!isVascular && (
                                     <>
-                                        <RecordReadonlyField label={t("record.substrateText")}
+                                        <RecordReadonlyField label={t('record.substrateText')}
                                                              content={localRecord.substrate}/>
-                                        <RecordReadonlyField label={t("record.chemical")}
+                                        <RecordReadonlyField label={t('record.chemical')}
                                                              content={localRecord.chemical}/>
-                                        <RecordReadonlyField label={t("record.substrate1")}
+                                        <RecordReadonlyField label={t('record.substrate1')}
                                                              content={localRecord.substrate}/>
-                                        <RecordReadonlyField label={t("record.substrate2")}
+                                        <RecordReadonlyField label={t('record.substrate2')}
                                                              content={localRecord.substrate}/>
                                     </>)
                             )}
                             <RecordInlineField
-                                label={t("record.nameOriginal")}
+                                label={t('record.nameOriginal')}
                                 recordId={localRecord.id}
                                 field="ORIGINALNAME"
                                 value={localRecord.taxonOriginal}
@@ -240,7 +240,7 @@ export default function RecordFloristic({record, onFieldUpdated}: RecordFloristi
                                 lastEditTimestampNum={localRecord.lastEditTimestampNum || 0}
                             />
                             {isVascular && (<RecordInlineField
-                                    label={t("record.nearestTown")}
+                                    label={t('record.nearestTown')}
                                     recordId={localRecord.id}
                                     field="NEARESTTOWNNAME"
                                     value={localRecord.nearestTownText}
@@ -249,7 +249,7 @@ export default function RecordFloristic({record, onFieldUpdated}: RecordFloristi
                                 />
                             )}
                             <RecordInlineField
-                                label={t("record.locality")}
+                                label={t('record.locality')}
                                 recordId={localRecord.id}
                                 field="LOCALITY"
                                 value={localRecord.locality}
@@ -258,7 +258,7 @@ export default function RecordFloristic({record, onFieldUpdated}: RecordFloristi
                             />
                             {!isVascular && (
                                 <RecordInlineField
-                                    label={t("record.localityExtra")}
+                                    label={t('record.localityExtra')}
                                     recordId={localRecord.id}
                                     field="LOCALITYEXTRA"
                                     value={localRecord.localityExtra}
@@ -267,7 +267,7 @@ export default function RecordFloristic({record, onFieldUpdated}: RecordFloristi
                                 />
                             )}
                             <RecordInlineField
-                                label={t("record.comment")}
+                                label={t('record.comment')}
                                 recordId={localRecord.id}
                                 field="IMPORTCOMMENT"
                                 value={localRecord.comment}
@@ -275,7 +275,7 @@ export default function RecordFloristic({record, onFieldUpdated}: RecordFloristi
                                 lastEditTimestampNum={localRecord.lastEditTimestampNum || 0}
                             />
                             <RecordInlineField
-                                label={t("record.altitudeMin")}
+                                label={t('record.altitudeMin')}
                                 recordId={localRecord.id}
                                 field="ALTITUDEMIN"
                                 value={localRecord?.altitudeMin?.toString() ?? ''}
@@ -283,7 +283,7 @@ export default function RecordFloristic({record, onFieldUpdated}: RecordFloristi
                                 lastEditTimestampNum={localRecord.lastEditTimestampNum || 0}
                             />
                             <RecordInlineField
-                                label={t("record.altitudeMax")}
+                                label={t('record.altitudeMax')}
                                 recordId={localRecord.id}
                                 field="ALTITUDEMAX"
                                 value={localRecord?.altitudeMax?.toString() ?? ''}
@@ -291,7 +291,7 @@ export default function RecordFloristic({record, onFieldUpdated}: RecordFloristi
                                 lastEditTimestampNum={localRecord.lastEditTimestampNum || 0}
                             />
                             <RecordInlineField
-                                label={t("record.date")}
+                                label={t('record.date')}
                                 recordId={localRecord.id}
                                 field="DATE"
                                 value={localRecord.dateIso}
@@ -300,7 +300,7 @@ export default function RecordFloristic({record, onFieldUpdated}: RecordFloristi
                                 validate={validateDateFormat}
                             />
                             <MultiSelectEdit
-                                label={t("record.authors")}
+                                label={t('record.authors')}
                                 recordId={localRecord.id}
                                 currentValue={authorsOptions}
                                 loadOptions={loadAuthorOptions}
@@ -309,11 +309,11 @@ export default function RecordFloristic({record, onFieldUpdated}: RecordFloristi
                                 onUpdated={(data) => {
                                     setLocalRecord((prev: RecordPladiasFull) => {
                                         // pole bez známých hodnot doplní backend při dalším načtení
-                                        const newRecordAuthors: RecordPladiasFull["recordAuthors"] = data.updatedValue.map((opt) => ({
+                                        const newRecordAuthors: RecordPladiasFull['recordAuthors'] = data.updatedValue.map((opt) => ({
                                             recordId: null,
                                             authorId: opt.id,
                                             authorName: null,
-                                            authorSurname: "",
+                                            authorSurname: '',
                                             authorFullName: opt.name,
                                             succession: null,
                                         }));
@@ -330,41 +330,41 @@ export default function RecordFloristic({record, onFieldUpdated}: RecordFloristi
 
                         </>}
                         {!canEdit && <>
-                            <RecordReadonlyField label={t("record.taxon")} content={localRecord.taxon.nameLat}/>
-                            {isVascular ? (<RecordReadonlyField label={t("record.phytochorion")}
+                            <RecordReadonlyField label={t('record.taxon')} content={localRecord.taxon.nameLat}/>
+                            {isVascular ? (<RecordReadonlyField label={t('record.phytochorion')}
                                                                 content={localRecord.phytochorionRelationName}/>
                             ) : (
                                 <>
-                                    <RecordReadonlyField label={t("record.substrateText")}
+                                    <RecordReadonlyField label={t('record.substrateText')}
                                                          content={localRecord.substrate}/>
-                                    <RecordReadonlyField label={t("record.chemical")}
+                                    <RecordReadonlyField label={t('record.chemical')}
                                                          content={localRecord.chemical}/>
-                                    <RecordReadonlyField label={t("record.substrate1")}
+                                    <RecordReadonlyField label={t('record.substrate1')}
                                                          content={localRecord.substrate}/>
-                                    <RecordReadonlyField label={t("record.substrate2")}
+                                    <RecordReadonlyField label={t('record.substrate2')}
                                                          content={localRecord.substrate}/>
                                 </>
                             )}
-                            <RecordReadonlyField label={t("record.nameOriginal")} content={localRecord.taxonOriginal}/>
-                            {isVascular && (<RecordReadonlyField label={t("record.nearestTown")}
+                            <RecordReadonlyField label={t('record.nameOriginal')} content={localRecord.taxonOriginal}/>
+                            {isVascular && (<RecordReadonlyField label={t('record.nearestTown')}
                                                                  content={localRecord.nearestTownText}/>
                             )}
-                            <RecordReadonlyField label={t("record.locality")} content={localRecord.locality}/>
+                            <RecordReadonlyField label={t('record.locality')} content={localRecord.locality}/>
                             {!isVascular && (
-                                <RecordReadonlyField label={t("record.localityExtra")}
+                                <RecordReadonlyField label={t('record.localityExtra')}
                                                      content={localRecord.localityExtra}/>
                             )}
-                            <RecordReadonlyField label={t("record.comment")} content={localRecord.comment}/>
-                            <RecordReadonlyField label={t("record.altitudeMin")}
+                            <RecordReadonlyField label={t('record.comment')} content={localRecord.comment}/>
+                            <RecordReadonlyField label={t('record.altitudeMin')}
                                                  content={localRecord?.altitudeMin?.toString() ?? ''}/>
-                            <RecordReadonlyField label={t("record.altitudeMax")}
+                            <RecordReadonlyField label={t('record.altitudeMax')}
                                                  content={localRecord?.altitudeMax?.toString() ?? ''}/>
-                            <RecordReadonlyField label={t("record.date")} content={localRecord.dateIso}/>
-                            <RecordReadonlyField label={t("record.collectors")}
-                                                 content={localRecord.recordAuthors.map(s => s.authorFullName ?? '').join("; ")}/>
+                            <RecordReadonlyField label={t('record.date')} content={localRecord.dateIso}/>
+                            <RecordReadonlyField label={t('record.collectors')}
+                                                 content={localRecord.recordAuthors.map(s => s.authorFullName ?? '').join('; ')}/>
                             <div className="d-flex flex-wrap gap-1">
                                 {localRecord.recordAuthors.length === 0 ? (
-                                    <span className="text-muted">{t("common.multiValueEdit.none")}</span>
+                                    <span className="text-muted">{t('common.multiValueEdit.none')}</span>
                                 ) : (
                                     localRecord.recordAuthors.map((author) => (
                                         <span key={author.authorId} className="badge bg-secondary">

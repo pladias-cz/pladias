@@ -5,9 +5,9 @@
  * opakování).
  */
 
-import type {ReactElement} from "react";
-import {QueryClientProvider} from "@tanstack/react-query";
-import {createQueryClient} from "@/query/queryClient";
+import type {ReactElement} from 'react';
+import {QueryClientProvider} from '@tanstack/react-query';
+import {createQueryClient} from '@/query/queryClient';
 
 export function withQueryClient(ui: ReactElement): ReactElement {
     return <QueryClientProvider client={createQueryClient()}>{ui}</QueryClientProvider>;

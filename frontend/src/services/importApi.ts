@@ -13,10 +13,10 @@
  *    s obálkou `success: false`.
  */
 
-import {ApiError, apiGet, apiPost, requireEnvelope} from "./apiClient";
+import {ApiError, apiGet, apiPost, requireEnvelope} from './apiClient';
 
 /** Typ operace importu (formulář uploadu). */
-export type ImportOperation = "validation" | "import";
+export type ImportOperation = 'validation' | 'import';
 
 /** Výsledek zpracování Excel dávky (ImportController). */
 export interface ImportResult {
@@ -41,10 +41,10 @@ export interface UserProject {
  * Gotcha: obálka nese klíč `projects` místo standardního `data`.
  */
 export async function getUserProjects(): Promise<UserProject[]> {
-    const payload = await apiGet<{ success: boolean; projects?: UserProject[] }>("/api/react/projects/user");
+    const payload = await apiGet<{ success: boolean; projects?: UserProject[] }>('/api/react/projects/user');
     const projects = payload.projects;
     if (payload.success !== true || !Array.isArray(projects)) {
-        throw new ApiError("Projekty se nepodařilo načíst.");
+        throw new ApiError('Projekty se nepodařilo načíst.');
     }
     return projects;
 }
@@ -56,15 +56,15 @@ export async function getUserProjects(): Promise<UserProject[]> {
  */
 export async function importExcel(file: File, operation: ImportOperation, projectId?: number): Promise<ImportResult> {
     const formData = new FormData();
-    formData.append("fileUpload", file);
-    formData.append("operation", operation);
+    formData.append('fileUpload', file);
+    formData.append('operation', operation);
     if (projectId !== undefined) {
-        formData.append("project", String(projectId));
+        formData.append('project', String(projectId));
     }
 
-    const endpoint = operation === "validation" ? "/api/react/import/validate" : "/api/react/import/upload";
+    const endpoint = operation === 'validation' ? '/api/react/import/validate' : '/api/react/import/upload';
     // odpověď je plochý objekt (success + výsledek), ne standardní obálka s `data`
-    const result = requireEnvelope(await apiPost(endpoint, formData), "Import Excel souboru selhal.");
+    const result = requireEnvelope(await apiPost(endpoint, formData), 'Import Excel souboru selhal.');
     return {...result} as unknown as ImportResult;
 }
 
@@ -74,11 +74,11 @@ export async function importExcel(file: File, operation: ImportOperation, projec
  */
 export async function importCsv(file: File, operation: ImportOperation, projectId: number): Promise<void> {
     const formData = new FormData();
-    formData.append("fileUpload", file);
-    formData.append("operation", operation);
-    formData.append("project", String(projectId));
+    formData.append('fileUpload', file);
+    formData.append('operation', operation);
+    formData.append('project', String(projectId));
 
-    requireEnvelope(await apiPost("/api/react/import/csv", formData), "Import CSV selhal.");
+    requireEnvelope(await apiPost('/api/react/import/csv', formData), 'Import CSV selhal.');
 }
 
 /**
@@ -89,6 +89,6 @@ export async function importCsv(file: File, operation: ImportOperation, projectI
 export async function prepareBatchDelete(batchId: number): Promise<void> {
     requireEnvelope(
         await apiGet(`/api/react/atlasadmin/prepareBatchDelete/${batchId}`),
-        "Naplánování smazání dávky selhalo.",
+        'Naplánování smazání dávky selhalo.',
     );
 }

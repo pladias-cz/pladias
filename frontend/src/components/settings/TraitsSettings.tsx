@@ -1,7 +1,7 @@
-import {Button, Form, Table} from "react-bootstrap";
-import {useTranslation} from "react-i18next";
-import type {UserSettingsState} from "./types";
-import RichTextMessage from "@/components/RichTextMessage";
+import {Button, Form, Table} from 'react-bootstrap';
+import {useTranslation} from 'react-i18next';
+import type {UserSettingsState} from './types';
+import RichTextMessage from '@/components/RichTextMessage';
 
 interface TraitsSettingsProps {
     userSettings: UserSettingsState;
@@ -20,8 +20,8 @@ export default function TraitsSettings({
 
     return (
         <div className="mb-4">
-            <h4>{t("user.settings.traitsSubstitution")}</h4>
-            <RichTextMessage as="p" html={t("user.settings.traitsDescription")}/>
+            <h4>{t('user.settings.traitsSubstitution')}</h4>
+            <RichTextMessage as="p" html={t('user.settings.traitsDescription')}/>
 
             <Table hover responsive className="align-middle">
                 <tbody>
@@ -31,16 +31,16 @@ export default function TraitsSettings({
                         <Form.Control
                             type="text"
                             value={userSettings.traitsSubstituteFalse}
-                            onChange={(e) => handleInputChange("traitsSubstituteFalse", e.target.value)}
+                            onChange={(e) => handleInputChange('traitsSubstituteFalse', e.target.value)}
                             className="d-inline-block w-auto me-2"
                         /></td>
                     <td>
                         <Button
                             variant="success"
-                            onClick={() => handleSaveSetting("traits_substitute_false", userSettings.traitsSubstituteFalse)}
+                            onClick={() => handleSaveSetting('traits_substitute_false', userSettings.traitsSubstituteFalse)}
                             disabled={loading}
                         >
-                            {t("user.settings.setButton")}
+                            {t('user.settings.setButton')}
                         </Button>
                     </td>
                 </tr>
@@ -50,16 +50,16 @@ export default function TraitsSettings({
                         <Form.Control
                             type="text"
                             value={userSettings.traitsSubstituteTrue}
-                            onChange={(e) => handleInputChange("traitsSubstituteTrue", e.target.value)}
+                            onChange={(e) => handleInputChange('traitsSubstituteTrue', e.target.value)}
                             className="d-inline-block w-auto me-2"
                         /></td>
                     <td>
                         <Button
                             variant="success"
-                            onClick={() => handleSaveSetting("traits_substitute_true", userSettings.traitsSubstituteTrue)}
+                            onClick={() => handleSaveSetting('traits_substitute_true', userSettings.traitsSubstituteTrue)}
                             disabled={loading}
                         >
-                            {t("user.settings.setButton")}
+                            {t('user.settings.setButton')}
                         </Button>
                     </td>
                 </tr>
@@ -69,16 +69,16 @@ export default function TraitsSettings({
                         <Form.Control
                             type="text"
                             value={userSettings.traitsSubstituteNull}
-                            onChange={(e) => handleInputChange("traitsSubstituteNull", e.target.value)}
+                            onChange={(e) => handleInputChange('traitsSubstituteNull', e.target.value)}
                             className="d-inline-block w-auto me-2"
                         /></td>
                     <td>
                         <Button
                             variant="success"
-                            onClick={() => handleSaveSetting("traits_substitute_null", userSettings.traitsSubstituteNull)}
+                            onClick={() => handleSaveSetting('traits_substitute_null', userSettings.traitsSubstituteNull)}
                             disabled={loading}
                         >
-                            {t("user.settings.setButton")}
+                            {t('user.settings.setButton')}
                         </Button>
                     </td>
                 </tr>
@@ -88,78 +88,78 @@ export default function TraitsSettings({
                         <Form.Control
                             type="text"
                             value={userSettings.traitsSubstituteUnmeasurable}
-                            onChange={(e) => handleInputChange("traitsSubstituteUnmeasurable", e.target.value)}
+                            onChange={(e) => handleInputChange('traitsSubstituteUnmeasurable', e.target.value)}
                             className="d-inline-block w-auto me-2"
                         /></td>
                     <td>
                         <Button
                             variant="success"
-                            onClick={() => handleSaveSetting("traits_substitute_unmeasurable", userSettings.traitsSubstituteUnmeasurable)}
+                            onClick={() => handleSaveSetting('traits_substitute_unmeasurable', userSettings.traitsSubstituteUnmeasurable)}
                             disabled={loading}
                         >
-                            {t("user.settings.setButton")}
+                            {t('user.settings.setButton')}
                         </Button>
                     </td>
                 </tr>
                 <tr>
-                    <td>{t("user.settings.traitsPercentage")}</td>
+                    <td>{t('user.settings.traitsPercentage')}</td>
                     <td>
                         <Form.Check
                             type="radio"
                             id="optionsRadiosInteger"
-                            label={t("user.settings.traitsPercentageInteger")}
+                            label={t('user.settings.traitsPercentageInteger')}
                             name="traitsSubstitutePercentInteger"
                             checked={userSettings.traitsSubstitutePercentInteger}
-                            onChange={() => handleInputChange("traitsSubstitutePercentInteger", true)}
+                            onChange={() => handleInputChange('traitsSubstitutePercentInteger', true)}
                             className="mb-2"
                         />
                         <Form.Check
                             type="radio"
                             id="optionsRadiosProportion"
-                            label={t("user.settings.traitsPercentageProportion")}
+                            label={t('user.settings.traitsPercentageProportion')}
                             name="traitsSubstitutePercentInteger"
                             checked={!(userSettings.traitsSubstitutePercentInteger)}
-                            onChange={() => handleInputChange("traitsSubstitutePercentInteger", false)}
+                            onChange={() => handleInputChange('traitsSubstitutePercentInteger', false)}
                             className="mb-2"
                         /></td>
                     <td>
                         <Button
                             variant="success"
-                            onClick={() => handleSaveSetting("traits_substitute_percentasinteger", userSettings.traitsSubstitutePercentInteger.toString())}
+                            onClick={() => handleSaveSetting('traits_substitute_percentasinteger', userSettings.traitsSubstitutePercentInteger.toString())}
                             disabled={loading}
                         >
-                            {t("user.settings.setButton")}
+                            {t('user.settings.setButton')}
                         </Button>
                     </td>
                 </tr>
                 <tr>
-                    <td>{t("user.settings.traitsLanguage")}</td>
+                    <td>{t('user.settings.traitsLanguage')}</td>
                     <td>
                         <Form.Check
                             type="radio"
                             id="optionsRadiosCz"
-                            label={t("user.settings.traitsLanguageCzech")}
+                            label={t('user.settings.traitsLanguageCzech')}
                             name="traitsSubstituteInEnglish"
                             checked={!userSettings.traitsSubstituteInEnglish}
-                            onChange={() => handleInputChange("traitsSubstituteInEnglish", false)}
+                            onChange={() => handleInputChange('traitsSubstituteInEnglish', false)}
                             className="mb-2"
                         />
                         <Form.Check
                             type="radio"
                             id="optionsRadiosEn"
-                            label={t("user.settings.traitsLanguageEnglish")}
+                            label={t('user.settings.traitsLanguageEnglish')}
                             name="traitsSubstituteInEnglish"
                             checked={userSettings.traitsSubstituteInEnglish}
-                            onChange={() => handleInputChange("traitsSubstituteInEnglish", true)}
+                            onChange={() => handleInputChange('traitsSubstituteInEnglish', true)}
                             className="mb-2"
                         /></td>
                     <td>
                         <Button
                             variant="success"
-                            onClick={() => handleSaveSetting("traits_substitute_english", userSettings.traitsSubstituteInEnglish.toString())}
+                            onClick={() => handleSaveSetting('traits_substitute_english', userSettings.traitsSubstituteInEnglish.toString())}
                             disabled={loading}
                         >
-                            {t("user.settings.setButton")}
+                            {t('user.settings.setButton')}
                         </Button>
                     </td>
                 </tr>

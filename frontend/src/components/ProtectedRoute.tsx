@@ -1,8 +1,8 @@
-import {Navigate, useLocation} from "react-router-dom";
-import {useInstanceConfig} from "@/context/InstanceConfigContext";
-import {useUser} from "@/context/UserContext";
-import type {InstanceModule} from "@/models/InstanceConfig";
-import type {UserRole} from "@/models/UserRole";
+import {Navigate, useLocation} from 'react-router-dom';
+import {useInstanceConfig} from '@/context/InstanceConfigContext';
+import {useUser} from '@/context/UserContext';
+import type {InstanceModule} from '@/models/InstanceConfig';
+import type {UserRole} from '@/models/UserRole';
 
 interface ProtectedRouteProps {
     children: React.ReactNode;

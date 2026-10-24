@@ -1,12 +1,12 @@
-import {Card, Table, Row, Col, Spinner, Button, Modal, Form} from "react-bootstrap";
-import {useTranslation} from "react-i18next";
-import {getRecordComments, createComment, updateComment, resolveComment, deleteComment} from "@/services/recordApi";
-import {apiErrorMessage} from "@/services/apiClient";
+import {Card, Table, Row, Col, Spinner, Button, Modal, Form} from 'react-bootstrap';
+import {useTranslation} from 'react-i18next';
+import {getRecordComments, createComment, updateComment, resolveComment, deleteComment} from '@/services/recordApi';
+import {apiErrorMessage} from '@/services/apiClient';
 import type {RecordComment} from '@/models/RecordComment';
-import {useState} from "react";
-import {useQuery, useQueryClient} from "@tanstack/react-query";
-import {useConfirm} from "@/hooks/useConfirm";
-import {useUser} from "@/context/UserContext";
+import {useState} from 'react';
+import {useQuery, useQueryClient} from '@tanstack/react-query';
+import {useConfirm} from '@/hooks/useConfirm';
+import {useUser} from '@/context/UserContext';
 
 interface RecordCommentsProps {
     recordId: number;
@@ -20,17 +20,17 @@ export default function RecordComments({recordId, canResolveComments}: RecordCom
     const queryClient = useQueryClient();
     const [showModal, setShowModal] = useState(false);
     const [editingComment, setEditingComment] = useState<RecordComment | null>(null);
-    const [newComment, setNewComment] = useState("");
+    const [newComment, setNewComment] = useState('');
     const [submitting, setSubmitting] = useState(false);
     const [actionError, setActionError] = useState<string | null>(null);
 
     // komentáře záznamu – bez cache (sekce J), načtení při mountu; po mutacích
     // se seznam obnoví invalidací stejného klíče
     const {data: comments, isPending: loading, error} = useQuery({
-        queryKey: ["recordComments", recordId],
+        queryKey: ['recordComments', recordId],
         queryFn: () => getRecordComments(recordId),
     });
-    const loadError = error ? apiErrorMessage(error, t("record.commentsLoadFailed")) : null;
+    const loadError = error ? apiErrorMessage(error, t('record.commentsLoadFailed')) : null;
 
     const nonDeletedComments = (comments ?? []).filter(c => !c.deleted);
 
@@ -73,13 +73,13 @@ export default function RecordComments({recordId, canResolveComments}: RecordCom
             } else {
                 await createComment(recordId, newComment.trim());
             }
-            setNewComment("");
+            setNewComment('');
             setEditingComment(null);
             setShowModal(false);
             // Refresh comments – invalidace spustí refetch query
-            await queryClient.invalidateQueries({queryKey: ["recordComments", recordId]});
+            await queryClient.invalidateQueries({queryKey: ['recordComments', recordId]});
         } catch (err) {
-            setActionError(apiErrorMessage(err, t("record.commentActionFailed")));
+            setActionError(apiErrorMessage(err, t('record.commentActionFailed')));
         } finally {
             setSubmitting(false);
         }
@@ -87,7 +87,7 @@ export default function RecordComments({recordId, canResolveComments}: RecordCom
 
     const handleEditComment = (comment: RecordComment) => {
         setEditingComment(comment);
-        setNewComment(comment.message ?? "");
+        setNewComment(comment.message ?? '');
         setActionError(null);
         setShowModal(true);
     };
@@ -101,16 +101,16 @@ export default function RecordComments({recordId, canResolveComments}: RecordCom
         try {
             await resolveComment(commentId);
             // Refresh comments – invalidace spustí refetch query
-            await queryClient.invalidateQueries({queryKey: ["recordComments", recordId]});
+            await queryClient.invalidateQueries({queryKey: ['recordComments', recordId]});
         } catch (err) {
-            setActionError(apiErrorMessage(err, t("record.commentActionFailed")));
+            setActionError(apiErrorMessage(err, t('record.commentActionFailed')));
         }
     };
 
     const handleDeleteComment = async (commentId: number) => {
         if (!(await confirm({
-            message: t("record.confirmDeleteComment"),
-            confirmLabel: t("common.delete"),
+            message: t('record.confirmDeleteComment'),
+            confirmLabel: t('common.delete'),
         }))) {
             return;
         }
@@ -118,9 +118,9 @@ export default function RecordComments({recordId, canResolveComments}: RecordCom
         try {
             await deleteComment(commentId);
             // Refresh comments – invalidace spustí refetch query
-            await queryClient.invalidateQueries({queryKey: ["recordComments", recordId]});
+            await queryClient.invalidateQueries({queryKey: ['recordComments', recordId]});
         } catch (err) {
-            setActionError(apiErrorMessage(err, t("record.commentActionFailed")));
+            setActionError(apiErrorMessage(err, t('record.commentActionFailed')));
         }
     };
 
@@ -146,7 +146,7 @@ export default function RecordComments({recordId, canResolveComments}: RecordCom
                 <Col>
                     <Card border="danger">
                         <Card.Body className="text-center py-4">
-                            <span className="text-danger">{t("common.error")}: {loadError}</span>
+                            <span className="text-danger">{t('common.error')}: {loadError}</span>
                         </Card.Body>
                     </Card>
                 </Col>
@@ -160,8 +160,8 @@ export default function RecordComments({recordId, canResolveComments}: RecordCom
                 <Card>
                     <Card.Header className="d-flex justify-content-between align-items-center">
                         <strong>
-                            {t("record.comments")}{' '}
-                            ({nonDeletedComments.filter(c => c.resolved === false).length} {t("record.unresolved")})
+                            {t('record.comments')}{' '}
+                            ({nonDeletedComments.filter(c => c.resolved === false).length} {t('record.unresolved')})
                         </strong>
                         {canEditComments && (
                             <Button
@@ -169,11 +169,11 @@ export default function RecordComments({recordId, canResolveComments}: RecordCom
                                 size="sm"
                                 onClick={() => {
                                     setEditingComment(null);
-                                    setNewComment("");
+                                    setNewComment('');
                                     setShowModal(true);
                                 }}
                             >
-                                {t("record.addComment")}
+                                {t('record.addComment')}
                             </Button>
                         )}
                     </Card.Header>
@@ -181,20 +181,20 @@ export default function RecordComments({recordId, canResolveComments}: RecordCom
                         <Table striped bordered hover size="sm">
                             <thead>
                             <tr>
-                                <th>{t("record.commentAuthor")}</th>
-                                <th>{t("record.commentMessage")}</th>
-                                <th>{t("record.commentDate")}</th>
-                                <th>{t("record.commentResolved")}</th>
-                                <th>{t("record.resolvedBy")}</th>
-                                <th>{t("record.resolvedWhen")}</th>
-                                {canEditComments && <th>{t("common.actions")}</th>}
+                                <th>{t('record.commentAuthor')}</th>
+                                <th>{t('record.commentMessage')}</th>
+                                <th>{t('record.commentDate')}</th>
+                                <th>{t('record.commentResolved')}</th>
+                                <th>{t('record.resolvedBy')}</th>
+                                <th>{t('record.resolvedWhen')}</th>
+                                {canEditComments && <th>{t('common.actions')}</th>}
                             </tr>
                             </thead>
                             <tbody>
                             {nonDeletedComments.length === 0 ? (
                                 <tr>
                                     <td colSpan={canEditComments ? 7 : 6} className="text-center text-muted">
-                                        {t("common.noData")}
+                                        {t('common.noData')}
                                     </td>
                                 </tr>
                             ) : (
@@ -209,8 +209,8 @@ export default function RecordComments({recordId, canResolveComments}: RecordCom
                                         </td>
                                         <td>
                                             {comment.resolved
-                                                ? t("common.yes")
-                                                : t("common.no")}
+                                                ? t('common.yes')
+                                                : t('common.no')}
                                         </td>
                                         <td>
                                             {comment.resolvedByName ?? '-'}
@@ -230,7 +230,7 @@ export default function RecordComments({recordId, canResolveComments}: RecordCom
                                                         className="me-1"
                                                         onClick={() => handleEditComment(comment)}
                                                     >
-                                                        {t("common.edit")}
+                                                        {t('common.edit')}
                                                     </Button>
                                                 )}
                                                 {/* Resolve button: server-computed permission (mapAdmin / supervisor incl. parent taxa / project manager) */}
@@ -241,7 +241,7 @@ export default function RecordComments({recordId, canResolveComments}: RecordCom
                                                         className="me-1"
                                                         onClick={() => handleResolveComment(comment.id)}
                                                     >
-                                                        {t("record.resolve")}
+                                                        {t('record.resolve')}
                                                     </Button>
                                                 )}
                                                 {/* Delete button: for comment author OR MapAdmin */}
@@ -251,7 +251,7 @@ export default function RecordComments({recordId, canResolveComments}: RecordCom
                                                         size="sm"
                                                         onClick={() => handleDeleteComment(comment.id)}
                                                     >
-                                                        {t("common.delete")}
+                                                        {t('common.delete')}
                                                     </Button>
                                                 )}
                                             </td>
@@ -268,18 +268,18 @@ export default function RecordComments({recordId, canResolveComments}: RecordCom
             {/* Add / Edit Comment Modal */}
             <Modal show={showModal} onHide={handleCloseModal}>
                 <Modal.Header closeButton>
-                    <Modal.Title>{editingComment ? t("record.editComment") : t("record.addComment")}</Modal.Title>
+                    <Modal.Title>{editingComment ? t('record.editComment') : t('record.addComment')}</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     <Form>
                         <Form.Group controlId="newComment">
-                            <Form.Label>{t("record.commentMessage")}</Form.Label>
+                            <Form.Label>{t('record.commentMessage')}</Form.Label>
                             <Form.Control
                                 as="textarea"
                                 rows={4}
                                 value={newComment}
                                 onChange={(e) => setNewComment(e.target.value)}
-                                placeholder={t("record.commentPlaceholder") || ""}
+                                placeholder={t('record.commentPlaceholder') || ''}
                             />
                         </Form.Group>
                         {actionError && (
@@ -289,14 +289,14 @@ export default function RecordComments({recordId, canResolveComments}: RecordCom
                 </Modal.Body>
                 <Modal.Footer>
                     <Button variant="secondary" onClick={handleCloseModal}>
-                        {t("common.cancel")}
+                        {t('common.cancel')}
                     </Button>
                     <Button
                         variant="primary"
                         onClick={handleSubmitComment}
                         disabled={!newComment.trim() || submitting}
                     >
-                        {submitting ? t("common.saving") : t("common.save")}
+                        {submitting ? t('common.saving') : t('common.save')}
                     </Button>
                 </Modal.Footer>
             </Modal>

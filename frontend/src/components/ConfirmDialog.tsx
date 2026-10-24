@@ -1,6 +1,6 @@
-import React from "react";
-import {useTranslation} from "react-i18next";
-import {Button, Modal} from "react-bootstrap";
+import React from 'react';
+import {useTranslation} from 'react-i18next';
+import {Button, Modal} from 'react-bootstrap';
 
 /**
  * Potvrzovací dialog aplikace – náhrada
@@ -29,7 +29,7 @@ export interface ConfirmOptions {
     /** Volitelný label rušícího tlačítka; výchozí `common.cancel`. */
     cancelLabel?: React.ReactNode;
     /** Varianta potvrzovacího tlačítka; výchozí `danger` (destruktivní akce). */
-    confirmVariant?: "danger" | "primary" | "warning";
+    confirmVariant?: 'danger' | 'primary' | 'warning';
 }
 
 interface ConfirmDialogProps extends ConfirmOptions {
@@ -43,7 +43,7 @@ export function ConfirmDialog({
                                   title,
                                   confirmLabel,
                                   cancelLabel,
-                                  confirmVariant = "danger",
+                                  confirmVariant = 'danger',
                                   onConfirm,
                                   onCancel,
                               }: ConfirmDialogProps) {
@@ -52,15 +52,15 @@ export function ConfirmDialog({
     return (
         <Modal show onHide={onCancel} centered>
             <Modal.Header closeButton>
-                <Modal.Title>{title ?? t("common.confirm.title")}</Modal.Title>
+                <Modal.Title>{title ?? t('common.confirm.title')}</Modal.Title>
             </Modal.Header>
             <Modal.Body>{message}</Modal.Body>
             <Modal.Footer>
                 <Button variant="secondary" onClick={onCancel}>
-                    {cancelLabel ?? t("common.cancel")}
+                    {cancelLabel ?? t('common.cancel')}
                 </Button>
                 <Button variant={confirmVariant} onClick={onConfirm}>
-                    {confirmLabel ?? t("common.yes")}
+                    {confirmLabel ?? t('common.yes')}
                 </Button>
             </Modal.Footer>
         </Modal>

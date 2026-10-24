@@ -5,17 +5,17 @@
  * to efficiently load import controls with pagination, sorting, and filtering.
  */
 
-import {useState, useMemo, useCallback} from "react";
-import {useTranslation} from "react-i18next";
-import {apiDelete} from "@/services/apiClient";
-import {logError} from "@/services/logger";
+import {useState, useMemo, useCallback} from 'react';
+import {useTranslation} from 'react-i18next';
+import {apiDelete} from '@/services/apiClient';
+import {logError} from '@/services/logger';
 import {
     DataTable,
     type DataTableColumnDef,
     createTimestampColumn,
     createTextColumn,
     createActionColumn,
-} from "@/core/dataTable";
+} from '@/core/dataTable';
 import {
     useImportControlsData,
 } from './hooks';
@@ -24,7 +24,7 @@ import {
     ImportControlsDeleteCell,
 } from './components';
 import type {ImportControlRecord} from './types';
-import {useNotifications} from "@/stores/notificationStore";
+import {useNotifications} from '@/stores/notificationStore';
 
 export default function ListOfControls() {
     const {t} = useTranslation();
@@ -55,15 +55,15 @@ export default function ListOfControls() {
             await apiDelete(`/api/react/importResult/validated/${id}`);
 
             // Success - show flash message
-            showFlash('success', t("atlas.admin.importsList.deleteSuccess"));
+            showFlash('success', t('atlas.admin.importsList.deleteSuccess'));
 
             // Note: DataTable will automatically refresh on next interaction
             // or user can manually refresh the page
         } catch (error) {
-            logError(error, {source: "ListOfControls", action: "deleteImportControl"});
+            logError(error, {source: 'ListOfControls', action: 'deleteImportControl'});
 
             // Show error message
-            showFlash('danger', t("atlas.admin.importsList.deleteError"));
+            showFlash('danger', t('atlas.admin.importsList.deleteError'));
         } finally {
             // Clear deleting state
             setDeletingId(null);
@@ -72,33 +72,33 @@ export default function ListOfControls() {
 
     // Column definitions
     const columns = useMemo<DataTableColumnDef<ImportControlRecord>[]>(() => [
-        createTimestampColumn<ImportControlRecord>('importTimestamp', t("atlas.admin.importsList.importedAt"), {
+        createTimestampColumn<ImportControlRecord>('importTimestamp', t('atlas.admin.importsList.importedAt'), {
             enableSorting: true,
             enableFiltering: true,
             enableRangeFilter: true,
             dateFormat: 'dd.MM.yyyy HH:mm',
         }),
-        createActionColumn<ImportControlRecord>('filename', t("atlas.admin.importsList.filename"), (row) => (
+        createActionColumn<ImportControlRecord>('filename', t('atlas.admin.importsList.filename'), (row) => (
             <ImportControlsFilenameCell row={row}/>
         ), {
             minWidth: '250px',
         }),
-        createTextColumn<ImportControlRecord>('recordsCount', t("atlas.admin.importsList.records"), {
+        createTextColumn<ImportControlRecord>('recordsCount', t('atlas.admin.importsList.records'), {
             enableSorting: true,
             enableFiltering: false,
             minWidth: '80px',
         }),
-        createTextColumn<ImportControlRecord>('warningsCount', t("atlas.admin.importsList.warnings"), {
+        createTextColumn<ImportControlRecord>('warningsCount', t('atlas.admin.importsList.warnings'), {
             enableSorting: true,
             enableFiltering: false,
             minWidth: '80px',
         }),
-        createTextColumn<ImportControlRecord>('errorsCount', t("atlas.admin.importsList.error"), {
+        createTextColumn<ImportControlRecord>('errorsCount', t('atlas.admin.importsList.error'), {
             enableSorting: true,
             enableFiltering: false,
             minWidth: '80px',
         }),
-        createActionColumn<ImportControlRecord>('delete', t("atlas.admin.importsList.delete"), (row) => (
+        createActionColumn<ImportControlRecord>('delete', t('atlas.admin.importsList.delete'), (row) => (
             <ImportControlsDeleteCell
                 row={row}
                 onDelete={handleDelete}

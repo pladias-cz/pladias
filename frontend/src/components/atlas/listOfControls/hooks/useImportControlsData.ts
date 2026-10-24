@@ -30,7 +30,7 @@ export function useImportControlsData(options: UseImportControlsDataOptions = {}
         if (sorting && sorting.length > 0) {
             const s = sorting[0];
             sortParams.sortBy = s.id;
-            sortParams.sortOrder = s.desc ? "desc" : "asc";
+            sortParams.sortOrder = s.desc ? 'desc' : 'asc';
         }
 
         // Extract filters - handle special cases for timestamp range
@@ -51,7 +51,7 @@ export function useImportControlsData(options: UseImportControlsDataOptions = {}
             }
         });
 
-        const payload = await apiGet<ServerSideDataResponse<ImportControlRecord>>("/api/react/importResult/validated", {
+        const payload = await apiGet<ServerSideDataResponse<ImportControlRecord>>('/api/react/importResult/validated', {
             params: {
                 page: String(page),
                 pageSize: String(pageSize),

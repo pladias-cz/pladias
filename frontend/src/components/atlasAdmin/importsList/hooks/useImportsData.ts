@@ -30,7 +30,7 @@ export function useImportsData(options: UseImportsDataOptions = {}) {
         if (sorting && sorting.length > 0) {
             const s = sorting[0];
             sortParams.sortBy = s.id;
-            sortParams.sortOrder = s.desc ? "desc" : "asc";
+            sortParams.sortOrder = s.desc ? 'desc' : 'asc';
         }
 
         // Extract filters
@@ -40,7 +40,7 @@ export function useImportsData(options: UseImportsDataOptions = {}) {
             filters[paramName] = filter.value;
         });
 
-        const payload = await apiGet<ServerSideDataResponse<ImportRecord>>("/api/react/atlasadmin/imports", {
+        const payload = await apiGet<ServerSideDataResponse<ImportRecord>>('/api/react/atlasadmin/imports', {
             params: {
                 page: String(page),
                 pageSize: String(pageSize),

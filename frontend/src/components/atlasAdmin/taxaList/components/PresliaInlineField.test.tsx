@@ -7,24 +7,24 @@
  * a Enter/blur beze změny hodnoty.
  */
 
-import {act, cleanup, fireEvent, render, screen, waitFor} from "@testing-library/react";
-import {afterEach, describe, expect, it, vi} from "vitest";
-import {PresliaInlineField} from "./PresliaInlineField";
-import "@/i18n/i18n";
+import {act, cleanup, fireEvent, render, screen, waitFor} from '@testing-library/react';
+import {afterEach, describe, expect, it, vi} from 'vitest';
+import {PresliaInlineField} from './PresliaInlineField';
+import '@/i18n/i18n';
 
 function renderField(onSave: (newValue: string) => Promise<void>) {
     render(<PresliaInlineField taxonId={1} value="stará" onSave={onSave} disabled={false}/>);
-    fireEvent.click(screen.getByText("stará"));
-    return screen.getByRole("textbox") as HTMLInputElement;
+    fireEvent.click(screen.getByText('stará'));
+    return screen.getByRole('textbox') as HTMLInputElement;
 }
 
-describe("PresliaInlineField", () => {
+describe('PresliaInlineField', () => {
     afterEach(() => {
         cleanup();
         vi.restoreAllMocks();
     });
 
-    it("Enter během ukládání + následný blur odešle onSave jen jednou", async () => {
+    it('Enter během ukládání + následný blur odešle onSave jen jednou', async () => {
         let resolveSave!: () => void;
         const onSave = vi.fn(() => new Promise<void>(resolve => {
             resolveSave = resolve;
@@ -33,14 +33,14 @@ describe("PresliaInlineField", () => {
         const input = renderField(onSave);
 
         await act(async () => {
-            fireEvent.change(input, {target: {value: "nová"}});
-            fireEvent.keyDown(input, {key: "Enter"});
+            fireEvent.change(input, {target: {value: 'nová'}});
+            fireEvent.keyDown(input, {key: 'Enter'});
             // input je teď zablokovaný (saving) – prohlížeč na něm vystřelí blur
             fireEvent.blur(input);
         });
 
         expect(onSave).toHaveBeenCalledTimes(1);
-        expect(onSave).toHaveBeenCalledWith("nová");
+        expect(onSave).toHaveBeenCalledWith('nová');
         // ukládání stále běží – input zůstává zablokovaný
         expect(input.disabled).toBe(true);
 
@@ -49,51 +49,51 @@ describe("PresliaInlineField", () => {
         });
 
         // po úspěchu se editace zavře a onSave se znovu nevolal
-        await waitFor(() => expect(screen.queryByRole("textbox")).toBeNull());
+        await waitFor(() => expect(screen.queryByRole('textbox')).toBeNull());
         expect(onSave).toHaveBeenCalledTimes(1);
     });
 
-    it("po selhání ukládání zůstává editace otevřená a umožňuje opakovat uložení", async () => {
+    it('po selhání ukládání zůstává editace otevřená a umožňuje opakovat uložení', async () => {
         const onSave = vi.fn()
-            .mockRejectedValueOnce(new Error("konflikt verzí"))
+            .mockRejectedValueOnce(new Error('konflikt verzí'))
             .mockResolvedValueOnce(undefined);
 
         const input = renderField(onSave);
 
         await act(async () => {
-            fireEvent.change(input, {target: {value: "nová"}});
-            fireEvent.keyDown(input, {key: "Enter"});
+            fireEvent.change(input, {target: {value: 'nová'}});
+            fireEvent.keyDown(input, {key: 'Enter'});
         });
 
         // první pokus selhal – chybu hlásí rodič notifikačním storem (toast),
         // editace zůstává otevřená s rozpracovanou hodnotou
-        expect(screen.getByRole("textbox")).toBeInTheDocument();
-        expect(input.value).toBe("nová");
+        expect(screen.getByRole('textbox')).toBeInTheDocument();
+        expect(input.value).toBe('nová');
 
         // retry – tentokrát úspěšně
         await act(async () => {
-            fireEvent.keyDown(screen.getByRole("textbox"), {key: "Enter"});
+            fireEvent.keyDown(screen.getByRole('textbox'), {key: 'Enter'});
         });
 
-        await waitFor(() => expect(screen.queryByRole("textbox")).toBeNull());
+        await waitFor(() => expect(screen.queryByRole('textbox')).toBeNull());
         expect(onSave).toHaveBeenCalledTimes(2);
-        expect(onSave).toHaveBeenLastCalledWith("nová");
+        expect(onSave).toHaveBeenLastCalledWith('nová');
     });
 
-    it("Enter beze změny hodnoty neodešle onSave a zavře editaci", async () => {
+    it('Enter beze změny hodnoty neodešle onSave a zavře editaci', async () => {
         const onSave = vi.fn().mockResolvedValue(undefined);
 
         const input = renderField(onSave);
 
         await act(async () => {
-            fireEvent.keyDown(input, {key: "Enter"});
+            fireEvent.keyDown(input, {key: 'Enter'});
         });
 
         expect(onSave).not.toHaveBeenCalled();
-        expect(screen.queryByRole("textbox")).toBeNull();
+        expect(screen.queryByRole('textbox')).toBeNull();
     });
 
-    it("blur beze změny hodnoty zavře editaci bez uložení", async () => {
+    it('blur beze změny hodnoty zavře editaci bez uložení', async () => {
         const onSave = vi.fn().mockResolvedValue(undefined);
 
         const input = renderField(onSave);
@@ -103,6 +103,6 @@ describe("PresliaInlineField", () => {
         });
 
         expect(onSave).not.toHaveBeenCalled();
-        expect(screen.queryByRole("textbox")).toBeNull();
+        expect(screen.queryByRole('textbox')).toBeNull();
     });
 });

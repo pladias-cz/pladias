@@ -123,7 +123,7 @@ export function DataTable<T extends object>(config: DataTableConfig<T>) {
     // samy a vracejí prázdná data, query pak error nemá)
     useEffect(() => {
         if (error) {
-            notifyApiError(error, t("common.table.loadFailed"));
+            notifyApiError(error, t('common.table.loadFailed'));
         }
     }, [error, t]);
 
@@ -166,8 +166,8 @@ export function DataTable<T extends object>(config: DataTableConfig<T>) {
                 }
                 const boolValue = row[column.accessor] as boolean;
                 return boolValue
-                    ? (column.trueLabel ?? t("common.table.yes"))
-                    : (column.falseLabel ?? t("common.table.no"));
+                    ? (column.trueLabel ?? t('common.table.yes'))
+                    : (column.falseLabel ?? t('common.table.no'));
             }
 
             case 'checkbox': {
@@ -220,7 +220,7 @@ export function DataTable<T extends object>(config: DataTableConfig<T>) {
                                 );
                                 // Chyba akce jde do globálního notifikačního store
                                 // (toast) – hlášku z backendu nese ApiError.payload
-                                notifyApiError(error, t("common.table.updateFailed"));
+                                notifyApiError(error, t('common.table.updateFailed'));
                             }
                         }}
                     />
@@ -313,7 +313,7 @@ export function DataTable<T extends object>(config: DataTableConfig<T>) {
                                 className="btn btn-sm btn-outline-secondary"
                                 onClick={clearFilters}
                             >
-                                {t("common.table.clearFilters")}
+                                {t('common.table.clearFilters')}
                             </button>
                         )}
                     </div>

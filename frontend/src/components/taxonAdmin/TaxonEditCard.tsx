@@ -1,12 +1,12 @@
-import {Card} from "react-bootstrap";
+import {Card} from 'react-bootstrap';
 import {type Taxon} from '@/models/Taxon';
 import {type Option} from '@/models/Option';
-import TaxonTraitCount from "@/components/taxonAdmin/TaxonTraitCount";
-import TaxonStats from "@/components/taxonAdmin/TaxonStats";
-import {useMemo} from "react";
+import TaxonTraitCount from '@/components/taxonAdmin/TaxonTraitCount';
+import TaxonStats from '@/components/taxonAdmin/TaxonStats';
+import {useMemo} from 'react';
 import InlineField from '@/components/edit/TaxonInlineField';
 import {useTranslation} from 'react-i18next';
-import {getTaxonRanks} from "@/services/taxonApi";
+import {getTaxonRanks} from '@/services/taxonApi';
 import {useCatalogQuery} from '@/query/useCatalogQuery';
 
 interface Props {
@@ -20,7 +20,7 @@ export default function TaxonEditCard({taxon, onTaxonChange}: Props) {
 
     // číselník ranků – bez cache (sekce J); při selhání zůstane select prázdný
     // (403 a síťové chyby hlásí centrálně apiClient)
-    const ranks = useCatalogQuery(["taxonRanks"], getTaxonRanks);
+    const ranks = useCatalogQuery(['taxonRanks'], getTaxonRanks);
     const rankOptions = useMemo<Option[]>(
         () => ranks.map(r => ({
             value: r.id,
@@ -38,13 +38,13 @@ export default function TaxonEditCard({taxon, onTaxonChange}: Props) {
 
     return (
         <Card>
-            <Card.Header>{t("taxon.edit.title")} <strong>{taxon.nameLat}</strong></Card.Header>
+            <Card.Header>{t('taxon.edit.title')} <strong>{taxon.nameLat}</strong></Card.Header>
             <Card.Body>
                 <TaxonStats taxonId={taxon.id}/>
                 <TaxonTraitCount taxonId={taxon.id}/>
                 <hr/>
                 <InlineField
-                    label={t("taxon.edit.latinName")}
+                    label={t('taxon.edit.latinName')}
                     taxonId={taxon.id}
                     field="LATNAME"
                     value={taxon.nameLat}
@@ -53,7 +53,7 @@ export default function TaxonEditCard({taxon, onTaxonChange}: Props) {
                 />
 
                 <InlineField
-                    label={t("taxon.edit.htmlName")}
+                    label={t('taxon.edit.htmlName')}
                     taxonId={taxon.id}
                     field="NAMEHTML"
                     value={taxon.nameHtml}
@@ -62,7 +62,7 @@ export default function TaxonEditCard({taxon, onTaxonChange}: Props) {
                 />
 
                 <InlineField
-                    label={t("taxon.edit.czechName")}
+                    label={t('taxon.edit.czechName')}
                     taxonId={taxon.id}
                     field="CZNAME"
                     value={taxon.nameCz}
@@ -71,18 +71,18 @@ export default function TaxonEditCard({taxon, onTaxonChange}: Props) {
                 />
 
                 <InlineField
-                    label={t("taxon.edit.rank")}
+                    label={t('taxon.edit.rank')}
                     taxonId={taxon.id}
                     field="RANK"
                     value={taxon.rank || ''}
                     type="select"
                     options={rankOptions}
-                    render={() => rankLabel || "—"}
+                    render={() => rankLabel || '—'}
                     onUpdated={handleInlineUpdate}
                 />
 
                 <InlineField
-                    label={t("taxon.edit.author")}
+                    label={t('taxon.edit.author')}
                     taxonId={taxon.id}
                     field="AUTHOR"
                     value={taxon.author}
@@ -91,7 +91,7 @@ export default function TaxonEditCard({taxon, onTaxonChange}: Props) {
                 />
 
                 <InlineField
-                    label={t("taxon.edit.hybridParents")}
+                    label={t('taxon.edit.hybridParents')}
                     taxonId={taxon.id}
                     field="HYBRIDPARENTAGE"
                     value={taxon.hybridParents}
@@ -100,7 +100,7 @@ export default function TaxonEditCard({taxon, onTaxonChange}: Props) {
                 />
 
                 <InlineField
-                    label={t("taxon.edit.suppressed")}
+                    label={t('taxon.edit.suppressed')}
                     taxonId={taxon.id}
                     field="SUPPRESSED"
                     value={taxon.suppressed || false}
@@ -109,7 +109,7 @@ export default function TaxonEditCard({taxon, onTaxonChange}: Props) {
                 />
 
                 <InlineField
-                    label={t("taxon.edit.note")}
+                    label={t('taxon.edit.note')}
                     taxonId={taxon.id}
                     field="COMMENT"
                     value={taxon.note}

@@ -12,7 +12,7 @@ export function ImportsListDeleteCell({row, onDelete, deletingBatchId}: ImportsL
     const {t} = useTranslation();
 
     if (row.hasDeletionCode) {
-        return <span className="text-muted">{t("atlas.admin.importsList.markedForDeletion")}</span>;
+        return <span className="text-muted">{t('atlas.admin.importsList.markedForDeletion')}</span>;
     }
 
     const isDeleting = deletingBatchId === row.batchId;
@@ -25,9 +25,9 @@ export function ImportsListDeleteCell({row, onDelete, deletingBatchId}: ImportsL
             disabled={isDeleting}
         >
             {isDeleting ? (
-                <><Spinner animation="border" size="sm" className="me-1"/>{t("common.loading")}</>
+                <><Spinner animation="border" size="sm" className="me-1"/>{t('common.loading')}</>
             ) : (
-                t("atlas.admin.importsList.delete")
+                t('atlas.admin.importsList.delete')
             )}
         </Button>
     );

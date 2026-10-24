@@ -1,13 +1,13 @@
-import {Card, Col, Row} from "react-bootstrap";
-import {useCallback, useLayoutEffect, useRef, useState, useEffect} from "react";
-import {useTranslation} from "react-i18next";
+import {Card, Col, Row} from 'react-bootstrap';
+import {useCallback, useLayoutEffect, useRef, useState, useEffect} from 'react';
+import {useTranslation} from 'react-i18next';
 import type {RecordPladiasFull} from '@/models/RecordPladiasFull';
-import RecordReadonlyField from "@/components/atlas/record/RecordReadonlyField";
-import RecordInlineField from "@/components/atlas/record/RecordInlineField";
-import MultiSelectEdit from "@/components/atlas/record/MultiSelectEdit";
-import type {MultiValueOption} from "@/models/MultiValueOption";
-import {getUnassignedHerbaria} from "@/services/recordApi";
-import {useRecordPermissions} from "@/components/atlas/record/hooks/useRecordPermissions";
+import RecordReadonlyField from '@/components/atlas/record/RecordReadonlyField';
+import RecordInlineField from '@/components/atlas/record/RecordInlineField';
+import MultiSelectEdit from '@/components/atlas/record/MultiSelectEdit';
+import type {MultiValueOption} from '@/models/MultiValueOption';
+import {getUnassignedHerbaria} from '@/services/recordApi';
+import {useRecordPermissions} from '@/components/atlas/record/hooks/useRecordPermissions';
 
 interface RecordRemarksProps {
     record: RecordPladiasFull;
@@ -94,22 +94,22 @@ export default function RecordRemarks({record, onFieldUpdated}: RecordRemarksPro
                     </Card.Header>
                     <Card.Body>
                         <h5>Příznaky pro mapu</h5>
-                        <RecordReadonlyField label={t("record.includedInMap")}
+                        <RecordReadonlyField label={t('record.includedInMap')}
                                              content={
                                                  localRecord.includedInMap
                                                      ? <i className="bi bi-check text-success"></i>
                                                      : <i className="bi bi-x text-danger"></i>
                                              }/>
-                        <RecordReadonlyField label={t("record.herbariumQuality")}
+                        <RecordReadonlyField label={t('record.herbariumQuality')}
                                              content={localRecord.herbariumQuality
                                                  ? <i className="bi bi-check text-success"></i>
                                                  : <i className="bi bi-x text-danger"></i>
                                              }/>
-                        <RecordReadonlyField label={t("record.originality")}
+                        <RecordReadonlyField label={t('record.originality')}
                                              content={localRecord.originalityStatusName}/>
                         <Row className="align-items-center mb-1">
                             <Col sm={3} className="text-muted small">
-                                {t("record.validationStatus")}
+                                {t('record.validationStatus')}
                             </Col>
                             <Col sm={9}>
                                 <span style={{color: localRecord.validationStatusColor || '#808080'}}
@@ -120,7 +120,7 @@ export default function RecordRemarks({record, onFieldUpdated}: RecordRemarksPro
                         <h5>Zdroje</h5>
                         {canEdit ? (
                             <RecordInlineField
-                                label={t("record.source")}
+                                label={t('record.source')}
                                 recordId={localRecord.id}
                                 field="SOURCE"
                                 value={localRecord.source}
@@ -129,23 +129,23 @@ export default function RecordRemarks({record, onFieldUpdated}: RecordRemarksPro
                             />
                         ) : (
                             localRecord.source?.trim() && (
-                                <RecordReadonlyField label={t("record.source")}
+                                <RecordReadonlyField label={t('record.source')}
                                                      content={localRecord.source}/>
                             )
                         )}
-                        <RecordReadonlyField label={t("record.revisedHerbarium")}
+                        <RecordReadonlyField label={t('record.revisedHerbarium')}
                                              content={localRecord.herbariumQuality
                                                  ? <i className="bi bi-check text-success"></i>
                                                  : <i className="bi bi-x text-danger"></i>}/>
                         {localRecord.mapSquares.length > 0 && (
-                            <RecordReadonlyField label={t("record.squares")}
+                            <RecordReadonlyField label={t('record.squares')}
                                                  content={localRecord.mapSquares.map((s: {
                                                      code: string
-                                                 }) => s.code).join(", ")}/>
+                                                 }) => s.code).join(', ')}/>
                         )}
                         {canEdit ? (
                             <MultiSelectEdit
-                                label={t("record.herbariums")}
+                                label={t('record.herbariums')}
                                 recordId={localRecord.id}
                                 currentValue={localRecord.herbariums.map((h): MultiValueOption => ({
                                     id: h.id,
@@ -157,10 +157,10 @@ export default function RecordRemarks({record, onFieldUpdated}: RecordRemarksPro
                                 deleteKey="DELETEHERBARIUM"
                                 onUpdated={(data) => {
                                     setLocalRecord((prev: RecordPladiasFull) => {
-                                        const newHerbariums: RecordPladiasFull["herbariums"] = data.updatedValue.map((opt) => ({
+                                        const newHerbariums: RecordPladiasFull['herbariums'] = data.updatedValue.map((opt) => ({
                                             id: opt.id,
                                             name: opt.name,
-                                            label: opt.label ?? "",
+                                            label: opt.label ?? '',
                                         }));
                                         return {
                                             ...prev,
@@ -175,7 +175,7 @@ export default function RecordRemarks({record, onFieldUpdated}: RecordRemarksPro
                         ) : (
                             <div className="d-flex flex-wrap gap-1">
                                 {localRecord.herbariums.length === 0 ? (
-                                    <span className="text-muted">{t("common.multiValueEdit.none")}</span>
+                                    <span className="text-muted">{t('common.multiValueEdit.none')}</span>
                                 ) : (
                                     localRecord.herbariums.map((herb) => (
                                         <span key={herb.id} className="badge bg-secondary">
@@ -187,7 +187,7 @@ export default function RecordRemarks({record, onFieldUpdated}: RecordRemarksPro
                         )}
                         {canEdit ? (
                             <RecordInlineField
-                                label={t("record.originalId")}
+                                label={t('record.originalId')}
                                 recordId={localRecord.id}
                                 field="ORIGINALID"
                                 value={localRecord.originalId?.toString() ?? ''}
@@ -196,49 +196,49 @@ export default function RecordRemarks({record, onFieldUpdated}: RecordRemarksPro
                             />
                         ) : (
                             localRecord.originalId?.trim() && (
-                                <RecordReadonlyField label={t("record.originalId")}
+                                <RecordReadonlyField label={t('record.originalId')}
                                                      content={localRecord.originalId}/>
                             )
                         )}
                         <h5>Technické info</h5>
-                        <RecordReadonlyField label={t("record.batch")}
+                        <RecordReadonlyField label={t('record.batch')}
                                              content={localRecord.batch.id.toString()}/>
                         <RecordReadonlyField label="ID" content={localRecord.id.toString()}/>
-                        <RecordReadonlyField label={t("record.uploaded")}
-                                             content={localRecord.batch.authorName + " " + localRecord.batch.createTimestamp}/>
-                        <RecordReadonlyField label={t("record.phytochorionComputed")}
+                        <RecordReadonlyField label={t('record.uploaded')}
+                                             content={localRecord.batch.authorName + ' ' + localRecord.batch.createTimestamp}/>
+                        <RecordReadonlyField label={t('record.phytochorionComputed')}
                                              content={localRecord.isPhytochorionComputed
                                                  ? <i className="bi bi-check text-success"></i>
                                                  : <i className="bi bi-x text-danger"></i>}/>
-                        <RecordReadonlyField label={t("record.altitudeAproximate")}
+                        <RecordReadonlyField label={t('record.altitudeAproximate')}
                                              content={localRecord.altitudeApproximation
                                                  ? <i className="bi bi-check text-success"></i>
                                                  : <i className="bi bi-x text-danger"></i>}/>
 
-                        <RecordReadonlyField label={t("record.origin")}
-                                             content={localRecord.projectName + " | " + localRecord.institutionName}/>
-                        <RecordReadonlyField label={t("record.license")} content={localRecord.licenseName}/>
+                        <RecordReadonlyField label={t('record.origin')}
+                                             content={localRecord.projectName + ' | ' + localRecord.institutionName}/>
+                        <RecordReadonlyField label={t('record.license')} content={localRecord.licenseName}/>
                         {hasRemarks && (
                             <>
-                                <h5>{t("record.remarks")}</h5>
+                                <h5>{t('record.remarks')}</h5>
                                 {localRecord.remarkExcerption?.trim() && (
-                                    <RecordReadonlyField label={t("record.remarkExcerption")}
+                                    <RecordReadonlyField label={t('record.remarkExcerption')}
                                                          content={localRecord.remarkExcerption}/>
                                 )}
                                 {localRecord.remarkOther?.trim() && (
-                                    <RecordReadonlyField label={t("record.remarkOther")}
+                                    <RecordReadonlyField label={t('record.remarkOther')}
                                                          content={localRecord.remarkOther}/>
                                 )}
                                 {localRecord.remarkDoubt?.trim() && (
-                                    <RecordReadonlyField label={t("record.remarkDoubt")}
+                                    <RecordReadonlyField label={t('record.remarkDoubt')}
                                                          content={localRecord.remarkDoubt}/>
                                 )}
                                 {localRecord.environment?.trim() && (
-                                    <RecordReadonlyField label={t("record.environment")}
+                                    <RecordReadonlyField label={t('record.environment')}
                                                          content={localRecord.environment}/>
                                 )}
                                 {localRecord.detrev?.trim() && (
-                                    <RecordReadonlyField label={t("record.detrev")}
+                                    <RecordReadonlyField label={t('record.detrev')}
                                                          content={localRecord.detrev}/>
                                 )}
                             </>

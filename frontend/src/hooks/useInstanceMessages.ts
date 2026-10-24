@@ -11,10 +11,10 @@
  *  - **401:** vypršení session řeší apiClient (přesměrování na /login).
  */
 
-import {useRef} from "react";
-import {useQuery} from "@tanstack/react-query";
-import {loadInstanceMessages} from "@/services/instanceApi";
-import type {InstanceMessage} from "@/models/InstanceMessage";
+import {useRef} from 'react';
+import {useQuery} from '@tanstack/react-query';
+import {loadInstanceMessages} from '@/services/instanceApi';
+import type {InstanceMessage} from '@/models/InstanceMessage';
 
 /** Čekání před dalším dotazem podle počtu po sobě jdoucích selhání (index 0 = po úspěchu). */
 const FAILURE_DELAYS_MS = [30_000, 60_000, 120_000, 300_000] as const;
@@ -40,7 +40,7 @@ export function useInstanceMessages(): InstanceMessagesState {
     const consecutiveFailuresRef = useRef(0);
 
     const {data} = useQuery({
-        queryKey: ["instanceMessages"],
+        queryKey: ['instanceMessages'],
         // čtení `signal` zajišťuje zrušení rozjetého dotazu po odmontování
         queryFn: ({signal}) => loadInstanceMessages({signal}),
         // Kadence podle počtu po sobě jdoucích selhání (po úspěchu reset na 30 s).
@@ -63,7 +63,7 @@ export function useInstanceMessages(): InstanceMessagesState {
         // Re-render po každé změně výsledku pollu (i při opakované stejné chybě,
         // kdy se instance chyby ani data nemusejí změnit) – `unavailable` se
         // jinak nemuselo přepočítat.
-        notifyOnChangeProps: "all",
+        notifyOnChangeProps: 'all',
     });
 
     return {

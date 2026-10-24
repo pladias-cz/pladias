@@ -1,13 +1,13 @@
-import {useEffect, useState} from "react";
-import {useTranslation} from "react-i18next";
-import {Spinner} from "react-bootstrap";
-import type {FeatureGroup} from "@/models/FeatureGroup";
-import type {Feature} from "@/models/Feature";
-import type {Trait} from "@/models/Trait";
-import {getFeatureGroups, getFeaturesOfGroup, getTraitsOfFeature} from "@/services/traitApi";
-import {notifyApiError} from "@/stores/notificationStore";
-import RichTextMessage from "@/components/RichTextMessage";
-import "./ExportTraitList.scss";
+import {useEffect, useState} from 'react';
+import {useTranslation} from 'react-i18next';
+import {Spinner} from 'react-bootstrap';
+import type {FeatureGroup} from '@/models/FeatureGroup';
+import type {Feature} from '@/models/Feature';
+import type {Trait} from '@/models/Trait';
+import {getFeatureGroups, getFeaturesOfGroup, getTraitsOfFeature} from '@/services/traitApi';
+import {notifyApiError} from '@/stores/notificationStore';
+import RichTextMessage from '@/components/RichTextMessage';
+import './ExportTraitList.scss';
 
 /**
  * Strom výběru vlastností komplexního exportu (skupina → vlastnost → datová
@@ -23,31 +23,31 @@ import "./ExportTraitList.scss";
  */
 
 /** Stav zaškrtnutí uzlu; "empty" = uzel bez vybratelných potomků. */
-type CheckState = "all" | "some" | "none" | "empty";
+type CheckState = 'all' | 'some' | 'none' | 'empty';
 
 /** Stav listu (řady jedné vlastnosti) podle vybraných id. */
 function leafState(ids: number[], selected: ReadonlySet<number>): CheckState {
-    if (ids.length === 0) return "empty";
+    if (ids.length === 0) return 'empty';
 
     let selectedCount = 0;
     for (const id of ids) {
         if (selected.has(id)) selectedCount++;
     }
 
-    return selectedCount === ids.length ? "all" : selectedCount > 0 ? "some" : "none";
+    return selectedCount === ids.length ? 'all' : selectedCount > 0 ? 'some' : 'none';
 }
 
 /** Stav nadřazeného uzlu podle stavů potomků; potomci bez řad se do výběru nepočítají. */
 function parentState(childStates: CheckState[]): CheckState {
-    const selectable = childStates.filter(state => state !== "empty");
-    if (selectable.length === 0) return "empty";
-    if (selectable.every(state => state === "all")) return "all";
-    return selectable.some(state => state === "all" || state === "some") ? "some" : "none";
+    const selectable = childStates.filter(state => state !== 'empty');
+    if (selectable.length === 0) return 'empty';
+    if (selectable.every(state => state === 'all')) return 'all';
+    return selectable.some(state => state === 'all' || state === 'some') ? 'some' : 'none';
 }
 
 /** Zvýraznění řádku uzlu s alespoň jednou vybranou podpoložkou. */
 function isHighlighted(state: CheckState): boolean {
-    return state === "all" || state === "some";
+    return state === 'all' || state === 'some';
 }
 
 /** Kopie sady s přidanou/odebranou hodnotou (rozbalování, načítání, výběr řad). */
@@ -77,7 +77,7 @@ export default function ExportTraitList() {
     useEffect(() => {
         getFeatureGroups()
             .then(setGroups)
-            .catch(e => notifyApiError(e, t("trait.export.loadFailed")))
+            .catch(e => notifyApiError(e, t('trait.export.loadFailed')))
             .finally(() => setLoading(false));
     }, [t]);
 
@@ -115,7 +115,7 @@ export default function ExportTraitList() {
 
         setLoadingGroups(prev => toggleSetItem(prev, group.id, true));
         ensureFeaturesLoaded(group.id)
-            .catch(e => notifyApiError(e, t("trait.export.loadFailed")))
+            .catch(e => notifyApiError(e, t('trait.export.loadFailed')))
             .finally(() => setLoadingGroups(prev => toggleSetItem(prev, group.id, false)));
     }
 
@@ -124,7 +124,7 @@ export default function ExportTraitList() {
         setExpandedFeatures(prev => toggleSetItem(prev, feature.id, willExpand));
         if (!willExpand || traitsByFeature[feature.id]) return;
 
-        loadTraits(feature.id).catch(e => notifyApiError(e, t("trait.export.loadFailed")));
+        loadTraits(feature.id).catch(e => notifyApiError(e, t('trait.export.loadFailed')));
     }
 
     // --- výběr (kaskádní zaškrtnutí skupiny/vlastnosti, jednotlivé řady) ---
@@ -151,24 +151,24 @@ export default function ExportTraitList() {
 
     async function toggleFeatureCheck(feature: Feature) {
         // částečně vybraná vlastnost se doplní, plně vybraná se zruší
-        const select = featureCheckState(feature.id) !== "all";
+        const select = featureCheckState(feature.id) !== 'all';
         try {
             const traits = await loadTraits(feature.id);
             setTraitsSelected(traits.map(trait => trait.id), select);
         } catch (e) {
-            notifyApiError(e, t("trait.export.loadFailed"));
+            notifyApiError(e, t('trait.export.loadFailed'));
         }
     }
 
     async function toggleGroupCheck(group: FeatureGroup) {
-        const select = groupCheckState(group) !== "all";
+        const select = groupCheckState(group) !== 'all';
         setLoadingGroups(prev => toggleSetItem(prev, group.id, true));
         try {
             const features = await ensureFeaturesLoaded(group.id);
             const traitLists = await Promise.all(features.map(feature => loadTraits(feature.id)));
             setTraitsSelected(traitLists.flat().map(trait => trait.id), select);
         } catch (e) {
-            notifyApiError(e, t("trait.export.loadFailed"));
+            notifyApiError(e, t('trait.export.loadFailed'));
         } finally {
             setLoadingGroups(prev => toggleSetItem(prev, group.id, false));
         }
@@ -179,12 +179,12 @@ export default function ExportTraitList() {
 
     function featureCheckState(featureId: number): CheckState {
         const traits = traitsByFeature[featureId];
-        return traits ? leafState(traits.map(trait => trait.id), selectedTraitIds) : "none";
+        return traits ? leafState(traits.map(trait => trait.id), selectedTraitIds) : 'none';
     }
 
     function groupCheckState(group: FeatureGroup): CheckState {
         const features = featuresByGroup[group.id];
-        return features ? parentState(features.map(feature => featureCheckState(feature.id))) : "none";
+        return features ? parentState(features.map(feature => featureCheckState(feature.id))) : 'none';
     }
 
     if (loading) {
@@ -205,26 +205,26 @@ export default function ExportTraitList() {
                 return (
                     <div className="export-tree__node export-tree__node--group" key={group.id}>
                         <div
-                            className={`export-tree__row${isHighlighted(groupState) ? " export-tree__row--selected" : ""}`}>
+                            className={`export-tree__row${isHighlighted(groupState) ? ' export-tree__row--selected' : ''}`}>
                             <button
                                 type="button"
                                 className="export-tree__toggle"
                                 aria-expanded={groupExpanded}
                                 aria-label={groupExpanded
-                                    ? t("trait.export.collapse", {name: group.name})
-                                    : t("trait.export.expand", {name: group.name})}
+                                    ? t('trait.export.collapse', {name: group.name})
+                                    : t('trait.export.expand', {name: group.name})}
                                 onClick={() => toggleGroupExpanded(group)}
                             >
-                                <i className={`bi bi-chevron-${groupExpanded ? "down" : "right"}`} aria-hidden="true"/>
+                                <i className={`bi bi-chevron-${groupExpanded ? 'down' : 'right'}`} aria-hidden="true"/>
                             </button>
                             <input
                                 type="checkbox"
                                 className="form-check-input"
                                 id={`export-tree-group-${group.id}`}
-                                checked={groupState === "all"}
-                                disabled={groupState === "empty" || groupLoading}
+                                checked={groupState === 'all'}
+                                disabled={groupState === 'empty' || groupLoading}
                                 ref={checkbox => {
-                                    if (checkbox) checkbox.indeterminate = groupState === "some";
+                                    if (checkbox) checkbox.indeterminate = groupState === 'some';
                                 }}
                                 onChange={() => toggleGroupCheck(group)}
                             />
@@ -244,27 +244,27 @@ export default function ExportTraitList() {
                                     return (
                                         <div className="export-tree__node" key={feature.id}>
                                             <div
-                                                className={`export-tree__row${isHighlighted(featureState) ? " export-tree__row--selected" : ""}`}>
+                                                className={`export-tree__row${isHighlighted(featureState) ? ' export-tree__row--selected' : ''}`}>
                                                 <button
                                                     type="button"
                                                     className="export-tree__toggle"
                                                     aria-expanded={featureExpanded}
                                                     aria-label={featureExpanded
-                                                        ? t("trait.export.collapse", {name: feature.name})
-                                                        : t("trait.export.expand", {name: feature.name})}
+                                                        ? t('trait.export.collapse', {name: feature.name})
+                                                        : t('trait.export.expand', {name: feature.name})}
                                                     onClick={() => toggleFeatureExpanded(feature)}
                                                 >
-                                                    <i className={`bi bi-chevron-${featureExpanded ? "down" : "right"}`}
+                                                    <i className={`bi bi-chevron-${featureExpanded ? 'down' : 'right'}`}
                                                        aria-hidden="true"/>
                                                 </button>
                                                 <input
                                                     type="checkbox"
                                                     className="form-check-input"
                                                     id={`export-tree-feature-${feature.id}`}
-                                                    checked={featureState === "all"}
-                                                    disabled={featureState === "empty" || groupLoading || featureLoading}
+                                                    checked={featureState === 'all'}
+                                                    disabled={featureState === 'empty' || groupLoading || featureLoading}
                                                     ref={checkbox => {
-                                                        if (checkbox) checkbox.indeterminate = featureState === "some";
+                                                        if (checkbox) checkbox.indeterminate = featureState === 'some';
                                                     }}
                                                     onChange={() => toggleFeatureCheck(feature)}
                                                 />
@@ -281,7 +281,7 @@ export default function ExportTraitList() {
                                                     {traitsByFeature[feature.id].map(trait => (
                                                         <div className="export-tree__node" key={trait.id}>
                                                             <label
-                                                                className={`export-tree__row${selectedTraitIds.has(trait.id) ? " export-tree__row--selected" : ""}`}>
+                                                                className={`export-tree__row${selectedTraitIds.has(trait.id) ? ' export-tree__row--selected' : ''}`}>
                                                                 <span className="export-tree__spacer"
                                                                       aria-hidden="true"/>
                                                                 <input
@@ -294,7 +294,7 @@ export default function ExportTraitList() {
                                                                 <span className="export-tree__label">
                                                                     datová řada založená na zdroji <RichTextMessage
                                                                     html={trait.sourceHtml}/><small
-                                                                    className="text-muted">({new Date(trait.createTimestamp).toLocaleDateString("cs-CZ")})</small>
+                                                                    className="text-muted">({new Date(trait.createTimestamp).toLocaleDateString('cs-CZ')})</small>
                                                                 </span>
                                                             </label>
                                                         </div>

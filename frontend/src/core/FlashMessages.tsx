@@ -1,7 +1,7 @@
-import React, {useCallback, useEffect, useRef} from "react";
-import {useTranslation} from "react-i18next";
-import {instanceMessageKey, type InstanceMessage} from "@/models/InstanceMessage";
-import {useNotifications, type NotificationInput} from "@/stores/notificationStore";
+import React, {useCallback, useEffect, useRef} from 'react';
+import {useTranslation} from 'react-i18next';
+import {instanceMessageKey, type InstanceMessage} from '@/models/InstanceMessage';
+import {useNotifications, type NotificationInput} from '@/stores/notificationStore';
 
 /**
  * Globální zprávy o stavu instance (údržba apod.) jako Toasty (sekce A + F).
@@ -19,7 +19,7 @@ import {useNotifications, type NotificationInput} from "@/stores/notificationSto
  */
 
 /** Klíč pseudo-zprávy o nedostupnosti heartbeatu (není součástí messages). */
-const UNAVAILABLE_KEY = "instanceMessages:unavailable";
+const UNAVAILABLE_KEY = 'instanceMessages:unavailable';
 
 interface FlashMessagesProps {
     messages: InstanceMessage[];
@@ -41,8 +41,8 @@ const FlashMessages: React.FC<FlashMessagesProps> = ({messages, unavailable = fa
         }
         if (unavailable) {
             desired.set(UNAVAILABLE_KEY, {
-                type: "warning",
-                message: t("common.instanceMessages.unavailable"),
+                type: 'warning',
+                message: t('common.instanceMessages.unavailable'),
             });
         }
 
@@ -70,15 +70,15 @@ const FlashMessages: React.FC<FlashMessagesProps> = ({messages, unavailable = fa
     // zprávy zobrazí znovu.
     useEffect(() => {
         const onVisible = () => {
-            if (document.visibilityState !== "visible") {
+            if (document.visibilityState !== 'visible') {
                 return;
             }
             shownRef.current.forEach((id) => dismiss(id));
             shownRef.current.clear();
             sync();
         };
-        document.addEventListener("visibilitychange", onVisible);
-        return () => document.removeEventListener("visibilitychange", onVisible);
+        document.addEventListener('visibilitychange', onVisible);
+        return () => document.removeEventListener('visibilitychange', onVisible);
     }, [sync, dismiss]);
 
     return null;

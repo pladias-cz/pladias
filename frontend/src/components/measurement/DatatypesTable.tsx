@@ -1,29 +1,18 @@
-import {useEffect, useState} from "react";
-import {Table, Spinner} from "react-bootstrap";
-import {useTranslation} from "react-i18next";
-import type {TraitDatatype} from "@/models/TraitDatatype";
-import {getTraitDatatypes} from "@/services/traitApi";
-import {notifyApiError} from "@/stores/notificationStore";
+import {Table, Spinner} from 'react-bootstrap';
+import {useTranslation} from 'react-i18next';
+import {useQuery} from '@tanstack/react-query';
+import {getTraitDatatypes} from '@/services/traitApi';
+import {useQueryErrorNotify} from '@/query/useQueryErrorNotify';
 
 export default function DatatypesTable() {
     const {t} = useTranslation();
 
-    const [datatypes, setDatatypes] = useState<TraitDatatype[]>([]);
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        const load = async () => {
-            try {
-                setDatatypes(await getTraitDatatypes());
-            } catch (e) {
-                notifyApiError(e, t("common.loadFailed"));
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        load();
-    }, [t]);
+    // datové typy – bez cache (sekce J), při mountu znovu; chyba jde do toastu
+    const {data: datatypes = [], isPending: loading, error} = useQuery({
+        queryKey: ['traitDatatypes'],
+        queryFn: getTraitDatatypes,
+    });
+    useQueryErrorNotify(error, t('common.loadFailed'));
 
     if (loading) {
         return (
@@ -44,14 +33,14 @@ export default function DatatypesTable() {
         <Table striped bordered hover responsive>
             <thead>
             <tr>
-                <th>{t("trait.datatypes.name")}</th>
-                <th>{t("trait.datatypes.nameCz")}</th>
-                <th>{t("trait.datatypes.description")}</th>
-                <th>{t("trait.datatypes.multiplicity")}</th>
-                <th>{t("trait.datatypes.dominance")}</th>
-                <th>{t("trait.datatypes.frequency")}</th>
-                <th>{t("trait.datatypes.comment")}</th>
-                <th>{t("trait.datatypes.immeasurability")}</th>
+                <th>{t('trait.datatypes.name')}</th>
+                <th>{t('trait.datatypes.nameCz')}</th>
+                <th>{t('trait.datatypes.description')}</th>
+                <th>{t('trait.datatypes.multiplicity')}</th>
+                <th>{t('trait.datatypes.dominance')}</th>
+                <th>{t('trait.datatypes.frequency')}</th>
+                <th>{t('trait.datatypes.comment')}</th>
+                <th>{t('trait.datatypes.immeasurability')}</th>
             </tr>
             </thead>
             <tbody>
@@ -59,7 +48,7 @@ export default function DatatypesTable() {
                 <tr key={d.id}>
                     <td>{d.name}</td>
                     <td>{d.nameCz}</td>
-                    <td>{d.description ?? "—"}</td>
+                    <td>{d.description ?? '—'}</td>
                     <td className="text-center">{boolIcon(d.multiplicity)}</td>
                     <td className="text-center">{boolIcon(d.dominance)}</td>
                     <td className="text-center">{boolIcon(d.frequency)}</td>

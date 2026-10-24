@@ -1,13 +1,13 @@
-import {Container, Row, Col} from "react-bootstrap";
-import {usePageTitle} from "@/hooks/usePageTitle";
-import {useTranslation} from "react-i18next";
-import {useParams} from "react-router-dom";
-import {useEffect, useState, useMemo} from "react";
-import {useQuery} from "@tanstack/react-query";
-import {getTaxon} from "@/services/taxonApi";
-import {notifyApiError} from "@/stores/notificationStore";
-import {MapComponent} from "@/components/atlas/mapPreview/MapComponent";
-import {InfoPanel} from "@/components/atlas/mapPreview/InfoPanel";
+import {Container, Row, Col} from 'react-bootstrap';
+import {usePageTitle} from '@/hooks/usePageTitle';
+import {useTranslation} from 'react-i18next';
+import {useParams} from 'react-router-dom';
+import {useEffect, useState, useMemo} from 'react';
+import {useQuery} from '@tanstack/react-query';
+import {getTaxon} from '@/services/taxonApi';
+import {notifyApiError} from '@/stores/notificationStore';
+import {MapComponent} from '@/components/atlas/mapPreview/MapComponent';
+import {InfoPanel} from '@/components/atlas/mapPreview/InfoPanel';
 
 export type MapPreviewType = 1 | 2 | 3 | 4;
 
@@ -16,7 +16,7 @@ export default function MapPreview() {
     const {taxonId: taxonIdParam, type} = useParams<{ taxonId: string; type: string }>();
     const [mapType, setMapType] = useState<MapPreviewType>(1);
 
-    usePageTitle(t("atlas.mapPreview.title"));
+    usePageTitle(t('atlas.mapPreview.title'));
 
     // Parse taxonId from URL param - this is available immediately
     const taxonId = useMemo(() => {
@@ -36,7 +36,7 @@ export default function MapPreview() {
 
     // taxon jen pro zobrazení názvu v panelu – bez cache (sekce J), načtení při mountu
     const {data: taxon, error} = useQuery({
-        queryKey: ["taxon", taxonId],
+        queryKey: ['taxon', taxonId],
         queryFn: () => getTaxon(taxonId!),
         enabled: taxonId !== undefined,
     });
@@ -44,7 +44,7 @@ export default function MapPreview() {
     // chybu načtení ohlásíme notifikací jako dřív (náhled zůstane použitelný)
     useEffect(() => {
         if (error) {
-            notifyApiError(error, t("atlas.taxonLoadFailed"));
+            notifyApiError(error, t('atlas.taxonLoadFailed'));
         }
     }, [error, t]);
 

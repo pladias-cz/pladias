@@ -10,10 +10,10 @@ export type OriginalityStatusId =
     typeof OriginalityStatusId[keyof typeof OriginalityStatusId];
 
 export type OriginalityStatusI18nKey =
-    | "record.originalityStatus.native"
-    | "record.originalityStatus.cultivated"
-    | "record.originalityStatus.nonnative"
-    | "record.originalityStatus.unprocessed";
+    | 'record.originalityStatus.native'
+    | 'record.originalityStatus.cultivated'
+    | 'record.originalityStatus.nonnative'
+    | 'record.originalityStatus.unprocessed';
 
 export const OriginalityStatusMeta: Record<OriginalityStatusId, {
     color: string;
@@ -21,23 +21,23 @@ export const OriginalityStatusMeta: Record<OriginalityStatusId, {
     i18nKey: OriginalityStatusI18nKey;
 }> = {
     [OriginalityStatusId.NATIVE]: {
-        color: "#000000",
-        icon: "bi bi-houses",
-        i18nKey: "record.originalityStatus.native",
+        color: '#000000',
+        icon: 'bi bi-houses',
+        i18nKey: 'record.originalityStatus.native',
     },
     [OriginalityStatusId.CULTIVATED]: {
-        color: "#909090",
-        icon: "bi bi-tree",
-        i18nKey: "record.originalityStatus.cultivated",
+        color: '#909090',
+        icon: 'bi bi-tree',
+        i18nKey: 'record.originalityStatus.cultivated',
     },
     [OriginalityStatusId.NONNATIVE]: {
-        color: "#bbbb00",
-        icon: "bi bi-car-front",
-        i18nKey: "record.originalityStatus.nonnative",
+        color: '#bbbb00',
+        icon: 'bi bi-car-front',
+        i18nKey: 'record.originalityStatus.nonnative',
     },
     [OriginalityStatusId.UNPROCESSED]: {
-        color: "#ff6600",
-        icon: "bi bi-question-octagon",
-        i18nKey: "record.originalityStatus.unprocessed",
+        color: '#ff6600',
+        icon: 'bi bi-question-octagon',
+        i18nKey: 'record.originalityStatus.unprocessed',
     },
 };

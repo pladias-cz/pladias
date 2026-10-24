@@ -26,7 +26,7 @@ export function DateRangeFilter({
             <Form.Control
                 size="sm"
                 type="date"
-                placeholder={t("common.table.filter.dateFrom")}
+                placeholder={t('common.table.filter.dateFrom')}
                 value={fromDate}
                 onChange={(e) => onFromDateChange(e.target.value)}
                 style={{width: '50%'}}
@@ -34,7 +34,7 @@ export function DateRangeFilter({
             <Form.Control
                 size="sm"
                 type="date"
-                placeholder={t("common.table.filter.dateTo")}
+                placeholder={t('common.table.filter.dateTo')}
                 value={toDate}
                 onChange={(e) => onToDateChange(e.target.value)}
                 style={{width: '50%'}}

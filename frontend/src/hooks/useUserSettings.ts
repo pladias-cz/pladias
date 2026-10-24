@@ -1,8 +1,8 @@
-import {useState} from "react";
-import {useTranslation} from "react-i18next";
-import {changeLanguage} from "@/i18n/i18n";
-import {isBooleanSetting, mapBackendKeyToStateKey, saveUserSetting} from "@/services/settingsApi";
-import {notifyApiError} from "@/stores/notificationStore";
+import {useState} from 'react';
+import {useTranslation} from 'react-i18next';
+import {changeLanguage} from '@/i18n/i18n';
+import {isBooleanSetting, mapBackendKeyToStateKey, saveUserSetting} from '@/services/settingsApi';
+import {notifyApiError} from '@/stores/notificationStore';
 
 /** Callback volaný po úspěšném uložení nastavení. */
 export type OnSettingSaved = (key: string, value: string | boolean, stateKey: string) => void;
@@ -47,7 +47,7 @@ export const useUserSettings = (onSettingSaved?: OnSettingSaved) => {
             // Determine the state key and parse the value
             const finalStateKey = stateKey ?? mapBackendKeyToStateKey(key);
             const parsedValue: string | boolean = isBooleanSetting(key)
-                ? savedValue === "true"
+                ? savedValue === 'true'
                 : savedValue;
 
             // Call the optional state update callback
@@ -56,8 +56,8 @@ export const useUserSettings = (onSettingSaved?: OnSettingSaved) => {
             }
 
             // Special handling for application language
-            if (key === "application_language") {
-                changeLanguage(savedValue || "cs");
+            if (key === 'application_language') {
+                changeLanguage(savedValue || 'cs');
             }
 
             // Call the optional callback after saving
@@ -65,7 +65,7 @@ export const useUserSettings = (onSettingSaved?: OnSettingSaved) => {
                 onSettingSaved(key, parsedValue, finalStateKey);
             }
         } catch (err) {
-            notifyApiError(err, t("user.settings.networkError"));
+            notifyApiError(err, t('user.settings.networkError'));
         } finally {
             setLoading(false);
         }

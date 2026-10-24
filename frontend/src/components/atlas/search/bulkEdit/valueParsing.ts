@@ -4,7 +4,7 @@
  * Bez Reactu – testovatelné samostatně (valueParsing.test.ts).
  */
 
-type CoordAxis = "lat" | "lon";
+type CoordAxis = 'lat' | 'lon';
 
 /** Zaokrouhlení na 8 desetinných míst (přesnost souřadnic v DB). */
 export const formatCoord = (value: number): string => {
@@ -18,20 +18,20 @@ export const formatCoord = (value: number): string => {
  * `defaultHemisphere` a znaménko se normalizuje na kladné.
  * Vrací null pro prázdný/nesmyslný vstup nebo překročení rozsahu osy.
  */
-export const parseCoordinate = (input: string, axis: CoordAxis, defaultHemisphere: "N" | "E"): number | null => {
+export const parseCoordinate = (input: string, axis: CoordAxis, defaultHemisphere: 'N' | 'E'): number | null => {
     const trimmed = input.trim();
     if (!trimmed) {
         return null;
     }
 
     const upper = trimmed.toUpperCase();
-    const prefixHemisphere = upper.match(/^[NSEW]/)?.[0] ?? "";
-    const suffixHemisphere = upper.match(/[NSEW]$/)?.[0] ?? "";
+    const prefixHemisphere = upper.match(/^[NSEW]/)?.[0] ?? '';
+    const suffixHemisphere = upper.match(/[NSEW]$/)?.[0] ?? '';
     const hemisphere = suffixHemisphere || prefixHemisphere || defaultHemisphere;
-    const isNegativeHemisphere = hemisphere === "S" || hemisphere === "W";
-    const isPositiveHemisphere = hemisphere === "N" || hemisphere === "E";
+    const isNegativeHemisphere = hemisphere === 'S' || hemisphere === 'W';
+    const isPositiveHemisphere = hemisphere === 'N' || hemisphere === 'E';
 
-    let valuePart = upper.replace(/^[NSEW]\s*/, "").replace(/\s*[NSEW]$/, "").trim();
+    let valuePart = upper.replace(/^[NSEW]\s*/, '').replace(/\s*[NSEW]$/, '').trim();
     if (!valuePart) {
         return null;
     }
@@ -49,7 +49,7 @@ export const parseCoordinate = (input: string, axis: CoordAxis, defaultHemispher
             decimal = Math.abs(decimal);
         }
 
-        const maxAbs = axis === "lat" ? 90 : 180;
+        const maxAbs = axis === 'lat' ? 90 : 180;
         if (Math.abs(decimal) > maxAbs) {
             return null;
         }
@@ -57,7 +57,7 @@ export const parseCoordinate = (input: string, axis: CoordAxis, defaultHemispher
         return decimal;
     }
 
-    valuePart = valuePart.replace(/[º]/g, "°").replace(/[’′]/g, "'").replace(/[”″]/g, '"');
+    valuePart = valuePart.replace(/[º]/g, '°').replace(/[’′]/g, "'").replace(/[”″]/g, '"');
     const dmsMatch = valuePart.match(/^([+-]?\d+(?:\.\d+)?)\s*°\s*(\d+(?:\.\d+)?)?\s*'?\s*(\d+(?:\.\d+)?)?\s*"?$/);
     if (!dmsMatch) {
         return null;
@@ -80,7 +80,7 @@ export const parseCoordinate = (input: string, axis: CoordAxis, defaultHemispher
         decimal = -decimal;
     }
 
-    const maxAbs = axis === "lat" ? 90 : 180;
+    const maxAbs = axis === 'lat' ? 90 : 180;
     if (Math.abs(decimal) > maxAbs) {
         return null;
     }
@@ -98,8 +98,8 @@ export const parseCoordinatePair = (raw: string): { lat: number; lon: number } |
         return null;
     }
 
-    const lat = parseCoordinate(pairMatch[1].trim(), "lat", "N");
-    const lon = parseCoordinate(pairMatch[2].trim(), "lon", "E");
+    const lat = parseCoordinate(pairMatch[1].trim(), 'lat', 'N');
+    const lon = parseCoordinate(pairMatch[2].trim(), 'lon', 'E');
     if (lat == null || lon == null) {
         return null;
     }
@@ -118,7 +118,7 @@ export const isValidDateValue = (value: string): boolean => {
         return false;
     }
 
-    const parts = value.split("-");
+    const parts = value.split('-');
     if (parts.length >= 2) {
         const month = Number.parseInt(parts[1], 10);
         if (month < 1 || month > 12) {

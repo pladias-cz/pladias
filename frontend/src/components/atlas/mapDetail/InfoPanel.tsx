@@ -3,8 +3,8 @@ import type {ProjectType, RecordsByProject} from '@/models/AtlasRecords';
 import {useTranslation} from 'react-i18next';
 import {PladiasRecordsTable} from './PladiasRecordsTable';
 import {ExternalRecordsTable} from './ExternalRecordsTable';
-import {Tabs, Tab} from "react-bootstrap";
-import {useState} from "react";
+import {Tabs, Tab} from 'react-bootstrap';
+import {useState} from 'react';
 import {RECORD_SOURCES, type RecordSourceVisibility} from './recordSources';
 import {RecordSourceTabTitle} from './RecordSourceTabTitle';
 import './InfoPanel.scss';
@@ -41,7 +41,7 @@ export function InfoPanel({
                           }: InfoPanelProps) {
     const {t} = useTranslation();
 
-    const [activeKey, setActiveKey] = useState<ProjectType>("pladias");
+    const [activeKey, setActiveKey] = useState<ProjectType>('pladias');
 
     return (
         <div className="d-flex flex-column h-100 overflow-hidden">
@@ -73,7 +73,7 @@ export function InfoPanel({
                                     />
                                 )}
                             >
-                                {source.id === "pladias" ? (
+                                {source.id === 'pladias' ? (
                                     <>
                                         <PladiasRecordsTable
                                             key={`pladias-table-${currentSquareCode}`}
@@ -85,7 +85,7 @@ export function InfoPanel({
                                             onRecordUpdated={onRecordUpdated}
                                         />
                                         {records.pladias.length === 0 && (
-                                            <p className="text-muted small">{t("atlas.mapDetail.noRecords")}</p>
+                                            <p className="text-muted small">{t('atlas.mapDetail.noRecords')}</p>
                                         )}
                                     </>
                                 ) : (

@@ -8,7 +8,7 @@
  *  - `data` odpovědi může být `null` (záznam bez hodnoty).
  */
 
-import {ApiError, apiGet, apiPut, requireData, requireEnvelope} from "./apiClient";
+import {ApiError, apiGet, apiPut, requireData, requireEnvelope} from './apiClient';
 
 /** Položka PlayMessage (texty stránek editované v DB). */
 export interface PlayMessageEntry {
@@ -26,7 +26,7 @@ export async function getPlayMessage(key: string, lang: string): Promise<string 
     try {
         const data = requireData<PlayMessageEntry | null>(
             await apiGet(`/api/react/playmessage/${encodeURIComponent(key)}`, {params: {lang}}),
-            "Načtení textu selhalo.",
+            'Načtení textu selhalo.',
         );
         return data?.value ?? null;
     } catch (err) {
@@ -40,15 +40,15 @@ export async function getPlayMessage(key: string, lang: string): Promise<string 
 /** GET /api/react/playmessage/admin/all?lang= – všechny konstanty pro jeden jazyk (sysAdmin editor). */
 export async function getPlayMessagesForLanguage(lang: string): Promise<PlayMessageEntry[]> {
     return requireData<PlayMessageEntry[]>(
-        await apiGet("/api/react/playmessage/admin/all", {params: {lang}}),
-        "Načtení textů selhalo.",
+        await apiGet('/api/react/playmessage/admin/all', {params: {lang}}),
+        'Načtení textů selhalo.',
     );
 }
 
 /** PUT /api/react/playmessage/admin/save – hromadné uložení hodnot pro jeden jazyk. */
 export async function savePlayMessages(lang: string, values: Array<{ key: string; value: string }>): Promise<void> {
     requireEnvelope(
-        await apiPut("/api/react/playmessage/admin/save", {lang, values}),
-        "Uložení textů selhalo.",
+        await apiPut('/api/react/playmessage/admin/save', {lang, values}),
+        'Uložení textů selhalo.',
     );
 }

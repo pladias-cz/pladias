@@ -3,8 +3,8 @@
  * skrytý input(y) drží vybranou hodnotu pro FormData submit.
  */
 
-import {Typeahead} from "react-bootstrap-typeahead";
-import type {TypeaheadOption} from "../types";
+import {Typeahead} from 'react-bootstrap-typeahead';
+import type {TypeaheadOption} from '../types';
 
 interface TypeaheadFilterFieldProps {
     /** Tooltip celého řádku (nápověda pole). */
@@ -47,7 +47,7 @@ export function TypeaheadFilterField({
                     ? values.map((itemValue) => (
                         <input key={`${name}-${itemValue}`} type="hidden" name={name} value={itemValue}/>
                     ))
-                    : <input type="hidden" name={name} value={value ?? ""}/>}
+                    : <input type="hidden" name={name} value={value ?? ''}/>}
                 <Typeahead
                     id={id}
                     labelKey="label"

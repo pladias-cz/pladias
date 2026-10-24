@@ -1,5 +1,5 @@
-import {useTranslation} from "react-i18next";
-import {Form, Button, Spinner} from "react-bootstrap";
+import {useTranslation} from 'react-i18next';
+import {Form, Button, Spinner} from 'react-bootstrap';
 
 interface ExportTaxaListProps {
     submitting: boolean;
@@ -17,8 +17,8 @@ export default function ExportTaxaList({submitting}: ExportTaxaListProps) {
                     rows={12}
                     disabled={submitting}
                     placeholder={t(
-                        "trait.export.placeholder",
-                        "Zde vkopírujte seznam požadovaných taxonů v podobě latinských jmen na jednotlivých řádcích."
+                        'trait.export.placeholder',
+                        'Zde vkopírujte seznam požadovaných taxonů v podobě latinských jmen na jednotlivých řádcích.'
                     )}
                 />
             </Form.Group>
@@ -28,7 +28,7 @@ export default function ExportTaxaList({submitting}: ExportTaxaListProps) {
                     type="checkbox"
                     id="suppressedExcluded"
                     name="suppressedExcluded"
-                    label={t("trait.export.suppressed")}
+                    label={t('trait.export.suppressed')}
                     defaultChecked
                 />
             </div>
@@ -37,10 +37,10 @@ export default function ExportTaxaList({submitting}: ExportTaxaListProps) {
                 {submitting ? (
                     <>
                         <Spinner as="span" size="sm" animation="border" className="me-2"/>
-                        {t("common.submitting")}
+                        {t('common.submitting')}
                     </>
                 ) : (
-                    t("trait.export.submit")
+                    t('trait.export.submit')
                 )}
             </Button>
         </>

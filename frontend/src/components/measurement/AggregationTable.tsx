@@ -1,30 +1,19 @@
-import {useEffect, useState} from "react";
-import {Table, Spinner} from "react-bootstrap";
-import {useTranslation} from "react-i18next";
-import type {TraitAggregationType} from "@/models/TraitAggregationType";
-import {getTraitAggregationTypes} from "@/services/traitApi";
-import RichTextMessage from "@/components/RichTextMessage";
-import {notifyApiError} from "@/stores/notificationStore";
+import {Table, Spinner} from 'react-bootstrap';
+import {useTranslation} from 'react-i18next';
+import {useQuery} from '@tanstack/react-query';
+import {getTraitAggregationTypes} from '@/services/traitApi';
+import RichTextMessage from '@/components/RichTextMessage';
+import {useQueryErrorNotify} from '@/query/useQueryErrorNotify';
 
 export default function AggregationTable() {
     const {t} = useTranslation();
 
-    const [types, setTypes] = useState<TraitAggregationType[]>([]);
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        const load = async () => {
-            try {
-                setTypes(await getTraitAggregationTypes());
-            } catch (e) {
-                notifyApiError(e, t("common.loadFailed"));
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        load();
-    }, [t]);
+    // typy agregací – bez cache (sekce J), při mountu znovu; chyba jde do toastu
+    const {data: types = [], isPending: loading, error} = useQuery({
+        queryKey: ['traitAggregationTypes'],
+        queryFn: getTraitAggregationTypes,
+    });
+    useQueryErrorNotify(error, t('common.loadFailed'));
 
     if (loading) {
         return (
@@ -38,8 +27,8 @@ export default function AggregationTable() {
         <Table striped bordered hover responsive>
             <thead>
             <tr>
-                <th>{t("trait.aggregationTypes.key")}</th>
-                <th>{t("trait.aggregationTypes.description")}</th>
+                <th>{t('trait.aggregationTypes.key')}</th>
+                <th>{t('trait.aggregationTypes.description')}</th>
             </tr>
             </thead>
             <tbody>

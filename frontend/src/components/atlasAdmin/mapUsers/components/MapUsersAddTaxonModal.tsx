@@ -36,15 +36,15 @@ export function MapUsersAddTaxonModal({
     return (
         <Modal show={show} onHide={onClose}>
             <Modal.Header closeButton>
-                <Modal.Title>{t("user.usersAdministration.addTaxon")}</Modal.Title>
+                <Modal.Title>{t('user.usersAdministration.addTaxon')}</Modal.Title>
             </Modal.Header>
             <Modal.Body>
                 <Form.Group controlId="taxonSearch">
-                    <Form.Label>{t("user.usersAdministration.searchTaxon")}</Form.Label>
+                    <Form.Label>{t('user.usersAdministration.searchTaxon')}</Form.Label>
                     <Form.Control
                         ref={taxonInputRef as React.RefObject<HTMLInputElement>}
                         type="text"
-                        placeholder={t("user.usersAdministration.enterTaxonName")}
+                        placeholder={t('user.usersAdministration.enterTaxonName')}
                         value={taxonSearchTerm}
                         onChange={(e) => onSearchChange(e.target.value)}
                         disabled={taxaLoading || submitting || selectedTaxon !== null}
@@ -52,7 +52,7 @@ export function MapUsersAddTaxonModal({
                     />
                     {taxaLoading && (
                         <div className="mt-2">
-                            <Spinner animation="border" size="sm"/> {t("common.loading")}
+                            <Spinner animation="border" size="sm"/> {t('common.loading')}
                         </div>
                     )}
                     {taxa.length > 0 && !selectedTaxon && (
@@ -83,10 +83,10 @@ export function MapUsersAddTaxonModal({
                         <div className="mt-3">
                             <div className="d-flex align-items-center gap-2">
                                 <Spinner animation="border" size="sm"/>
-                                <span>{t("user.usersAdministration.processingTaxon", {taxon: selectedTaxon.nameLat})}</span>
+                                <span>{t('user.usersAdministration.processingTaxon', {taxon: selectedTaxon.nameLat})}</span>
                             </div>
                             <div className="mt-2 text-muted small">
-                                {t("user.usersAdministration.processingInfo")}
+                                {t('user.usersAdministration.processingInfo')}
                             </div>
                         </div>
                     )}
@@ -98,7 +98,7 @@ export function MapUsersAddTaxonModal({
                     onClick={onClose}
                     disabled={submitting}
                 >
-                    {submitting ? t("user.usersAdministration.waitToClose") : t("common.cancel")}
+                    {submitting ? t('user.usersAdministration.waitToClose') : t('common.cancel')}
                 </Button>
             </Modal.Footer>
         </Modal>

@@ -8,19 +8,19 @@
  * useUserSettings centrální danger notifikací.
  */
 
-import {useCallback, useEffect, useRef, useState} from "react";
-import {useUserSettings} from "@/hooks/useUserSettings";
-import {getUserSetting} from "@/services/settingsApi";
-import type {ProjectType} from "@/models/AtlasRecords";
+import {useCallback, useEffect, useRef, useState} from 'react';
+import {useUserSettings} from '@/hooks/useUserSettings';
+import {getUserSetting} from '@/services/settingsApi';
+import type {ProjectType} from '@/models/AtlasRecords';
 import {
     ALL_SOURCES_VISIBLE,
     parseSavedVisibility,
     visibleSourceIds,
     type RecordSourceVisibility,
-} from "../recordSources";
+} from '../recordSources';
 
 /** Backend klíč pro uložený výběr (snake_case konvence user settings). */
-const RECORD_SOURCE_VISIBILITY_KEY = "atlas_recordsourcevisibility_mapdetail";
+const RECORD_SOURCE_VISIBILITY_KEY = 'atlas_recordsourcevisibility_mapdetail';
 
 export function useRecordSourceVisibility() {
     const [visibleProjects, setVisibleProjects] = useState<RecordSourceVisibility>(ALL_SOURCES_VISIBLE);

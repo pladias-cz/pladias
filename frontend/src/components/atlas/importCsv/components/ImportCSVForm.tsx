@@ -44,14 +44,14 @@ export function ImportCSVForm({onFileSelected, isUploading}: ImportCSVFormProps)
         <div className="row">
             <div className="col-sm-10 offset-sm-1">
                 <p>
-                    {t("other.components.atlas.importCSV.documentationLink")}
+                    {t('other.components.atlas.importCSV.documentationLink')}
                     {' '}
                     <a
                         href="//git.sorbus.ibot.cas.cz/pladias/pladias-core/documentation/-/blob/master/atlas/validation.md?ref_type=heads"
                         target="_blank"
                         rel="noopener noreferrer"
                     >
-                        {t("other.components.atlas.importCSV.documentation")}
+                        {t('other.components.atlas.importCSV.documentation')}
                     </a>.
                 </p>
                 <hr/>
@@ -75,7 +75,7 @@ export function ImportCSVForm({onFileSelected, isUploading}: ImportCSVFormProps)
                                 value="validation"
                                 checked={operation === 'validation'}
                                 onChange={handleOperationChange}
-                                label={t("other.components.atlas.importCSV.validate")}
+                                label={t('other.components.atlas.importCSV.validate')}
                                 disabled={isUploading}
                             />
                         </div>
@@ -87,7 +87,7 @@ export function ImportCSVForm({onFileSelected, isUploading}: ImportCSVFormProps)
                                 value="import"
                                 checked={operation === 'import'}
                                 onChange={handleOperationChange}
-                                label={t("other.components.atlas.importCSV.import")}
+                                label={t('other.components.atlas.importCSV.import')}
                                 disabled={isUploading}
                             />
                         </div>
@@ -113,17 +113,17 @@ export function ImportCSVForm({onFileSelected, isUploading}: ImportCSVFormProps)
                 {isUploading && (
                     <div id="after-submit-message" className="mt-3">
                         <Alert variant="info" className="text-center">
-                            {t("other.components.atlas.importCSV.processing")}
+                            {t('other.components.atlas.importCSV.processing')}
                             <br/>
-                            {t("other.components.atlas.importCSV.pleaseWait")}
+                            {t('other.components.atlas.importCSV.pleaseWait')}
                         </Alert>
                     </div>
                 )}
 
-                <p>{t("other.components.atlas.importCSV.recommendation")}</p>
-                <p>{t("other.components.atlas.importCSV.emailNotification")}</p>
-                <p>{t("other.components.atlas.importCSV.emptyRowsWarning")}</p>
-                <p>{t("other.components.atlas.importCSV.recordsLimitWarning")}</p>
+                <p>{t('other.components.atlas.importCSV.recommendation')}</p>
+                <p>{t('other.components.atlas.importCSV.emailNotification')}</p>
+                <p>{t('other.components.atlas.importCSV.emptyRowsWarning')}</p>
+                <p>{t('other.components.atlas.importCSV.recordsLimitWarning')}</p>
 
             </div>
         </div>
@@ -149,7 +149,7 @@ function ProjectSelect({projectId, projects, isLoading, onChange, disabled}: Pro
             style={{width: '320px'}}
         >
             <option value="">
-                {isLoading ? t("common.loading") : t("other.components.atlas.importCSV.projectSelect")}
+                {isLoading ? t('common.loading') : t('other.components.atlas.importCSV.projectSelect')}
             </option>
             {projects.map((project) => (
                 <option key={project.id} value={project.id}>
@@ -180,10 +180,10 @@ function SubmitButton({isUploading, hasFile, hasProject}: SubmitButtonProps) {
             {isUploading ? (
                 <>
                     <Spinner size="sm" className="me-1"/>
-                    {t("common.submitting")}
+                    {t('common.submitting')}
                 </>
             ) : (
-                t("other.components.atlas.importCSV.submit")
+                t('other.components.atlas.importCSV.submit')
             )}
         </Button>
     );

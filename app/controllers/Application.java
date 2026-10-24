@@ -17,11 +17,14 @@ import play.mvc.Result;
 import play.mvc.Security;
 import service.password.IHashService;
 import service.taxon.TaxonUpdaterService;
+import service.user.PasswordResetService;
 import service.user.UserActivityService;
 import utils.SessionUtils;
 import utils.TaxonEditorLock;
 import utils.ViteManifest;
+import views.html.forgotPassword;
 import views.html.login;
+import views.html.resetPassword;
 
 import javax.inject.Inject;
 import java.util.HashMap;
@@ -38,6 +41,9 @@ public class Application extends ControllerBase {
 
     @Inject
     private IHashService hashService;
+
+    @Inject
+    private PasswordResetService passwordResetService;
 
     @Inject
     public Application(ViteManifest vite) {
@@ -123,6 +129,79 @@ public class Application extends ControllerBase {
         }
 
         return redirect(controllers.routes.Application.login());
+    }
+
+    /**
+     * Veřejná stránka „Zapomněli jste heslo?" – formulář s e-mailem
+     * (self-service varianta resetu hesla, viz PasswordResetService).
+     */
+    public Result forgotPassword(Http.Request request) {
+        return ok(forgotPassword.render(configService, request));
+    }
+
+    /**
+     * Zpracuje žádost o reset hesla. Odpověď je vždy shodná bez ohledu na existenci
+     * účtu – zabraňuje enumeraci uživatelů (docs/security.md M5).
+     */
+    public Result requestPasswordReset(Http.Request request) {
+        Messages messages = getMessages(request);
+        Form<EmailForm> form = formFactory.form(EmailForm.class).bindFromRequest(request);
+        if (form.hasErrors()) {
+            return redirect(controllers.routes.Application.forgotPassword())
+                .flashing(SessionUtils.FailureReason, messages.at("PasswordReset.emailRequired"));
+        }
+        User user = User.find().query().where().ieq("email", form.get().getEmail()).findOne();
+        if (user != null && !user.isDeleted()) {
+            try {
+                passwordResetService.requestPasswordReset(user, getMessages(user));
+            } catch (Exception ex) {
+                logger.error("Unable to send password reset e-mail", ex);
+            }
+        }
+        return redirect(controllers.routes.Application.forgotPassword())
+            .flashing(FlashInfo, messages.at("PasswordReset.emailSent"));
+    }
+
+    /**
+     * Veřejná stránka pro nastavení nového hesla z jednorázového odkazu z e-mailu.
+     * Token se validuje až při odeslání formuláře.
+     */
+    public Result resetPassword(Http.Request request, String token) {
+        if (token == null || token.isEmpty()) {
+            return redirect(controllers.routes.Application.forgotPassword());
+        }
+        return ok(resetPassword.render(configService, token, request));
+    }
+
+    /** Zpracuje formulář s novým heslem; po úspěchu přesměruje na login. */
+    public Result performPasswordReset(Http.Request request) {
+        Messages messages = getMessages(request);
+        Form<ResetPasswordForm> form = formFactory.form(ResetPasswordForm.class).bindFromRequest(request);
+        if (form.hasErrors()) {
+            return redirect(controllers.routes.Application.resetPassword(form.rawData().getOrDefault("token", "")))
+                .flashing(SessionUtils.FailureReason, messages.at("PasswordReset.formIncomplete"));
+        }
+        ResetPasswordForm details = form.get();
+        Optional<User> user = passwordResetService.validateToken(details.getToken());
+        if (!user.isPresent()) {
+            return redirect(controllers.routes.Application.forgotPassword())
+                .flashing(SessionUtils.FailureReason, messages.at("PasswordReset.invalidToken"));
+        }
+        if (!details.getPassword().equals(details.getConfirmPassword())) {
+            return redirect(controllers.routes.Application.resetPassword(details.getToken()))
+                .flashing(SessionUtils.FailureReason, messages.at("PasswordReset.passwordMismatch"));
+        }
+        if (details.getPassword().length() < User.MinPasswordLength) {
+            return redirect(controllers.routes.Application.resetPassword(details.getToken()))
+                .flashing(SessionUtils.FailureReason, messages.at("PasswordReset.passwordNotLongEnough", User.MinPasswordLength));
+        }
+
+        passwordResetService.resetPassword(user.get(), details.getPassword());
+        UserActivityService.recordActivity(user.get(), UserActivity.PasswordReset);
+        logger.info(String.format("User %s reset password via e-mail link", user.get().getEmail()));
+
+        return redirect(controllers.routes.Application.login())
+            .flashing(FlashInfo, messages.at("PasswordReset.passwordReset"));
     }
 
     private Result redirectWithDelay(play.mvc.Call call) {
@@ -218,6 +297,52 @@ public class Application extends ControllerBase {
 
         public void setPassword(String password) {
             this.password = password;
+        }
+    }
+
+    public static class EmailForm {
+        @Required
+        private String email;
+
+        public String getEmail() {
+            return email;
+        }
+
+        public void setEmail(String email) {
+            this.email = email;
+        }
+    }
+
+    public static class ResetPasswordForm {
+        @Required
+        private String token;
+        @Required
+        private String password;
+        @Required
+        private String confirmPassword;
+
+        public String getToken() {
+            return token;
+        }
+
+        public void setToken(String token) {
+            this.token = token;
+        }
+
+        public String getPassword() {
+            return password;
+        }
+
+        public void setPassword(String password) {
+            this.password = password;
+        }
+
+        public String getConfirmPassword() {
+            return confirmPassword;
+        }
+
+        public void setConfirmPassword(String confirmPassword) {
+            this.confirmPassword = confirmPassword;
         }
     }
 }

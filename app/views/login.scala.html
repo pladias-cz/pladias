@@ -21,6 +21,9 @@
                     @if(!request.flash.get("failureReason").isEmpty()) {
                         <div class="alert alert-danger">@request.flash.get("failureReason")</div>
                     }
+                    @if(!request.flash.get("info").isEmpty()) {
+                        <div class="alert alert-info">@request.flash.get("info")</div>
+                    }
                     <div class="alert alert-info" role="alert">
                         Pro údržbu a aktualizace aplikace je vyhrazeno každé pondělí od 20 do 21 hodin – v té době prosíme zejména neprovádějte importy.<br>
                             The database is maintained and updated every Monday from 8 to 9 pm – please do not import any data during this time.</div>
@@ -51,6 +54,11 @@
                         <div class="row mt-3">
                             <div class="col-sm-10 offset-sm-1 col-md-7 offset-md-3">
                                 <button type="submit" class="btn btn-lg btn-primary w-100">Přihlásit se / Login</button>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-sm-10 offset-sm-1 col-md-7 offset-md-3">
+                                <a href="@routes.Application.forgotPassword()">Zapomněli jste heslo? / Forgot password?</a>
                             </div>
                         </div>
                     </form>

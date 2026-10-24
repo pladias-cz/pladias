@@ -14,6 +14,12 @@ GET     /login                      controllers.Application.login(request: Reque
 POST    /logout                     controllers.Application.logout(request: Request)
 POST    /login                      controllers.Application.authenticate(request: Request)
 
+# Password reset (veřejné, viz PasswordResetService)
+GET     /forgotPassword             controllers.Application.forgotPassword(request: Request)
+POST    /forgotPassword             controllers.Application.requestPasswordReset(request: Request)
+GET     /resetPassword              controllers.Application.resetPassword(request: Request, token: String ?= "")
+POST    /resetPassword              controllers.Application.performPasswordReset(request: Request)
+
 # React UI
 ->    /api/react            react.Routes
 GET   /                     controllers.Application.index(request: Request, path = "")

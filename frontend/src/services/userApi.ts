@@ -70,6 +70,15 @@ export async function changePassword(input: ChangePasswordInput): Promise<string
     return ensureSuccess(payload).message ?? '';
 }
 
+/**
+ * POST /api/react/users/{id}/resetPassword – sysAdmin požádá o reset hesla uživatele;
+ * uživateli přijde e-mail s jednorázovým odkazem. Vrací úspěšnou hlášku.
+ */
+export async function requestUserPasswordReset(userId: number): Promise<string> {
+    const payload = await apiPost<ApiResult>(`/api/react/users/${userId}/resetPassword`);
+    return ensureSuccess(payload).message ?? '';
+}
+
 /** POST /api/react/user/createToken – API token pro externí nástroje. */
 export async function createApiToken(): Promise<string> {
     const payload = await apiPost<ApiResult<{ token: string }>>('/api/react/user/createToken');

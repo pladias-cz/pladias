@@ -102,6 +102,24 @@ hlavičkou `Csrf-Token`. Pasti:
   full-page POST se skrytým polem `csrfToken` (MainMenu) – čistý odkaz ani
   `sendBeacon` (httpLogTransport) by token nést nemohly.
 
+### Reset hesla – jednorázový token v URL (docs/security.md M2)
+
+Reset hesla (self-service `/forgotPassword` i sysAdmin tlačítko v UsersTable) řeší
+`PasswordResetService`: SecureRandom token, v DB jen SHA-256 hash + expirace
+(`user_settings`, klíč `password_reset_token`, tvar `<sha256hex>:<expiryMillis>` –
+žádná změna schématu). Pasti a vědomé trade-offy:
+- **token v URL** (`/resetPassword?token=…`) – může se objevit v access logu
+  proxy/browser history; token je jednorázový, 24 h a jen poslední vygenerovaný
+  platí, riziko proto akceptováno (klasický vzor „magic link"),
+- veřejné reset stránky musí zůstat **server-side Play šablony**
+  (`forgotPassword.scala.html`, `resetPassword.scala.html`) – React SPA visí za
+  autentizací; stránky vystavuje `Application` (conf/routes, ne react.routes),
+- POST `/forgotPassword` vrací **vždy stejnou flash hlášku** bez ohledu na existenci
+  účtu (anti-enumerace, M5); výjimka: smazaný účet mail nedostane, ale odpověď je
+  stejná,
+- nová žádost token **přepíše** (platnost má jen poslední), po úspěšném resetu se
+  řádek maže; audit: `UserActivity.PasswordReset` (22).
+
 ---
 
 ## Permissions

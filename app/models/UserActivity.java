@@ -33,6 +33,7 @@ public class UserActivity extends Model {
     public static final int TraitDownload = 19;
     public static final int TraitUpload = 20;
     public static final int ComplexTraitDownload = 21;
+    public static final int PasswordReset = 22;
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "public.users_activity_log_id_seq")

@@ -66,7 +66,7 @@ Problémy, které brání produkčnímu nasazení:
 | ID | Závažnost | Oblast | Shrnutí |
 |---|---|---|---|
 | [H2](#h2--idor-na-dočasných-souborech-tempfiles) | Vysoká | IDOR | `/tempfiles/:id` – stažení/smazání cizích souborů podle číselného ID |
-| [M2](#m2--slabé-řízení-hesel) | Střední | Hesla | Min. délka 6, generátor není CSPRNG, heslo v plaintextu e-mailem i v odpovědi API |
+| [M2](#m2--slabé-řízení-hesel) | Střední | Hesla | Min. délka 6, generátor není CSPRNG, heslo v plaintextu e-mailem (reset přes API odpověď vyřešen) |
 | [M4](#m4--session-cookie-bez-secure-flagu) | Střední | Session | `play.http.session.secure` nenastaveno |
 | [M5](#m5--chybějící-rate-limiting-přihlašování) | Střední | Autentizace | Žádné omezení pokusů o login / lockout; drobná enumerace uživatelů |
 | [M6](#m6--zastaralé-závislosti-s-cve) | Střední | Závislosti | commons-text 1.7, guava 19.0, pdfbox 1.8.17, poi 5.0.0, pgjdbc 42.2.x |
@@ -135,7 +135,7 @@ přečtením souboru zničí data legitimnímu příjemci. Zjištění je část
 |---|---|
 | Minimální délka hesla **6 znaků** | `app/models/User.java:27` (`MinPasswordLength`) |
 | Generátor hesel používá `RandomStringUtils.randomAlphanumeric` – **není kryptograficky bezpečný** (ThreadLocalRandom), jen alfanumerické znaky | `app/utils/PasswordGenerator.java:10–12` |
-| Reset hesla vrací nové heslo **v JSON odpovědi** endpointu | `UserController.resetUserPassword` (`app/controllers/common/UserController.java:616–657`) |
+| ~~Reset hesla vrací nové heslo **v JSON odpovědi** endpointu~~ – **vyřešeno**: `resetUserPassword` i self-service `/forgotPassword` posílají jednorázový odkaz (`PasswordResetService`), heslo se negeneruje a nikde se nevrací | `UserController.resetUserPassword`, `Application.requestPasswordReset` |
 | Nový uživatel dostává heslo **e-mailem v plaintextu** | `UserController.createUser` (`:448+`, `notifyNewUser`) |
 | Žádná politika složitosti / vynucená změna vygenerovaného hesla | – |
 
@@ -150,9 +150,13 @@ je však na hranici únosnosti a plaintext hesla v e-mailu/odpovědi API je zpě
    doplnit v `ChangePassword`/User admin formuláři).
 2. `PasswordGenerator` přepsat na `SecureRandom` (např. náhodné bajty → Base64 /
    znaková sada včetně `-_=+`), generovat ≥ 12 znaků.
-3. `resetUserPassword` nevracet heslo v API odpovědi – heslo zobrazit jen sysAdminovi
+3. ~~`resetUserPassword` nevracet heslo v API odpovědi – heslo zobrazit jen sysAdminovi
    ve FE jednorázově (standard u malých týmů), nebo lépe: poslat mailem / vynutit
-   změnu při prvním přihlášení (`mustChangePassword` flag).
+   změnu při prvním přihlášení (`mustChangePassword` flag).~~ – **implementováno**
+   (`PasswordResetService`): sysAdmin i self-service `/forgotPassword` posílají mailem
+   jednorázový token (SecureRandom, v DB jen SHA-256 hash + expirace v `user_settings`,
+   24 h, jednorázový), uživatel si heslo zvolí sám na `/resetPassword`. Audit
+   `UserActivity.PasswordReset` (22).
 
 ---
 
@@ -401,7 +405,7 @@ Minimální kroky pro bezpečné uvedení do produkce (v pořadí doporučené p
   v git historii → při nasazení rotovat, nerecyklovat
 - [ ] **M4** – `play.http.session.secure = true` + HSTS na reverse proxy
 - [ ] **M5** – rate limiting přihlašování (filtr, nebo limit na reverse proxy)
-- [ ] **M2** – min. délka hesla ≥ 10, SecureRandom generátor, heslo mimo API odpověď
+- [ ] **M2** – min. délka hesla ≥ 10, SecureRandom generátor, heslo mimo API odpověď *(reset přes odkaz hotový – `PasswordResetService`)*
 - [ ] **M8** – `mail.smtp.ssl.trust` na konkrétní host
 - [ ] **M10** – `logger.application = INFO`, generické chybové hlášky
 - [ ] **M6** – upgrade POI/commons-text/guava/pgjdbc + OWASP dependency-check do CI

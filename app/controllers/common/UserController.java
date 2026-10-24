@@ -21,6 +21,7 @@ import play.mvc.Security;
 import service.accessrights.TokenAuthService;
 import service.config.IConfigService;
 import service.password.IHashService;
+import service.user.PasswordResetService;
 import utils.JsonResult;
 import utils.PasswordGenerator;
 import utils.SessionUtils;
@@ -57,6 +58,9 @@ public class UserController extends ControllerBase {
 
     @Inject
     private IConfigService _configService;
+
+    @Inject
+    private PasswordResetService _passwordResetService;
 
     public Result changePassword(Http.Request request) {
         try {
@@ -609,20 +613,13 @@ public class UserController extends ControllerBase {
     }
 
     /**
-     * /**
-     * Reset a user's password
+     * Reset a user's password – pošle uživateli e-mail s jednorázovým odkazem,
+     * na kterém si sám nastaví nové heslo. Heslo se negeneruje a v odpovědi
+     * se nevrací (zjištění M2, docs/security.md).
      */
     @Security.Authenticated(AuthorizedAsSysAdmin.class)
     public Result resetUserPassword(Http.Request request, Long id) {
         try {
-            // Check if current user is sysadmin
-            User currentUser = SessionUtils.getCurrentUser(request.session());
-            if (currentUser == null || !currentUser.isSysAdmin()) {
-                Map<String, Object> errorResponse = new HashMap<>();
-                errorResponse.put("error", "Unauthorized access");
-                return unauthorized(Json.toJson(errorResponse));
-            }
-
             // Find user by ID
             User user = User.find().byId(id);
             if (user == null) {
@@ -631,18 +628,11 @@ public class UserController extends ControllerBase {
                 return notFound(Json.toJson(errorResponse));
             }
 
-            // Generate a new random password
-            String newPassword = PasswordGenerator.Generate(User.MinPasswordLength);
+            _passwordResetService.requestPasswordReset(user, getMessages(user));
 
-            // Update user's password
-            user.setPlainPassword(newPassword, _hashService);
-            user.save();
-
-            // Return the new password in the response
             ObjectNode response = new ObjectMapper().createObjectNode();
             response.put("success", true);
-            response.put("message", "Password reset successfully");
-            response.put("newPassword", newPassword);
+            response.put("message", getMessages(request).at("PasswordReset.adminRequested", user.getEmail()));
 
             return ok(response);
         } catch (Exception e) {

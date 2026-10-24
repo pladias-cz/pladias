@@ -57,6 +57,26 @@ Application:
     inactivityLogout: Z důvodu delší nečinnosti jste byli automaticky odhlášeni.
     userHasLoggedOut: Uživatel byl odhlášen.
 
+PasswordReset:
+    emailRequired: Vyplňte prosím e-mail.
+    emailSent: Pokud účet s touto e-mailovou adresou existuje, odeslali jsme na něj instrukce pro nastavení nového hesla.
+    formIncomplete: Vyplňte prosím všechna pole formuláře.
+    invalidToken: Odkaz pro reset hesla je neplatný nebo jeho platnost vypršela. Vyžádejte si prosím nový.
+    passwordMismatch: Nová hesla se neshodují.
+    passwordNotLongEnough: Minimální délka hesla je {0} znaků.
+    passwordReset: Heslo bylo změněno. Nyní se můžete přihlásit novým heslem.
+    adminRequested: Uživateli {0} byl odeslán e-mail s odkazem pro nastavení nového hesla.
+    mailSubject: Reset hesla – {0}
+    mailBody: |
+        Dobrý den,
+
+        pro nastavení nového hesla ve aplikaci {0} klikněte na níže uvedený odkaz. Platnost odkazu je {1} hodin a lze jej použít pouze jednou.
+
+        {2}
+
+        Pokud jste reset hesla nevyžádali, tento e-mail ignorujte – vaše heslo zůstane beze změny.
+
+
 Atlas:
     taxonNotFound: Neznámý taxon "{0}".
     invalidTaxon: Neznámý taxon.

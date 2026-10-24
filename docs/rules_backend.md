@@ -525,9 +525,25 @@ Třída `SynonymController` je anotována `@Security.Authenticated(AuthorizedAsT
 
 ### POST `/users/:id/resetPassword` – Reset hesla uživatele (`resetUserPassword`)
 
-**Kdo smí provést:** sysAdmin (anotace + vnitřní kontrola)
+**Kdo smí provést:** sysAdmin (anotace `AuthorizedAsSysAdmin`)
 
-**Související akce:** vygenerování nového hesla, odeslání e-mailu uživateli
+**Související akce:** pošle uživateli e-mail s jednorázovým odkazem na `/resetPassword` (`PasswordResetService`); nové heslo si uživatel zvolí sám, heslo se negeneruje ani nevrací v odpovědi (docs/security.md M2). Odpověď nese `{success, message}`.
+
+---
+
+### GET/POST `/forgotPassword` – Zapomenuté heslo (`Application.forgotPassword`/`requestPasswordReset`)
+
+**Kdo smí provést:** kdokoli (veřejná server-side stránka, React SPA je za autentizací)
+
+**Související akce:** POST vyhledá uživatele podle e-mailu a pošle mu reset odkaz; odpověď je vždy stejná flash hláška bez ohledu na existenci účtu (anti-enumerace, M5).
+
+---
+
+### GET/POST `/resetPassword` – Nastavení nového hesla (`Application.resetPassword`/`performPasswordReset`)
+
+**Kdo smí provést:** kdokoli s platným tokenem z e-mailu (SecureRandom, v DB jen SHA-256 hash + expirace v `user_settings`, 24 h, jednorázový)
+
+**Související akce:** validace tokenu a shody hesel (min. délka `User.MinPasswordLength`), nastavení hesla přes Argon2id, zapsání auditu `UserActivity.PasswordReset` (22), přesměrování na `/login`. Chyby (neplatný/expirovaný token, neshoda hesel) vrací flash a redirect.
 
 ---
 

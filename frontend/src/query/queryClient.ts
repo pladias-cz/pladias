@@ -44,10 +44,10 @@ const CACHED_CATALOGS: Record<string, number> = {
     publicationStatuses: Infinity,
     // mění se zřídka – 24 h:
     herbariums: DAY_MS,
-    projects: DAY_MS,
-    institutions: DAY_MS,
-    licenses: DAY_MS,
-    taxonRanks: DAY_MS,
+    projects: Infinity,
+    institutions: Infinity,
+    licenses: Infinity,
+    taxonRanks: Infinity,
 };
 
 export function createQueryClient(): QueryClient {

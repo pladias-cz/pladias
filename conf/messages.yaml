@@ -70,7 +70,7 @@ PasswordReset:
     mailBody: |
         Dobrý den,
 
-        pro nastavení nového hesla ve aplikaci {0} klikněte na níže uvedený odkaz. Platnost odkazu je {1} hodin a lze jej použít pouze jednou.
+        pro nastavení nového hesla v aplikaci {0} klikněte na níže uvedený odkaz. Platnost odkazu je {1} hodin a lze jej použít pouze jednou.
 
         {2}
 

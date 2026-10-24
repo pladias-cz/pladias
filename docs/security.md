@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | Datum auditu | 23. 10. 2026 |
-| Revize dokumentu | 24. 10. 2026 – všechna zjištění znovu ověřena proti revizi `68a7fe1`; vyřešená zjištění z dokumentu odstraněna |
+| Revize dokumentu | 24. 10. 2026 – všechna zjištění znovu ověřena proti revizi `68a7fe1`; vyřešená zjištění z dokumentu odstraněna – tentýž den vyřešena a odstraněna zjištění L7–L9 |
 | Rozsah | backend (Play Framework 3.0.10, Java, Ebean), frontend (React + Vite), konfigurace (`conf/*.conf`), závislosti (`build.sbt`) |
 | Metoda | statická analýza zdrojového kódu a konfigurace (code review); bez dynamického testování (penetrace) a bez revize infrastruktury |
 | Cíl | posouzení připravenosti aplikace k uvedení do produkce |
@@ -50,7 +50,7 @@ Problémy, které brání produkčnímu nasazení:
    Původní hodnoty zůstávají v git historii repozitáře, proto je nutné při nasazení
    použít **nové** (rotovat), ne historické.
 
-**Souhrn: 0 kritických, 1 vysoké, 9 středních, 8 nízkých zjištění.**
+**Souhrn: 0 kritických, 1 vysoké, 9 středních, 5 nízkých zjištění.**
 
 ## 2. Klasifikace závažnosti
 
@@ -67,7 +67,7 @@ Problémy, které brání produkčnímu nasazení:
 |---|---|---|---|
 | [H2](#h2--idor-na-dočasných-souborech-tempfiles) | Vysoká | IDOR | `/tempfiles/:id` – stažení/smazání cizích souborů podle číselného ID |
 | [M2](#m2--slabé-řízení-hesel) | Střední | Hesla | Min. délka 6, generátor není CSPRNG, heslo v plaintextu e-mailem i v odpovědi API |
-| [M4](#m4--session-cookie-bez-secure-flagu) | Střední | Session | `play.http.session.secure` nenastaveno; e-mail v JWT cookie |
+| [M4](#m4--session-cookie-bez-secure-flagu) | Střední | Session | `play.http.session.secure` nenastaveno |
 | [M5](#m5--chybějící-rate-limiting-přihlašování) | Střední | Autentizace | Žádné omezení pokusů o login / lockout; drobná enumerace uživatelů |
 | [M6](#m6--zastaralé-závislosti-s-cve) | Střední | Závislosti | commons-text 1.7, guava 19.0, pdfbox 1.8.17, poi 5.0.0, pgjdbc 42.2.x |
 | [M7](#m7--geoserver-proxy-s-volnou-cestou) | Střední | SSRF/proxy | `/geoserver/*params` předává libovolnou cestu na interní GeoServer (HTTP) |
@@ -80,9 +80,6 @@ Problémy, které brání produkčnímu nasazení:
 | [L4](#l4--debug-flag-vypíná-kontrolu-aktivity) | Nízká | Konfigurace | `debug=true` vypíná kontrolu neaktivity uživatele |
 | [L5](#l5--filename-v-content-disposition-bez-uvozovek) | Nízká | Hlavičky | Nequotované filename v `Content-disposition` |
 | [L6](#l6--velký-limit-uploadu-400-mb) | Nízká | DoS | `maxDiskBuffer = 400MB` – diskový DoS povrch pro přihlášené |
-| [L7](#l7--pii-e-mail-v-session-jwt) | Nízká | Soukromí | E-mail uživatele je čitelný v (podepsaném, nešifrovaném) session JWT |
-| [L8](#l8--mrtvý-kód-s-raw-sql) | Nízká | Hygiena | Nepoužívaný kód s rizikovým vzorem SQL konkatenace |
-| [L9](#l9--nepoužitý-accesstoken-v-konfiguraci) | Nízká | Hygiena | Nepoužitá token-like hodnota v `conf/dalibor.conf` |
 
 ID zachovávají číslování původního auditu (23. 10. 2026). Mezery v sekvencích
 (C, H, M i L) odpovídají zjištěním vyřešeným v mezičase, která byla z dokumentu
@@ -376,35 +373,6 @@ v některých klientech působit škody. Doporučení: `filename="..."` +
 sérií importů zaplnit disk. Pro importní workflow akceptovatelné; doporučeno
 monitorování místa + eventuelně nižší limit pro ne-importní uploady.
 
-### L7 – PII (e-mail) v session JWT
-
-Session obsahuje `userId` + `email` (`SessionUtils`, `Application.doAuthenticate`).
-JWT je podepsaný, ale **nešifrovaný** – e-mail je z cookie čitelný kdekoli (GDPR
-hygiena). Doporučení: do session ukládat jen `userId`; e-mail dotahovat přes
-`User.find().byId(userId)` (děje se už teď v `getCurrentUser`).
-
-### L8 – Mrtvý kód s raw SQL
-
-`service/taxon/TaxonOccurrenceService.java:19–34` – služba **nemá žádné volající**
-(mrtvý kód) a staví SQL konkatenací řetězců. Konkatenovaná hodnota (`leftPaddedSquareId`)
-je dnes odvozena z `int` (`MapSquareUtils.squareIdToString`), takže bezprostředně
-zranitelná není – jde ale o stejný vzorec, který už způsobil SQL injection ve
-vyhledávání: past pro budoucí vývojáře, jakmile bude služba oživena, zkopírována
-nebo rozšířena o textové vstupy.
-
-Doporučení: odstranit, nebo přepsat na parametrizovaný dotaz.
-
-### L9 – Nepoužitý `accessToken` v konfiguraci
-
-`conf/dalibor.conf` obsahuje klíč `accessToken` s hodnotou vypadající jako reálný
-token. Nikde v kódu (backend ani frontend) se neodkazuje – jde o mrtvou konfiguraci.
-Pokud je token živý u některé externí služby, jde o únik tajemství v repozitáři
-(srov. prázdné hodnoty tajemství v `common.conf`).
-
-Doporučení: řádek z konfigurace odstranit; pokud je token živý, v příslušné službě
-revokovat. Zvážit zapsání zásady „žádná tajemství v conf souborech v repu" do
-`AGENTS.md`.
-
 ## 7. Pozitivní zjištění
 
 Při auditu se potvrdily následující silné stránky (chybí v mnoha aplikacích podobného typu):
@@ -455,7 +423,7 @@ Při auditu se potvrdily následující silné stránky (chybí v mnoha aplikac�
   `setParameter` vzor); vyhledávání záznamů (`PageSearchService`) i bibliografické
   vyhledávání (`ReactBiblioSearchService`) váží uživatelské vstupy výhradně přes
   pojmenované parametry (regresní testy `PageSearchServiceShould`,
-  `ReactBiblioSearchServiceShould`); zbytková raw SQL místa viz L8.
+  `ReactBiblioSearchServiceShould`).
 - Soubory ukládané do DB (bytea) – žádný filesystem path traversal; ZIP se pouze
   vytváří (nikdy nerozbaluje) – žádný zip-slip.
 - `AllowedHostsFilter` s produkčními doménami; SecurityHeadersFilter aktivní
@@ -481,7 +449,7 @@ Minimální kroky pro bezpečné uvedení do produkce (v pořadí doporučené p
 - [ ] **M7** – whitelist GeoServer proxy cest
 - [ ] ověřit HTTPS termination, zálohy DB a monitorování (mimo rozsah auditu)
 
-Po nasazení (krátkodobý horizont): M9, M11, L1–L2, L4–L9.
+Po nasazení (krátkodobý horizont): M9, M11, L1–L2, L4–L6.
 
 ## 9. Metodika, předpoklady a limity
 

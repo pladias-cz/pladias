@@ -171,9 +171,10 @@ public class Application extends ControllerBase {
         UserActivityService.recordActivity(user, UserActivity.Login);
         logger.info(String.format("User %s logged in", user.getEmail()));
 
+        // docs/security.md L7: v session (podepsaný, nešifrovaný JWT cookie) uchováváme
+        // jen userId – e-mail (PII) se dotahuje přes SessionUtils.getCurrentUser
         Map<String, String> map = new HashMap<>();
         map.put(SessionUtils.UserIdKey, "" + user.getId());
-        map.put(SessionUtils.EmailKey, user.getEmail());
 
         return buildAthenticationResponse(request, map);
     }

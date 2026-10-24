@@ -21,7 +21,8 @@ export function useSearchOptions() {
     const {t} = useTranslation();
 
     // číselníky formuláře – při selhání zůstane select prázdný (použitelný);
-    // bez cache (sekce J): každý mount je načte znovu
+    // většina se cachuje (viz CACHED_CATALOGS v queryClient.ts), committers
+    // a historyFlags zůstávají bez cache
     const projects = useCatalogQuery(['projects'], getProjects);
     const herbariums = useCatalogQuery(['herbariums'], getHerbariums);
     const institutions = useCatalogQuery(['institutions'], getInstitutions);

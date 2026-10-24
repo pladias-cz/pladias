@@ -1,7 +1,8 @@
 /**
  * Sdílený hook číselníků (sekce J): `useQuery` nad service loaderem.
- * Konfigurace bez cache (viz `queryClient.ts`) – číselníky jsou dynamická,
- * každý mount je načte znovu. Selhání nechá číselník prázdný (select
+ * Cache politika centrálně v `queryClient.ts` – výchozí je bez cache (číselníky
+ * jsou dynamická, každý mount je načte znovu), stabilní výjimky se cachují
+ * (viz CACHED_CATALOGS tamtéž). Selhání nechá číselník prázdný (select
  * zůstane použitelný); 403 a síťové chyby hlásí centrálně apiClient (sekce F).
  */
 

@@ -117,7 +117,7 @@ Stávajících 272 testů prochází a jsou kvalitní, ale pokrytí je koncentro
 
 - **Cross-feature import:** `components/atlas/mapMain/InfoPanel.tsx` importuje `useTaxonUpdates` z `@/components/atlasAdmin/taxaList/hooks` – feature „atlas“ sahá do vnitřností feature „atlasAdmin“. `useTaxonUpdates` používá mapMain i admin TaxaList, patří do sdílené vrstvy (services + hook ve sdíleném místě), ne do vnitřností jiné feature.
 - **Relativní import přes hranice:** `importCsv` používá `'../../import/hooks/useProjectsData'` – přímé porušení „Always use aliases, never relative `../../` across feature boundaries“ (conventions.md). Opravit na `@/…`.
-- **`queryClient` bez cache (`staleTime: 0`)** – záměrné a zdokumentované rozhodnutí (číselníky jsou dynamická data). K zvážení: krátké `staleTime` (30 s) jen pro katalogy by ušetřilo opakované requesty při přecházení mezi stranami. Není chyba – návrh k revizi.
+- **`queryClient` bez cache (`staleTime: 0`)** – záměrné a zdokumentované rozhodnutí (číselníky jsou dynamická data). K zvážení: krátké `staleTime` (30 s) jen pro katalogy by ušetřilo opakované requesty při přecházení mezi stranami. Není chyba – návrh k revizi. *Vyřešeno 24. 10. 2026 – viz P3.4.*
 - **`useUserSettings`** – imperativní callback styl (`onSettingSaved`, `updateState`), těžko testovatelný. Kandidát na React Query mutation s invalidací. Nízká priorita.
 
 ---
@@ -148,7 +148,7 @@ Stávajících 272 testů prochází a jsou kvalitní, ale pokrytí je koncentro
 1. Inline styly → utility/BEM třídy (dávkově po komponentách).
 2. Aktualizace conventions.md: umístění hooků, `React.FC`, uvozovky, jazyk komentářů (viz 2.8).
 3. `InfoPanel`/`MapComponent` přejmenování dle účelu (viz 2.4).
-4. Zvážit `staleTime` pro číselníky (viz 2.9).
+4. ✅ Zvážit `staleTime` pro číselníky (viz 2.9). *Provedeno 24. 10. 2026: stabilní číselníky se cachují centrálně přes `setQueryDefaults` dle TTL mapy `CACHED_CATALOGS` v `queryClient.ts` – fytochoriony, revizní a publikační stavy na celou session (Infinity), herbáře, projekty, instituce, licence a taxonRanks 24 h (TTL se doladí změnou jedné hodnoty). `refetchOnMount: true` přepisuje globální `'always'`, aby mount refetchl až po vypršení TTL. Zbytek appky zůstává bez cache.*
 5. Po migraci importů smazat re-export shimy.
 
 ---

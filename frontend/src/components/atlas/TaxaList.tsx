@@ -17,8 +17,8 @@ import type {TaxonMapSettings} from '@/models/TaxonMapSettings';
 export default function TaxaList() {
     const {t} = useTranslation();
 
-    // číselníky statusů – bez cache (sekce J); při selhání zůstane filtr
-    // prázdný (stejně jako dřív – chybu jen logoval)
+    // číselníky statusů – cachované (viz CACHED_CATALOGS v queryClient.ts);
+    // při selhání zůstane filtr prázdný (stejně jako dřív – chybu jen logoval)
     const revisionStatusOptions = useCatalogQuery(['revisionStatuses'], getRevisionStatuses);
     const publicationStatusOptions = useCatalogQuery(['publicationStatuses'], getPublicationStatuses);
 

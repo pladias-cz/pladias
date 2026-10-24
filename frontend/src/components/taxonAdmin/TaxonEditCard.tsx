@@ -18,8 +18,9 @@ interface Props {
 export default function TaxonEditCard({taxon, onTaxonChange}: Props) {
     const {t} = useTranslation();
 
-    // číselník ranků – bez cache (sekce J); při selhání zůstane select prázdný
-    // (403 a síťové chyby hlásí centrálně apiClient)
+    // číselník ranků – cachovaný (viz CACHED_CATALOGS v queryClient.ts); při
+    // selhání zůstane select prázdný (403 a síťové chyby hlásí centrálně
+    // apiClient)
     const ranks = useCatalogQuery(['taxonRanks'], getTaxonRanks);
     const rankOptions = useMemo<Option[]>(
         () => ranks.map(r => ({

@@ -106,9 +106,10 @@ export function useBulkEdit({records, totalCount, searchPayloadEntries, onBulkEd
         () => createTaxaImportableProvider(t('atlas.search.form.taxonAutocompletePlaceholder')),
         [t],
     );
-    // číselníky (sekce J, TanStack Query bez cache – jsou dynamická):
-    // fytochoriony + autoři nepřiřazení k prvnímu záznamu výběru; při selhání
-    // zůstane pole použitelné s prázdným číselníkem
+    // číselníky: fytochoriony (cachované – viz CACHED_CATALOGS v
+    // queryClient.ts) + autoři nepřiřazení k prvnímu záznamu výběru (bez
+    // cache, jsou vázaní na konkrétní záznam); při selhání zůstane pole
+    // použitelné s prázdným číselníkem
     const phytochorions = useCatalogQuery(['phytochorions'], getPhytochorions);
     const firstRecordId = recordIds[0];
     const finderAuthors = useCatalogQuery(

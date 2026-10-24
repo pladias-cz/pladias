@@ -114,7 +114,12 @@ function useAtlasSearch(params) {
   TanStack Query via `src/query/` (`useCatalogQuery` for catalogs, `useQuery` elsewhere) – loading
   API data manually with `useEffect` + `setState` is forbidden. The
   client is configured WITHOUT cache (`staleTime: 0`, `gcTime: 0`, `refetchOnMount: "always"`) –
-  catalogs are dynamic data and every mount refetches (decision, refactor.md section J).
+  dynamic data refetches on every mount (decision, refactor.md section J). Exception: stable
+  catalogs are cached per the `CACHED_CATALOGS` TTL map in `src/query/queryClient.ts` (session TTL
+  for phytochorions / revision / publication statuses, 24 h for herbariums, projects,
+  institutions, licenses, taxonRanks; `refetchOnMount: true` so a mount refetches only after the
+  TTL expires). If a cached catalog ever gains a React admin UI, its mutation must
+  `queryClient.invalidateQueries` the key.
   Components in tests are wrapped with `withQueryClient()` from `src/test/`.
 - Mutations stay imperative (`await service(...)` inside a handler). On success they refresh the
   affected query via `queryClient.invalidateQueries({queryKey: [...]})` with the same key the

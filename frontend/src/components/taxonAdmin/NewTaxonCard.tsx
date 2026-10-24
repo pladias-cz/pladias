@@ -21,8 +21,9 @@ export default function NewTaxonCard({taxon}: Props) {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    // číselník ranků – bez cache (sekce J); při selhání zůstane select prázdný
-    // (403 a síťové chyby hlásí centrálně apiClient)
+    // číselník ranků – cachovaný (viz CACHED_CATALOGS v queryClient.ts); při
+    // selhání zůstane select prázdný (403 a síťové chyby hlásí centrálně
+    // apiClient)
     const ranks = useCatalogQuery(['taxonRanks'], getTaxonRanks);
     const rankOptions = useMemo<Option[]>(
         () => ranks.map(r => ({

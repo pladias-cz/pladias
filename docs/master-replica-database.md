@@ -1,10 +1,32 @@
-# Master-Replica Databázová Konfigurace
+# Databázová konfigurace
+
+## Migrace
+
+Change the classes in `../app/models`. Then run the next command. The development container 'play' from [GitHub](https://github.com/pladias-cz/sbt/tree/v2) is required.
+
+```
+docker compose run --rm play generateDDL
+```
+
+This will generate the model change files:
+* `conf/dbmigration/1.X.sql` with the SQL code to update the database.
+  You can edit the SQL code (for example, add an index or adjust some values).
+* `conf/dbmigration/1.X.model.xml` with changes from the previous model.
+
+Check the SQL file and then you can try applying the changes to the development database.
+
+```
+docker compose run --rm play "runMigrations jdbc:postgresql://pladias_master:5432/pladias pladias pladias"
+```
+
+
+## Master-Replica
 
 Tento dokument popisuje konfiguraci a použití master-replica architektury pro rozdělení databázové zátěže v aplikaci Pladias.
 
-## Použití
+### Použití
 
-### Způsob 1: Deklarativní s anotací `@UseReplica`
+#### Způsob 1: Deklarativní s anotací `@UseReplica`
 
 Nejjednodušší způsob - označte controller metodu nebo celou třídu anotací:
 
@@ -43,7 +65,7 @@ public class MapDetailController extends ControllerBase {
 }
 ```
 
-### Způsob 2: Programové s try-with-resources
+#### Způsob 2: Programové s try-with-resources
 
 Pro jemnější kontrolu použijte `DatabaseContext.useReplica()`:
 
@@ -74,7 +96,7 @@ public class MapSquareService {
 ```
 
 
-### Způsob 3: Použití `BaseModel` helper metod
+#### Způsob 3: Použití `BaseModel` helper metod
 
 **Důležité:** Modely musí dědit z `io.ebean.Model`, NE z `BaseModel`!
 
@@ -106,9 +128,9 @@ public class Record extends Model {
 SqlRow row = DatabaseContext.getDatabase().sqlQuery("SELECT ...").findOne();
 ```
 
-## API Reference
+### API Reference
 
-### `DatabaseContext`
+#### `DatabaseContext`
 
 Hlavní třída pro správu databázového kontextu.
 
@@ -130,7 +152,7 @@ try (DatabaseContext.Scope master = DatabaseContext.useMaster()) {
 Database db = DatabaseContext.getDatabase();
 ```
 
-### `@UseReplica`
+#### `@UseReplica`
 
 Anotace pro deklarativní přepnutí na repliku.
 
@@ -146,7 +168,7 @@ public class ReadOnlyController extends ControllerBase { ... }
 
 **Pozor:** Nepoužívejte na metody s write operacemi!
 
-### `DatabaseContext`
+#### `DatabaseContext`
 
 Helper třída pro získání Database instance s aktuálním kontextem.
 
@@ -175,9 +197,9 @@ List<MyEntity> items = DB.byName("replica").find(MyEntity.class).findList();
 MyEntity item = DB.byName("default").find(MyEntity.class).byId(123);
 ```
 
-## Příklady použití
+### Příklady použití
 
-### Controller s read-only operacemi
+#### Controller s read-only operacemi
 
 ```java
 package controllers.atlas;
@@ -206,7 +228,7 @@ public class AtlasSearchController extends ControllerBase {
 }
 ```
 
-### Service vrstva s mixem operací
+#### Service vrstva s mixem operací
 
 ```java
 package service.records;
@@ -238,9 +260,9 @@ public class RecordService {
 }
 ```
 
-## Best Practices
+### Best Practices
 
-### ✅ Doporučeno
+#### ✅ Doporučeno
 
 1. **Používejte `@UseReplica` pro read-only controller metody**
    ```java
@@ -261,7 +283,7 @@ public class RecordService {
    ```
 
 
-### ❌ Nedoporučeno
+#### ❌ Nedoporučeno
 
 1. **Nepoužívejte `@UseReplica` na write operace**
    ```java

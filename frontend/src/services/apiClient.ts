@@ -14,7 +14,9 @@
  *  - `apiDownload` – souborové endpointy můžou místo souboru vrátit JSON chybu,
  *    takže se Content-Type kontroluje před čtením těla,
  *  - FormData se posílá bez Content-Type – boundary doplní prohlížeč (stejný
- *    tvar na drátě jako dosud).
+ *    tvar na drátě jako dosud),
+ *  - mutace nesou CSRF token – Play filtr (docs/security.md M1) kontroluje
+ *    ne-GET requesty; token čte apiClient z cookie a posílá hlavičkou.
  *
  * Zrušení requestu: fetch vyhazuje `DOMException` s `name === "AbortError"`,
  * detekuje `isAbortError`.
@@ -134,6 +136,21 @@ function loggedApiError(message: string, status?: number, payload?: unknown, con
     return error;
 }
 
+/** Kontrakt s backendem: musí odpovídat `play.filters.csrf.cookie.name` (conf/common.conf). */
+const CSRF_COOKIE_NAME = 'PLAY_CSRF_TOKEN';
+
+/**
+ * CSRF token z cookie (docs/security.md M1). Filtr ho generuje do samostatné
+ * ne-httpOnly cookie – session cookie je HttpOnly, SPA ji přečíst nemůže.
+ * Hodnotu (podepsaný token) posílají mutace zpět hlavičkou `Csrf-Token`;
+ * používá ho i logout formulář (MainMenu).
+ */
+export function readCsrfToken(): string | undefined {
+    if (typeof document === 'undefined') return undefined;
+    const match = document.cookie.match(new RegExp(`(?:^|;\\s*)${CSRF_COOKIE_NAME}=([^;]*)`));
+    return match?.[1];
+}
+
 /** Společné pro všechny metody: fetch, 401/403, HTTP chyby s hláškou z těla. */
 async function performRequest(
     url: string,
@@ -142,12 +159,18 @@ async function performRequest(
     options: ApiOptions = {},
 ): Promise<Response> {
     const requestUrl = options.params ? withParams(url, options.params) : url;
+    // CSRF (M1): Play filtr kontroluje mutace – token z cookie jde hlavičkou.
+    const csrfToken = method === 'GET' ? undefined : readCsrfToken();
 
     let response: Response;
     try {
         response = await fetch(requestUrl, {
             method,
-            headers: {...options.headers, ...init.headers},
+            headers: {
+                ...options.headers,
+                ...init.headers,
+                ...(csrfToken ? {'Csrf-Token': csrfToken} : {}),
+            },
             body: init.body,
             signal: options.signal,
         });

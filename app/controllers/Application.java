@@ -126,10 +126,6 @@ public class Application extends ControllerBase {
     }
 
     private Result redirectWithDelay(play.mvc.Call call) {
-        try {
-            Thread.sleep(5000);
-        } catch (Exception e) {
-        }
         return redirect(call);
     }
 

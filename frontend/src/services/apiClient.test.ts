@@ -8,6 +8,7 @@ import {
     apiPostFormUrlencoded,
     ensureSuccess,
     isAbortError,
+    readCsrfToken,
     setForbiddenHandler,
     setNetworkErrorHandler,
 } from './apiClient';
@@ -302,5 +303,49 @@ describe('isAbortError', () => {
         expect(isAbortError(new DOMException('Aborted', 'AbortError'))).toBe(true);
         expect(isAbortError(new TypeError('Failed to fetch'))).toBe(false);
         expect(isAbortError(new ApiError('x'))).toBe(false);
+    });
+});
+
+describe('CSRF token (M1)', () => {
+    // jsdom cookies přetrvávají přes testy souboru – po každém testu se maže,
+    // aby ani jeden z ostatních describe neviděl náš token
+    afterEach(() => {
+        document.cookie = 'PLAY_CSRF_TOKEN=; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+    });
+
+    it('sends the Csrf-Token header on mutations (token from the PLAY_CSRF_TOKEN cookie)', async () => {
+        document.cookie = 'PLAY_CSRF_TOKEN=signed-token-123';
+        fetchMock.mockResolvedValue(jsonResponse({success: true}));
+
+        await apiPost('/api/react/users', {name: 'Jan'});
+
+        const init = fetchMock.mock.calls[0][1] as RequestInit;
+        expect((init.headers as Record<string, string>)['Csrf-Token']).toBe('signed-token-123');
+    });
+
+    it('does not send the header on GET requests (safe methods are whitelisted by the filter)', async () => {
+        document.cookie = 'PLAY_CSRF_TOKEN=signed-token-123';
+        fetchMock.mockResolvedValue(jsonResponse({success: true}));
+
+        await apiGet('/api/react/user/settings/application_language');
+
+        const init = fetchMock.mock.calls[0][1] as RequestInit;
+        expect((init.headers as Record<string, string>)['Csrf-Token']).toBeUndefined();
+    });
+
+    it('omits the header when the cookie is missing (request proceeds without it)', async () => {
+        fetchMock.mockResolvedValue(jsonResponse({success: true}));
+
+        await apiPost('/api/react/users', {name: 'Jan'});
+
+        const init = fetchMock.mock.calls[0][1] as RequestInit;
+        expect((init.headers as Record<string, string>)['Csrf-Token']).toBeUndefined();
+    });
+
+    it('readCsrfToken finds the token among other cookies', () => {
+        document.cookie = 'other=1';
+        document.cookie = 'PLAY_CSRF_TOKEN=abc';
+        document.cookie = 'another=2';
+        expect(readCsrfToken()).toBe('abc');
     });
 });

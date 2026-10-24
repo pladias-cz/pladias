@@ -23,10 +23,7 @@ public class AuthorizedApi extends AuthenticatorBase {
 
     @Override
     public Result onUnauthorized(Http.Request ctx) {
-        try {
-            Thread.sleep(5000);//slow down possible attacker
-        } catch (Exception e) {
-        }
+
         return unauthorized(Json.toJson(Map.of("error", "Not Authorized")))
             .withNewSession();
     }

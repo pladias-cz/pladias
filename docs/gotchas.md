@@ -86,6 +86,22 @@ a řádek v ní párují referenčně, případně podle `row.id` (stejný fallb
   toast): hlášku backendu nese `ApiError.payload` (obálka `success:false` z `ensureSuccess`), lokální
   Bootstrap alerty v komponentách tabulek už se nepoužívají.
 
+### CSRF token – vazba FE ↔ BE (docs/security.md M1)
+
+Play CSRF filtr kontroluje všechny ne-GET/HEAD/OPTIONS requesty (`protectHeaders =
+null` v `conf/common.conf`). Token nežije v session cookie (ta je HttpOnly), ale ve
+samostatné cookie `PLAY_CSRF_TOKEN` (`play.filters.csrf.cookie.name`, httpOnly =
+false), aby ji SPA přečetlo – `apiClient.performRequest` posílá její hodnotu zpět
+hlavičkou `Csrf-Token`. Pasti:
+- **kontrakt jména cookie** – `CSRF_COOKIE_NAME` v `frontend/src/services/apiClient.ts`
+  musí zůstat synchronní s `play.filters.csrf.cookie.name`; přejmenování jedné strany
+  rozbije všechny mutace (HTTP 403),
+- filtr token generuje až na HTML GET requestech (`GET /`, `GET /login`) – kdo si smaže
+  jen CSRF cookie, dostává u mutací 403 do příštího reloadu stránky,
+- login formulář nese token server-side přes `@helper.CSRF.formField`; logout je
+  full-page POST se skrytým polem `csrfToken` (MainMenu) – čistý odkaz ani
+  `sendBeacon` (httpLogTransport) by token nést nemohly.
+
 ---
 
 ## Permissions

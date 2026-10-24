@@ -25,7 +25,7 @@ RUN unzip target/universal/pladiasweb-1.0-SNAPSHOT.zip -d /home/ubuntu/product &
     mv /home/ubuntu/product/pladiasweb-1.0-SNAPSHOT /home/ubuntu/final
 
 # Copy items to final image
-FROM eclipse-temurin:21-jre-noble
+FROM eclipse-temurin:21-jre-noble@sha256:35501d3f93173b420ac9001658eb68157e813316b865087e345c187fca422c4c
 USER ubuntu
 WORKDIR /home/ubuntu
 

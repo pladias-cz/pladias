@@ -9,6 +9,9 @@
  * Chování (observability nesmí škodit aplikaci):
  *  - záznamy se bufferují a odesílají po dávkách POSTem (JSON pole `LogEntry`),
  *  - při `pagehide` se zbytek bufferu pokusí odeslat `navigator.sendBeacon`,
+ *  - CSRF (docs/security.md M1): až endpoint jednou vznikne, musí řešit token –
+ *    `sendBeacon` neumí custom hlavičky (`Csrf-Token` jako apiClient), aktivace
+ *    tedy předpokládá fetch path s hlavičkou nebo `nocsrf` route modifier,
  *  - selhání odeslání = zahození dávky – žádné retry (logování chyb nesmí
  *    generovat další chyby ani provoz),
  *  - transport se vytváří jednou při startu aplikace a žije po celou session

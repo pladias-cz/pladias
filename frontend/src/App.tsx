@@ -262,8 +262,9 @@ export default function App() {
 
                                         {/* User routes - public (logged in users) */}
                                         {/* Logout is intentionally NOT a SPA route – it is handled by the backend
-                                    route GET /logout (controllers.Application.logout), which invalidates
-                                    the session and redirects to /login. MainMenu links to it via href. */}
+                                    route POST /logout (controllers.Application.logout), which invalidates
+                                    the session and redirects to /login. MainMenu submits a full-page form
+                                    with the CSRF token (docs/security.md M1/L3). */}
                                         <Route path="user">
                                             <Route path="changePassword" element={<ChangePassword/>}/>
                                             <Route path="changeEmail" element={<ChangeEmail/>}/>

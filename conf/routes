@@ -11,7 +11,7 @@ GET     /geoserver2/*params         controllers.GeoServer.processRequest2(reques
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.at(path="/public", file)
 GET     /login                      controllers.Application.login(request: Request)
-GET     /logout                     controllers.Application.logout(request: Request)
+POST    /logout                     controllers.Application.logout(request: Request)
 POST    /login                      controllers.Application.authenticate(request: Request)
 
 # React UI

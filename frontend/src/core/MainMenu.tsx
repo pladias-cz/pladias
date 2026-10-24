@@ -7,6 +7,7 @@ import {useProjectName} from '@/context/ProjectNameContext';
 import {Container, Form, FormControl, Nav, Navbar, NavDropdown} from 'react-bootstrap';
 import {Autocomplete} from '@/components/autocomplete/Autocomplete';
 import {createTaxaImportableProvider} from '@/components/autocomplete/TaxaImportableProvider';
+import {readCsrfToken} from '@/services/apiClient';
 import {useNavigate} from 'react-router-dom';
 import type {TaxonId} from '@/models/TaxonId';
 
@@ -45,6 +46,24 @@ const MainMenu = React.forwardRef<HTMLDivElement>(function MainMenu(_props, ref)
         if (taxon) {
             navigate(`/atlas/mapMain/${taxon.id}`);
         }
+    };
+
+    /**
+     * Odhlášení jako full-page POST na backend route POST /logout (docs/security.md
+     * M1/L3): CSRF token z cookie nese skryté pole formuláře – čistý GET odkaz by
+     * byl spustitelný cross-site top-level navigací.
+     */
+    const handleLogout = () => {
+        const form = document.createElement('form');
+        form.method = 'post';
+        form.action = '/logout';
+        const csrfToken = document.createElement('input');
+        csrfToken.type = 'hidden';
+        csrfToken.name = 'csrfToken';
+        csrfToken.value = readCsrfToken() ?? '';
+        form.appendChild(csrfToken);
+        document.body.appendChild(form);
+        form.submit();
     };
 
     const handleRecordSubmit = useCallback((event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -143,10 +162,14 @@ const MainMenu = React.forwardRef<HTMLDivElement>(function MainMenu(_props, ref)
                 </Navbar.Collapse>
                 <Nav>
                     <ActiveDropdown title={userEmail} prefixes={['/user']} align="end">
-                        {/* Logout must be a full-page href to the backend route GET /logout
+                        {/* Logout must be a full-page POST to the backend route POST /logout
                             (invalidates the server session, backs up taxon tree, redirects to /login).
-                            A SPA route cannot log the user out – do not replace with NavLink. */}
-                        <NavDropdown.Item as="a" href="/logout">{t('menu.user.logout')}</NavDropdown.Item>
+                            A SPA route cannot log the user out – do not replace with NavLink.
+                            POST + CSRF token (docs/security.md M1/L3): a plain GET href would be
+                            triggerable by cross-site top-level navigation. */}
+                        <NavDropdown.Item as="button" onClick={handleLogout}>
+                            {t('menu.user.logout')}
+                        </NavDropdown.Item>
                         <NavDropdown.Item as={NavLink}
                                           to="/user/changePassword">{t('menu.user.changePassword')}</NavDropdown.Item>
                         <NavDropdown.Item as={NavLink}

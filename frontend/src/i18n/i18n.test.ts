@@ -7,8 +7,10 @@ describe('i18n', () => {
         expect(i18n.t('user.playMessages.submit')).toBe('Uložit');
     });
 
-    it('falls back to cs for languages without translations (en/pl are empty on purpose)', () => {
-        expect(i18n.t('user.playMessages.submit', {lng: 'en'})).toBe('Uložit');
+    it('translates to en/de (pl is filled the same way) and falls back to cs for unknown languages', () => {
+        expect(i18n.t('user.playMessages.submit', {lng: 'en'})).toBe('Save');
+        expect(i18n.t('user.playMessages.submit', {lng: 'de'})).toBe('Speichern');
+        expect(i18n.t('user.playMessages.submit', {lng: 'xx'})).toBe('Uložit');
     });
 
     it('interpolates placeholders in taxon admin card texts (i18next syntax is {{...}}, not {...})', () => {

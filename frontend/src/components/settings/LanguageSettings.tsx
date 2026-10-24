@@ -68,6 +68,16 @@ export default function LanguageSettings({
                             inline
                             className="me-3"
                         />
+                        <Form.Check
+                            type="radio"
+                            id="optionsRadiosApplicationDe"
+                            label={t('user.settings.languageGerman')}
+                            name="applicationLanguage"
+                            checked={userSettings.applicationLanguage === 'de'}
+                            onChange={() => handleLanguageChange('de')}
+                            inline
+                            className="me-3"
+                        />
                         <Button
                             variant="success"
                             onClick={handleSaveLanguage}

@@ -1,2 +1,1280 @@
 {
+  "atlas": {
+    "admin": {
+      "importsList": {
+        "batchId": "Batch ID",
+        "committer": "Imported by",
+        "data": "Data",
+        "delete": "Delete",
+        "deleteError": "Deletion of the import failed",
+        "deleteSuccess": "Import was deleted",
+        "downloadModified": "Download edited records",
+        "error": "Error",
+        "filename": "File",
+        "filter": {
+          "batchId": "Filter Batch ID...",
+          "committer": "Filter importer...",
+          "importDate": "Filter date..."
+        },
+        "importedAt": "Import date",
+        "infos": "Info",
+        "markedForDeletion": "Marked for deletion",
+        "noResults": "No imports found.",
+        "ok": "OK",
+        "records": "records",
+        "rowsPerPage": "Rows per page",
+        "search": "Search...",
+        "showing": "Showing {{showing}} of {{total}} imports",
+        "title": "List of imports",
+        "warnings": "Warnings"
+      },
+      "listOfTaxaSubtree": {
+        "title": "List of taxa of the subtree"
+      },
+      "pages": {
+        "listOfImports": {
+          "title": "List of all imports"
+        },
+        "listOfTaxa": {
+          "downloadPublicationCsv": "Download CSV overview for PDF generation",
+          "title": "Taxon administration"
+        },
+        "listOfUsers": {
+          "title": "Map user administration"
+        }
+      },
+      "preslia": {
+        "title": "Preslia"
+      },
+      "taxaList": {
+        "archiveCSV": "CSV archive",
+        "commonThreshold": "commonThresh",
+        "downloadCsv": "Download CSV",
+        "downloadCsvMap": "Download map CSV",
+        "downloadPngMap": "Download map PNG",
+        "filterCommonThreshold": "Filter common threshold...",
+        "filterLatinName": "Filter Latin name...",
+        "filterMapped": "Filter mapped...",
+        "filterPreslia": "Filter Preslia...",
+        "filterProtected": "Filter protected...",
+        "filterPublicationStatus": "Filter publication status...",
+        "filterRevisionStatus": "Filter revision status...",
+        "filterRevisors": "Filter revisors...",
+        "filteredFrom": "filtered from {{total}} taxa in total",
+        "import": {
+          "contactSupport": "If possible, please send a screenshot of the screen together with the imported Excel file to the address",
+          "documentation": "documentation",
+          "documentationLink": "Rules for checking and processing the individual fields of the import Excel file can be found in the",
+          "downloadDecorated": "Download the Excel file with errors/warnings highlighted",
+          "emptyRowsWarning": "There must be no empty rows between the records intended for import, because processing of the batch ends at the first row in which the taxon name (column A) is not filled in.",
+          "errorCount": "Number of errors",
+          "errorExplanation": "The check revealed errors in your file (highlighted in red) or suspicious places that require your attention (marked in green; they point out something non-standard which may or may not be a real error). Phytochoria and grid quadrants that were added by calculation from the entered coordinates are marked in blue. Explanations of all highlighted places are in the added columns. Please download the marked file to your computer, check all highlighted fields and correct the errors found.",
+          "errorMessage": "Error description",
+          "fixAndRetry": "Only then choose the action \\\"Import the batch into the database\\\".",
+          "hasErrors": "The file contains errors.",
+          "hasErrorsNotImported": "The file contains errors and was not imported.",
+          "importAnother": "import another batch",
+          "noErrors": "The file contains no errors.",
+          "pleaseWait": "Please be patient and wait for the system response",
+          "proceedToImport": "Only then choose the action \\\"Import the batch into the database\\\".",
+          "processing": "Data check in progress. The computation may take up to several tens of seconds.",
+          "recommendation": "We recommend first having each batch (Excel file) checked by the application, then downloading the marked file to your computer and checking and correcting the values in the colour-highlighted fields. Once the import file is in order, you can import the batch into the database by checking the respective option.",
+          "recordCount": "Number of records",
+          "recordsLimitWarning": "The database already contains a large amount of records. As a result, the checks during import are very time-consuming. We therefore recommend not putting more than 2000 records in a single import file.",
+          "successImported": "The file was imported successfully.",
+          "successMessage": "The file was imported successfully, you can import another batch.",
+          "supportEmail": "pladias@googlegroups.com (the message will be delivered to the application developers and Jan Wild).",
+          "uploadFailed": "The file could not be processed.",
+          "validationExplanation": "The check revealed errors in your file (highlighted in red) or suspicious places that require your attention (marked in green). Please download the marked file to your computer, check all highlighted fields and correct them.",
+          "validationSuccess": "No errors or suspicious places were found in the file, thanks for the good work! You can now proceed to the import.",
+          "warningCount": "Number of warnings"
+        },
+        "isMappedUpdateFailed": "Failed to update the mapping status for taxon {{taxonName}}.",
+        "isMappedUpdated": "Taxon {{taxonName}} was set as {{status}}.",
+        "latinName": "Latin name",
+        "mapped": "Mapped",
+        "noCsv": "No CSV",
+        "noTaxaFound": "No taxa found",
+        "partOfMapWith": "part of the map with",
+        "pngUpload": {
+          "invalidFileType": "Invalid file type. Upload a PNG image only.",
+          "uploadFailed": "Upload failed",
+          "uploadPng": "Upload PNG",
+          "uploadSuccess": "PNG uploaded successfully",
+          "uploading": "Uploading..."
+        },
+        "preslia": "Preslia",
+        "protected": "Protected",
+        "publicationStatus": "Map publication status",
+        "removeParentMap": "Remove parent map",
+        "revisionStatus": "Map revision status",
+        "revisors": "Revisors",
+        "rowsPerPage": "Rows per page",
+        "selectParentMap": "Select parent map...",
+        "showingTaxa": "Showing {{showing}} of {{total}} taxa",
+        "title": "Taxon overview",
+        "updateFailed": "Failed to update the taxon settings.",
+        "view": "View"
+      },
+      "uploadFile": {
+        "title": "File upload"
+      }
+    },
+    "controls": {
+      "title": "List of controls"
+    },
+    "import": {
+      "component": {
+        "contactSupport": "If possible, please send a screenshot of the screen together with the imported Excel file to the address ",
+        "documentation": "documentation",
+        "documentationLink": "Rules for checking and processing the individual fields of the import Excel file can be found in the",
+        "downloadDecorated": "Download the Excel file with errors/warnings highlighted: ",
+        "downloadDecoratedFile": "file to download",
+        "emptyRowsWarning": "There must be no empty rows between the records intended for import, because processing of the batch ends at the first row in which the taxon name (column A) is not filled in.",
+        "errorCount": "Number of errors",
+        "errorExplanation": "errorExplanation",
+        "errorMessage": "Error description",
+        "fixAndRetry": "fixAndRetry",
+        "hasErrors": "The file contains errors",
+        "hasErrorsNotImported": "Imported with errors",
+        "import": "Import the batch into the database",
+        "importAnother": "Upload another batch",
+        "noErrors": "The file is OK",
+        "pleaseWait": "Please be patient and wait for the system response.",
+        "proceedToImport": "Proceed to import",
+        "proceedToImportLink": "\"Import the batch into the database\"",
+        "processing": "Data check in progress. The computation may take up to several tens of seconds.",
+        "projectSelect": "- - - select a project - - -",
+        "recommendation": "We recommend first having each batch (Excel file) checked by the application, then downloading the marked file to your computer and checking and correcting the values in the colour-highlighted fields. Once the import file is in order, you can import the batch into the database by checking the respective option.",
+        "recordCount": "Number of records",
+        "recordsLimitWarning": "The database already contains a large amount of records. As a result, the checks during import are very time-consuming. We therefore recommend not putting more than 2000 records in a single import file.",
+        "submit": "Submit",
+        "successImported": "Imported successfully",
+        "successMessage": "Import completed successfully",
+        "uploadFailed": "The file could not be processed",
+        "validate": "Check the batch",
+        "validationExplanation": "The check revealed errors in your file (highlighted in red) or suspicious places that require your attention (marked in green; they point out something non-standard which may or may not be a real error). Phytochoria and grid quadrants that were added by calculation from the entered coordinates are marked in blue. Explanations of all highlighted places are in the added columns. Please download the marked file to your computer, check all highlighted fields and correct the errors found (for more details see the Mapping Instructions file). After the correction, repeat the process until the file contains no red-marked errors after the check and all green-marked warnings have been reviewed and are definitely in order.",
+        "validationSuccess": "Validation completed successfully",
+        "warningCount": "Number of warnings"
+      },
+      "title": "Data import"
+    },
+    "importCSV": {
+      "title": "CSV batch import"
+    },
+    "importsList": {
+      "title": "List of imports"
+    },
+    "layerSwitcher": {
+      "project": "Project",
+      "toggle": "Map layers"
+    },
+    "mapDetail": {
+      "addComment": "add a comment",
+      "altitude": "altitude",
+      "collapseAll": "Collapse all",
+      "collectors": "Collectors",
+      "commented": "commented",
+      "comments": "Comments",
+      "date": "Date",
+      "district": "District",
+      "districtInline": ", district {{district}}",
+      "editRecordShowDetail": "edit record/show detail",
+      "edited": "edited",
+      "expandAll": "Expand all",
+      "externalIdLabel": "External ID",
+      "gps": "GPS",
+      "gpsPrecision": "position accuracy",
+      "herbarium": "Herbarium",
+      "herbariumLower": "herbarium",
+      "importedBy": "imported by",
+      "includedInMapLabel": "Included in map",
+      "latitude": "Latitude",
+      "loadRecordsFailed": "Failed to load the records.",
+      "locality": "Locality",
+      "localityLower": "locality",
+      "longitude": "Longitude",
+      "markCommentAsRead": "Mark comment as read",
+      "markCommentAsReadError": "Failed to mark the comment as read.",
+      "nearestTownLower": "nearest town",
+      "noRecords": "No records",
+      "originalName": "original name",
+      "originalOccurrenceLabel": "Original occurrence",
+      "originality": "Origin",
+      "otherNotes": "other notes",
+      "phytochorion": "Phytochorion",
+      "phytochorionAbbrev": "Phyt.",
+      "recordId": "Record",
+      "recordIdLabel": "Record ID",
+      "records": "Records",
+      "revisedHerbariumLabel": "Revised herbarium",
+      "showOnMap": "Show {{source}} on the map",
+      "source": "Source",
+      "sourceLower": "source",
+      "square": "grid cell",
+      "squareAbbrev": "Quad.",
+      "substrate": "Substrate",
+      "title": "Detailed map",
+      "unknownYear": "unknown year",
+      "validationStatus": "Status",
+      "year": "Year"
+    },
+    "mapMain": {
+      "infoPanel": {
+        "boundToQuadrant": "bound to a quadrant, \n",
+        "boundToSquare": "bound to a grid cell,\n",
+        "hasComment": "records have a comment entered in the Pladias application",
+        "hasCoordinates": "have specific coordinates,\n",
+        "loadError": "Failed to load the map data.",
+        "loadingStatistics": "Loading statistics...",
+        "mapAuthors": "Map authors",
+        "mapAuthorsNote": "Map authors note",
+        "mapTypeDescription": "Make the choice by checking the respective radio button to the right of the selected map type.\n                            For a working preview of the map, click on the respective blue text.",
+        "mapTypeSelection": "Selection of the map type for publication",
+        "mapTypes": {
+          "basic": "Basic",
+          "extinctVsRecent": "Extinct versus recent",
+          "herbariumVsNonHerbarium": "Herbarium versus non-herbarium",
+          "nativeVsNonNative": "Native versus non-native"
+        },
+        "noComment": "contains no comment",
+        "noLocation": "is entirely without location given",
+        "noSupervisors": "No supervisors.",
+        "ofWhich": "Of which:",
+        "preview": "Preview",
+        "printMapNote": "Note for map printing",
+        "projectsLoading": "Projects will be loaded from the data above.",
+        "quadrantStatus": "Quadrant status:",
+        "recordCounts": "Record counts",
+        "records": "Records:",
+        "revisionStatus": {
+          "feedbackProceeded": " I have incorporated the reviewers feedback",
+          "finishing": " You have comments on the map available – presumably in the form of comments on individual records or otherwise – please, only after you have reviewed these notes, submit the map for pre-press preparation:",
+          "submit": "If you consider the map ready for extended commenting, notify Zdeněk Kaplan:",
+          "submitButton": "Submit",
+          "submited": " Thanks for the good work! The map has been submitted and is waiting for checks by the extended circle of collaborators. Map authors still have the right to edit the records and their flags. Once the checking phase is completed, the map authors will be informed by e-mail.",
+          "supervised": " The map is in the phase of checks by the extended circle of collaborators. Map authors still have the right to edit the records and their flags; collaborators can comment on the records. Once the checking phase is completed, all map authors will be informed by e-mail."
+        },
+        "saveError": "Saving failed.",
+        "sourceProjects": "Source projects and record counts"
+      },
+      "taxonId": "Taxon ID",
+      "title": "Overview map"
+    },
+    "mapPreview": {
+      "backToMainMap": "back to the main map",
+      "commonThreshold": "The taxon is marked as COMMON and has a threshold of {{threshold}} records per quadrant",
+      "legend": "Legend:",
+      "loading": "Loading...",
+      "mapAuthorsNote": "Map authors note",
+      "mapType": "Map type:",
+      "mapTypes": {
+        "basic": "Basic",
+        "extinctVsRecent": "Extinct versus recent",
+        "herbariumVsNonHerbarium": "Herbarium versus non-herbarium",
+        "nativeVsNonNative": "Native versus non-native"
+      },
+      "noComment": "No comment",
+      "noSupervisors": "No supervisors.",
+      "preview": "PREVIEW",
+      "printMapNote": "Note for map printing",
+      "publicationStatus": "map publication status:",
+      "revisionStatus": "revision status:",
+      "revisorsComment": "Revisors comment",
+      "title": "Map preview",
+      "typeContent": {
+        "1": {
+          "description": "",
+          "legend": {
+            "certainQuadrant": "certain quadrant",
+            "quadrantByThreshold": "quadrant by common_threshold",
+            "uncertainQuadrant": "uncertain quadrant"
+          },
+          "title": "Basic"
+        },
+        "2": {
+          "description": "In this version of the map, common findings are included in the categories by time in the same way as \"goes to map\" records.",
+          "legend": {
+            "extinctFindings": "extinct findings (before 2000)",
+            "recentFindings": "recent findings (after 2000)",
+            "uncertainQuadrant": "uncertain quadrant"
+          },
+          "title": "Extinct versus recent"
+        },
+        "3": {
+          "description": "In this version of the map, common findings are not displayed.",
+          "legend": {
+            "cultivated": "cultivated",
+            "native": "native occurrence",
+            "nonNative": "non-native occurrence",
+            "notSpecified": "not specified, must be marked !"
+          },
+          "title": "Native versus non-native"
+        },
+        "4": {
+          "description": "In this version of the map, common findings are included in the non-herbarium ones.",
+          "legend": {
+            "herbariumSupported": "supported by a herbarium specimen",
+            "nonHerbariumEvidence": "non-herbarium evidence",
+            "uncertainQuadrant": "uncertain quadrant"
+          },
+          "title": "Herbarium versus non-herbarium"
+        }
+      }
+    },
+    "newComments": {
+      "loadFailed": "Failed to load the commented records",
+      "noRecords": "No commented records",
+      "recordsCount": "Number of records: {{count}}",
+      "title": "Unread comments"
+    },
+    "search": {
+      "bulkEdit": {
+        "emptyValue": "<empty>",
+        "messages": {
+          "actionPrepared": "{{message}} Action prepared for {{count}} records.",
+          "batchFinished": "{{operationName}} Done: {{success}} successfully, {{failed}} unsuccessfully ({{total}} in total).",
+          "batchProgress": "Progress: {{processed}} / {{total}}",
+          "batchStartFailed": "Failed to start the bulk operation.",
+          "bufferChangeReady": "Action (change of the buffer itself to {{value}}) prepared.",
+          "confirmEmptyNote": "The note is empty. Do you really want to set it to an empty value?",
+          "confirmEmptySource": "The source is empty. Do you really want to set it to an empty value?",
+          "confirmSemafor": "Do you really want to change the semaphore for all selected records?",
+          "confirmTaxon": "Do you really want to change the taxon of all selected records?",
+          "coordsParseFailed": "The coordinates cannot be parsed automatically. Use the lat,lon format or fill in Lat/Lon manually.",
+          "coordsPrefilled": "The coordinates have been pre-filled into the Lat/Lon fields.",
+          "coordsRequired": "Fill in both Lat and Lon to move the locality.",
+          "dateChangeReady": "Action (change of the date to {{value}}) prepared.",
+          "finderAddReady": "Action (adding a finder) prepared.",
+          "invalidBuffer": "The buffer must be a positive integer.",
+          "invalidDateFormat": "The date must be in the YYYY, YYYY-MM or YYYY-MM-DD format.",
+          "loadingCandidates": "Loading records according to the current filter...",
+          "localityChangeReady": "Action (new locality description) prepared.",
+          "locationChangeReady": "Action (change of the location + buffer {{buffer}}) prepared.",
+          "nearestTownChangeReady": "Action (change of the nearest town to {{value}}) prepared.",
+          "noRecords": "There are no records available for bulk editing.",
+          "noteChangeReady": "Action (new note text) prepared.",
+          "phytochorionChangeReady": "Action (change of the phytochorion to {{value}}) prepared.",
+          "requiredDate": "The date is required.",
+          "requiredLocality": "The locality is required.",
+          "requiredNearestTown": "The nearest town is required.",
+          "searchFirst": "First run a search so that the records to edit can be loaded.",
+          "selectFinder": "Select a finder.",
+          "selectPhytochorion": "Select a phytochorion.",
+          "selectSemafor": "Select a new semaphore.",
+          "selectTaxon": "Select a taxon.",
+          "semaforChangeReady": "Action (change of the semaphore) prepared.",
+          "showFailedIds": "Unsuccessful records ({{count}})",
+          "showSuccessfulIds": "Successfully edited records ({{count}})",
+          "sourceChangeReady": "Action (change of the source) prepared.",
+          "taxonChangeReady": "Action (change of the taxon) prepared.",
+          "tooManyRecords": "The filter matches {{count}} records. At most {{max}} records can be bulk edited. Refine the filter."
+        },
+        "sections": {
+          "buffer": {
+            "label": "New buffer",
+            "submitButton": "Confirm buffer change",
+            "title": "Buffer"
+          },
+          "date": {
+            "label": "New date",
+            "placeholder": "YYYY, YYYY-MM or YYYY-MM-DD",
+            "submitButton": "Confirm date change",
+            "title": "Finding date"
+          },
+          "finder": {
+            "helper": "Added at the beginning, i.e. the last one added will be listed as the first author.",
+            "label": "Finder",
+            "placeholder": "Select a finder...",
+            "submitButton": "Add finder",
+            "title": "Adding a finder"
+          },
+          "locality": {
+            "label": "New locality text",
+            "submitButton": "Confirm new locality",
+            "title": "Locality"
+          },
+          "nearestTown": {
+            "label": "New town",
+            "submitButton": "Confirm new town",
+            "title": "Nearest town"
+          },
+          "note": {
+            "label": "New note text",
+            "submitButton": "Confirm new note",
+            "title": "Note"
+          },
+          "phytochorion": {
+            "label": "New phytochorion",
+            "placeholder": "Select a phytochorion...",
+            "submitButton": "Confirm phytochorion change",
+            "title": "Phytochorion"
+          },
+          "positionBuffer": {
+            "bufferLabel": "Buffer",
+            "latLabel": "Lat",
+            "lonLabel": "Lon",
+            "parseButton": "Parse",
+            "rawCoordsLabel": "Raw coordinates (optional)",
+            "rawCoordsPlaceholder": "e.g. 50.12345,16.67890",
+            "submitButton": "Confirm locality move",
+            "title": "Position + Buffer"
+          },
+          "semafor": {
+            "label": "New semaphore",
+            "placeholder": "Select a new status...",
+            "submitButton": "Change semaphore",
+            "title": "Semaphore change"
+          },
+          "source": {
+            "label": "New source text",
+            "submitButton": "Confirm new source",
+            "title": "Source"
+          },
+          "taxon": {
+            "helper": "Well, be careful with this one!",
+            "label": "New taxon",
+            "submitButton": "Change taxon",
+            "title": "Taxon change"
+          }
+        },
+        "selectedRecords": "Records selected for editing",
+        "semaforOptions": {
+          "accepted": "green -> Accepted record",
+          "rejected": "red -> Rejected record",
+          "uncertain": "orange -> Uncertain record",
+          "unreviewed": "grey -> Unreviewed record"
+        },
+        "title": "Bulk record editing",
+        "warning": "Bulk edits run over the result of the current filter. Changes are made one record at a time. At most 1000 records can be changed at once."
+      },
+      "form": {
+        "excelExportTitleAdmin": "Export data to XLSX without user restriction.",
+        "excelExportTitleRestricted": "Export to XLSX is restricted according to your rights.",
+        "excelExportedAll": "All {{recordsCount}} records were exported.",
+        "excelExportedPartial": "Exported {{exported}} of {{total}} records.",
+        "exportBrowser": "Print to browser",
+        "exportExcel": "Export to Excel",
+        "foundRecords": "Found {{recordsCount}} records ({{totalCount}} in total).",
+        "from": "From",
+        "historyFlags": {
+          "altitude": "altitude",
+          "date": "date",
+          "finder": "finder",
+          "locality": "locality",
+          "note": "note",
+          "source": "source",
+          "taxon": "taxon",
+          "town": "town"
+        },
+        "labels": {
+          "altitude": "altitude",
+          "appComment": "comment entered in the {{projectName}} application",
+          "buffer": "GPS buffer greater than [m]",
+          "chemicalData": "Chemical data",
+          "comment": "note",
+          "committer": "uploaded by",
+          "externalId": "external ID",
+          "finderName": "finder (first name)",
+          "finderSurname": "finder (surname)",
+          "herbarium": "herbarium",
+          "history": "history",
+          "importDate": "import date",
+          "includeSubtaxa": "include subtaxa as well",
+          "institution": "data custodian",
+          "lastEditDate": "date of last change",
+          "license": "licence",
+          "locality": "locality",
+          "localityExtra": "Auxiliary locality",
+          "localityOrTown": "locality or town",
+          "noMapSquare": "has no grid cell or quadrant",
+          "originalName": "original name",
+          "phytochorion": "phytochorion",
+          "pladiasId": "Pladias ID",
+          "project": "origin",
+          "quadrant": "mapping grid cell",
+          "source": "source",
+          "substrate1": "Substrate 1",
+          "substrate2": "Substrate 2",
+          "substrateText": "Substrate",
+          "taxon": "taxon",
+          "town": "town",
+          "validation": "validation",
+          "year": "year of finding"
+        },
+        "onlyCommented": "Only records with a comment entered in the {{projectName}} application",
+        "onlyUnresolvedBold": "unresolved",
+        "onlyUnresolvedPrefix": "Only records with",
+        "onlyUnresolvedSuffix": "comment entered in the {{projectName}} application",
+        "options": {
+          "herbariumAny": "Any herbarium - bound to any herbarium",
+          "herbariumNone": "Non-herbarium - lists all records not bound to any herbarium",
+          "validationInvalid": "Invalid",
+          "validationNotValidated": "Not validated yet",
+          "validationUncertain": "Uncertain",
+          "validationValid": "Valid"
+        },
+        "placeholders": {
+          "appComment": "*formerly*vulgatum*",
+          "buffer": "2499",
+          "chemicalData": "*atranorin*",
+          "commentNonVascular": "*det. *Palice*",
+          "commentVascular": "*formerly*vulgatum*",
+          "externalId": "AB28*",
+          "finderName": "Petr OR P.",
+          "finderSurname": "čela*ko* OR Klika",
+          "herbariumText": "Malic*",
+          "institution": "--- Select custodian ---",
+          "license": "--- Select licence ---",
+          "localityDescription": "*meadow* OR *forest*",
+          "localityExtra": "PLA, mountains etc.*",
+          "localityOrTown": "Praha*",
+          "originalName": "ror*pa*/Rorripa/rorripa*",
+          "project": "--- Select project ---",
+          "quadrant": "5542;5432b;5432c;5433*",
+          "sourceNonVascular": "*citation/database/herbar*",
+          "sourceVascular": "*reports*/Natura*",
+          "substrate1": "--- Select substrate 1 ---",
+          "substrate2": "--- Select substrate 2 ---",
+          "substrateText": "*serpentine*",
+          "town": "beneš*nad*",
+          "year": "yyyy"
+        },
+        "processingRequest": "Processing the request...",
+        "searchFailed": "Search failed.",
+        "selectedTaxon": "Selected taxon: {{taxon}}",
+        "sortDescending": "descending",
+        "sortLabel": "Sort by",
+        "sortOptions": {
+          "date": "date",
+          "locality": "locality",
+          "nearestTownName": "nearest town",
+          "phytochorion": "phytochorion",
+          "square": "grid cell",
+          "taxonName": "taxon",
+          "validationStatus": "validation status"
+        },
+        "submit": "search",
+        "submitFailed": "Failed to submit the form.",
+        "taxonAutocompletePlaceholder": "Select a taxon...",
+        "titles": {
+          "altitude": "Altitude range",
+          "buffer": "Records with a buffer greater than the given value in metres",
+          "chemicalData": "Chemical data",
+          "comment": "Search in fields carrying taxonomic meta-information and related to the locality.",
+          "committer": "User of the {{projectName}} application who imported the records",
+          "externalId": "External ID",
+          "finderName": "Person listed as the finder.",
+          "finderSurname": "Person listed as the finder.",
+          "herbarium": "Only items stored in the selected herbarium.",
+          "history": "Allows selecting records by a field edited at least once",
+          "importDate": "Date of import into the {{projectName}} database",
+          "includeSubtaxa": "The search will also include subtaxa of the selected taxon",
+          "institution": "Data custodian",
+          "lastEditDate": "Date of the last change in the {{projectName}} database",
+          "license": "Licence",
+          "localityDescription": "Locality description",
+          "localityExtra": "Auxiliary locality",
+          "localityOrTown": "Locality or town",
+          "noMapSquare": "Records with no link to either a grid cell or a quadrant",
+          "originalName": "Original name - as given in a publication, on a herbarium label, etc.",
+          "phytochorion": "Phytochoria of the Czech Republic",
+          "project": "Project of the original data custodian",
+          "quadrant": "Grid cell or quadrant of grid mapping; separate multiple values with a semicolon.",
+          "source": "Literary source",
+          "substrate1": "Substrate 1",
+          "substrate2": "Substrate 2",
+          "substrateText": "Substrate",
+          "taxon": "Latin name of the taxon",
+          "town": "Nearest town - it can be meant as the straight-line distance as well as the affiliation to the cadastral territory, etc.",
+          "validation": "Validation status for the atlas",
+          "year": "Time interval of the finding."
+        },
+        "to": "to",
+        "waitingForData": "Please wait, data is being loaded."
+      },
+      "grid": {
+        "columns": {
+          "date": "Date",
+          "finder": "Finder",
+          "locality": "Locality",
+          "origin": "Origin",
+          "phytochorion": "Phytochorion",
+          "quadrant": "Quadrant",
+          "status": "Status"
+        },
+        "newSearch": "New search",
+        "next": "Next",
+        "noRecords": "No records",
+        "page": "Page {{page}}",
+        "pageOf": "Page {{page}} of {{totalPages}}",
+        "previous": "Previous",
+        "totalFound": "Total found: {{totalCount}}"
+      },
+      "title": "Record search"
+    },
+    "taxesList": {
+      "title": "List of assigned taxa"
+    },
+    "taxonLoadFailed": "Failed to load the taxon."
+  },
+  "bibliography": {
+    "author": "Author",
+    "authors": "Authors",
+    "description": "Sources with at least one record in the PLADIAS database can be searched. The presence of a source in the database does not mean that all findings from it were excerpted. In the NDOP project, it was not possible to separate all citations due to a non-uniform format. Only selected periodicals are included in the list of journals.",
+    "etc": "Rest of citation",
+    "excerpted": "Excerpted status",
+    "filter": {
+      "all": "- - - all - - -",
+      "authors": "Filter authors...",
+      "etc": "Filter etc...",
+      "excerpted": "Filter excerpted status...",
+      "journal": "Filter journal...",
+      "notExcerpted": "Not excerpted",
+      "reset": "Reset filters",
+      "title": "Filter title...",
+      "year": "Filter year..."
+    },
+    "journal": "Journal",
+    "no": "No",
+    "noResults": "No records found.",
+    "recordsCount": "Number of records",
+    "results": "Search results",
+    "rowsPerPage": "Rows per page",
+    "search": "search",
+    "searchTitle": "Search of sources in the PLADIAS database",
+    "testVersion": "Test version. From the Excerpt for the Atlas project, only citations from records imported by 2 November 2015 are included here.",
+    "title": "Bibliography",
+    "totalRecords": "{{count}} records in total",
+    "year": "Year of publication",
+    "yes": "Yes"
+  },
+  "common": {
+    "actions": "Actions",
+    "all": "All",
+    "autocomplete": {
+      "allTaxaPlaceholder": "Type a taxon",
+      "possibleParentsPlaceholder": "Search for a possible parent...",
+      "searchFailed": "Search failed.",
+      "taxonPlaceholder": "Search for a taxon..."
+    },
+    "back": "Back",
+    "cancel": "Cancel",
+    "close": "Close",
+    "confirm": {
+      "title": "Action confirmation"
+    },
+    "delete": "Delete",
+    "description": "Description",
+    "download": "download",
+    "edit": "Edit",
+    "error": "Error",
+    "errorBoundary": {
+      "message": "Part of the application stopped working. Try reloading the page; if the error persists, contact the administrator.",
+      "reload": "Reload page",
+      "title": "An unexpected error occurred"
+    },
+    "false": "false",
+    "inlineField": {
+      "add": "Add",
+      "edit": "Edit",
+      "saveFailed": "Saving failed"
+    },
+    "instanceMessages": {
+      "unavailable": "Instance status messages are currently unavailable."
+    },
+    "loadFailed": "Failed to load the data.",
+    "loading": "Loading...",
+    "manager": "Responsible person",
+    "multiValueEdit": {
+      "available": "Available to add",
+      "confirmDeleteMessage": "Do you really want to remove {{name}}?",
+      "current": "Currently assigned",
+      "loadFailed": "Loading of options failed",
+      "noMoreAvailable": "All items are already assigned",
+      "none": "None",
+      "remove": "Remove",
+      "saveFailed": "Saving failed"
+    },
+    "no": "No",
+    "noData": "No records found",
+    "notification": {
+      "networkError": "Error connecting to the server – check your internet connection."
+    },
+    "null": "null",
+    "ok": "OK",
+    "save": "Save",
+    "saving": "Saving...",
+    "select": "- - Select - -",
+    "singleSelectEdit": {
+      "loadFailed": "Loading of options failed",
+      "none": "Unspecified",
+      "saveFailed": "Saving failed"
+    },
+    "submitting": "Submitting...",
+    "table": {
+      "all": "All",
+      "clearFilters": "Clear filters",
+      "excelAll": "XLSX all",
+      "excelFiltered": "XLSX filtered",
+      "exportFailed": "Export failed.",
+      "filter": {
+        "all": "Filter...",
+        "date": "Date",
+        "dateFrom": "From date",
+        "dateTo": "To date",
+        "no": "No",
+        "number": "Number",
+        "yes": "Yes"
+      },
+      "loadFailed": "Failed to load the table.",
+      "no": "No",
+      "noData": "No data found",
+      "rowsPerPage": "Rows per page",
+      "showing": "Showing {{from}} to {{to}} of {{total}} rows in total",
+      "sort": {
+        "ascending": "Sort ascending",
+        "clickToSort": "Click to sort",
+        "descending": "Sort descending"
+      },
+      "updateFailed": "Update failed.",
+      "yes": "Yes"
+    },
+    "true": "true",
+    "unknownError": "Unknown error",
+    "version": "Version date",
+    "yes": "Yes"
+  },
+  "download": {
+    "description": "Description",
+    "download": "download",
+    "downloadFailed": "File download failed.",
+    "loadFailed": "Loading of downloadable files failed.",
+    "manager": "Responsible person",
+    "version": "Version date"
+  },
+  "menu": {
+    "atlas": {
+      "bulkEdit": "Bulk edits",
+      "dropdown": "Maps",
+      "import": "Data import",
+      "importCSV": "CSV batch import",
+      "listOfControls": "List of controls",
+      "listOfImports": "List of imports",
+      "listOfTaxa": "List of assigned taxa",
+      "newComments": "Unread comments",
+      "search": "Record search",
+      "selectTaxon": "Map preparation"
+    },
+    "atlasAdmin": {
+      "dropdown": "AdminMaps",
+      "listOfImports": "List of all imports",
+      "listOfTaxa": "Taxon administration",
+      "listOfUsers": "Map user administration"
+    },
+    "biblio": {
+      "dropdown": "Bibliography",
+      "search": "Source search"
+    },
+    "downloads": {
+      "dropdown": "Downloads"
+    },
+    "forms": {
+      "recordPlaceholder": "Go to record ID…",
+      "taxonPlaceholder": "Go to taxon map…"
+    },
+    "trait": {
+      "aggregationTypes": "Aggregation types",
+      "backup": "Complex export backup",
+      "data": "Data",
+      "datatypes": "Data types",
+      "dropdown": "Species traits",
+      "export": "Complex export",
+      "general": "General information"
+    },
+    "user": {
+      "addUser": "Add user",
+      "changeEmail": "Change e-mail",
+      "changePassword": "Change password",
+      "docs": "Documentation",
+      "logout": "Log out",
+      "playMessages": "Application text editing",
+      "settings": "Application settings",
+      "taxaAdministration": "Taxon administration",
+      "usersAdministration": "User administration"
+    }
+  },
+  "other": {
+    "components": {
+      "atlas": {
+        "importCSV": {
+          "contactSupport": "If possible, please send a screenshot of the screen together with the imported CSV file to the address ",
+          "documentation": "documentation",
+          "documentationLink": "Rules for checking and processing the individual fields of the import CSV file can be found in the",
+          "emailNotification": "You will be informed about the result of the check or import by e-mail.",
+          "emailNotificationInfo": "You will be informed about the result of the check or import by e-mail.",
+          "emptyRowsWarning": "There must be no empty rows between the records intended for import.",
+          "errorMessage": "Error description",
+          "import": "Import the batch into the database",
+          "pleaseWait": "Please be patient and wait for the system response.",
+          "processing": "Data check in progress. The computation may take up to several tens of minutes.",
+          "projectSelect": "- - - select a project - - -",
+          "recommendation": "We recommend first having each batch (CSV file) checked by the application. The validated file will then be sent to you by e-mail. Once the import file is free of errors, you can import the batch into the database by checking the respective option.",
+          "recordsLimitWarning": "The database already contains a large amount of records. As a result, the checks during import are very time-consuming.",
+          "submit": "Submit",
+          "uploadFailed": "The file could not be processed",
+          "uploadSuccess": "The batch was uploaded to the server",
+          "validate": "Check the batch"
+        }
+      }
+    },
+    "pages": {
+      "atlas": {
+        "bulkEdit": {
+          "title": "Bulk edits"
+        },
+        "selectTaxon": {
+          "title": "Map preparation"
+        }
+      },
+      "downloads": {
+        "title": "Downloads"
+      },
+      "home": {
+        "title": "Home"
+      },
+      "user": {
+        "title": "Log out"
+      }
+    }
+  },
+  "record": {
+    "actualPosition": "Current position",
+    "addComment": "Add comment",
+    "altitude": "Altitude",
+    "altitudeAproximate": "Altitude approx.",
+    "altitudeMax": "Altitude MAX",
+    "altitudeMin": "Altitude MIN",
+    "authors": "Authors and collectors",
+    "basicInfo": "Basic information",
+    "batch": "Batch",
+    "batchAuthor": "Batch author",
+    "batchCommitter": "Batch uploaded by",
+    "changeType": "Type of change",
+    "chemical": "Chemical data",
+    "clickOnMap": "Click on the map to select a new position",
+    "collectors": "Collectors",
+    "comment": "Import note",
+    "commentActionFailed": "The comment operation failed.",
+    "commentAuthor": "Author",
+    "commentDate": "Date",
+    "commentMessage": "Message",
+    "commentPlaceholder": "Enter your comment here...",
+    "commentResolved": "Resolved",
+    "comments": "Comments",
+    "commentsLoadFailed": "Failed to load the comments.",
+    "confirmDeleteComment": "Do you really want to delete this comment?",
+    "confirmLocationChange": "Confirm position change",
+    "coordsOrigin": "Coordinate source",
+    "coordsPrecision": "Position accuracy [m]",
+    "date": "Date",
+    "dateIso": "Date (ISO)",
+    "detrev": "Determination revision",
+    "district": "District",
+    "editComment": "Edit comment",
+    "environment": "Environment",
+    "fetchError": "Failed to load the record",
+    "herbariumAbbrev": "Abbreviation",
+    "herbariumName": "Name",
+    "herbariumQuality": "Herbarium record of quality",
+    "herbariums": "Herbaria",
+    "history": "Record history",
+    "historyField": "Field history",
+    "historyNewValue": "Edited value",
+    "historyOldValue": "Original value",
+    "includedInMap": "Record into the map",
+    "latitude": "Latitude",
+    "license": "Licence",
+    "loadFailed": "Failed to load the record.",
+    "locality": "Locality",
+    "localityDetails": "Locality details",
+    "localityExtra": "Auxiliary locality",
+    "longitude": "Longitude",
+    "map": "Map",
+    "moveFailed": "Failed to move the position",
+    "moveLocationPrompt": "Do you really want to move the position to:",
+    "nameOriginal": "Original name",
+    "nearestTown": "Nearest town",
+    "nearestTownComputed": "Town derived from coordinates",
+    "newPosition": "New position",
+    "noRecordId": "Missing record ID",
+    "notFound": "Record not found",
+    "origin": "Origin",
+    "originalId": "External ID",
+    "originality": "Originality",
+    "originalityStatus": {
+      "cultivated": "Cultivated",
+      "native": "Native",
+      "nonnative": "Non-native",
+      "unprocessed": "Unprocessed"
+    },
+    "phytochorion": "Phytochorion",
+    "phytochorionComputed": "Calculated phytochorion",
+    "position": "Position",
+    "project": "Project",
+    "quadrant": "Quadrant",
+    "remarkDoubt": "Note - doubts",
+    "remarkExcerption": "Excerption note",
+    "remarkOther": "Note - other",
+    "remarks": "Notes from external sources",
+    "resolve": "Resolve",
+    "resolvedBy": "Resolved by",
+    "resolvedWhen": "Date of resolution",
+    "revisedHerbarium": "Revised herbarium",
+    "source": "Source",
+    "squares": "Quadrants",
+    "status": "Status",
+    "substrate1": "Main substrate category",
+    "substrate2": "Refining substrate category",
+    "substrateText": "Substrate",
+    "taxon": "Taxon",
+    "titles": {
+      "detail": "Record",
+      "floristic": "Floristic record"
+    },
+    "unresolved": "unresolved",
+    "uploaded": "Uploaded by",
+    "validation": {
+      "accepted": "Accepted",
+      "declined": "Declined",
+      "uncertain": "Uncertain",
+      "unprocessed": "Unprocessed"
+    },
+    "validationStatus": "Validation",
+    "year": "Year"
+  },
+  "taxon": {
+    "administration": {
+      "apiError": "API returned an error",
+      "loadTaxonError": "Failed to load the taxon",
+      "pageTitle": "Taxon administration",
+      "selectTaxonLabel": "Select a taxon:"
+    },
+    "create": {
+      "createButton": "Create taxon",
+      "createError": "Taxon creation failed",
+      "latinName": "Latin name",
+      "latinNamePlaceholder": "e.g. Quercus robur",
+      "latinNameRequired": "Enter the Latin name",
+      "loadRanksError": "Failed to load the list of ranks",
+      "rank": "Rank",
+      "title": "New taxon below {{name}}",
+      "unexpectedError": "Unexpected error"
+    },
+    "detail": {
+      "apiError": "API returned an error when loading the parents",
+      "loadParentsFailed": "Failed to load the taxon parents"
+    },
+    "edit": {
+      "author": "Taxon author",
+      "czechName": "Czech name",
+      "htmlName": "Name in HTML",
+      "hybridParents": "Hybrid parents",
+      "latinName": "Latin name",
+      "note": "Note",
+      "rank": "Rank",
+      "suppressed": "Suppressed",
+      "title": "Taxon editing"
+    },
+    "move": {
+      "deleteButton": "Delete",
+      "deleteConfirm": "Do you really want to delete the taxon \"{{name}}\"?\n\nThis action is irreversible.",
+      "deleteDescription": "You can also delete the taxon – provided it is a leaf of the tree (has no child taxa) and is not referenced anywhere except the materialized view ",
+      "deleteFailed": "Taxon deletion failed",
+      "deleting": "Deleting…",
+      "moveButton": "Move",
+      "moveFailed": "Move failed",
+      "moving": "Moving…",
+      "newParent": "New parent",
+      "title": "Move taxon {{name}}"
+    },
+    "ordering": {
+      "loadFailed": "Failed to load the taxon children",
+      "reorderFailed": "Reordering failed",
+      "title": "Ordering of children"
+    },
+    "stats": {
+      "loadFailed": "Failed to load the taxon record statistics"
+    },
+    "synonyms": {
+      "actions": "Actions",
+      "addButton": "+ add synonym",
+      "autocomplete": "Autocomplete",
+      "deleteConfirm": "Do you really want to delete the synonym?",
+      "deleteError": "An error occurred during deletion",
+      "deleteFailed": "Deletion failed ({{status}})",
+      "loadFailed": "Failed to load the synonyms",
+      "nameHtml": "Name (HTML)",
+      "nameLatin": "Name (Latin)",
+      "publication": "Publication",
+      "saveError": "An error occurred during saving",
+      "saveFailed": "Saving failed ({{status}})",
+      "saved": "Saved",
+      "suffix": "Suffix",
+      "title": "Synonyms"
+    },
+    "traitCount": {
+      "loadFailed": "Failed to load the number of trait rows",
+      "notPresent": "The taxon is not in any trait.",
+      "presentEnd": "trait rows.",
+      "presentStart": "It occurs in"
+    }
+  },
+  "trait": {
+    "aggregationTypes": {
+      "description": "description",
+      "heading": "Basic information on the complex export",
+      "key": "code",
+      "paragraph1": "The complex export of species traits allows exporting original, inherited, aggregated or merged values. <b>Original values</b> are those that individual taxa had stated for the given trait in the default data file. However, these original values are not stated for all taxa. There are cases where values are given e.g. for a subspecies but not for the parent species. In such cases, inherited or aggregated values can be used. The process of <b>inheritance</b> runs down the taxonomic tree and values are transferred only to so-called singletons, i.e. taxa that are the only ones within the parent taxon. For such a taxon, the inherited values then contain all the data that can be found in the original values when looking up towards the root of the tree, as long as the parents are also singletons. The process of <b>aggregation</b>, on the other hand, runs up the taxonomic tree. There are several ways in which the values stated for taxa are aggregated. These aggregation methods are described precisely with the individual aggregation types. The export can include original, inherited and aggregated values at once and export them as so-called <b>merged values</b>. In that case, original values take precedence over aggregated ones and aggregated values take precedence over inherited ones. If no field of the offered values is checked during the export, original, inherited and aggregated values are exported automatically.",
+      "paragraph2": "When exporting, it is also possible to choose a list of taxa for which to export the values. If no taxa are chosen, all are exported automatically. As the last option, the user can select the taxonomic ranks to include in the export. If none are checked, all are exported automatically.",
+      "paragraph3": "The exact way of exporting the individual values (original, inherited, aggregated) is given by the aggregation type set for each trait. The list of the individual aggregation types is given below.",
+      "title": "Aggregation types"
+    },
+    "backup": {
+      "createdAt": "created",
+      "description": "description",
+      "download": "download",
+      "error": "Error",
+      "note": "note",
+      "notePlaceholder": "insert the note text here",
+      "started": "started",
+      "submit": "Submit",
+      "submitting": "submitting",
+      "title": "Trait backup"
+    },
+    "data": {
+      "loadFailed": "Failed to load the trait data",
+      "section": "section",
+      "title": "Data"
+    },
+    "datatypes": {
+      "comment": "comment",
+      "datatype": "data type",
+      "description": "description",
+      "dominance": "dominance",
+      "frequency": "frequency",
+      "immeasurability": "immeasurability",
+      "multiplicity": "multiplicity",
+      "name": "Name",
+      "nameCz": "Name CZ",
+      "text1": "Creating new species traits, data types and changes in the enumerations of enumeration types are done manually. These processes are handled by Marcela Řezníčková",
+      "text2": "The following table presents the current overview of the available data types, their description and limitations. ",
+      "title": "Basic information on imports"
+    },
+    "deleteConfirm": "Do you really want to delete this data row?",
+    "deleteFailed": "Failed to delete the data row",
+    "deleted": "The data row was deleted",
+    "export": {
+      "collapse": "Collapse {{name}}",
+      "expand": "Expand {{name}}",
+      "failed": "Export failed. Please try again.",
+      "loadFailed": "Failed to load the traits for export.",
+      "placeholder": "Paste the list of the requested taxa here in the form of Latin names on individual lines.",
+      "submit": "Export",
+      "suppressed": "Include suppressed",
+      "taxaRanks": "taxonomic ranks",
+      "title": "Complex export of species traits",
+      "valueTypes": "value types"
+    },
+    "feature": {
+      "admin": "administrator",
+      "name": "name"
+    },
+    "featureDetail": {
+      "title": "Trait detail",
+      "uploadNotAllowed": "Only the trait administrator or the traits administrator (traitAdmin) can import, delete and manage data rows."
+    },
+    "general": {
+      "authors": "Milan Chytrý and Petr Pyšek",
+      "heading": "Biological and ecological traits of the Czech flora",
+      "title": "General information"
+    },
+    "loadFailed": "Failed to load the data rows",
+    "setDefaultChanged": "Default data row changed",
+    "setDefaultFailed": "Failed to set the default data row",
+    "upload": {
+      "attachment": "Attachment",
+      "descriptionCz": "Description CS",
+      "descriptionEn": "Description EN",
+      "failed": "The operation failed",
+      "fileSize": "size ≤ 10MB",
+      "fileStructure": "The file structure is binding – see",
+      "forDatatype": "for the data type",
+      "import": "Import the batch into the database",
+      "imported": "The data row was imported",
+      "inputFile": "Input file*",
+      "operation": "Action",
+      "owner": "Data owner",
+      "sampleExcel": "sample Excel",
+      "selectOwner": "- - - select the data owner - - -",
+      "selectVisibility": "- - - select the data availability mode - - -",
+      "source": "Data source",
+      "submit": "Submit",
+      "validate": "Check the batch",
+      "validated": "The file is valid",
+      "visibility": "Data availability"
+    }
+  },
+  "unauthorized": {
+    "goBack": "Back to the previous page",
+    "message": "You do not have access to this part of the application.",
+    "title": "Access denied"
+  },
+  "user": {
+    "addUser": {
+      "email": "E-mail",
+      "error": "An error occurred while adding the user.",
+      "name": "First name",
+      "networkError": "Error connecting to the server.",
+      "noProject": "-- no project --",
+      "project": "May contribute to the project",
+      "projectAssigned": "The project was assigned to the user.",
+      "projectAssignmentError": "Failed to assign the project to the user",
+      "submit": "Add user",
+      "submitting": "Adding user...",
+      "success": "The user was added successfully.",
+      "surname": "Surname",
+      "title": "New user"
+    },
+    "changeEmail": {
+      "confirmNewEmail": "New e-mail for confirmation",
+      "description": "Enter the password and the new e-mail address (i.e. your login will change as well).",
+      "emailsDoNotMatch": "The new e-mails do not match.",
+      "error": "An error occurred while changing the e-mail.",
+      "networkError": "Error connecting to the server.",
+      "newEmail": "New e-mail",
+      "password": "Password",
+      "submit": "Change e-mail",
+      "submitting": "Changing e-mail...",
+      "success": "The e-mail was changed successfully.",
+      "title": "E-mail change"
+    },
+    "changePassword": {
+      "confirmNewPassword": "New password for confirmation",
+      "createToken": "Create token",
+      "creatingToken": "Creating token...",
+      "description": "Enter the current password and the new password.",
+      "error": "An error occurred while changing the password.",
+      "networkError": "Error connecting to the server.",
+      "newPassword": "New password",
+      "originalPassword": "Original password",
+      "submit": "Change password",
+      "submitting": "Changing password...",
+      "success": "The password was changed successfully.",
+      "title": "Password change",
+      "tokenCreated": "Token (copy it, it will not be available again):",
+      "tokenError": "An error occurred while creating the token."
+    },
+    "playMessages": {
+      "error": "An error occurred while saving the texts.",
+      "language": "Language",
+      "language_cs": "Czech",
+      "language_en": "English",
+      "language_pl": "Polish",
+      "language_sk": "Slovak",
+      "loading": "Loading texts...",
+      "networkError": "Error connecting to the server.",
+      "submit": "Save",
+      "submitting": "Saving...",
+      "success": "The texts were saved successfully.",
+      "title": "Application text editing"
+    },
+    "settings": {
+      "applicationLanguage": "Application language",
+      "error": "An error occurred while updating the settings.",
+      "languageCzech": "Czech",
+      "languageDescription": "Setting of the application interface language. It does not affect the substitutions used in the trait export.",
+      "languageEnglish": "English",
+      "languageGerman": "German",
+      "languagePolish": "Polish",
+      "networkError": "Error connecting to the server.",
+      "resetAtlasLayers": "Visible layers in the Atlas module map",
+      "resetAtlasSearch": "Record search settings in the Atlas module",
+      "resetButton": "Reset",
+      "resetDefaults": "Restore default settings",
+      "resetDescription": "By pressing the button you delete the individual changes in the section and set the default values:",
+      "resetPanel": "Position and visibility of panels",
+      "resetTraits": "Character substitutions in the Traits module",
+      "setButton": "Set",
+      "success": "The settings were updated successfully.",
+      "title": "Application settings",
+      "traitsDescription": "Values such as <i>false, null etc.</i> can be presented in various ways that differ depending on the software used or individual habits. The values given here will be used in your exports, but will also be strictly required in your data <b>imports</b>. It is not possible to use an empty string.",
+      "traitsFalse": "FALSE",
+      "traitsLanguage": "language of exported traits",
+      "traitsLanguageCzech": "Czech",
+      "traitsLanguageEnglish": "English",
+      "traitsNull": "NULL",
+      "traitsPercentage": "percentages",
+      "traitsPercentageInteger": "<0;100>, 10%=10 so-called \"percentage\"",
+      "traitsPercentageProportion": "<0;1>, 10%=0.1 so-called \"proportion\"",
+      "traitsSubstitution": "Substitutions used in trait exports",
+      "traitsTrue": "TRUE",
+      "traitsUnmeasurable": "unmeasurable"
+    },
+    "usersAdministration": {
+      "actions": "Actions",
+      "add": "Add",
+      "addProject": "Add project",
+      "addTaxon": "Add taxon",
+      "biblioAdmin": "Biblio Admin",
+      "cancel": "Cancel",
+      "chooseProject": "-- choose a project --",
+      "deleted": "User deactivated",
+      "email": "E-mail",
+      "enterTaxonName": "Enter the taxon name...",
+      "error": "An error occurred.",
+      "filter": {
+        "all": "All",
+        "no": "No",
+        "yes": "Yes"
+      },
+      "filterBiblioAdmin": "Filter biblio admin...",
+      "filterDeleted": "Filter deactivated...",
+      "filterEmail": "Filter e-mail...",
+      "filterFirstName": "Filter first name...",
+      "filterLastName": "Filter surname...",
+      "filterMapAdmin": "Filter map admin...",
+      "filterSysAdmin": "Filter sys admin...",
+      "filterTaxonAdmin": "Filter taxon admin...",
+      "filterTraitAdmin": "Filter trait admin...",
+      "filteredFrom": "filtered from {{total}} users in total",
+      "firstName": "First name",
+      "lastName": "Surname",
+      "loadRights": "Load permissions",
+      "loaded": "Loaded",
+      "mapAdmin": "Map Admin",
+      "noProjects": "No projects",
+      "noSupervisedTaxa": "No supervised taxa",
+      "noUsersFound": "No users found",
+      "processingInfo": "This may take several seconds. When the request is completed, you can close the window.",
+      "processingTaxon": "Processing taxon {{taxon}}...",
+      "projectAdded": "The project was added successfully.",
+      "projectRemoved": "The project was removed successfully.",
+      "projects": "Projects",
+      "removeProject": "Remove project",
+      "removeTaxon": "Remove taxon",
+      "rowsPerPage": "Rows per page",
+      "searchTaxon": "Search taxon",
+      "selectProject": "Select a project",
+      "showingUsers": "Showing {{showing}} of {{total}} users",
+      "supervisedTaxa": "Supervised taxa",
+      "sysAdmin": "System Admin",
+      "taxonAdded": "The taxon was added successfully.",
+      "taxonAdmin": "Taxon Admin",
+      "taxonRemoved": "The taxon was removed successfully.",
+      "title": "User administration",
+      "traitAdmin": "Trait Admin",
+      "waitToClose": "Wait for closing..."
+    }
+  }
 }

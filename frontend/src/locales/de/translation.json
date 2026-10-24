@@ -1,0 +1,1280 @@
+{
+  "atlas": {
+    "admin": {
+      "importsList": {
+        "batchId": "Batch-ID",
+        "committer": "Importiert von",
+        "data": "Daten",
+        "delete": "Löschen",
+        "deleteError": "Löschen des Imports fehlgeschlagen",
+        "deleteSuccess": "Import wurde gelöscht",
+        "downloadModified": "Bearbeitete Datensätze herunterladen",
+        "error": "Fehler",
+        "filename": "Datei",
+        "filter": {
+          "batchId": "Batch-ID filtern...",
+          "committer": "Importeur filtern...",
+          "importDate": "Datum filtern..."
+        },
+        "importedAt": "Importdatum",
+        "infos": "Info",
+        "markedForDeletion": "Zum Löschen markiert",
+        "noResults": "Keine Importe gefunden.",
+        "ok": "OK",
+        "records": "Datensätze",
+        "rowsPerPage": "Zeilen pro Seite",
+        "search": "Suchen...",
+        "showing": "Angezeigt {{showing}} von {{total}} Importen",
+        "title": "Liste der Importe",
+        "warnings": "Warnungen"
+      },
+      "listOfTaxaSubtree": {
+        "title": "Liste der Taxa des Teilbaums"
+      },
+      "pages": {
+        "listOfImports": {
+          "title": "Liste aller Importe"
+        },
+        "listOfTaxa": {
+          "downloadPublicationCsv": "CSV-Übersicht zur PDF-Erzeugung herunterladen",
+          "title": "Taxon-Verwaltung"
+        },
+        "listOfUsers": {
+          "title": "Verwaltung der Kartenbenutzer"
+        }
+      },
+      "preslia": {
+        "title": "Preslia"
+      },
+      "taxaList": {
+        "archiveCSV": "CSV-Archiv",
+        "commonThreshold": "commonThresh",
+        "downloadCsv": "CSV herunterladen",
+        "downloadCsvMap": "Karten-CSV herunterladen",
+        "downloadPngMap": "Karten-PNG herunterladen",
+        "filterCommonThreshold": "Verbreitungsschwelle filtern...",
+        "filterLatinName": "Lateinischen Namen filtern...",
+        "filterMapped": "Kartierung filtern...",
+        "filterPreslia": "Preslia filtern...",
+        "filterProtected": "Schutz filtern...",
+        "filterPublicationStatus": "Publikationsstatus filtern...",
+        "filterRevisionStatus": "Revisionsstatus filtern...",
+        "filterRevisors": "Revisoren filtern...",
+        "filteredFrom": "gefiltert aus insgesamt {{total}} Taxa",
+        "import": {
+          "contactSupport": "Falls möglich, senden Sie bitte einen Screenshot des Bildschirms zusammen mit der importierten Excel-Datei an die Adresse",
+          "documentation": "Dokumentation",
+          "documentationLink": "Die Regeln für die Kontrolle und Verarbeitung der einzelnen Felder der Import-Excel-Datei finden Sie in der",
+          "downloadDecorated": "Excel-Datei mit markierten Fehlern/Warnungen herunterladen",
+          "emptyRowsWarning": "Zwischen den Datensätzen, die für den Import bestimmt sind, dürfen keine leeren Zeilen stehen, da die Verarbeitung der Charge bei der ersten Zeile endet, in der der Taxonname (Spalte A) nicht ausgefüllt ist.",
+          "errorCount": "Anzahl der Fehler",
+          "errorExplanation": "Die Kontrolle hat in Ihrer Datei Fehler (rot markiert) oder verdächtige Stellen aufgedeckt, die Ihre Aufmerksamkeit erfordern (grün markiert; sie weisen auf etwas Nichtstandardmäßiges hin, das ein echter Fehler sein kann, aber nicht muss). Blau markiert sind Phytochorione und Quadranten, die durch Berechnung aus den eingegebenen Koordinaten ergänzt wurden. Erläuterungen aller markierten Stellen befinden sich in den hinzugefügten Spalten. Bitte laden Sie die markierte Datei auf Ihren Computer herunter, prüfen Sie alle markierten Felder und korrigieren Sie die gefundenen Fehler.",
+          "errorMessage": "Fehlerbeschreibung",
+          "fixAndRetry": "Erst dann wählen Sie die Aktion \\\"Charge in die Datenbank importieren\\\".",
+          "hasErrors": "Die Datei enthält Fehler.",
+          "hasErrorsNotImported": "Die Datei enthält Fehler und wurde nicht importiert.",
+          "importAnother": "eine weitere Charge importieren",
+          "noErrors": "Die Datei enthält keine Fehler.",
+          "pleaseWait": "Bitte haben Sie daher Geduld und warten Sie auf die Antwort des Systems",
+          "proceedToImport": "Erst dann wählen Sie die Aktion \\\"Charge in die Datenbank importieren\\\".",
+          "processing": "Datenkontrolle läuft. Die Berechnung kann auch mehrere zehn Sekunden dauern.",
+          "recommendation": "Wir empfehlen, zuerst jede Charge (Excel-Datei) von der Anwendung kontrollieren zu lassen, dann die markierte Datei auf den Computer herunterzuladen und die Werte in den farbig markierten Feldern zu prüfen und zu korrigieren. Sobald die Importdatei in Ordnung ist, können Sie durch Ankreuzen der jeweiligen Option die Charge in die Datenbank importieren.",
+          "recordCount": "Anzahl der Datensätze",
+          "recordsLimitWarning": "Die Datenbank enthält bereits eine große Menge von Datensätzen. Dadurch sind die Kontrollen beim Import sehr zeitaufwendig. Wir empfehlen daher, nicht mehr als 2000 Datensätze in eine Importdatei zu legen.",
+          "successImported": "Die Datei wurde erfolgreich importiert.",
+          "successMessage": "Die Datei wurde erfolgreich importiert, Sie können eine weitere Charge importieren.",
+          "supportEmail": "pladias@googlegroups.com (die Nachricht wird an die Entwickler der Anwendung und an Jan Wild zugestellt).",
+          "uploadFailed": "Die Datei konnte nicht verarbeitet werden.",
+          "validationExplanation": "Die Kontrolle hat in Ihrer Datei Fehler (rot markiert) oder verdächtige Stellen aufgedeckt, die Ihre Aufmerksamkeit erfordern (grün markiert). Bitte laden Sie die markierte Datei auf Ihren Computer herunter, prüfen Sie alle markierten Felder und korrigieren Sie sie.",
+          "validationSuccess": "In der Datei wurden keine Fehler oder verdächtige Stellen gefunden, danke für die gute Arbeit! Sie können nun mit dem Import fortfahren.",
+          "warningCount": "Anzahl der Warnungen"
+        },
+        "isMappedUpdateFailed": "Der Kartierungsstatus für das Taxon {{taxonName}} konnte nicht aktualisiert werden.",
+        "isMappedUpdated": "Taxon {{taxonName}} wurde als {{status}} festgelegt.",
+        "latinName": "Lateinischer Name",
+        "mapped": "Kartiert",
+        "noCsv": "Kein CSV",
+        "noTaxaFound": "Keine Taxa gefunden",
+        "partOfMapWith": "Teil der Karte mit",
+        "pngUpload": {
+          "invalidFileType": "Ungültiger Dateityp. Laden Sie nur ein PNG-Bild hoch.",
+          "uploadFailed": "Hochladen fehlgeschlagen",
+          "uploadPng": "PNG hochladen",
+          "uploadSuccess": "PNG erfolgreich hochgeladen",
+          "uploading": "Wird hochgeladen..."
+        },
+        "preslia": "Preslia",
+        "protected": "Geschützt",
+        "publicationStatus": "Publikationsstatus der Karten",
+        "removeParentMap": "Übergeordnete Karte entfernen",
+        "revisionStatus": "Revisionsstatus der Karten",
+        "revisors": "Revisoren",
+        "rowsPerPage": "Zeilen pro Seite",
+        "selectParentMap": "Übergeordnete Karte auswählen...",
+        "showingTaxa": "Angezeigt {{showing}} von {{total}} Taxa",
+        "title": "Taxa-Übersicht",
+        "updateFailed": "Aktualisierung der Taxon-Einstellungen fehlgeschlagen.",
+        "view": "Anzeigen"
+      },
+      "uploadFile": {
+        "title": "Datei-Upload"
+      }
+    },
+    "controls": {
+      "title": "Liste der Kontrollen"
+    },
+    "import": {
+      "component": {
+        "contactSupport": "Falls möglich, senden Sie bitte einen Screenshot des Bildschirms zusammen mit der importierten Excel-Datei an die Adresse ",
+        "documentation": "Dokumentation",
+        "documentationLink": "Die Regeln für die Kontrolle und Verarbeitung der einzelnen Felder der Import-Excel-Datei finden Sie in der",
+        "downloadDecorated": "Excel-Datei mit markierten Fehlern/Warnungen herunterladen: ",
+        "downloadDecoratedFile": "Datei zum Herunterladen",
+        "emptyRowsWarning": "Zwischen den Datensätzen, die für den Import bestimmt sind, dürfen keine leeren Zeilen stehen, da die Verarbeitung der Charge bei der ersten Zeile endet, in der der Taxonname (Spalte A) nicht ausgefüllt ist.",
+        "errorCount": "Anzahl der Fehler",
+        "errorExplanation": "errorExplanation",
+        "errorMessage": "Fehlerbeschreibung",
+        "fixAndRetry": "fixAndRetry",
+        "hasErrors": "Die Datei enthält Fehler",
+        "hasErrorsNotImported": "Mit Fehlern importiert",
+        "import": "Charge in die Datenbank importieren",
+        "importAnother": "Eine weitere Charge hochladen",
+        "noErrors": "Die Datei ist in Ordnung",
+        "pleaseWait": "Bitte haben Sie daher Geduld und warten Sie auf die Antwort des Systems.",
+        "proceedToImport": "Zum Import fortfahren",
+        "proceedToImportLink": "„Charge in die Datenbank importieren“",
+        "processing": "Datenkontrolle läuft. Die Berechnung kann auch mehrere zehn Sekunden dauern.",
+        "projectSelect": "- - - Projekt auswählen - - -",
+        "recommendation": "Wir empfehlen, zuerst jede Charge (Excel-Datei) von der Anwendung kontrollieren zu lassen, dann die markierte Datei auf den Computer herunterzuladen und die Werte in den farbig markierten Feldern zu prüfen und zu korrigieren. Sobald die Importdatei in Ordnung ist, können Sie durch Ankreuzen der jeweiligen Option die Charge in die Datenbank importieren.",
+        "recordCount": "Anzahl der Datensätze",
+        "recordsLimitWarning": "Die Datenbank enthält bereits eine große Menge von Datensätzen. Dadurch sind die Kontrollen beim Import sehr zeitaufwendig. Wir empfehlen daher, nicht mehr als 2000 Datensätze in eine Importdatei zu legen.",
+        "submit": "Absenden",
+        "successImported": "Erfolgreich importiert",
+        "successMessage": "Import wurde erfolgreich abgeschlossen",
+        "uploadFailed": "Die Datei konnte nicht verarbeitet werden",
+        "validate": "Charge kontrollieren",
+        "validationExplanation": "Die Kontrolle hat in Ihrer Datei Fehler (rot markiert) oder verdächtige Stellen aufgedeckt, die Ihre Aufmerksamkeit erfordern (grün markiert; sie weisen auf etwas Nichtstandardmäßiges hin, das ein echter Fehler sein kann, aber nicht muss). Blau markiert sind Phytochorione und Quadranten, die durch Berechnung aus den eingegebenen Koordinaten ergänzt wurden. Erläuterungen aller markierten Stellen befinden sich in den hinzugefügten Spalten. Bitte laden Sie die markierte Datei auf Ihren Computer herunter, prüfen Sie alle markierten Felder und korrigieren Sie die gefundenen Fehler (Einzelheiten siehe Datei Kartierungsanweisungen). Wiederholen Sie den Vorgang nach der Korrektur so lange, bis die Datei nach der Kontrolle keine rot markierten Fehler mehr enthält und alle grün markierten Warnungen geprüft und definitiv in Ordnung sind.",
+        "validationSuccess": "Validierung erfolgreich abgeschlossen",
+        "warningCount": "Anzahl der Warnungen"
+      },
+      "title": "Datenimport"
+    },
+    "importCSV": {
+      "title": "CSV-Chargenimport"
+    },
+    "importsList": {
+      "title": "Liste der Importe"
+    },
+    "layerSwitcher": {
+      "project": "Projekt",
+      "toggle": "Kartenebenen"
+    },
+    "mapDetail": {
+      "addComment": "Kommentar hinzufügen",
+      "altitude": "Höhe über dem Meer",
+      "collapseAll": "Alle einklappen",
+      "collectors": "Sammler",
+      "commented": "kommentiert",
+      "comments": "Kommentare",
+      "date": "Datum",
+      "district": "Bezirk",
+      "districtInline": ", Bezirk {{district}}",
+      "editRecordShowDetail": "Datensatz bearbeiten/Details anzeigen",
+      "edited": "bearbeitet",
+      "expandAll": "Alle ausklappen",
+      "externalIdLabel": "Externe ID",
+      "gps": "GPS",
+      "gpsPrecision": "Positionsgenauigkeit",
+      "herbarium": "Herbar",
+      "herbariumLower": "Herbar",
+      "importedBy": "importiert von",
+      "includedInMapLabel": "In der Karte enthalten",
+      "latitude": "Breitengrad",
+      "loadRecordsFailed": "Die Datensätze konnten nicht geladen werden.",
+      "locality": "Fundort",
+      "localityLower": "Fundort",
+      "longitude": "Längengrad",
+      "markCommentAsRead": "Kommentar als gelesen markieren",
+      "markCommentAsReadError": "Markieren des Kommentars als gelesen fehlgeschlagen.",
+      "nearestTownLower": "nächste Ortschaft",
+      "noRecords": "Keine Datensätze",
+      "originalName": "ursprünglicher Name",
+      "originalOccurrenceLabel": "Ursprüngliches Vorkommen",
+      "originality": "Herkunft",
+      "otherNotes": "weitere Anmerkungen",
+      "phytochorion": "Phytochorion",
+      "phytochorionAbbrev": "Phyt.",
+      "recordId": "Datensatz",
+      "recordIdLabel": "Datensatz-ID",
+      "records": "Datensätze",
+      "revisedHerbariumLabel": "Revidiertes Herbar",
+      "showOnMap": "{{source}} auf der Karte anzeigen",
+      "source": "Quelle",
+      "sourceLower": "Quelle",
+      "square": "Rasterfeld",
+      "squareAbbrev": "Quad.",
+      "substrate": "Substrat",
+      "title": "Detailkarte",
+      "unknownYear": "unbekanntes Jahr",
+      "validationStatus": "Status",
+      "year": "Jahr"
+    },
+    "mapMain": {
+      "infoPanel": {
+        "boundToQuadrant": "an einen Quadranten gebunden, \n",
+        "boundToSquare": "an ein Feld gebunden,\n",
+        "hasComment": "Datensätze haben einen in der Anwendung Pladias eingegebenen Kommentar",
+        "hasCoordinates": "haben konkrete Koordinaten,\n",
+        "loadError": "Die Kartendaten konnten nicht geladen werden.",
+        "loadingStatistics": "Statistiken werden geladen...",
+        "mapAuthors": "Kartenautoren",
+        "mapAuthorsNote": "Anmerkung der Kartenautoren",
+        "mapTypeDescription": "Treffen Sie die Auswahl, indem Sie das entsprechende Optionsfeld rechts neben dem gewählten Kartentyp ankreuzen.\n                            Für eine Arbeitsvorschau der Karte klicken Sie auf den entsprechenden blauen Text.",
+        "mapTypeSelection": "Auswahl des Kartentyps für die Publikation",
+        "mapTypes": {
+          "basic": "Grundlegend",
+          "extinctVsRecent": "Ausgestorben versus rezent",
+          "herbariumVsNonHerbarium": "Herbar versus Nicht-Herbar",
+          "nativeVsNonNative": "Einheimisch versus nicht einheimisch"
+        },
+        "noComment": "enthält keinen Kommentar",
+        "noLocation": "ist vollständig ohne Ortsangabe",
+        "noSupervisors": "Keine Betreuer.",
+        "ofWhich": "Davon:",
+        "preview": "Vorschau",
+        "printMapNote": "Anmerkung zum Kartendruck",
+        "projectsLoading": "Projekte werden aus den obigen Daten geladen.",
+        "quadrantStatus": "Quadrantenstatus:",
+        "recordCounts": "Datensatzanzahlen",
+        "records": "Datensätze:",
+        "revisionStatus": {
+          "feedbackProceeded": " Ich habe die Anmerkungen der Kontrolleure eingearbeitet",
+          "finishing": " Ihnen liegen Kommentare zur Karte vor – vermutlich in Form von Kommentaren zu einzelnen Datensätzen oder anders – bitte erst nachdem Sie diese Anmerkungen durchgesehen haben, geben Sie die Karte in die Druckvorstufe:",
+          "submit": "Wenn Sie die Karte für bereit für das erweiterte Kommentieren halten, benachrichtigen Sie Zdeněk Kaplan:",
+          "submitButton": "Abgeben",
+          "submited": " Danke für die gute Arbeit! Die Karte ist abgegeben und wartet auf die Kontrollen durch den erweiterten Kreis der Mitarbeiter. Die Kartenautoren haben weiterhin das Recht, die Datensätze und ihre Kennzeichnungen zu bearbeiten. Sobald die Kontrollphase abgeschlossen ist, werden die Kartenautoren per E-Mail informiert.",
+          "supervised": " Die Karte befindet sich in der Phase der Kontrollen durch den erweiterten Kreis der Mitarbeiter. Die Kartenautoren haben weiterhin das Recht, die Datensätze und ihre Kennzeichnungen zu bearbeiten; die Mitarbeiter können die Datensätze kommentieren. Sobald die Kontrollphase abgeschlossen ist, werden alle Kartenautoren per E-Mail informiert."
+        },
+        "saveError": "Speichern fehlgeschlagen.",
+        "sourceProjects": "Quellprojekte und Datensatzanzahlen"
+      },
+      "taxonId": "Taxon-ID",
+      "title": "Übersichtskarte"
+    },
+    "mapPreview": {
+      "backToMainMap": "zurück zur Hauptkarte",
+      "commonThreshold": "Das Taxon ist als COMMON markiert und hat eine Schwelle von {{threshold}} Datensätzen pro Quadrant",
+      "legend": "Legende:",
+      "loading": "Wird geladen...",
+      "mapAuthorsNote": "Anmerkung der Kartenautoren",
+      "mapType": "Kartentyp:",
+      "mapTypes": {
+        "basic": "Grundlegend",
+        "extinctVsRecent": "Ausgestorben versus rezent",
+        "herbariumVsNonHerbarium": "Herbar versus Nicht-Herbar",
+        "nativeVsNonNative": "Einheimisch versus nicht einheimisch"
+      },
+      "noComment": "Kein Kommentar",
+      "noSupervisors": "Keine Betreuer.",
+      "preview": "VORSCHAU",
+      "printMapNote": "Anmerkung zum Kartendruck",
+      "publicationStatus": "Publikationsstatus der Karte:",
+      "revisionStatus": "Revisionsstatus:",
+      "revisorsComment": "Kommentar der Revisoren",
+      "title": "Kartenvorschau",
+      "typeContent": {
+        "1": {
+          "description": "",
+          "legend": {
+            "certainQuadrant": "sicherer Quadrant",
+            "quadrantByThreshold": "Quadrant nach common_threshold",
+            "uncertainQuadrant": "unsicherer Quadrant"
+          },
+          "title": "Grundlegend"
+        },
+        "2": {
+          "description": "In dieser Version der Karte werden Common-Funde ebenso wie „gelangt in die Karte“-Datensätze in die Kategorien nach der Zeit einbezogen.",
+          "legend": {
+            "extinctFindings": "ausgestorbene Funde (vor 2000)",
+            "recentFindings": "rezente Funde (nach 2000)",
+            "uncertainQuadrant": "unsicherer Quadrant"
+          },
+          "title": "Ausgestorben versus rezent"
+        },
+        "3": {
+          "description": "In dieser Version der Karte werden Common-Funde nicht angezeigt.",
+          "legend": {
+            "cultivated": "kultiviert",
+            "native": "einheimisches Vorkommen",
+            "nonNative": "nicht einheimisches Vorkommen",
+            "notSpecified": "nicht angegeben, muss markiert werden !"
+          },
+          "title": "Einheimisch versus nicht einheimisch"
+        },
+        "4": {
+          "description": "In dieser Version der Karte werden Common-Funde in die Nicht-Herbar-Funde einbezogen.",
+          "legend": {
+            "herbariumSupported": "durch Herbarbeleg belegt",
+            "nonHerbariumEvidence": "Nicht-Herbar-Belege",
+            "uncertainQuadrant": "unsicherer Quadrant"
+          },
+          "title": "Herbar versus Nicht-Herbar"
+        }
+      }
+    },
+    "newComments": {
+      "loadFailed": "Die kommentierten Datensätze konnten nicht geladen werden",
+      "noRecords": "Keine kommentierten Datensätze",
+      "recordsCount": "Anzahl der Datensätze: {{count}}",
+      "title": "Ungelesene Kommentare"
+    },
+    "search": {
+      "bulkEdit": {
+        "emptyValue": "<leer>",
+        "messages": {
+          "actionPrepared": "{{message}} Aktion für {{count}} Datensätze vorbereitet.",
+          "batchFinished": "{{operationName}} Fertig: {{success}} erfolgreich, {{failed}} erfolglos (insgesamt {{total}}).",
+          "batchProgress": "Fortschritt: {{processed}} / {{total}}",
+          "batchStartFailed": "Die Sammeloperation konnte nicht gestartet werden.",
+          "bufferChangeReady": "Aktion (Änderung des Puffers selbst auf {{value}}) vorbereitet.",
+          "confirmEmptyNote": "Die Anmerkung ist leer. Wollen Sie sie wirklich auf einen leeren Wert setzen?",
+          "confirmEmptySource": "Die Quelle ist leer. Wollen Sie sie wirklich auf einen leeren Wert setzen?",
+          "confirmSemafor": "Wollen Sie wirklich die Ampel für alle ausgewählten Datensätze ändern?",
+          "confirmTaxon": "Wollen Sie wirklich das Taxon aller ausgewählten Datensätze ändern?",
+          "coordsParseFailed": "Die Koordinaten können nicht automatisch ausgewertet werden. Verwenden Sie das Format lat,lon oder füllen Sie Lat/Lon manuell aus.",
+          "coordsPrefilled": "Die Koordinaten wurden in die Felder Lat/Lon vorausgefüllt.",
+          "coordsRequired": "Füllen Sie sowohl Lat als auch Lon aus, um den Fundort zu verschieben.",
+          "dateChangeReady": "Aktion (Änderung des Datums auf {{value}}) vorbereitet.",
+          "finderAddReady": "Aktion (Hinzufügen eines Finders) vorbereitet.",
+          "invalidBuffer": "Der Puffer muss eine positive ganze Zahl sein.",
+          "invalidDateFormat": "Das Datum muss im Format JJJJ, JJJJ-MM oder JJJJ-MM-TT sein.",
+          "loadingCandidates": "Datensätze werden gemäß dem aktuellen Filter geladen...",
+          "localityChangeReady": "Aktion (neue Fundortbeschreibung) vorbereitet.",
+          "locationChangeReady": "Aktion (Änderung der Position + Puffer {{buffer}}) vorbereitet.",
+          "nearestTownChangeReady": "Aktion (Änderung der nächsten Ortschaft auf {{value}}) vorbereitet.",
+          "noRecords": "Es stehen keine Datensätze für die Sammelbearbeitung zur Verfügung.",
+          "noteChangeReady": "Aktion (neuer Anmerkungstext) vorbereitet.",
+          "phytochorionChangeReady": "Aktion (Änderung des Phytochorions auf {{value}}) vorbereitet.",
+          "requiredDate": "Das Datum ist erforderlich.",
+          "requiredLocality": "Der Fundort ist erforderlich.",
+          "requiredNearestTown": "Die nächste Ortschaft ist erforderlich.",
+          "searchFirst": "Führen Sie zuerst eine Suche aus, damit die zu bearbeitenden Datensätze geladen werden können.",
+          "selectFinder": "Wählen Sie einen Finder.",
+          "selectPhytochorion": "Wählen Sie ein Phytochorion.",
+          "selectSemafor": "Wählen Sie eine neue Ampel.",
+          "selectTaxon": "Wählen Sie ein Taxon.",
+          "semaforChangeReady": "Aktion (Änderung der Ampel) vorbereitet.",
+          "showFailedIds": "Erfolglose Datensätze ({{count}})",
+          "showSuccessfulIds": "Erfolgreich bearbeitete Datensätze ({{count}})",
+          "sourceChangeReady": "Aktion (Änderung der Quelle) vorbereitet.",
+          "taxonChangeReady": "Aktion (Änderung des Taxons) vorbereitet.",
+          "tooManyRecords": "Auf den Filter passen {{count}} Datensätze. Sammelmäßig können maximal {{max}} Datensätze bearbeitet werden. Präzisieren Sie den Filter."
+        },
+        "sections": {
+          "buffer": {
+            "label": "Neuer Puffer",
+            "submitButton": "Pufferänderung bestätigen",
+            "title": "Puffer"
+          },
+          "date": {
+            "label": "Neues Datum",
+            "placeholder": "JJJJ, JJJJ-MM oder JJJJ-MM-TT",
+            "submitButton": "Datumsänderung bestätigen",
+            "title": "Funddatum"
+          },
+          "finder": {
+            "helper": "Wird am Anfang hinzugefügt, d. h. der zuletzt hinzugefügte wird als erster Autor angeführt.",
+            "label": "Finder",
+            "placeholder": "Finder auswählen...",
+            "submitButton": "Finder hinzufügen",
+            "title": "Finder hinzufügen"
+          },
+          "locality": {
+            "label": "Neuer Fundorttext",
+            "submitButton": "Neuen Fundort bestätigen",
+            "title": "Fundort"
+          },
+          "nearestTown": {
+            "label": "Neue Ortschaft",
+            "submitButton": "Neue Ortschaft bestätigen",
+            "title": "Nächste Ortschaft"
+          },
+          "note": {
+            "label": "Neuer Anmerkungstext",
+            "submitButton": "Neue Anmerkung bestätigen",
+            "title": "Anmerkung"
+          },
+          "phytochorion": {
+            "label": "Neues Phytochorion",
+            "placeholder": "Phytochorion auswählen...",
+            "submitButton": "Phytochorionänderung bestätigen",
+            "title": "Phytochorion"
+          },
+          "positionBuffer": {
+            "bufferLabel": "Puffer",
+            "latLabel": "Lat",
+            "lonLabel": "Lon",
+            "parseButton": "Auswerten",
+            "rawCoordsLabel": "Rohkoordinaten (optional)",
+            "rawCoordsPlaceholder": "z. B. 50.12345,16.67890",
+            "submitButton": "Verschiebung des Fundorts bestätigen",
+            "title": "Position + Puffer"
+          },
+          "semafor": {
+            "label": "Neue Ampel",
+            "placeholder": "Neuen Status auswählen...",
+            "submitButton": "Ampel ändern",
+            "title": "Änderung der Ampel"
+          },
+          "source": {
+            "label": "Neuer Quellentext",
+            "submitButton": "Neue Quelle bestätigen",
+            "title": "Quelle"
+          },
+          "taxon": {
+            "helper": "Also, mit diesem vorsichtig sein!",
+            "label": "Neues Taxon",
+            "submitButton": "Taxon ändern",
+            "title": "Änderung des Taxons"
+          }
+        },
+        "selectedRecords": "Für die Bearbeitung ausgewählte Datensätze",
+        "semaforOptions": {
+          "accepted": "grün -> Akzeptierter Datensatz",
+          "rejected": "rot -> Abgelehnter Datensatz",
+          "uncertain": "orange -> Unsicherer Datensatz",
+          "unreviewed": "grau -> Nicht revidierter Datensatz"
+        },
+        "title": "Sammelbearbeitung von Datensätzen",
+        "warning": "Sammelbearbeitungen laufen über dem Ergebnis des aktuellen Filters. Änderungen werden einzeln, Datensatz für Datensatz, vorgenommen. Gleichzeitig können maximal 1000 Datensätze geändert werden."
+      },
+      "form": {
+        "excelExportTitleAdmin": "Datenexport nach XLSX ohne Benutzerbeschränkung.",
+        "excelExportTitleRestricted": "Der Export nach XLSX ist gemäß Ihren Rechten eingeschränkt.",
+        "excelExportedAll": "Es wurden alle {{recordsCount}} Datensätze exportiert.",
+        "excelExportedPartial": "Exportiert {{exported}} von {{total}} Datensätzen.",
+        "exportBrowser": "Im Browser ausgeben",
+        "exportExcel": "Nach Excel exportieren",
+        "foundRecords": "{{recordsCount}} Datensätze gefunden (insgesamt {{totalCount}}).",
+        "from": "Von",
+        "historyFlags": {
+          "altitude": "Höhe über dem Meer",
+          "date": "Datum",
+          "finder": "Finder",
+          "locality": "Fundort",
+          "note": "Anmerkung",
+          "source": "Quelle",
+          "taxon": "Taxon",
+          "town": "Ortschaft"
+        },
+        "labels": {
+          "altitude": "Höhe über dem Meer",
+          "appComment": "in der Anwendung {{projectName}} eingegebener Kommentar",
+          "buffer": "GPS-Puffer größer als [m]",
+          "chemicalData": "Chemische Daten",
+          "comment": "Anmerkung",
+          "committer": "hochgeladen von",
+          "externalId": "externe ID",
+          "finderName": "Finder (Vorname)",
+          "finderSurname": "Finder (Nachname)",
+          "herbarium": "Herbar",
+          "history": "Historie",
+          "importDate": "Importdatum",
+          "includeSubtaxa": "auch Subtaxa einbeziehen",
+          "institution": "Datenverwalter",
+          "lastEditDate": "Datum der letzten Änderung",
+          "license": "Lizenz",
+          "locality": "Fundort",
+          "localityExtra": "Zusätzlicher Fundort",
+          "localityOrTown": "Fundort oder Ortschaft",
+          "noMapSquare": "hat weder Feld noch Quadrant",
+          "originalName": "ursprünglicher Name",
+          "phytochorion": "Phytochorion",
+          "pladiasId": "Pladias-ID",
+          "project": "Herkunft",
+          "quadrant": "Kartierungsfeld",
+          "source": "Quelle",
+          "substrate1": "Substrat 1",
+          "substrate2": "Substrat 2",
+          "substrateText": "Substrat",
+          "taxon": "Taxon",
+          "town": "Ortschaft",
+          "validation": "Validierung",
+          "year": "Jahr des Fundes"
+        },
+        "onlyCommented": "Nur Datensätze mit einem in der Anwendung {{projectName}} eingegebenen Kommentar",
+        "onlyUnresolvedBold": "ungelösten",
+        "onlyUnresolvedPrefix": "Nur Datensätze mit",
+        "onlyUnresolvedSuffix": "in der Anwendung {{projectName}} eingegebenem Kommentar",
+        "options": {
+          "herbariumAny": "Beliebiges Herbar - an beliebiges Herbar gebunden",
+          "herbariumNone": "Nicht-Herbar - listet alle Datensätze auf, die an kein Herbar gebunden sind",
+          "validationInvalid": "Ungültig",
+          "validationNotValidated": "Noch nicht validiert",
+          "validationUncertain": "Unsicher",
+          "validationValid": "Gültig"
+        },
+        "placeholders": {
+          "appComment": "*früher*vulgatum*",
+          "buffer": "2499",
+          "chemicalData": "*atranorin*",
+          "commentNonVascular": "*det. *Palice*",
+          "commentVascular": "*früher*vulgatum*",
+          "externalId": "AB28*",
+          "finderName": "Petr OR P.",
+          "finderSurname": "čela*ko* OR Klika",
+          "herbariumText": "Malic*",
+          "institution": "--- Verwalter auswählen ---",
+          "license": "--- Lizenz auswählen ---",
+          "localityDescription": "*Weide* OR *Wald*",
+          "localityExtra": "Schutzgebiet, Gebirge usw.*",
+          "localityOrTown": "Praha*",
+          "originalName": "ror*pa*/Rorripa/rorripa*",
+          "project": "--- Projekt auswählen ---",
+          "quadrant": "5542;5432b;5432c;5433*",
+          "sourceNonVascular": "*Zitation/Datenbank/Herbar*",
+          "sourceVascular": "*Berichte*/Natura*",
+          "substrate1": "--- Substrat 1 auswählen ---",
+          "substrate2": "--- Substrat 2 auswählen ---",
+          "substrateText": "*Serpentin*",
+          "town": "beneš*nad*",
+          "year": "jjjj"
+        },
+        "processingRequest": "Anfrage wird verarbeitet...",
+        "searchFailed": "Suche fehlgeschlagen.",
+        "selectedTaxon": "Ausgewähltes Taxon: {{taxon}}",
+        "sortDescending": "absteigend",
+        "sortLabel": "Sortieren nach",
+        "sortOptions": {
+          "date": "Datum",
+          "locality": "Fundort",
+          "nearestTownName": "nächste Ortschaft",
+          "phytochorion": "Phytochorion",
+          "square": "Kartierungsfeld",
+          "taxonName": "Taxon",
+          "validationStatus": "Validierungsstatus"
+        },
+        "submit": "suchen",
+        "submitFailed": "Das Formular konnte nicht abgesendet werden.",
+        "taxonAutocompletePlaceholder": "Taxon auswählen...",
+        "titles": {
+          "altitude": "Höhenbereich über dem Meer",
+          "buffer": "Datensätze, deren Puffer größer als der angegebene Wert in Metern ist",
+          "chemicalData": "Chemische Daten",
+          "comment": "Suche in Feldern, die taxonomische Metainformationen und Angaben zum Fundort tragen.",
+          "committer": "Benutzer der Anwendung {{projectName}}, der die Datensätze importiert hat",
+          "externalId": "Externe ID",
+          "finderName": "Person, die als Finder angegeben ist.",
+          "finderSurname": "Person, die als Finder angegeben ist.",
+          "herbarium": "Nur die im ausgewählten Herbar aufbewahrten Belege.",
+          "history": "Ermöglicht die Auswahl von Datensätzen nach mindestens einmal bearbeitetem Feld",
+          "importDate": "Datum des Imports in die Datenbank {{projectName}}",
+          "includeSubtaxa": "Die Suche wird auch die Subtaxa des ausgewählten Taxons einbeziehen",
+          "institution": "Datenverwalter",
+          "lastEditDate": "Datum der letzten Änderung in der Datenbank {{projectName}}",
+          "license": "Lizenz",
+          "localityDescription": "Beschreibung des Fundorts",
+          "localityExtra": "Zusätzlicher Fundort",
+          "localityOrTown": "Fundort oder Ortschaft",
+          "noMapSquare": "Datensätze ohne Bindung an ein Feld oder einen Quadranten",
+          "originalName": "Ursprünglicher Name - wie in einer Publikation, auf einem Herbarbeleg usw. angegeben",
+          "phytochorion": "Phytochorione der Tschechischen Republik",
+          "project": "Projekt des ursprünglichen Datenverwalters",
+          "quadrant": "Feld oder Quadrant der Rasterkartierung; mehrere Werte trennen Sie durch ein Semikolon.",
+          "source": "Literaturquelle",
+          "substrate1": "Substrat 1",
+          "substrate2": "Substrat 2",
+          "substrateText": "Substrat",
+          "taxon": "Lateinischer Name des Taxons",
+          "town": "Nächste Ortschaft - sie kann sowohl als Luftlinie als auch im Sinne der Zugehörigkeit zum Katastralgebiet usw. gemeint sein",
+          "validation": "Validierungsstatus für den Atlas",
+          "year": "Zeitintervall des Fundes."
+        },
+        "to": "bis",
+        "waitingForData": "Bitte warten, Daten werden geladen."
+      },
+      "grid": {
+        "columns": {
+          "date": "Datum",
+          "finder": "Finder",
+          "locality": "Fundort",
+          "origin": "Herkunft",
+          "phytochorion": "Phytochorion",
+          "quadrant": "Quadrant",
+          "status": "Status"
+        },
+        "newSearch": "Neue Suche",
+        "next": "Weiter",
+        "noRecords": "Keine Datensätze",
+        "page": "Seite {{page}}",
+        "pageOf": "Seite {{page}} von {{totalPages}}",
+        "previous": "Zurück",
+        "totalFound": "Insgesamt gefunden: {{totalCount}}"
+      },
+      "title": "Suche nach Datensätzen"
+    },
+    "taxesList": {
+      "title": "Liste der zugewiesenen Taxa"
+    },
+    "taxonLoadFailed": "Das Taxon konnte nicht geladen werden."
+  },
+  "bibliography": {
+    "author": "Autor",
+    "authors": "Autoren",
+    "description": "Durchsucht werden können Quellen, an die mindestens ein Datensatz in der Datenbank PLADIAS gebunden ist. Die Anwesenheit einer Quelle in der Datenbank bedeutet nicht, dass aus ihr alle Funde exzerpiert wurden. Beim Projekt NDOP konnten wegen des uneinheitlichen Formats nicht alle Zitationen getrennt werden. In der Liste der Zeitschriften sind nur ausgewählte Periodika enthalten.",
+    "etc": "Rest der Zitation",
+    "excerpted": "Bearbeitungsgrad",
+    "filter": {
+      "all": "- - - alle - - -",
+      "authors": "Autoren filtern...",
+      "etc": " usw. filtern...",
+      "excerpted": "Bearbeitungsgrad filtern...",
+      "journal": "Zeitschrift filtern...",
+      "notExcerpted": "Nicht exzerpiert",
+      "reset": "Filter zurücksetzen",
+      "title": "Titel filtern...",
+      "year": "Jahr filtern..."
+    },
+    "journal": "Zeitschrift",
+    "no": "Nein",
+    "noResults": "Es wurden keine Datensätze gefunden.",
+    "recordsCount": "Anzahl der Datensätze",
+    "results": "Suchergebnisse",
+    "rowsPerPage": "Zeilen pro Seite",
+    "search": "suchen",
+    "searchTitle": "Suche nach Quellen in der Datenbank PLADIAS",
+    "testVersion": "Testversion. Aus dem Projekt Exzerption für den Atlas sind hier nur Zitationen aus bis zum 2. 11. 2015 importierten Datensätzen enthalten.",
+    "title": "Bibliografie",
+    "totalRecords": "Insgesamt {{count}} Datensätze",
+    "year": "Jahr der Publikation",
+    "yes": "Ja"
+  },
+  "common": {
+    "actions": "Aktionen",
+    "all": "Alle",
+    "autocomplete": {
+      "allTaxaPlaceholder": "Geben Sie ein Taxon ein",
+      "possibleParentsPlaceholder": "Möglichen Elternteil suchen...",
+      "searchFailed": "Suche fehlgeschlagen.",
+      "taxonPlaceholder": "Taxon suchen..."
+    },
+    "back": "Zurück",
+    "cancel": "Abbrechen",
+    "close": "Schließen",
+    "confirm": {
+      "title": "Aktionsbestätigung"
+    },
+    "delete": "Löschen",
+    "description": "Beschreibung",
+    "download": "herunterladen",
+    "edit": "Bearbeiten",
+    "error": "Fehler",
+    "errorBoundary": {
+      "message": "Ein Teil der Anwendung funktioniert nicht mehr. Versuchen Sie, die Seite neu zu laden; wenn der Fehler wiederholt auftritt, wenden Sie sich an den Administrator.",
+      "reload": "Seite neu laden",
+      "title": "Ein unerwarteter Fehler ist aufgetreten"
+    },
+    "false": "false",
+    "inlineField": {
+      "add": "Hinzufügen",
+      "edit": "Bearbeiten",
+      "saveFailed": "Speichern fehlgeschlagen"
+    },
+    "instanceMessages": {
+      "unavailable": "Meldungen zum Zustand der Instanz sind derzeit nicht verfügbar."
+    },
+    "loadFailed": "Laden der Daten fehlgeschlagen.",
+    "loading": "Wird geladen...",
+    "manager": "Verantwortliche Person",
+    "multiValueEdit": {
+      "available": "Zum Hinzufügen verfügbar",
+      "confirmDeleteMessage": "Wollen Sie {{name}} wirklich entfernen?",
+      "current": "Derzeit zugewiesen",
+      "loadFailed": "Laden der Optionen fehlgeschlagen",
+      "noMoreAvailable": "Alle Einträge sind bereits zugewiesen",
+      "none": "Keine",
+      "remove": "Entfernen",
+      "saveFailed": "Speichern fehlgeschlagen"
+    },
+    "no": "Nein",
+    "noData": "Keine Datensätze gefunden",
+    "notification": {
+      "networkError": "Verbindungsfehler zum Server – überprüfen Sie Ihre Internetverbindung."
+    },
+    "null": "null",
+    "ok": "OK",
+    "save": "Speichern",
+    "saving": "Wird gespeichert...",
+    "select": "- - Auswählen - -",
+    "singleSelectEdit": {
+      "loadFailed": "Laden der Optionen fehlgeschlagen",
+      "none": "Nicht angegeben",
+      "saveFailed": "Speichern fehlgeschlagen"
+    },
+    "submitting": "Wird abgesendet...",
+    "table": {
+      "all": "Alle",
+      "clearFilters": "Filter löschen",
+      "excelAll": "XLSX alle",
+      "excelFiltered": "XLSX gefiltert",
+      "exportFailed": "Export fehlgeschlagen.",
+      "filter": {
+        "all": "Filtern...",
+        "date": "Datum",
+        "dateFrom": "Von Datum",
+        "dateTo": "Bis Datum",
+        "no": "Nein",
+        "number": "Zahl",
+        "yes": "Ja"
+      },
+      "loadFailed": "Laden der Tabelle fehlgeschlagen.",
+      "no": "Nein",
+      "noData": "Keine Daten gefunden",
+      "rowsPerPage": "Zeilen pro Seite",
+      "showing": "Angezeigt von {{from}} bis {{to}} von insgesamt {{total}} Zeilen",
+      "sort": {
+        "ascending": "Aufsteigend sortieren",
+        "clickToSort": "Zum Sortieren klicken",
+        "descending": "Absteigend sortieren"
+      },
+      "updateFailed": "Aktualisierung fehlgeschlagen.",
+      "yes": "Ja"
+    },
+    "true": "true",
+    "unknownError": "Unbekannter Fehler",
+    "version": "Versionsdatum",
+    "yes": "Ja"
+  },
+  "download": {
+    "description": "Beschreibung",
+    "download": "herunterladen",
+    "downloadFailed": "Herunterladen der Datei fehlgeschlagen.",
+    "loadFailed": "Laden der herunterladbaren Dateien fehlgeschlagen.",
+    "manager": "Verantwortliche Person",
+    "version": "Versionsdatum"
+  },
+  "menu": {
+    "atlas": {
+      "bulkEdit": "Sammelbearbeitungen",
+      "dropdown": "Karten",
+      "import": "Datenimport",
+      "importCSV": "CSV-Chargenimport",
+      "listOfControls": "Liste der Kontrollen",
+      "listOfImports": "Liste der Importe",
+      "listOfTaxa": "Liste der zugewiesenen Taxa",
+      "newComments": "Ungelesene Kommentare",
+      "search": "Suche nach Datensätzen",
+      "selectTaxon": "Kartenvorbereitung"
+    },
+    "atlasAdmin": {
+      "dropdown": "AdminKarten",
+      "listOfImports": "Liste aller Importe",
+      "listOfTaxa": "Taxon-Verwaltung",
+      "listOfUsers": "Verwaltung der Kartenbenutzer"
+    },
+    "biblio": {
+      "dropdown": "Bibliografie",
+      "search": "Quellensuche"
+    },
+    "downloads": {
+      "dropdown": "Downloads"
+    },
+    "forms": {
+      "recordPlaceholder": "Zum Datensatz mit ID gehen…",
+      "taxonPlaceholder": "Zur Taxonkarte gehen…"
+    },
+    "trait": {
+      "aggregationTypes": "Aggregationstypen",
+      "backup": "Sicherung des Komplexexports",
+      "data": "Daten",
+      "datatypes": "Datentypen",
+      "dropdown": "Artmerkmale",
+      "export": "Komplexexport",
+      "general": "Allgemeine Informationen"
+    },
+    "user": {
+      "addUser": "Benutzer hinzufügen",
+      "changeEmail": "E-Mail ändern",
+      "changePassword": "Passwort ändern",
+      "docs": "Dokumentation",
+      "logout": "Abmelden",
+      "playMessages": "Texte der Anwendung bearbeiten",
+      "settings": "Anwendungseinstellungen",
+      "taxaAdministration": "Taxon-Verwaltung",
+      "usersAdministration": "Benutzerverwaltung"
+    }
+  },
+  "other": {
+    "components": {
+      "atlas": {
+        "importCSV": {
+          "contactSupport": "Falls möglich, senden Sie bitte einen Screenshot des Bildschirms zusammen mit der importierten CSV-Datei an die Adresse ",
+          "documentation": "Dokumentation",
+          "documentationLink": "Die Regeln für die Kontrolle und Verarbeitung der einzelnen Felder der Import-CSV-Datei finden Sie in der",
+          "emailNotification": "Über das Ergebnis der Kontrolle oder des Imports werden Sie per E-Mail informiert.",
+          "emailNotificationInfo": "Über das Ergebnis der Kontrolle oder des Imports werden Sie per E-Mail informiert.",
+          "emptyRowsWarning": "Zwischen den Datensätzen, die für den Import bestimmt sind, dürfen keine leeren Zeilen stehen.",
+          "errorMessage": "Fehlerbeschreibung",
+          "import": "Charge in die Datenbank importieren",
+          "pleaseWait": "Bitte haben Sie daher Geduld und warten Sie auf die Antwort des Systems.",
+          "processing": "Datenkontrolle läuft. Die Berechnung kann auch mehrere zehn Minuten dauern.",
+          "projectSelect": "- - - Projekt auswählen - - -",
+          "recommendation": "Wir empfehlen, zuerst jede Charge (CSV-Datei) von der Anwendung kontrollieren zu lassen. Die validierte Datei wird Ihnen anschließend per E-Mail zugesandt. Sobald die Importdatei fehlerfrei ist, können Sie durch Ankreuzen der jeweiligen Option die Charge in die Datenbank importieren.",
+          "recordsLimitWarning": "Die Datenbank enthält bereits eine große Menge von Datensätzen. Dadurch sind die Kontrollen beim Import sehr zeitaufwendig.",
+          "submit": "Absenden",
+          "uploadFailed": "Die Datei konnte nicht verarbeitet werden",
+          "uploadSuccess": "Die Charge wurde auf den Server hochgeladen",
+          "validate": "Charge kontrollieren"
+        }
+      }
+    },
+    "pages": {
+      "atlas": {
+        "bulkEdit": {
+          "title": "Sammelbearbeitungen"
+        },
+        "selectTaxon": {
+          "title": "Kartenvorbereitung"
+        }
+      },
+      "downloads": {
+        "title": "Downloads"
+      },
+      "home": {
+        "title": "Startseite"
+      },
+      "user": {
+        "title": "Abmelden"
+      }
+    }
+  },
+  "record": {
+    "actualPosition": "Aktuelle Position",
+    "addComment": "Kommentar hinzufügen",
+    "altitude": "Höhe über dem Meer",
+    "altitudeAproximate": "Höhe ü. M. approx.",
+    "altitudeMax": "Höhe über dem Meer MAX",
+    "altitudeMin": "Höhe über dem Meer MIN",
+    "authors": "Autoren und Sammler",
+    "basicInfo": "Grundinformationen",
+    "batch": "Charge",
+    "batchAuthor": "Autor der Charge",
+    "batchCommitter": "Charge hochgeladen von",
+    "changeType": "Art der Änderung",
+    "chemical": "Chemische Daten",
+    "clickOnMap": "Klicken Sie auf die Karte, um eine neue Position auszuwählen",
+    "collectors": "Sammler",
+    "comment": "Importanmerkung",
+    "commentActionFailed": "Die Kommentaroperation ist fehlgeschlagen.",
+    "commentAuthor": "Autor",
+    "commentDate": "Datum",
+    "commentMessage": "Nachricht",
+    "commentPlaceholder": "Geben Sie hier Ihren Kommentar ein...",
+    "commentResolved": "Gelöst",
+    "comments": "Kommentare",
+    "commentsLoadFailed": "Die Kommentare konnten nicht geladen werden.",
+    "confirmDeleteComment": "Wollen Sie diesen Kommentar wirklich löschen?",
+    "confirmLocationChange": "Positionsänderung bestätigen",
+    "coordsOrigin": "Koordinatenquelle",
+    "coordsPrecision": "Positionsgenauigkeit [m]",
+    "date": "Datum",
+    "dateIso": "Datum (ISO)",
+    "detrev": "Bestimmungsrevision",
+    "district": "Bezirk",
+    "editComment": "Kommentar bearbeiten",
+    "environment": "Umgebung",
+    "fetchError": "Der Datensatz konnte nicht geladen werden",
+    "herbariumAbbrev": "Abkürzung",
+    "herbariumName": "Name",
+    "herbariumQuality": "Herbarbeleg von Qualität",
+    "herbariums": "Herbarien",
+    "history": "Historie des Datensatzes",
+    "historyField": "Historie des Feldes",
+    "historyNewValue": "Bearbeiteter Wert",
+    "historyOldValue": "Ursprünglicher Wert",
+    "includedInMap": "Datensatz in die Karte",
+    "latitude": "Breitengrad",
+    "license": "Lizenz",
+    "loadFailed": "Der Datensatz konnte nicht geladen werden.",
+    "locality": "Fundort",
+    "localityDetails": "Fundortdetails",
+    "localityExtra": "Zusätzlicher Fundort",
+    "longitude": "Längengrad",
+    "map": "Karte",
+    "moveFailed": "Verschieben der Position fehlgeschlagen",
+    "moveLocationPrompt": "Wollen Sie die Position wirklich verschieben auf:",
+    "nameOriginal": "Ursprünglicher Name",
+    "nearestTown": "Nächste Ortschaft",
+    "nearestTownComputed": "Aus den Koordinaten abgeleitete Ortschaft",
+    "newPosition": "Neue Position",
+    "noRecordId": "Datensatz-ID fehlt",
+    "notFound": "Datensatz nicht gefunden",
+    "origin": "Herkunft",
+    "originalId": "Externe ID",
+    "originality": "Ursprünglichkeit",
+    "originalityStatus": {
+      "cultivated": "Kultiviert",
+      "native": "Einheimisch",
+      "nonnative": "Nicht einheimisch",
+      "unprocessed": "Unbearbeitet"
+    },
+    "phytochorion": "Phytochorion",
+    "phytochorionComputed": "Berechnetes Phytochorion",
+    "position": "Position",
+    "project": "Projekt",
+    "quadrant": "Quadrant",
+    "remarkDoubt": "Anmerkung - Zweifel",
+    "remarkExcerption": "Anmerkung zur Exzerption",
+    "remarkOther": "Anmerkung - sonstiges",
+    "remarks": "Anmerkungen aus fremden Quellen",
+    "resolve": "Lösen",
+    "resolvedBy": "Gelöst von",
+    "resolvedWhen": "Datum der Lösung",
+    "revisedHerbarium": "Revidiertes Herbar",
+    "source": "Quelle",
+    "squares": "Quadranten",
+    "status": "Status",
+    "substrate1": "Hauptkategorie Substrat",
+    "substrate2": "Präzisierende Kategorie Substrat",
+    "substrateText": "Substrat",
+    "taxon": "Taxon",
+    "titles": {
+      "detail": "Datensatz",
+      "floristic": "Floristischer Datensatz"
+    },
+    "unresolved": "ungelöster",
+    "uploaded": "Hochgeladen von",
+    "validation": {
+      "accepted": "Angenommen",
+      "declined": "Abgelehnt",
+      "uncertain": "Unsicher",
+      "unprocessed": "Unbearbeitet"
+    },
+    "validationStatus": "Validierung",
+    "year": "Jahr"
+  },
+  "taxon": {
+    "administration": {
+      "apiError": "Die API hat einen Fehler zurückgegeben",
+      "loadTaxonError": "Das Taxon konnte nicht geladen werden",
+      "pageTitle": "Taxon-Verwaltung",
+      "selectTaxonLabel": "Taxon auswählen:"
+    },
+    "create": {
+      "createButton": "Taxon erstellen",
+      "createError": "Erstellen des Taxons fehlgeschlagen",
+      "latinName": "Lateinischer Name",
+      "latinNamePlaceholder": "z. B. Quercus robur",
+      "latinNameRequired": "Geben Sie den lateinischen Namen ein",
+      "loadRanksError": "Die Liste der Ränge konnte nicht geladen werden",
+      "rank": "Rang",
+      "title": "Neues Taxon unter {{name}}",
+      "unexpectedError": "Unerwarteter Fehler"
+    },
+    "detail": {
+      "apiError": "Die API hat beim Laden der Elternteile einen Fehler zurückgegeben",
+      "loadParentsFailed": "Die Elternteile des Taxons konnten nicht geladen werden"
+    },
+    "edit": {
+      "author": "Taxon-Autor",
+      "czechName": "Tschechischer Name",
+      "htmlName": "Name in HTML",
+      "hybridParents": "Elternteile von Hybriden",
+      "latinName": "Lateinischer Name",
+      "note": "Anmerkung",
+      "rank": "Rang",
+      "suppressed": "Unterdrückt",
+      "title": "Taxon-Bearbeitung"
+    },
+    "move": {
+      "deleteButton": "Löschen",
+      "deleteConfirm": "Wollen Sie das Taxon \"{{name}}\" wirklich löschen?\n\nDiese Aktion ist unumkehrbar.",
+      "deleteDescription": "Sie können das Taxon auch löschen – vorausgesetzt, es ist ein Blatt des Baums (hat keine untergeordneten Taxa) und wird nirgendwo außer in der materialized-Sicht referenziert ",
+      "deleteFailed": "Löschen des Taxons fehlgeschlagen",
+      "deleting": "Wird gelöscht…",
+      "moveButton": "Verschieben",
+      "moveFailed": "Verschieben fehlgeschlagen",
+      "moving": "Wird verschoben…",
+      "newParent": "Neuer Elternteil",
+      "title": "Verschieben des Taxons {{name}}"
+    },
+    "ordering": {
+      "loadFailed": "Die Nachkommen des Taxons konnten nicht geladen werden",
+      "reorderFailed": "Änderung der Reihenfolge fehlgeschlagen",
+      "title": "Anordnung der Nachkommen"
+    },
+    "stats": {
+      "loadFailed": "Die Datensatzstatistiken des Taxons konnten nicht geladen werden"
+    },
+    "synonyms": {
+      "actions": "Aktionen",
+      "addButton": "+ Synonym hinzufügen",
+      "autocomplete": "Autovervollständigung",
+      "deleteConfirm": "Synonym wirklich löschen?",
+      "deleteError": "Beim Löschen ist ein Fehler aufgetreten",
+      "deleteFailed": "Löschen fehlgeschlagen ({{status}})",
+      "loadFailed": "Die Synonyme konnten nicht geladen werden",
+      "nameHtml": "Name (HTML)",
+      "nameLatin": "Name (lat.)",
+      "publication": "Publikation",
+      "saveError": "Beim Speichern ist ein Fehler aufgetreten",
+      "saveFailed": "Speichern fehlgeschlagen ({{status}})",
+      "saved": "Gespeichert",
+      "suffix": "Suffix",
+      "title": "Synonyme"
+    },
+    "traitCount": {
+      "loadFailed": "Die Anzahl der Merkmalszeilen konnte nicht geladen werden",
+      "notPresent": "Das Taxon ist in keinem Merkmal.",
+      "presentEnd": "Merkmalszeilen.",
+      "presentStart": "Es kommt vor in"
+    }
+  },
+  "trait": {
+    "aggregationTypes": {
+      "description": "Beschreibung",
+      "heading": "Grundinformationen zum Komplexexport",
+      "key": "Code",
+      "paragraph1": "Der Komplexexport der Artmerkmale ermöglicht den Export von ursprünglichen, geerbten, aggregierten oder zusammengeführten Werten. <b>Ursprüngliche Werte</b> sind jene, die die einzelnen Taxa für das jeweilige Merkmal in der Standarddatendatei angegeben hatten. Diese ursprünglichen Werte sind jedoch nicht für alle Taxa angegeben. Es gibt Fälle, in denen Werte z. B. für eine Unterart, aber nicht für die übergeordnete Art angegeben sind. In solchen Fällen können geerbte oder aggregierte Werte verwendet werden. Der Prozess der <b>Vererbung</b> verläuft im taxonomischen Baum nach unten, und die Werte werden nur auf sogenannte Einzelgänger übertragen, d. h. Taxa, die innerhalb des übergeordneten Taxons die einzigen sind. Bei einem solchen Taxon erscheinen dann in den geerbten Werten alle Daten, die sich in den ursprünglichen Werten finden lassen, wenn man vom Baum nach oben bis zur Wurzel schaut, solange die Elternteile ebenfalls Einzelgänger sind. Der Prozess der <b>Aggregation</b> verläuft dagegen im taxonomischen Baum nach oben. Es gibt mehrere Arten, wie die bei den Taxa angegebenen Werte aggregiert werden. Diese Aggregationsarten sind bei den einzelnen Aggregationstypen genau beschrieben. In den Export können ursprüngliche, geerbte und aggregierte Werte gleichzeitig einbezogen und als sogenannte <b>zusammengeführte Werte</b> exportiert werden. In diesem Fall haben ursprüngliche Werte Vorrang vor aggregierten und aggregierte Werte Vorrang vor geerbten. Wenn beim Export keines der angebotenen Wertfelder angekreuzt wird, werden automatisch ursprüngliche, geerbte und aggregierte Werte exportiert.",
+      "paragraph2": "Beim Export kann außerdem eine Liste von Taxa ausgewählt werden, für die die Werte exportiert werden sollen. Wenn keine Taxa ausgewählt werden, werden automatisch alle exportiert. Als letzte Möglichkeit kann der Benutzer die taxonomischen Ränge auswählen, die er in den Export einbeziehen möchte. Wenn keiner angekreuzt wird, werden automatisch alle exportiert.",
+      "paragraph3": "Die genaue Art des Exports der einzelnen Werte (ursprüngliche, geerbte, aggregierte) ist durch den für jedes Merkmal eingestellten Aggregationstyp gegeben. Die Liste der einzelnen Aggregationstypen ist unten angeführt.",
+      "title": "Aggregationstypen"
+    },
+    "backup": {
+      "createdAt": "erstellt",
+      "description": "Beschreibung",
+      "download": "herunterladen",
+      "error": "Fehler",
+      "note": "Anmerkung",
+      "notePlaceholder": "fügen Sie hier den Anmerkungstext ein",
+      "started": "begonnen",
+      "submit": "Absenden",
+      "submitting": "wird abgesendet",
+      "title": "Sicherung der Merkmale"
+    },
+    "data": {
+      "loadFailed": "Laden der Merkmalsdaten fehlgeschlagen",
+      "section": "Abschnitt",
+      "title": "Daten"
+    },
+    "datatypes": {
+      "comment": "Kommentar",
+      "datatype": "Datentyp",
+      "description": "Beschreibung",
+      "dominance": "Dominanz",
+      "frequency": "Frequenz",
+      "immeasurability": "Nichtmessbarkeit",
+      "multiplicity": "Multiplizität",
+      "name": "Name",
+      "nameCz": "Name CZ",
+      "text1": "Das Anlegen neuer Artmerkmale, Datentypen und Änderungen in den Codeverzeichnissen der Aufzählungstypen erfolgen manuell. Diese Prozesse bearbeitet Marcela Řezníčková",
+      "text2": "Die folgende Tabelle stellt die aktuelle Übersicht der verfügbaren Datentypen, ihrer Beschreibung und Einschränkungen dar. ",
+      "title": "Grundinformationen zu Importen"
+    },
+    "deleteConfirm": "Wollen Sie diese Datenzeile wirklich löschen?",
+    "deleteFailed": "Löschen der Datenzeile fehlgeschlagen",
+    "deleted": "Die Datenzeile wurde gelöscht",
+    "export": {
+      "collapse": "{{name}} einklappen",
+      "expand": "{{name}} ausklappen",
+      "failed": "Export fehlgeschlagen. Bitte versuchen Sie es erneut.",
+      "loadFailed": "Laden der Merkmale für den Export fehlgeschlagen.",
+      "placeholder": "Fügen Sie hier die Liste der gewünschten Taxa in Form lateinischer Namen in einzelnen Zeilen ein.",
+      "submit": "Exportieren",
+      "suppressed": "Unterdrückte einbeziehen",
+      "taxaRanks": "taxonomische Ränge",
+      "title": "Komplexexport der Artmerkmale",
+      "valueTypes": "Werttypen"
+    },
+    "feature": {
+      "admin": "Administrator",
+      "name": "Name"
+    },
+    "featureDetail": {
+      "title": "Merkmalsdetail",
+      "uploadNotAllowed": "Nur der Merkmalsadministrator oder der Merkmalsadministrator (traitAdmin) kann Datenzeilen importieren, löschen und verwalten."
+    },
+    "general": {
+      "authors": "Milan Chytrý und Petr Pyšek",
+      "heading": "Biologische und ökologische Merkmale der tschechischen Flora",
+      "title": "Allgemeine Informationen"
+    },
+    "loadFailed": "Laden der Datenzeilen fehlgeschlagen",
+    "setDefaultChanged": "Standarddatenzeile geändert",
+    "setDefaultFailed": "Festlegen der Standarddatenzeile fehlgeschlagen",
+    "upload": {
+      "attachment": "Anhang",
+      "descriptionCz": "Beschreibung CS",
+      "descriptionEn": "Beschreibung EN",
+      "failed": "Die Operation ist fehlgeschlagen",
+      "fileSize": "Größe ≤ 10MB",
+      "fileStructure": "Die Dateistruktur ist verbindlich – siehe",
+      "forDatatype": "für den Datentyp",
+      "import": "Charge in die Datenbank importieren",
+      "imported": "Die Datenzeile wurde importiert",
+      "inputFile": "Eingabedatei*",
+      "operation": "Aktion",
+      "owner": "Dateneigentümer",
+      "sampleExcel": "Beispiel-Excel",
+      "selectOwner": "- - - Dateneigentümer auswählen - - -",
+      "selectVisibility": "- - - Modus der Datenverfügbarkeit auswählen - - -",
+      "source": "Datenquelle",
+      "submit": "Absenden",
+      "validate": "Charge kontrollieren",
+      "validated": "Die Datei ist gültig",
+      "visibility": "Datenverfügbarkeit"
+    }
+  },
+  "unauthorized": {
+    "goBack": "Zurück zur vorherigen Seite",
+    "message": "Sie haben keinen Zugang zu diesem Teil der Anwendung.",
+    "title": "Kein Zugang"
+  },
+  "user": {
+    "addUser": {
+      "email": "E-Mail",
+      "error": "Beim Hinzufügen des Benutzers ist ein Fehler aufgetreten.",
+      "name": "Vorname",
+      "networkError": "Verbindungsfehler zum Server.",
+      "noProject": "-- kein Projekt --",
+      "project": "Darf zum Projekt beitragen",
+      "projectAssigned": "Dem Benutzer wurde ein Projekt zugewiesen.",
+      "projectAssignmentError": "Zuweisung des Projekts zum Benutzer fehlgeschlagen",
+      "submit": "Benutzer hinzufügen",
+      "submitting": "Benutzer wird hinzugefügt...",
+      "success": "Der Benutzer wurde erfolgreich hinzugefügt.",
+      "surname": "Nachname",
+      "title": "Neuer Benutzer"
+    },
+    "changeEmail": {
+      "confirmNewEmail": "Neue E-Mail zur Bestätigung",
+      "description": "Geben Sie das Passwort und die neue E-Mail-Adresse ein (d. h. auch Ihr Login ändert sich).",
+      "emailsDoNotMatch": "Die neuen E-Mails stimmen nicht überein.",
+      "error": "Beim Ändern der E-Mail ist ein Fehler aufgetreten.",
+      "networkError": "Verbindungsfehler zum Server.",
+      "newEmail": "Neue E-Mail",
+      "password": "Passwort",
+      "submit": "E-Mail ändern",
+      "submitting": "E-Mail wird geändert...",
+      "success": "Die E-Mail wurde erfolgreich geändert.",
+      "title": "E-Mail-Änderung"
+    },
+    "changePassword": {
+      "confirmNewPassword": "Neues Passwort zur Bestätigung",
+      "createToken": "Token erstellen",
+      "creatingToken": "Token wird erstellt...",
+      "description": "Geben Sie das aktuelle Passwort und das neue Passwort ein.",
+      "error": "Beim Ändern des Passworts ist ein Fehler aufgetreten.",
+      "networkError": "Verbindungsfehler zum Server.",
+      "newPassword": "Neues Passwort",
+      "originalPassword": "Bisheriges Passwort",
+      "submit": "Passwort ändern",
+      "submitting": "Passwort wird geändert...",
+      "success": "Das Passwort wurde erfolgreich geändert.",
+      "title": "Passwortänderung",
+      "tokenCreated": "Token (kopieren Sie ihn, er wird nicht mehr verfügbar sein):",
+      "tokenError": "Beim Erstellen des Tokens ist ein Fehler aufgetreten."
+    },
+    "playMessages": {
+      "error": "Beim Speichern der Texte ist ein Fehler aufgetreten.",
+      "language": "Sprache",
+      "language_cs": "Tschechisch",
+      "language_en": "Englisch",
+      "language_pl": "Polnisch",
+      "language_sk": "Slowakisch",
+      "loading": "Texte werden geladen...",
+      "networkError": "Verbindungsfehler zum Server.",
+      "submit": "Speichern",
+      "submitting": "Wird gespeichert...",
+      "success": "Die Texte wurden erfolgreich gespeichert.",
+      "title": "Texte der Anwendung bearbeiten"
+    },
+    "settings": {
+      "applicationLanguage": "Anwendungssprache",
+      "error": "Beim Aktualisieren der Einstellungen ist ein Fehler aufgetreten.",
+      "languageCzech": "Tschechisch",
+      "languageDescription": "Einstellung der Sprache der Anwendungsoboberfläche. Sie beeinflusst nicht die im Merkmalsexport verwendeten Substitutionen.",
+      "languageEnglish": "Englisch",
+      "languageGerman": "Deutsch",
+      "languagePolish": "Polnisch",
+      "networkError": "Verbindungsfehler zum Server.",
+      "resetAtlasLayers": "Sichtbare Ebenen in der Karte des Atlas-Moduls",
+      "resetAtlasSearch": "Einstellungen der Datensatzsuche im Atlas-Modul",
+      "resetButton": "Zurücksetzen",
+      "resetDefaults": "Standardeinstellungen wiederherstellen",
+      "resetDescription": "Durch Drücken der Taste löschen Sie die individuellen Änderungen in dem Abschnitt und stellen die Standardwerte ein:",
+      "resetPanel": "Position und Sichtbarkeit der Panels",
+      "resetTraits": "Zeichenersetzungen im Merkmale-Modul",
+      "setButton": "Einstellen",
+      "success": "Die Einstellungen wurden erfolgreich aktualisiert.",
+      "title": "Anwendungseinstellungen",
+      "traitsDescription": "Werte wie <i>false, null usw.</i> können auf verschiedene Arten dargestellt werden, die sich je nach verwendeter Software oder individuellen Gewohnheiten unterscheiden. Die hier angegebenen Werte werden in Ihren Exporten verwendet, werden aber auch in Ihren Daten-<b>Importen</b> strikt gefordert. Es ist nicht möglich, eine leere Zeichenkette zu verwenden.",
+      "traitsFalse": "FALSE",
+      "traitsLanguage": "Sprache der exportierten Merkmale",
+      "traitsLanguageCzech": "Tschechisch",
+      "traitsLanguageEnglish": "Englisch",
+      "traitsNull": "NULL",
+      "traitsPercentage": "Prozente",
+      "traitsPercentageInteger": "<0;100>, 10%=10 sogenanntes \"percentage\"",
+      "traitsPercentageProportion": "<0;1>, 10%=0.1/0,1 sogenanntes \"proportion\"",
+      "traitsSubstitution": "Substitutionen verwendet in Merkmalsexporten",
+      "traitsTrue": "TRUE",
+      "traitsUnmeasurable": "unmessbar"
+    },
+    "usersAdministration": {
+      "actions": "Aktionen",
+      "add": "Hinzufügen",
+      "addProject": "Projekt hinzufügen",
+      "addTaxon": "Taxon hinzufügen",
+      "biblioAdmin": "Biblio Admin",
+      "cancel": "Abbrechen",
+      "chooseProject": "-- Projekt wählen --",
+      "deleted": "Benutzer deaktiviert",
+      "email": "E-Mail",
+      "enterTaxonName": "Geben Sie den Taxonnamen ein...",
+      "error": "Ein Fehler ist aufgetreten.",
+      "filter": {
+        "all": "Alle",
+        "no": "Nein",
+        "yes": "Ja"
+      },
+      "filterBiblioAdmin": "Biblio-Admin filtern...",
+      "filterDeleted": "Deaktivierte filtern...",
+      "filterEmail": "E-Mail filtern...",
+      "filterFirstName": "Vorname filtern...",
+      "filterLastName": "Nachname filtern...",
+      "filterMapAdmin": "Map-Admin filtern...",
+      "filterSysAdmin": "Sys-Admin filtern...",
+      "filterTaxonAdmin": "Taxon-Admin filtern...",
+      "filterTraitAdmin": "Trait-Admin filtern...",
+      "filteredFrom": "gefiltert aus insgesamt {{total}} Benutzern",
+      "firstName": "Vorname",
+      "lastName": "Nachname",
+      "loadRights": "Berechtigungen laden",
+      "loaded": "Geladen",
+      "mapAdmin": "Map Admin",
+      "noProjects": "Keine Projekte",
+      "noSupervisedTaxa": "Keine betreuten Taxa",
+      "noUsersFound": "Keine Benutzer gefunden",
+      "processingInfo": "Dies kann einige Sekunden dauern. Nach Abschluss der Anfrage können Sie das Fenster schließen.",
+      "processingTaxon": "Taxon {{taxon}} wird verarbeitet...",
+      "projectAdded": "Das Projekt wurde erfolgreich hinzugefügt.",
+      "projectRemoved": "Das Projekt wurde erfolgreich entfernt.",
+      "projects": "Projekte",
+      "removeProject": "Projekt entfernen",
+      "removeTaxon": "Taxon entfernen",
+      "rowsPerPage": "Zeilen pro Seite",
+      "searchTaxon": "Taxon suchen",
+      "selectProject": "Projekt auswählen",
+      "showingUsers": "Anzeige von {{showing}} von {{total}} Benutzern",
+      "supervisedTaxa": "Betreute Taxa",
+      "sysAdmin": "System Admin",
+      "taxonAdded": "Das Taxon wurde erfolgreich hinzugefügt.",
+      "taxonAdmin": "Taxon Admin",
+      "taxonRemoved": "Das Taxon wurde erfolgreich entfernt.",
+      "title": "Benutzerverwaltung",
+      "traitAdmin": "Trait Admin",
+      "waitToClose": "Warten Sie auf das Schließen..."
+    }
+  }
+}

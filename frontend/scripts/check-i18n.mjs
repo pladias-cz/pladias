@@ -5,10 +5,10 @@
  *
  * Chyby (exit kód 1):
  *  - klíč použitý v kódu (`t("...")` / `i18nKey: "..."`) chybí v cs/translation.json
- *  - en/pl obsahuje klíč neznámý pro cs
+ *  - en/pl/de obsahuje klíč neznámý pro cs
  *
  * Informativní (CI neblokují):
- *  - chybějící překlady v en/pl (runtime je fallback na cs, viz fallbackLng v src/i18n/i18n.tsx)
+ *  - chybějící překlady v en/pl/de (runtime je fallback na cs, viz fallbackLng v src/i18n/i18n.tsx)
  *  - cs klíče nepoužité v kódu (mohou být dynamické – viz DYNAMIC_KEY_PREFIXES)
  *
  * Spuštění: npm run i18n:check
@@ -19,7 +19,7 @@ import {fileURLToPath} from "node:url";
 import {extname, join} from "node:path";
 
 const frontendRoot = fileURLToPath(new URL("..", import.meta.url));
-const LOCALES = ["cs", "en", "pl"];
+const LOCALES = ["cs", "en", "pl", "de"];
 const SOURCE_EXTENSIONS = new Set([".ts", ".tsx", ".js", ".jsx"]);
 
 // Klíče používané jen nepřímo (např. translationKey posílaný backendem, skládané klíče
@@ -92,7 +92,7 @@ for (const key of [...usedKeys].sort()) {
         errors.push(`kód používá klíč chybějící v cs/translation.json: ${key}`);
     }
 }
-for (const lang of ["en", "pl"]) {
+for (const lang of ["en", "pl", "de"]) {
     for (const key of [...localeKeys.get(lang)].sort()) {
         if (!csKeys.has(key)) {
             errors.push(`${lang}/translation.json obsahuje klíč neznámý pro cs: ${key}`);
@@ -110,7 +110,7 @@ console.log(
     `i18n audit: cs má ${csKeys.size} klíčů, v kódu je přímo použito ${usedKeys.size}, `
     + `dynamických prefixů ${dynamicPrefixes.length}`,
 );
-for (const lang of ["en", "pl"]) {
+for (const lang of ["en", "pl", "de"]) {
     const missing = [...csKeys].filter((key) => !localeKeys.get(lang).has(key));
     console.log(`info: ${lang} nemá ${missing.length} překladů (fallback na cs)`);
 }

@@ -253,6 +253,7 @@ For read-only fields (no edit permission), render as simple text with labels.
 - Run `npm run build` before committing — TypeScript errors must be zero
 - Run `npm run lint` to check code style
 - Ensure all tests pass
+- Run `npm run i18n:check` when touching i18n keys or locale files — the audit must pass
 
 ---
 

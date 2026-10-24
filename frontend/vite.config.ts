@@ -66,5 +66,20 @@ export default defineConfig(({ command }) => ({
         environment: 'jsdom',
         setupFiles: ['./src/test/setup.ts'],
         include: ['src/**/*.{test,spec}.{ts,tsx}'],
+        // Pokrytí service a core vrstvy (improvements P2) – prahy nastavené
+        // mírně pod hodnoty naměřené při zavedení (statements 48 %, branch 39 %,
+        // function 54 %, lines 49 %) fungují jako protiregrese; aktivní jen při
+        // `npm run test:coverage`, běžný `npm test` ani CI je nekontrolují.
+        coverage: {
+          provider: 'v8',
+          include: ['src/services/**', 'src/core/**'],
+          reporter: ['text', 'html'],
+          thresholds: {
+            statements: 45,
+            branches: 35,
+            functions: 50,
+            lines: 45,
+          },
+        },
       }
     }))

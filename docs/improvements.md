@@ -136,13 +136,13 @@ Stávajících 272 testů prochází a jsou kvalitní, ale pokrytí je koncentro
 3. ✅ ESLint: pravidlo pro uvozovky + autofix commit (viz 2.8). *`quotes: single` (+ `avoidEscape`) a `jsx-quotes: prefer-double`; autofix proběhl celým repem.*
 4. ✅ `DownloadsTable` – error handling přes `notifyApiError` + i18n (viz 2.1, 2.6). *Toast místo inline Alert, nový klíč `download.loadFailed`.*
 
-### P2 – struktura (sprinty, střední riziko)
-1. Přesunout `useTaxonUpdates` do sdílené vrstvy; opravit relativní cross-feature importy (viz 2.9).
-2. Extrahovat `useOptimisticRecord` z `RecordFloristic`/`RecordRemarks` (viz 2.4).
-3. Sdílená column factory pro obě TaxaList varianty (viz 2.4).
-4. Rozhodnout en/pl: naplnit, nebo odebrat ze `supportedLngs` (viz 2.6).
-5. Testy pro `useBulkEdit`, `useTaxonUpdates`, `useSearchQuery`; zapnout coverage s prahy (viz 2.7).
-6. `DataTable.module.scss` → BEM, nebo dokumentovaná výjimka (viz 2.5).
+### P2 – struktura (sprinty, střední riziko) – ✅ provedeno 24. 10. 2026
+1. ✅ Přesunout `useTaxonUpdates` do sdílené vrstvy; opravit relativní cross-feature importy (viz 2.9). *`hooks/useTaxonUpdates` (sdílená vrstva, import `@/models`); smazán `atlasAdmin/taxaList/hooks/` re-export shim; opraven jediný cross-feature relativní import (`ImportCSVForm` → `@/components/atlas/import/hooks/useProjectsData`).*
+2. ✅ Extrahovat `useOptimisticRecord` z `RecordFloristic`/`RecordRemarks` (viz 2.4). *`components/atlas/record/hooks/useOptimisticRecord.ts` (vedle `useRecordPermissions`), export přes `record/index.ts`; částečná synchronizace (full-sync při změně id, jinak jen timestamp) zachována včetně eslint-disable komentáře.*
+3. ✅ Sdílená column factory pro obě TaxaList varianty (viz 2.4). *`components/taxaList/columns.tsx` – `createTaxaColumns({t, revisionStatusOptions, publicationStatusOptions, editableCells?})`; admin renderery (MappedCell, StatusSelect, PresliaInlineField, ArchiveCsvCell, checkbox, number input) injektované přes `EditableTaxaCells`, sdílený modul neimportuje vnitřnosti admin feature. Duplicitní `types.ts` z obou variant odstraněny: `TaxonMapSettings` z `@/models`, statusy typují `TaxonStatusOption` z `services/mapAdminApi`, `TaxonOption` nahrazen modelem `TaxonId` (zmizely i `as` kasty v `ParentMapAutocomplete`).*
+4. ✅ Rozhodnout en/pl: naplnit, nebo odebrat ze `supportedLngs` (viz 2.6). *Vyplněno – en/pl kompletně přeloženy (1018 klíčů 1:1 s cs) a přidána němčina (`locales/de`, radio + `supportedLngs` v i18n.tsx, audit `check-i18n.mjs` rozšířen o de). `user.settings.languageDescription` aktualizováno (text o „pár místech“ už neplatil), nový klíč `user.settings.languageGerman`. Backend beze změny – `application_language` je prostý řetězec.*
+5. ✅ Testy pro `useBulkEdit`, `useTaxonUpdates`, `useSearchQuery`; zapnout coverage s prahy (viz 2.7). *Testy na finálních cestách (renderHook + mock service vrstvy, vzor dle `useInstanceMessages.test.tsx`). Coverage jako lokální `npm run test:coverage` (`@vitest/coverage-v8` 4.1.12, v8 provider, `src/services/**` + `src/core/**`); prahy nastavené mírně pod naměřené hodnoty (statements 45 %, branch 35 %, function 50 %, lines 45 %) jako protiregrese – CI i běžný `npm test` je nekontrolují (rozhodnutí: lokální skript). `i18n:check` doplněn do pre-commit checklistu.*
+6. ✅ `DataTable.module.scss` → BEM, nebo dokumentovaná výjimka (viz 2.5). *Poslední CSS modul převeden na globální `DataTable.scss` s BEM třídou `.data-table--stable`; mrtvá `.table-nowrap` (v markupu jen plain string, kterému modul nikdy nestyloval) smazána spolu s no-op atributem v `DataTableFilterRow`.*
 
 ### P3 – leštění (průběžně)
 1. Inline styly → utility/BEM třídy (dávkově po komponentách).

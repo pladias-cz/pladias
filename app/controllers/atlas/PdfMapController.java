@@ -3,6 +3,7 @@ package controllers.atlas;
 import controllers.ControllerBase;
 import controllers.security.Authorized;
 import helpers.http.ContentDisposition;
+import helpers.http.UploadedFilename;
 import models.*;
 import org.apache.commons.io.IOUtils;
 import org.apache.pdfbox.util.PDFMergerUtility;
@@ -32,6 +33,14 @@ import java.nio.file.Files;
 @Security.Authenticated(Authorized.class)
 public class PdfMapController extends ControllerBase {
     final static Logger logger = LoggerFactory.getLogger(PdfMapController.class);
+
+    /** The only declared content type accepted for a PNG map upload. */
+    private static final String PNG_CONTENT_TYPE = "image/png";
+    /** Maximum size of an uploaded PNG map: 20 MB (audit finding M11). */
+    private static final long MAX_PNG_FILE_SIZE_BYTES = 20L * 1024 * 1024;
+    /** PNG magic bytes: 89 50 4E 47 0D 0A 1A 0A. */
+    private static final byte[] PNG_SIGNATURE = {(byte) 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A};
+
     @Inject
     private FormFactory formFactory;
     @Inject
@@ -139,16 +148,32 @@ public class PdfMapController extends ControllerBase {
             return ok(JsonResult.error("No PNG file provided"));
         }
 
+        // Validate declared content type (audit finding M11)
+        String contentType = filePart.getContentType();
+        if (contentType == null || !PNG_CONTENT_TYPE.equalsIgnoreCase(contentType.trim())) {
+            return ok(JsonResult.error(messages.at("UploadPdfMapPreview.invalidFileType")));
+        }
+
+        // Validate file size before reading it into memory (audit finding M11: 20 MB limit)
+        if (Files.size(filePart.getRef().path()) > MAX_PNG_FILE_SIZE_BYTES) {
+            return ok(JsonResult.error(messages.at("UploadPdfMapPreview.fileTooLarge")));
+        }
+
         // Read file data
         byte[] pngData;
         try (InputStream is = Files.newInputStream(filePart.getRef().path())) {
             pngData = IOUtils.toByteArray(is);
         }
 
-        // Save or update PNG map
+        // Validate PNG magic bytes so that arbitrary content cannot be stored as a PNG map (audit finding M11)
+        if (!isPng(pngData)) {
+            return ok(JsonResult.error(messages.at("UploadPdfMapPreview.invalidFileType")));
+        }
+
+        // Save or update PNG map (filename sanitized before storing, audit finding M11)
         PdfMap pngMap = PdfMap.findOrCreate(taxonId, PdfMap.PngType);
         pngMap.setData(pngData);
-        pngMap.setFilename(filePart.getFilename());
+        pngMap.setFilename(UploadedFilename.sanitize(filePart.getFilename(), "map.png"));
         pngMap.save();
 
         // Handle publication update
@@ -156,6 +181,19 @@ public class PdfMapController extends ControllerBase {
         service.handleMapUpload(taxonId, pngMap);
 
         return ok(JsonResult.buildSuccess());
+    }
+
+    /** True when the data start with the 8-byte PNG signature. */
+    private static boolean isPng(byte[] data) {
+        if (data == null || data.length < PNG_SIGNATURE.length) {
+            return false;
+        }
+        for (int i = 0; i < PNG_SIGNATURE.length; i++) {
+            if (data[i] != PNG_SIGNATURE[i]) {
+                return false;
+            }
+        }
+        return true;
     }
 
 }

@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | Datum auditu | 23. 10. 2026 |
-| Revize dokumentu | 24. 10. 2026 – všechna zjištění znovu ověřena proti revizi `68a7fe1`; vyřešená zjištění z dokumentu odstraněna – tentýž den vyřešena a odstraněna zjištění L2, L4, L5 a L7–L9 |
+| Revize dokumentu | 24. 10. 2026 – všechna zjištění znovu ověřena proti revizi `68a7fe1`; vyřešená zjištění z dokumentu odstraněna – tentýž den vyřešena a odstraněna zjištění L2, L4, L5, L7–L9 a M11 |
 | Rozsah | backend (Play Framework 3.0.10, Java, Ebean), frontend (React + Vite), konfigurace (`conf/*.conf`), závislosti (`build.sbt`) |
 | Metoda | statická analýza zdrojového kódu a konfigurace (code review); bez dynamického testování (penetrace) a bez revize infrastruktury |
 | Cíl | posouzení připravenosti aplikace k uvedení do produkce |
@@ -50,7 +50,7 @@ Problémy, které brání produkčnímu nasazení:
    Původní hodnoty zůstávají v git historii repozitáře, proto je nutné při nasazení
    použít **nové** (rotovat), ne historické.
 
-**Souhrn: 0 kritických, 1 vysoké, 9 středních, 2 nízká zjištění.**
+**Souhrn: 0 kritických, 1 vysoké, 8 středních, 2 nízká zjištění.**
 
 ## 2. Klasifikace závažnosti
 
@@ -74,7 +74,6 @@ Problémy, které brání produkčnímu nasazení:
 | [M8](#m8--smtp-důvěřuje-všem-certifikátům) | Střední | TLS | `mail.smtp.ssl.trust="*"` – SMTP spojení zranitelné na MITM |
 | [M9](#m9--legacy-des-šifrování-hesel) | Střední | Kryptografie | DES/ECB šifrování starých hesel; sloupec `password` v DB přetrvává |
 | [M10](#m10--únik-informací-v-chybových-stavech) | Střední | Info leak | `e.getMessage()`/`e.toString()` klientům, `printStackTrace`, DEBUG log v produkci |
-| [M11](#m11--upload-bez-validace-typu-souboru) | Střední | Upload | `uploadPng` akceptuje libovolný obsah bez kontroly typu/velikosti |
 | [L1](#l1--api-tokeny-bez-expirace) | Nízká | API tokeny | Tokeny bez expirace a bez možnosti odvolání |
 | [L6](#l6--velký-limit-uploadu-400-mb) | Nízká | DoS | `maxDiskBuffer = 400MB` – diskový DoS povrch pro přihlášené |
 
@@ -298,7 +297,7 @@ sloupec `password` už neobsahuje platná hesla (vytěženo při migraci na Argo
 |---|---|
 | `e.getMessage()` vracené klientovi v catch blocích (7×) | `app/controllers/common/UserController.java` – getUsers `:329`, getUsersSummary `:378`, getUser `:439`, createUser `:517`, updateUser `:606`, resetUserPassword `:650`, editUserRightsField `:836` |
 | `e.getMessage()` ve flash zprávě přihlašovací stránky | `Application.doAuthenticate` (`app/controllers/Application.java:149`) |
-| `e.toString()` v `badRequest` odpovědi | `PdfMapController.uploadPng` (`app/controllers/atlas/PdfMapController.java:99`) |
+| `e.toString()` v `badRequest` odpovědi | `PdfMapController.uploadPng` (`app/controllers/atlas/PdfMapController.java:107`) |
 | `catch (Exception) → ok("Error!")` – chyba maskovaná jako 200 | `controllers.api.Map.buildAndDownloadCsvRenderMapDetails` (`Map.java:41`) |
 | `e.printStackTrace()` (obchází logger) | `UserController.createUser` – notifyNewUser catch (`UserController.java:492`) |
 | `logger.application = DEBUG` v produkčním configu | `conf/common.conf:130` |
@@ -312,20 +311,6 @@ citlivých dat (e-maily, dotazy) v logu.
 loggerem.
 
 ---
-
-### M11 – Upload bez validace typu souboru
-
-**Závažnost: Střední** · OWASP: A04:2021
-
-**Popis.** `PdfMapController.doUploadPng` (`app/controllers/atlas/PdfMapController.java:103–157`)
-čte nahraný soubor (`IOUtils.toByteArray`) bez jakékoliv kontroly obsahu (magic bytes
-PNG) ani velikosti a ukládá ho jako „PNG mapu" servírovanou s `Content-Type: image/png`.
-Filename z multipartu se ukládá do DB. Endpoint je gated na mapAdmina, takže jde o
-hardening (potenciální uložení libovolného obsahu, anomální obsah v UI).
-
-**Doporučení.** Validovat PNG signature (`\x89PNG\r\n\x1a\n`) a/nebo MIME typ u
-`FilePart`, omezit velikost; filename sanitizovat před uložením (stažení dnes
-staví hlavičku přes helper `helpers/http/ContentDisposition.java`).
 
 ## 6. Zjištění nízké závažnosti
 
@@ -397,6 +382,9 @@ Při auditu se potvrdily následující silné stránky (chybí v mnoha aplikac�
   `ReactBiblioSearchServiceShould`).
 - Soubory ukládané do DB (bytea) – žádný filesystem path traversal; ZIP se pouze
   vytváří (nikdy nerozbaluje) – žádný zip-slip.
+- Upload PNG mapy validuje deklarovaný MIME typ i PNG signaturu obsahu, limituje
+  velikost na 20 MB a sanitizuje uložený název souboru
+  (`PdfMapController.uploadPng`, helper `helpers/http/UploadedFilename`).
 - `AllowedHostsFilter` s produkčními doménami; SecurityHeadersFilter aktivní
   (X-Frame-Options: DENY, nosniff, Referrer-Policy, Content-Security-Policy).
 - API endpointy pro mapy (`/api/*`) za Bearer tokeny; `/assets` přes Play Assets
@@ -420,7 +408,7 @@ Minimální kroky pro bezpečné uvedení do produkce (v pořadí doporučené p
 - [ ] **M7** – whitelist GeoServer proxy cest
 - [ ] ověřit HTTPS termination, zálohy DB a monitorování (mimo rozsah auditu)
 
-Po nasazení (krátkodobý horizont): M9, M11, L1 a L6.
+Po nasazení (krátkodobý horizont): M9, L1 a L6.
 
 ## 9. Metodika, předpoklady a limity
 

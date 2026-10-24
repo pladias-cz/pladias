@@ -97,6 +97,7 @@
         "noTaxaFound": "No taxa found",
         "partOfMapWith": "part of the map with",
         "pngUpload": {
+          "fileTooLarge": "The file is too large. The maximum allowed size is 20 MB.",
           "invalidFileType": "Invalid file type. Upload a PNG image only.",
           "uploadFailed": "Upload failed",
           "uploadPng": "Upload PNG",

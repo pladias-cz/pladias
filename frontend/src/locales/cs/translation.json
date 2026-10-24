@@ -97,6 +97,7 @@
         "noTaxaFound": "Nebyly nalezeny žádné taxony",
         "partOfMapWith": "součástí mapy s",
         "pngUpload": {
+          "fileTooLarge": "Soubor je příliš velký. Maximální povolená velikost je 20 MB.",
           "invalidFileType": "Neplatný typ souboru. Nahrajte pouze PNG obrázek.",
           "uploadFailed": "Nahrávání selhalo",
           "uploadPng": "Nahrát PNG",

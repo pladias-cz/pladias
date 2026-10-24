@@ -97,6 +97,7 @@
         "noTaxaFound": "Keine Taxa gefunden",
         "partOfMapWith": "Teil der Karte mit",
         "pngUpload": {
+          "fileTooLarge": "Die Datei ist zu groß. Die maximal zulässige Größe beträgt 20 MB.",
           "invalidFileType": "Ungültiger Dateityp. Laden Sie nur ein PNG-Bild hoch.",
           "uploadFailed": "Hochladen fehlgeschlagen",
           "uploadPng": "PNG hochladen",

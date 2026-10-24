@@ -4,6 +4,9 @@ import {useTranslation} from 'react-i18next';
 import {apiPost, ApiError} from '@/services/apiClient';
 import type {ApiResult} from '@/models/ApiResponse';
 
+// server-side limit of the PNG map upload (PdfMapController, audit finding M11)
+const MAX_FILE_SIZE_BYTES = 20 * 1024 * 1024;
+
 interface PngUploadButtonProps {
     taxonId: number;
     onUploadComplete: (taxonId: number, hasPng: boolean) => void;
@@ -22,6 +25,11 @@ export function PngUploadButton({taxonId, onUploadComplete}: PngUploadButtonProp
 
         if (file.type !== 'image/png') {
             setError(t('atlas.admin.taxaList.pngUpload.invalidFileType'));
+            return;
+        }
+
+        if (file.size > MAX_FILE_SIZE_BYTES) {
+            setError(t('atlas.admin.taxaList.pngUpload.fileTooLarge'));
             return;
         }
 

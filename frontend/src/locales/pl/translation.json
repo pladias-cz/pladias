@@ -97,6 +97,7 @@
         "noTaxaFound": "Nie znaleziono żadnych taksonów",
         "partOfMapWith": "częścią mapy z",
         "pngUpload": {
+          "fileTooLarge": "Plik jest zbyt duży. Maksymalny dozwolony rozmiar to 20 MB.",
           "invalidFileType": "Nieprawidłowy typ pliku. Prosimy przesyłać wyłącznie obraz PNG.",
           "uploadFailed": "Przesyłanie nie powiodło się",
           "uploadPng": "Prześlij PNG",

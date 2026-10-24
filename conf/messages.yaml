@@ -100,6 +100,8 @@ UploadPdfMapPreview:
     userNotEligible: Nemáte práva pro tuto operaci.
     missingTaxonId: Nezadali jste správně taxon.
     taxonNotMappable: Taxon není mapovatelný.
+    invalidFileType: Nahraný soubor není platný obrázek PNG.
+    fileTooLarge: Soubor je příliš velký. Maximální povolená velikost je 20 MB.
 
 PdfMapReportRenderer:
     protectedCoords: [přesné lokality nejvíce ohrožených a zároveň atraktivních druhů nejsou zveřejňovány]

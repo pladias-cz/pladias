@@ -4,5 +4,6 @@ export {default as RecordRemarks} from './RecordRemarks';
 export {default as RecordComments} from './RecordComments';
 export {default as RecordHistory} from './RecordHistory';
 export {default as RecordMap} from './RecordMap';
+export {useOptimisticRecord} from './hooks/useOptimisticRecord';
 export {useRecordPermissions} from './hooks/useRecordPermissions';
 

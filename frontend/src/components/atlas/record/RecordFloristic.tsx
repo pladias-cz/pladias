@@ -1,10 +1,10 @@
 import {Card, Col, Row} from 'react-bootstrap';
-import {useCallback, useEffect, useMemo, useState} from 'react';
+import {useCallback, useMemo} from 'react';
 import {useTranslation} from 'react-i18next';
 import type {RecordPladiasFull} from '@/models/RecordPladiasFull';
 import RecordInlineField from './RecordInlineField';
 import RichTextMessage from '@/components/RichTextMessage';
-import {useRecordPermissions} from '.';
+import {useOptimisticRecord, useRecordPermissions} from '.';
 import RecordReadonlyField from '@/components/atlas/record/RecordReadonlyField';
 import MultiSelectEdit from '@/components/atlas/record/MultiSelectEdit';
 import SingleSelectEdit from '@/components/atlas/record/SingleSelectEdit';
@@ -59,28 +59,11 @@ interface RecordFloristicProps {
 export default function RecordFloristic({record, onFieldUpdated}: RecordFloristicProps) {
     const {t} = useTranslation();
 
-    // Local state to track record updates
-    const [localRecord, setLocalRecord] = useState<RecordPladiasFull>(record);
+    // Lokální (optimistická) kopie záznamu pro inline editace
+    const {localRecord, setLocalRecord} = useOptimisticRecord(record);
 
     const config = useInstanceConfig() as { isVascular?: boolean };
     const isVascular = Boolean(config.isVascular);
-
-    // Sync localRecord with record prop when ID changes OR when timestamp changes from external source
-    // This ensures all components see the latest timestamp for conflict detection
-    // But we preserve optimistic updates by only syncing fields that came from backend
-    useEffect(() => {
-        if (record.id !== localRecord.id) {
-            // Record changed completely - full sync
-            setLocalRecord(record);
-        } else if (record.lastEditTimestampNum !== localRecord.lastEditTimestampNum) {
-            // Timestamp changed externally (from another component) - sync timestamp only
-            setLocalRecord((prev) => ({
-                ...prev,
-                lastEditTimestampNum: record.lastEditTimestampNum
-            }));
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps -- záměrná částečná synchronizace: full-sync jen při změně id, jinak jen timestamp (optimistické lokální editace se nesmí přepsat)
-    }, [record.id, record.lastEditTimestampNum]);
 
     const {canEditCommonFields: canEdit} = useRecordPermissions(localRecord);
 

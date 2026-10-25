@@ -227,18 +227,18 @@ public class MapAdminImportController extends ControllerBase {
     }
 
     public Result downloadBatchModified(Http.Request request, Long batchId) {
+        Messages messages = getMessages(request);
         User currentUser = SessionUtils.getCurrentUser(request.session());
         if (!currentUser.isMapAdmin()) {
-            return ok("error");
+            return forbidden(JsonResult.error(messages.at("Authorized.notAuthorized")));
         }
 
         try {
-            Messages messages = getMessages(request);
             return doDownloadBatchModifiedEntries(messages, batchId);
         } catch (Exception e) {
             _logger.error("Exception while preparing batch modified entries", e);
+            return internalServerError(JsonResult.error(messages.at("MapAdminImportController.exportFailed")));
         }
-        return ok("error");
     }
 
     private Result doDownloadBatchModifiedEntries(Messages messages, Long batchId) throws IOException {

@@ -56,14 +56,14 @@ public class MapReportsController extends ControllerBase {
     @Inject
     private ITaxonService taxonService;
 
-    public Result downloadCsvMapDetails(Integer id) {
+    public Result downloadCsvMapDetails(Http.Request request, Integer id) {
         CsvMapDetails csvDetails = CsvMapDetails.find().byId(id);
         if (csvDetails != null) {
             return ok(csvDetails.getCsvDataInputStream())
                 .withHeader("Content-disposition", ContentDisposition.attachment(csvDetails.getFilename()))
                 .as("application/x-download");
         }
-        return ok("error");
+        return notFound(JsonResult.error(getMessages(request).at("MapReports.csvDetailsNotFound")));
     }
 
     public Result downloadZipArchive(String preslia) throws Exception {
@@ -149,14 +149,14 @@ public class MapReportsController extends ControllerBase {
             .as("application/x-download");
     }
 
-    public Result downloadCsvRenderMapDetails(Integer id) {
+    public Result downloadCsvRenderMapDetails(Http.Request request, Integer id) {
         CsvMapDetails csvDetails = CsvMapDetails.find().byId(id);
         if (csvDetails != null) {
             return ok(csvDetails.getCsvDataMapRenderInputStream())
                 .withHeader("Content-disposition", ContentDisposition.attachment("map_render_" + csvDetails.getFilename()))
                 .as("application/x-download");
         }
-        return ok("error");
+        return notFound(JsonResult.error(getMessages(request).at("MapReports.csvDetailsNotFound")));
     }
 
     public Result buildAndDownloadCsvRenderMapDetails(long taxonId, int commonThreshold, int mapType) {

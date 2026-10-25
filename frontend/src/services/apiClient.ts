@@ -335,8 +335,11 @@ export interface DownloadOptions extends ApiOptions {
  * Stažení souboru (exporty XLSX, mapové výstupy). Gotcha: souborové endpointy
  * (`MapAdminImportController.getImports`, `TraitExportController`) můžou místo
  * souboru vrátit JSON chybu – Content-Type se kontroluje před čtením těla a
- * chyba končí jako `ApiError` s hláškou z obálky. Vrací i hlavičky odpovědi,
- * aby volající mohl číst custom metadata (např. `X-Excel-*`).
+ * chyba končí jako `ApiError` s hláškou z obálky. Legacy endpointy navíc
+ * odpovídají chybu jako HTTP 200 s plain text tělem **bez Content-disposition**
+ * – úspěšná file odpověď hlavičku vždy nese, chybějící hlavička proto znamená
+ * chybu (jinak by si uživatel uložil chybové hlášení jako soubor). Vrací i
+ * hlavičky odpovědi, aby volající mohl číst custom metadata (např. `X-Excel-*`).
  */
 export async function apiDownload(url: string, options: DownloadOptions = {}): Promise<DownloadedFile> {
     const response = await performRequest(url, options.method ?? 'GET', {body: options.body}, options);
@@ -349,6 +352,16 @@ export async function apiDownload(url: string, options: DownloadOptions = {}): P
             response.status,
             payload,
             {source: 'apiClient', method: options.method ?? 'GET', url},
+        );
+    }
+
+    if (!response.headers.get('content-disposition')) {
+        const message = (await response.text()).trim();
+        throw loggedApiError(
+            message || options.errorMessage || 'Stažení souboru selhalo.',
+            response.status,
+            message || undefined,
+            {source: 'apiClient', kind: 'download', method: options.method ?? 'GET', url},
         );
     }
 

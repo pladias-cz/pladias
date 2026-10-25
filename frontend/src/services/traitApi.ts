@@ -131,6 +131,42 @@ export async function exportTraits(params: URLSearchParams): Promise<DownloadedF
 }
 
 /**
+ * GET /api/react/measurement/trait/download/{id}/lang/{lang} – export hodnot
+ * datové řady (náročné na serveru, proto spinner ve UI). Chyba přichází jako
+ * JSON obálka přes HTTP status; dříve plain text s HTTP 200 (viz gotchas).
+ */
+export async function downloadTraitData(traitId: number, language: string = 'cs'): Promise<DownloadedFile> {
+    return apiDownload(`/api/react/measurement/trait/download/${traitId}/lang/${language}`, {
+        fallbackFilename: `trait-${traitId}.xlsx`,
+        errorMessage: 'Export dat se nezdařil.',
+    });
+}
+
+/** GET /api/react/measurement/trait/downloadAttachment/{id} – příloha datové řady. */
+export async function downloadTraitAttachment(traitId: number): Promise<DownloadedFile> {
+    return apiDownload(`/api/react/measurement/trait/downloadAttachment/${traitId}`, {
+        fallbackFilename: `trait-${traitId}-priloha`,
+        errorMessage: 'Stažení přílohy se nezdařilo.',
+    });
+}
+
+/** GET /api/react/measurement/trait/export/{id} – detailní export datové řady. */
+export async function exportTraitDetails(traitId: number): Promise<DownloadedFile> {
+    return apiDownload(`/api/react/measurement/trait/export/${traitId}`, {
+        fallbackFilename: `trait-${traitId}-export.xlsx`,
+        errorMessage: 'Detailní export se nezdařil.',
+    });
+}
+
+/** GET /api/react/measurement/backup/{id} – snapshot komplexního exportu (záloha). */
+export async function downloadTraitBackup(backupId: number): Promise<DownloadedFile> {
+    return apiDownload(`/api/react/measurement/backup/${backupId}`, {
+        fallbackFilename: `backup-${backupId}.csv`,
+        errorMessage: 'Stažení zálohy se nezdařilo.',
+    });
+}
+
+/**
  * Mutace traitů odpovídají úspěch čistým JSON stringem s hlášením; neúspěch
  * přichází přes HTTP status s obálkou (to řeší apiClient). Neobvyklé tělo
  * (prázdná odpověď, poškozený JSON) nahradí prázdným řetězcem.

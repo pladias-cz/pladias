@@ -3,8 +3,16 @@ import {useTranslation} from 'react-i18next';
 import {useConfirm} from '@/hooks/useConfirm';
 import type {Feature} from '@/models/Feature';
 import type {Trait} from '@/models/Trait';
-import {deleteTrait, getTraitsOfFeature, setDefaultTrait} from '@/services/traitApi';
+import {
+    deleteTrait,
+    downloadTraitAttachment,
+    downloadTraitData,
+    exportTraitDetails,
+    getTraitsOfFeature,
+    setDefaultTrait
+} from '@/services/traitApi';
 import {notifyApiError, useNotifications} from '@/stores/notificationStore';
+import FileDownloadLink from '@/components/FileDownloadLink';
 import RichTextMessage from '@/components/RichTextMessage';
 
 interface Props {
@@ -136,25 +144,25 @@ export default function TraitTable({feature, refreshKey}: Props) {
                         <td>
                             {t.canDownload ? (
                                 <>
-                                    <a href={`/api/react/measurement/trait/download/${t.id}/lang/cs`}>
+                                    <FileDownloadLink fetchFile={() => downloadTraitData(t.id)}>
                                         stáhnout data
-                                    </a>
+                                    </FileDownloadLink>
 
                                     {t.hasAttachment && (
                                         <>
                                             <br/>
-                                            <a href={`/api/react/measurement/trait/downloadAttachment/${t.id}`}>
+                                            <FileDownloadLink fetchFile={() => downloadTraitAttachment(t.id)}>
                                                 stáhnout přílohu
-                                            </a>
+                                            </FileDownloadLink>
                                         </>
                                     )}
 
                                     {t.canExport && (
                                         <>
                                             <br/>
-                                            <a href={`/api/react/measurement/trait/export/${t.id}`}>
+                                            <FileDownloadLink fetchFile={() => exportTraitDetails(t.id)}>
                                                 detailní export
-                                            </a>
+                                            </FileDownloadLink>
                                         </>
                                     )}
                                 </>

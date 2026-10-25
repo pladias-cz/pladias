@@ -42,12 +42,12 @@ const CACHED_CATALOGS: Record<string, number> = {
     phytochorions: Infinity,
     revisionStatuses: Infinity,
     publicationStatuses: Infinity,
-    // mění se zřídka – 24 h:
-    herbariums: DAY_MS,
     projects: Infinity,
     institutions: Infinity,
     licenses: Infinity,
     taxonRanks: Infinity,
+    // mění se zřídka – 24 h:
+    herbariums: DAY_MS,
 };
 
 export function createQueryClient(): QueryClient {

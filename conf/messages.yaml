@@ -141,6 +141,10 @@ MapReports:
     taxonNotAssigned: Taxon nebyl přiřazen.
     taxonAssociationNotRemoved: Taxon nebyl uživateli odebrán.
     taxonRemoved: Taxon byl odebrán.
+    csvDetailsNotFound: CSV data mapového výstupu nebyla nalezena.
+
+MapAdminImportController:
+    exportFailed: Export modifikovaných záznamů se nezdařil.
 
 ModelDataSource:
      unsupportedCoordsFormat: Nepodporovaný formát souřadnic.
@@ -182,6 +186,8 @@ TraitExportController:
     noRanksSelected: Nebyl vybrán žádný taxonomický rank. Vyberte alespoň jeden.
     invalidTaxa: Následující názvy taxonů nebyly nalezeny. Opravte je prosím a opakujte export.
     exportFailed: Export se nezdařil. Zkuste to prosím znovu, nebo kontaktujte administrátora.
+    attachmentNotFound: Příloha datové řady nebyla nalezena.
+    backupNotFound: Záloha exportu nebyla nalezena.
 
 MapStatusUpdateService:
     invalidStatus: Neplatny stav.

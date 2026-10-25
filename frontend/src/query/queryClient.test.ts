@@ -27,7 +27,8 @@ describe('createQueryClient – cache číselníků', () => {
     it('neměnné číselníky mají cache na celou session', () => {
         const client = createQueryClient();
 
-        for (const key of ['phytochorions', 'revisionStatuses', 'publicationStatuses']) {
+        for (const key of ['phytochorions', 'revisionStatuses', 'publicationStatuses',
+            'projects', 'institutions', 'licenses', 'taxonRanks']) {
             expect(client.getQueryDefaults([key])).toMatchObject({
                 staleTime: Infinity,
                 gcTime: Infinity,
@@ -39,13 +40,11 @@ describe('createQueryClient – cache číselníků', () => {
     it('řídko se měnící číselníky mají 24h cache', () => {
         const client = createQueryClient();
 
-        for (const key of ['herbariums', 'projects', 'institutions', 'licenses', 'taxonRanks']) {
-            expect(client.getQueryDefaults([key])).toMatchObject({
-                staleTime: DAY_MS,
-                gcTime: DAY_MS,
-                refetchOnMount: true,
-            });
-        }
+        expect(client.getQueryDefaults(['herbariums'])).toMatchObject({
+            staleTime: DAY_MS,
+            gcTime: DAY_MS,
+            refetchOnMount: true,
+        });
     });
 
     it('immutable číselník se během session nenačítá znovu', async () => {

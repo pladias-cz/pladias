@@ -130,7 +130,7 @@ public class TraitExportController extends ControllerBase {
         User currentUser = SessionUtils.getCurrentUser(request.session());
 
         if (!UserUtils.isElligibleForTraitDownload(currentUser, trait)) {
-            return ok(JsonResult.error(messages.at("TraitsController.UserNotElligible")));
+            return forbidden(JsonResult.error(messages.at("TraitsController.UserNotElligible")));
         }
 
         Locale lang = Locale.forLanguageTag(language);
@@ -180,13 +180,13 @@ public class TraitExportController extends ControllerBase {
         try {
             TraitExportResponse attachment = downloadService.downloadAttachment(trait);
             if (attachment == null) {
-                return ok();
+                return notFound(JsonResult.error(messages.at("TraitExportController.attachmentNotFound")));
             }
 
             return toResult(attachment);
         } catch (Exception e) {
             logger.error("error during trait attachment export:", e);
-            return ok("export se nezdaril");
+            return internalServerError(JsonResult.error(messages.at("TraitExportController.exportFailed")));
         }
     }
 
@@ -200,7 +200,7 @@ public class TraitExportController extends ControllerBase {
 
         TraitExportSnapshot snapshot = backupService.getSnapshot(id);
         if (snapshot == null) {
-            return notFound("trait export not found");
+            return notFound(JsonResult.error(messages.at("TraitExportController.backupNotFound")));
         }
 
         return toResult(snapshot.toExportResponse());
@@ -211,7 +211,7 @@ public class TraitExportController extends ControllerBase {
             return toResult(downloadService.downloadTraitData(request.session(), trait, user, messages, locale));
         } catch (Exception e) {
             logger.error("error during trait export:", e);
-            return ok("export se nezdaril");
+            return internalServerError(JsonResult.error(messages.at("TraitExportController.exportFailed")));
         }
     }
 

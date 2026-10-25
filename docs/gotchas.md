@@ -44,10 +44,16 @@ Known exceptions:
 ### File Downloads vs JSON Errors
 - if possible, refactor to more standard behaviour
 - `TraitExportController.complexExportResult` answers with a **file stream**
-  (`application/x-download` + `Content-disposition`) on success and with `JsonResult.error(...)`
-  on failure, so `Export.tsx` has to branch on `res.ok` **and** on `content-type` before reading
-  the body (`TraitBaseController.toResult()` still answers `ok("Error during trait export")` as
-  plain text when building the file fails).
+  (`application/x-download` + `Content-disposition`) on success and with `JsonResult.error(...)` + HTTP
+  400/500 on failure; `apiDownload` branches on `content-type` before reading the body.
+- Trait download/export/attachment, `downloadSnapshot`, `MapAdminImportController.downloadBatchModified` and
+  `MapReportsController.downloadCsv(Map)Details` historically answered failures as **plain text with HTTP 200**
+  (`ok("export se nezdaril")`, `ok("error")`, empty `ok()`); they now answer `JsonResult.error(...)` with a
+  proper status (500/403/404).
+- `apiDownload` treats an HTTP 200 response **without `Content-disposition`** as an error and turns the plain
+  text body into the `ApiError` message (fallback: the `errorMessage` option for an empty body). Every file
+  endpoint MUST set `Content-disposition` on success – all current endpoints do. UI links for single files
+  render `<FileDownloadLink>` (`src/components/FileDownloadLink.tsx`).
 - Invalid taxon names are returned in the extra `invalidTaxa` field of the error JSON, one name per
   line, and `Export.tsx` renders them in a `<pre>` block so they can be selected, fixed and resubmitted.
 - Taxon lists are submitted as urlencoded form data (`fetch` + `URLSearchParams` sends **LF**, while a

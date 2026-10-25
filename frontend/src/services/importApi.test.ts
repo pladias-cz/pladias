@@ -1,6 +1,6 @@
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 import {ApiError} from './apiClient';
-import {getUserProjects, importCsv, importExcel, prepareBatchDelete} from './importApi';
+import {getUserProjects, downloadDecoratedImport, importCsv, importExcel, prepareBatchDelete} from './importApi';
 
 /**
  * Testy importApi (sekce F.4, krok A.7): nestandardní obálka s `projects`,
@@ -141,5 +141,25 @@ describe('prepareBatchDelete', () => {
             name: 'ApiError',
             message: 'Dávku nelze smazat',
         });
+    });
+});
+
+describe('downloadDecoratedImport', () => {
+    it('downloads the decorated import workbook by id', async () => {
+        fetchMock.mockResolvedValue(
+            new Response('xlsx-bytes', {
+                status: 200,
+                headers: {
+                    'Content-Type': 'application/x-download',
+                    'Content-disposition': 'attachment; filename=imported_2026-02-09.xlsx',
+                },
+            }),
+        );
+
+        const file = await downloadDecoratedImport(8);
+
+        expect(file.filename).toBe('imported_2026-02-09.xlsx');
+        await expect(file.blob.text()).resolves.toBe('xlsx-bytes');
+        expect(fetchMock).toHaveBeenCalledWith('/api/react/occurrence/imports/8', expect.anything());
     });
 });

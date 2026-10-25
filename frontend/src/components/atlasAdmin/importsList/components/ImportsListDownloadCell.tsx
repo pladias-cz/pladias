@@ -1,4 +1,6 @@
 import {useTranslation} from 'react-i18next';
+import FileDownloadLink from '@/components/FileDownloadLink';
+import {downloadBatchModified} from '@/services/mapAdminApi';
 import type {ImportRecord} from '../types';
 
 interface ImportsListDownloadCellProps {
@@ -9,12 +11,8 @@ export function ImportsListDownloadCell({row}: ImportsListDownloadCellProps) {
     const {t} = useTranslation();
 
     return (
-        <a
-            href={`/api/react/atlasadmin/downloadBatchModified/${row.batchId}`}
-            target="_blank"
-            rel="noopener noreferrer"
-        >
+        <FileDownloadLink fetchFile={() => downloadBatchModified(row.batchId)}>
             {t('atlas.admin.importsList.downloadModified')}
-        </a>
+        </FileDownloadLink>
     );
 }

@@ -13,7 +13,7 @@
  *    s obálkou `success: false`.
  */
 
-import {ApiError, apiGet, apiPost, requireEnvelope} from './apiClient';
+import {ApiError, apiDownload, apiGet, apiPost, requireEnvelope, type DownloadedFile} from './apiClient';
 
 /** Typ operace importu (formulář uploadu). */
 export type ImportOperation = 'validation' | 'import';
@@ -79,6 +79,17 @@ export async function importCsv(file: File, operation: ImportOperation, projectI
     formData.append('project', String(projectId));
 
     requireEnvelope(await apiPost('/api/react/import/csv', formData), 'Import CSV selhal.');
+}
+
+/**
+ * GET /api/react/occurrence/imports/{id} – dekorovaný importní Excel (původní
+ * dávka obohacená o výsledky validace; název nese Content-disposition).
+ */
+export async function downloadDecoratedImport(importId: number): Promise<DownloadedFile> {
+    return apiDownload(`/api/react/occurrence/imports/${importId}`, {
+        fallbackFilename: `import-${importId}.xlsx`,
+        errorMessage: 'Stažení importního souboru se nezdařilo.',
+    });
 }
 
 /**

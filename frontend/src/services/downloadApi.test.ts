@@ -105,7 +105,7 @@ describe('downloadDynamicFile', () => {
 
     it('falls back to export.xlsx when Content-disposition carries no filename', async () => {
         fetchMock.mockResolvedValue(new Response('xlsx-bytes', {
-            headers: {'Content-Type': 'application/x-download'},
+            headers: {'Content-Type': 'application/x-download', 'Content-disposition': 'attachment'},
         }));
 
         const file = await downloadDynamicFile(taxonList);

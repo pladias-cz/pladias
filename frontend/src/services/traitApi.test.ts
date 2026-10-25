@@ -3,6 +3,10 @@ import {ApiError} from './apiClient';
 import {
     backupTraits,
     deleteTrait,
+    downloadTraitAttachment,
+    downloadTraitBackup,
+    downloadTraitData,
+    exportTraitDetails,
     exportTraits,
     getFeature,
     getTraitBackups,
@@ -200,9 +204,11 @@ describe('exportTraits', () => {
         );
     });
 
-    it('uses the fallback filename when Content-disposition is missing', async () => {
+    it('uses the fallback filename when Content-disposition carries no filename', async () => {
         fetchMock.mockResolvedValue(
-            new Response('data', {headers: {'Content-Type': 'application/octet-stream'}}),
+            new Response('data', {
+                headers: {'Content-Type': 'application/octet-stream', 'Content-disposition': 'attachment'},
+            }),
         );
 
         await expect(exportTraits(new URLSearchParams())).resolves.toMatchObject({
@@ -224,5 +230,67 @@ describe('exportTraits', () => {
         expect(error).toBeInstanceOf(ApiError);
         expect((error as ApiError).message).toBe('Některé taxony nebyly nalezeny');
         expect((error as ApiError).payload).toMatchObject({invalidTaxa: ['Quercus robur', 'Fagus silvatica']});
+    });
+});
+
+describe('downloadTraitData', () => {
+    it('downloads the trait data in the given language', async () => {
+        fetchMock.mockResolvedValue(fileResponse('xlsx', 'radek_5.xlsx'));
+
+        const file = await downloadTraitData(5, 'en');
+
+        expect(file.filename).toBe('radek_5.xlsx');
+        await expect(file.blob.text()).resolves.toBe('xlsx');
+        expect(fetchMock).toHaveBeenCalledWith('/api/react/measurement/trait/download/5/lang/en', expect.anything());
+    });
+
+    it('defaults to Czech', async () => {
+        fetchMock.mockResolvedValue(fileResponse('data', 'radek.xlsx'));
+
+        await downloadTraitData(5);
+
+        expect(fetchMock).toHaveBeenCalledWith('/api/react/measurement/trait/download/5/lang/cs', expect.anything());
+    });
+
+    it('translates a legacy plain text error (HTTP 200 without Content-disposition) to ApiError', async () => {
+        fetchMock.mockResolvedValue(textResponse('export se nezdaril'));
+
+        await expect(downloadTraitData(5)).rejects.toMatchObject({
+            name: 'ApiError',
+            message: 'export se nezdaril',
+        });
+    });
+});
+
+describe('downloadTraitAttachment', () => {
+    it('downloads the trait attachment', async () => {
+        fetchMock.mockResolvedValue(fileResponse('pdf', 'priloha_5.pdf'));
+
+        const file = await downloadTraitAttachment(5);
+
+        expect(file.filename).toBe('priloha_5.pdf');
+        expect(fetchMock).toHaveBeenCalledWith('/api/react/measurement/trait/downloadAttachment/5', expect.anything());
+    });
+});
+
+describe('exportTraitDetails', () => {
+    it('downloads the detailed trait export', async () => {
+        fetchMock.mockResolvedValue(fileResponse('xlsx', 'detail_5.xlsx'));
+
+        const file = await exportTraitDetails(5);
+
+        expect(file.filename).toBe('detail_5.xlsx');
+        expect(fetchMock).toHaveBeenCalledWith('/api/react/measurement/trait/export/5', expect.anything());
+    });
+});
+
+describe('downloadTraitBackup', () => {
+    it('downloads the backup snapshot by id', async () => {
+        fetchMock.mockResolvedValue(fileResponse('csv', 'backup.csv'));
+
+        const file = await downloadTraitBackup(7);
+
+        expect(file.filename).toBe('backup.csv');
+        expect(fetchMock).toHaveBeenCalledWith('/api/react/measurement/backup/7', expect.anything());
     });
 });

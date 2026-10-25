@@ -2,6 +2,10 @@ import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 import {
     assignProjectToUser,
     assignUserTaxon,
+    downloadArchiveCsv,
+    downloadArchiveCsvMap,
+    downloadBatchModified,
+    downloadPngMap,
     getPublicationStatuses,
     getRevisionStatuses,
     removeProjectFromUser,
@@ -111,6 +115,72 @@ describe('taxon rights', () => {
         await expect(assignUserTaxon(5, 9)).rejects.toMatchObject({
             name: 'ApiError',
             message: 'not allowed',
+        });
+    });
+});
+
+describe('file downloads', () => {
+    const fileResponse = (body: string, filename: string) =>
+        new Response(body, {
+            status: 200,
+            headers: {
+                'Content-Type': 'application/x-download',
+                'Content-disposition': `attachment; filename=${filename}`,
+            },
+        });
+
+    it('downloads the modified batch entries workbook (xls)', async () => {
+        fetchMock.mockResolvedValue(fileResponse('xls-bytes', 'Batch7_modifikace.xls'));
+
+        const file = await downloadBatchModified(7);
+
+        expect(file.filename).toBe('Batch7_modifikace.xls');
+        await expect(file.blob.text()).resolves.toBe('xls-bytes');
+        expect(fetchMock).toHaveBeenCalledWith('/api/react/atlasadmin/downloadBatchModified/7', expect.anything());
+    });
+
+    it('downloads the archive CSV data of a taxon', async () => {
+        fetchMock.mockResolvedValue(fileResponse('csv', 'Acer_campestre_map_data.csv'));
+
+        const file = await downloadArchiveCsv(12);
+
+        expect(file.filename).toBe('Acer_campestre_map_data.csv');
+        expect(fetchMock).toHaveBeenCalledWith('/api/react/atlas/map-reports/download-csv/12', expect.anything());
+    });
+
+    it('downloads the archive CSV map render of a taxon', async () => {
+        fetchMock.mockResolvedValue(fileResponse('csv', 'map_render_Acer_campestre_map_data.csv'));
+
+        const file = await downloadArchiveCsvMap(12);
+
+        expect(file.filename).toBe('map_render_Acer_campestre_map_data.csv');
+        expect(fetchMock).toHaveBeenCalledWith('/api/react/atlas/map-reports/download-csv-map/12', expect.anything());
+    });
+
+    it('downloads the PNG map of a taxon', async () => {
+        fetchMock.mockResolvedValue(
+            new Response('png-bytes', {
+                status: 200,
+                headers: {
+                    'Content-Type': 'image/png',
+                    'Content-disposition': 'attachment; filename=Acer_campestre_map.png',
+                },
+            }),
+        );
+
+        const file = await downloadPngMap(15);
+
+        expect(file.contentType).toBe('image/png');
+        expect(file.filename).toBe('Acer_campestre_map.png');
+        expect(fetchMock).toHaveBeenCalledWith('/api/react/atlas/pngMap/taxon/15', expect.anything());
+    });
+
+    it('translates a legacy plain text error (HTTP 200 without Content-disposition) to ApiError', async () => {
+        fetchMock.mockResolvedValue(new Response('error', {headers: {'Content-Type': 'text/plain'}}));
+
+        await expect(downloadBatchModified(7)).rejects.toMatchObject({
+            name: 'ApiError',
+            message: 'error',
         });
     });
 });

@@ -1,5 +1,11 @@
 import {useTranslation} from 'react-i18next';
 import type {TaxonMapSettings} from '@/models/TaxonMapSettings';
+import FileDownloadLink from '@/components/FileDownloadLink';
+import {
+    downloadArchiveCsv,
+    downloadArchiveCsvMap,
+    downloadPngMap
+} from '@/services/mapAdminApi';
 import {PngUploadButton} from './PngUploadButton';
 
 interface ArchiveCsvCellProps {
@@ -45,34 +51,34 @@ export function ArchiveCsvCell({row, onPngUploadComplete}: ArchiveCsvCellProps) 
             </small>
             <div className="d-flex flex-column gap-1">
                 <small>
-                    <a
-                        href={`/api/react/atlas/map-reports/download-csv/${csvMapDetailId}`}
+                    <FileDownloadLink
+                        fetchFile={() => downloadArchiveCsv(csvMapDetailId)}
                         title={t('atlas.admin.taxaList.downloadCsv')}
-                        className="text-decoration-none"
+                        className="p-0 text-decoration-none"
                     >
                         <i className="bi bi-file-earmark-spreadsheet text-success me-1"></i>
                         CSV
-                    </a>
+                    </FileDownloadLink>
                     <br/>
-                    <a
-                        href={`/api/react/atlas/map-reports/download-csv-map/${csvMapDetailId}`}
+                    <FileDownloadLink
+                        fetchFile={() => downloadArchiveCsvMap(csvMapDetailId)}
                         title={t('atlas.admin.taxaList.downloadCsvMap')}
-                        className="text-decoration-none"
+                        className="p-0 text-decoration-none"
                     >
                         <i className="bi bi-map text-primary me-1"></i>
                         CSV MAP
-                    </a>
+                    </FileDownloadLink>
                     {hasPng && (
                         <>
                             <hr className="my-1"/>
-                            <a
-                                href={`/api/react/atlas/pngMap/taxon/${taxonId}`}
+                            <FileDownloadLink
+                                fetchFile={() => downloadPngMap(taxonId)}
                                 title={t('atlas.admin.taxaList.downloadPngMap')}
-                                className="text-decoration-none"
+                                className="p-0 text-decoration-none"
                             >
                                 <i className="bi bi-image text-secondary me-1"></i>
                                 PNG
-                            </a>
+                            </FileDownloadLink>
                         </>
                     )}
                 </small>

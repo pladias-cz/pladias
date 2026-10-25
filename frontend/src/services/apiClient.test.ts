@@ -288,13 +288,34 @@ describe('apiDownload', () => {
         });
     });
 
-    it('uses the fallback filename when Content-disposition is missing', async () => {
+    it('uses the fallback filename when Content-disposition carries no filename', async () => {
         fetchMock.mockResolvedValue(
-            new Response('data', {headers: {'Content-Type': 'application/octet-stream'}}),
+            new Response('data', {
+                headers: {'Content-Type': 'application/octet-stream', 'Content-disposition': 'attachment'},
+            }),
         );
 
         const file = await apiDownload('/export', {fallbackFilename: 'zaklad.xlsx'});
         expect(file.filename).toBe('zaklad.xlsx');
+    });
+
+    it('throws ApiError for a plain text error body without Content-disposition (gotcha: legacy endpoints answer HTTP 200)', async () => {
+        fetchMock.mockResolvedValue(
+            new Response('export se nezdaril', {headers: {'Content-Type': 'text/plain'}}),
+        );
+
+        await expect(apiDownload('/api/react/measurement/trait/download/1/lang/cs')).rejects.toMatchObject({
+            message: 'export se nezdaril',
+            status: 200,
+        });
+    });
+
+    it('falls back to errorMessage when the error body without Content-disposition is empty', async () => {
+        fetchMock.mockResolvedValue(new Response('', {headers: {'Content-Type': 'text/plain'}}));
+
+        await expect(apiDownload('/export', {errorMessage: 'Stažení selhalo.'})).rejects.toMatchObject({
+            message: 'Stažení selhalo.',
+        });
     });
 });
 

@@ -11,7 +11,16 @@
  *  - `assignUserTaxon` posílá urlencoded formulář (`user`, `taxon`).
  */
 
-import {apiDelete, apiGet, apiPost, apiPostFormUrlencoded, requireData, requireEnvelope} from './apiClient';
+import {
+    apiDelete,
+    apiDownload,
+    apiGet,
+    apiPost,
+    apiPostFormUrlencoded,
+    requireData,
+    requireEnvelope,
+    type DownloadedFile
+} from './apiClient';
 import type {TaxonMapSettings} from '@/models/TaxonMapSettings';
 import type {ApiResult} from '@/models/ApiResponse';
 
@@ -84,6 +93,43 @@ interface TaxaTableResponse extends ApiResult {
     taxa?: TaxonMapSettings[];
     totalCount?: number;
     filteredCount?: number;
+}
+
+/**
+ * GET /api/react/atlasadmin/downloadBatchModified/{batchId} – export
+ * modifikovaných záznamů dávky (xls; generuje se na serveru). Neúspěch
+ * přichází jako JSON obálka přes HTTP status (dříve plain text `error`
+ * s HTTP 200 – viz gotchas).
+ */
+export async function downloadBatchModified(batchId: number): Promise<DownloadedFile> {
+    return apiDownload(`/api/react/atlasadmin/downloadBatchModified/${batchId}`, {
+        fallbackFilename: `Batch${batchId}_modifikace.xls`,
+        errorMessage: 'Export modifikovaných záznamů se nezdařil.',
+    });
+}
+
+/** GET /api/react/atlas/map-reports/download-csv/{id} – CSV dat mapového výstupu taxonu. */
+export async function downloadArchiveCsv(csvMapDetailId: number): Promise<DownloadedFile> {
+    return apiDownload(`/api/react/atlas/map-reports/download-csv/${csvMapDetailId}`, {
+        fallbackFilename: `csv-${csvMapDetailId}.csv`,
+        errorMessage: 'Stažení CSV dat se nezdařilo.',
+    });
+}
+
+/** GET /api/react/atlas/map-reports/download-csv-map/{id} – CSV vykreslení mapy (map render). */
+export async function downloadArchiveCsvMap(csvMapDetailId: number): Promise<DownloadedFile> {
+    return apiDownload(`/api/react/atlas/map-reports/download-csv-map/${csvMapDetailId}`, {
+        fallbackFilename: `csv-map-${csvMapDetailId}.csv`,
+        errorMessage: 'Stažení CSV mapy se nezdařilo.',
+    });
+}
+
+/** GET /api/react/atlas/pngMap/taxon/{taxonId} – PNG mapa taxonu (mapový archiv). */
+export async function downloadPngMap(taxonId: number): Promise<DownloadedFile> {
+    return apiDownload(`/api/react/atlas/pngMap/taxon/${taxonId}`, {
+        fallbackFilename: `taxon-${taxonId}-mapa.png`,
+        errorMessage: 'Stažení PNG mapy se nezdařilo.',
+    });
 }
 
 /** Stránka tabulky taxonů – normalizovaný tvar pro `DataTable.fetchData`. */

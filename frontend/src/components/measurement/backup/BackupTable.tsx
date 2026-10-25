@@ -1,8 +1,9 @@
 import {Table, Spinner} from 'react-bootstrap';
 import {useTranslation} from 'react-i18next';
 import {useQuery} from '@tanstack/react-query';
-import {getTraitBackups} from '@/services/traitApi';
+import {downloadTraitBackup, getTraitBackups} from '@/services/traitApi';
 import {useQueryErrorNotify} from '@/query/useQueryErrorNotify';
+import FileDownloadLink from '@/components/FileDownloadLink';
 
 export default function BackupTable() {
     const {t} = useTranslation();
@@ -42,14 +43,13 @@ export default function BackupTable() {
                     <td>{b.description ?? '—'}</td>
                     <td>{formatDate(b.createdAt)}</td>
                     <td className="text-center">
-                        <a
-                            href={`/api/react/measurement/backup/${b.id}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="btn btn-sm btn-primary"
+                        <FileDownloadLink
+                            variant="primary"
+                            size="sm"
+                            fetchFile={() => downloadTraitBackup(b.id)}
                         >
                             {t('trait.backup.download')}
-                        </a>
+                        </FileDownloadLink>
                     </td>
                 </tr>
             ))}

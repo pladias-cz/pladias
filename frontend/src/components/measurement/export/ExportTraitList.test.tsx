@@ -43,7 +43,7 @@ function makeTrait(traitId: number): Trait {
     };
 }
 
-function makeFeature(featureId: number, name: string): Feature {
+function makeFeature(featureId: number, name: string, traitCount: number): Feature {
     return {
         id: featureId,
         name,
@@ -54,6 +54,7 @@ function makeFeature(featureId: number, name: string): Feature {
         datatype: 1,
         inheritance: 1,
         section: '',
+        traitCount,
     };
 }
 
@@ -65,10 +66,12 @@ const groups: FeatureGroup[] = [
 beforeEach(() => {
     getFeatureGroupsMock.mockResolvedValue(groups);
     getFeaturesOfGroupMock.mockImplementation(async groupId =>
-        groupId === 1 ? [makeFeature(10, 'Výška'), makeFeature(11, 'Olistění')] : [makeFeature(20, 'Habitar')]);
+        groupId === 1 ? [makeFeature(10, 'Výška', 2), makeFeature(11, 'Olistění', 1)]
+            : [makeFeature(20, 'Habitar', 1), makeFeature(21, 'Vytrvalost', 0)]);
     getTraitsOfFeatureMock.mockImplementation(async featureId => {
         if (featureId === 10) return [makeTrait(100), makeTrait(101)];
         if (featureId === 11) return [makeTrait(110)];
+        if (featureId === 21) return [];
         return [makeTrait(200)];
     });
 });
@@ -93,10 +96,21 @@ describe('ExportTraitList', () => {
         expect(screen.getByRole('checkbox', {name: 'Ekologie'})).toBeInTheDocument();
 
         await userEvent.click(screen.getByRole('button', {name: 'Rozbalit Morfologie'}));
-        expect(await screen.findByRole('checkbox', {name: 'Výška'})).toBeInTheDocument();
+        expect(await screen.findByRole('checkbox', {name: 'Výška (2)'})).toBeInTheDocument();
 
         await userEvent.click(screen.getByRole('button', {name: 'Rozbalit Výška'}));
         expect(await screen.findByRole('checkbox', {name: /zdroj 100/})).toBeInTheDocument();
+    });
+
+    it('zobrazí počet datových řad u názvu vlastnosti', async () => {
+        render(<ExportTraitList/>);
+
+        await userEvent.click(await screen.findByRole('button', {name: 'Rozbalit Morfologie'}));
+        expect(await screen.findByRole('checkbox', {name: 'Výška (2)'})).toBeInTheDocument();
+        expect(screen.getByRole('checkbox', {name: 'Olistění (1)'})).toBeInTheDocument();
+
+        await userEvent.click(screen.getByRole('button', {name: 'Rozbalit Ekologie'}));
+        expect(await screen.findByRole('checkbox', {name: 'Vytrvalost (0)'})).toBeInTheDocument();
     });
 
     it('zaškrtnutí skupiny dotaže a vybere všechny podřízené řady', async () => {
@@ -120,7 +134,7 @@ describe('ExportTraitList', () => {
         await waitFor(() => expect(hiddenTraitIds()).toEqual(['100', '101', '110']));
 
         await userEvent.click(screen.getByRole('button', {name: 'Rozbalit Morfologie'}));
-        const featureCheckbox = await screen.findByRole<HTMLInputElement>('checkbox', {name: 'Výška'});
+        const featureCheckbox = await screen.findByRole<HTMLInputElement>('checkbox', {name: 'Výška (2)'});
         await userEvent.click(screen.getByRole('button', {name: 'Rozbalit Výška'}));
 
         // zrušení jedné řady → vlastnost i skupina částečně vybrané (indeterminate)
@@ -143,7 +157,7 @@ describe('ExportTraitList', () => {
     it('zaškrtnutí a zrušení vlastnosti vybere a zruší všechny její řady', async () => {
         render(<ExportTraitList/>);
         await userEvent.click(await screen.findByRole('button', {name: 'Rozbalit Morfologie'}));
-        const featureCheckbox = await screen.findByRole<HTMLInputElement>('checkbox', {name: 'Výška'});
+        const featureCheckbox = await screen.findByRole<HTMLInputElement>('checkbox', {name: 'Výška (2)'});
 
         await userEvent.click(featureCheckbox);
         await waitFor(() => expect(hiddenTraitIds()).toEqual(['100', '101']));

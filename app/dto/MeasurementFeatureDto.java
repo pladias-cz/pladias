@@ -15,6 +15,8 @@ public record MeasurementFeatureDto(
     String units,
     String section,
     /** whether the current user is a traitAdmin or the administrator of this feature (user.supervises(feature)) */
-    Boolean canAdminister
+    Boolean canAdminister,
+    /** number of non-deleted traits of the feature */
+    Integer traitCount
 ) {
 }

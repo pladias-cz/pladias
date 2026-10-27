@@ -6,6 +6,8 @@ import dto.MeasurementFeatureGroupDto;
 import dto.MeasurementTraitDto;
 import dto.TraitAggregationTypeDto;
 import dto.TraitDatatypeDto;
+import io.ebean.DB;
+import io.ebean.SqlRow;
 import models.User;
 import models.traits.Datatype;
 import models.traits.EnumerateValue;
@@ -84,13 +86,15 @@ public class MeasurementLookupService {
     }
 
     public List<MeasurementFeatureDto> getFeaturesOfGroup(User currentUser, int groupId) {
-        return Feature.find().query()
+        List<Feature> features = Feature.find().query()
             .fetch("section")
             .where()
             .eq("section.id", groupId)
             .orderBy("succession")
-            .findList()
-            .stream()
+            .findList();
+        Map<Integer, Integer> traitCounts = getTraitCountsByFeature(
+            features.stream().map(Feature::getId).toList());
+        return features.stream()
             .map(t -> new MeasurementFeatureDto(
                 t.getId(),
                 t.getNameCz(),
@@ -111,7 +115,8 @@ public class MeasurementLookupService {
                 t.getSection() != null
                     ? t.getSection().getNameCz()
                     : "",
-                currentUser.supervises(t)
+                currentUser.supervises(t),
+                traitCounts.getOrDefault(t.getId(), 0)
             ))
             .toList();
     }
@@ -145,8 +150,27 @@ public class MeasurementLookupService {
             t.getSection() != null
                 ? t.getSection().getNameCz()
                 : null,
-            currentUser.supervises(t)
+            currentUser.supervises(t),
+            getTraitCountsByFeature(List.of(featureId)).getOrDefault(featureId, 0)
         );
+    }
+
+    /**
+     * Counts of non-deleted traits of the given features, fetched in a single aggregate query.
+     */
+    private Map<Integer, Integer> getTraitCountsByFeature(List<Integer> featureIds) {
+        if (featureIds.isEmpty()) {
+            return Map.of();
+        }
+        String ids = featureIds.stream().map(String::valueOf).collect(Collectors.joining(","));
+        String sql = String.format(
+            "SELECT feature_id, count(*) AS cnt FROM %s WHERE deleted = false AND feature_id IN (%s) GROUP BY feature_id",
+            Trait.QualifiedName, ids);
+        Map<Integer, Integer> counts = new HashMap<>();
+        for (SqlRow row : DB.sqlQuery(sql).findList()) {
+            counts.put(row.getInteger("feature_id"), row.getInteger("cnt"));
+        }
+        return counts;
     }
 
     public List<EnumerateValueDto> getEnumerateValues(int enumerateId) {

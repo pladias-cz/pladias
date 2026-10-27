@@ -16,7 +16,10 @@ import './ExportTraitList.scss';
  *    potomky strom sám dotáhne z API,
  *  - zrušením se ruší i vše podřízené, zaškrtnutí nadřazených položek se
  *    počítá z potomků, takže zrušení poslední vybrané řady zruší i nadřazenou,
- *  - řádek uzlu s alespoň jednou vybranou podpoložkou je zvýrazněný.
+ *  - řádek uzlu s alespoň jednou vybranou podpoložkou je zvýrazněný,
+ *  - u názvu vlastnosti se v závorce zobrazuje počet jejích nesmazaných řad –
+ *    součást přístupného názvu checkboxu; mezera před závorkou musí zůstat
+ *    textem labelu (mimo <small>), jinak ji výpočet přístupného jména ořízne.
  *
  * Vybrané řady se odesílají přes skryté vstupy `traitIds[]` – Export.tsx čte
  * formulář přes FormData, takže výběr přežije i zavřené podstromy.
@@ -270,7 +273,9 @@ export default function ExportTraitList() {
                                                 />
                                                 <label className="export-tree__label"
                                                        htmlFor={`export-tree-feature-${feature.id}`}>
-                                                    {feature.name}
+                                                    {feature.name} {feature.traitCount != null && (
+                                                        <small className="text-muted">({feature.traitCount})</small>
+                                                    )}
                                                 </label>
                                                 {featureLoading && <Spinner animation="border" size="sm"
                                                                             className="export-tree__spinner"/>}

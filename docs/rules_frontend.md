@@ -64,9 +64,9 @@ Nesplnění → přesměrování na `/unauthorized`.
 | `/user/usersAdministration` | – | `isSysAdmin` |
 | `/user/taxaAdministration/:taxonId?` | – | `isTaxonAdmin` |
 | `/user/addUser` | – | `isSysAdmin` |
-| `/user/playMessages` | – | `isSysAdmin` |
+| `/system/texts` | – | `isSysAdmin` |
 
-Hlavní menu (`MainMenu.tsx`) nabízí odkazy konzistentně s routami: správa uživatelů, přidání uživatele i texty UI (PlayMessages) jen `isSysAdmin`, správa taxonů jen `isTaxonAdmin`; zbytek atlasového a biblio menu vidí všichni uživatelé s daným modulem. Výjimky: v atlas menu se CSV import (`/atlas/importCSV`) zobrazí jen pro `isAsyncImporter || isMapAdmin` – samotná routa ale žádnou roli nevyžaduje (jen modul atlas), autorizaci dělá až backend (`canContributeInto`); v measurements menu je záloha (`/measurements/backup`) jen pro `isTraitAdmin` (shodné s routou).
+Hlavní menu (`MainMenu.tsx`) nabízí odkazy konzistentně s routami: správa uživatelů, přidání uživatele i systémové texty (texty UI a zprávy o údržbě) jen `isSysAdmin`, správa taxonů jen `isTaxonAdmin`; zbytek atlasového a biblio menu vidí všichni uživatelé s daným modulem. Výjimky: v atlas menu se CSV import (`/atlas/importCSV`) zobrazí jen pro `isAsyncImporter || isMapAdmin` – samotná routa ale žádnou roli nevyžaduje (jen modul atlas), autorizaci dělá až backend (`canContributeInto`); v measurements menu je záloha (`/measurements/backup`) jen pro `isTraitAdmin` (shodné s routou).
 
 ---
 
@@ -240,9 +240,14 @@ Celý modul `/measurements/*` je chráněn **modulem instance**; u write operac�
 - Vytvoření uživatele: `POST /api/react/users`; shodné s backendem (sysAdmin).
 - Přidělování projektů zde není – projekty přiděluje výhradně mapAdmin v MapUsers (`/api/react/atlasadmin/users/:userId/projects`).
 
-### PlayMessages (`/user/playMessages`) – role `isSysAdmin`
+### SystemTexts (`/system/texts`) – role `isSysAdmin`
 
-- Editor textů lokalizace UI (`PlayMessagesEditor`): pro zvolený jazyk (`cs`/`en`/`sk`/`pl`) načte konstanty `PlayMessage` s hodnotami přes `GET /api/react/playmessage/admin/all?lang=` a hromadně je ukládá přes `PUT /api/react/playmessage/admin/save` (body `{lang, values}`); chybějící jazykové varianty se ukládají jako nové řádky. Shodné s backendem (sysAdmin).
+Stránka se dvěma Bootstrap taby:
+
+- **Texty aplikace** – editor textů lokalizace UI (`PlayMessagesEditor`): pro zvolený jazyk (`cs`/`en`/`sk`/`pl`) načte konstanty `PlayMessage` s hodnotami přes `GET /api/react/playmessage/admin/all?lang=` a hromadně je ukládá přes `PUT /api/react/playmessage/admin/save` (body `{lang, values}`); chybějící jazykové varianty se ukládají jako nové řádky. Shodné s backendem (sysAdmin).
+- **Zprávy o údržbě** – správce heartbeat zpráv (`MaintenanceEditor`, tabulka `public.maintenance`): seznam přes `GET /api/react/maintenance/all`, přidání přes `POST /api/react/maintenance` (body `{type, text}`, typ omezen na `success`/`danger`/`warning`/`info`, text max 255 znaků) a mazání přes `DELETE /api/react/maintenance/:id` – záměrně bez editace stávajících záznamů, zpráva se nahrazuje smazáním a přidáním nové. Shodné s backendem (sysAdmin).
+
+Heartbeat (`GET /api/react/infoGlobal`) i přihlašovací stránka nadále zobrazují jen **první** řádek tabulky (viz `MaintenanceMessageUtils.getMessage`) – správce proto vidí u první položky seznamu badge „právě zobrazovaná“.
 
 ### Vlastní účet (`/user/changePassword`, `/user/changeEmail`, `/user/settings`)
 
@@ -256,7 +261,8 @@ Celý modul `/measurements/*` je chráněn **modulem instance**; u write operac�
 | Data | Kde se ve frontendu získávají | Odpovídající gate |
 |---|---|---|
 | Seznam uživatelů s e-maily a rolemi (`GET /api/react/users`) | UsersAdministration | route `isSysAdmin` |
-| Texty lokalizace UI (`GET /api/react/playmessage/admin/all`) | PlayMessages | route `isSysAdmin` |
+| Texty lokalizace UI (`GET /api/react/playmessage/admin/all`) | SystemTexts | route `isSysAdmin` |
+| Zprávy o údržbě (`GET /api/react/maintenance/all`) | SystemTexts | route `isSysAdmin` |
 | Seznam uživatelů bez rolí (`GET /api/react/atlasadmin/users`) | MapUsers | route `isMapAdmin` |
 | Seznam uživatelů – jména (`GET /api/react/users-minimal`) | formulář uploadu traitů, hledání (nálezce/autoři) | **žádný** – každý přihlášený |
 | Data traitů (`/measurement/trait/download/...`) | odkazy v TraitTable | server flag `canDownload` |

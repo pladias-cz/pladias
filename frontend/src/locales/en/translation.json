@@ -799,8 +799,8 @@
       "changePassword": "Change password",
       "docs": "Documentation",
       "logout": "Log out",
-      "playMessages": "Application text editing",
       "settings": "Application settings",
+      "systemTexts": "System texts",
       "taxaAdministration": "Taxon administration",
       "usersAdministration": "User administration"
     }
@@ -1176,6 +1176,28 @@
       "tokenCreated": "Token (copy it, it will not be available again):",
       "tokenError": "An error occurred while creating the token."
     },
+    "maintenance": {
+      "add": "Add",
+      "added": "The message has been added.",
+      "addTitle": "Add new message",
+      "adding": "Adding...",
+      "delete": "Delete",
+      "deleted": "The message has been deleted.",
+      "deleteConfirm": "Do you really want to delete this maintenance message?",
+      "deleting": "Deleting...",
+      "displayed": "Currently displayed",
+      "empty": "No maintenance messages.",
+      "error": "An error occurred while saving maintenance messages.",
+      "listTitle": "Existing messages",
+      "loading": "Loading messages...",
+      "maxLength": "Maximum {{max}} characters.",
+      "text": "Text",
+      "type": "Type",
+      "type_danger": "Error",
+      "type_info": "Information",
+      "type_success": "Success",
+      "type_warning": "Warning"
+    },
     "playMessages": {
       "error": "An error occurred while saving the texts.",
       "language": "Language",
@@ -1221,6 +1243,13 @@
       "traitsSubstitution": "Substitutions used in trait exports",
       "traitsTrue": "TRUE",
       "traitsUnmeasurable": "unmeasurable"
+    },
+    "systemTexts": {
+      "tab": {
+        "maintenance": "Maintenance messages",
+        "playMessages": "Application texts"
+      },
+      "title": "System texts"
     },
     "usersAdministration": {
       "actions": "Actions",

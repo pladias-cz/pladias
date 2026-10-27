@@ -799,8 +799,8 @@
       "changePassword": "Passwort ändern",
       "docs": "Dokumentation",
       "logout": "Abmelden",
-      "playMessages": "Texte der Anwendung bearbeiten",
       "settings": "Anwendungseinstellungen",
+      "systemTexts": "Systemtexte",
       "taxaAdministration": "Taxon-Verwaltung",
       "usersAdministration": "Benutzerverwaltung"
     }
@@ -1176,6 +1176,28 @@
       "tokenCreated": "Token (kopieren Sie ihn, er wird nicht mehr verfügbar sein):",
       "tokenError": "Beim Erstellen des Tokens ist ein Fehler aufgetreten."
     },
+    "maintenance": {
+      "add": "Hinzufügen",
+      "added": "Die Meldung wurde hinzugefügt.",
+      "addTitle": "Neue Meldung hinzufügen",
+      "adding": "Wird hinzugefügt...",
+      "delete": "Löschen",
+      "deleted": "Die Meldung wurde gelöscht.",
+      "deleteConfirm": "Möchten Sie diese Wartungsmeldung wirklich löschen?",
+      "deleting": "Wird gelöscht...",
+      "displayed": "Derzeit angezeigt",
+      "empty": "Keine Wartungsmeldungen.",
+      "error": "Beim Speichern der Wartungsmeldungen ist ein Fehler aufgetreten.",
+      "listTitle": "Vorhandene Meldungen",
+      "loading": "Meldungen werden geladen...",
+      "maxLength": "Maximal {{max}} Zeichen.",
+      "text": "Text",
+      "type": "Typ",
+      "type_danger": "Fehler",
+      "type_info": "Information",
+      "type_success": "Erfolg",
+      "type_warning": "Warnung"
+    },
     "playMessages": {
       "error": "Beim Speichern der Texte ist ein Fehler aufgetreten.",
       "language": "Sprache",
@@ -1221,6 +1243,13 @@
       "traitsSubstitution": "Substitutionen verwendet in Merkmalsexporten",
       "traitsTrue": "TRUE",
       "traitsUnmeasurable": "unmessbar"
+    },
+    "systemTexts": {
+      "tab": {
+        "maintenance": "Wartungsmeldungen",
+        "playMessages": "Anwendungstexte"
+      },
+      "title": "Systemtexte"
     },
     "usersAdministration": {
       "actions": "Aktionen",

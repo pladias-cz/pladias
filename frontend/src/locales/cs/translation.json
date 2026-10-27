@@ -799,8 +799,8 @@
       "changePassword": "Změna hesla",
       "docs": "Dokumentace",
       "logout": "Odhlásit se",
-      "playMessages": "Editace textů aplikace",
       "settings": "Nastavení aplikace",
+      "systemTexts": "Systémové texty",
       "taxaAdministration": "Správa taxonů",
       "usersAdministration": "Správa uživatelů"
     }
@@ -1176,6 +1176,28 @@
       "tokenCreated": "Token (zkopírujte si ho, nebude více dostupný):",
       "tokenError": "Při vytváření tokenu došlo k chybě."
     },
+    "maintenance": {
+      "add": "Přidat",
+      "added": "Zpráva byla úspěšně přidána.",
+      "addTitle": "Přidání nové zprávy",
+      "adding": "Přidávám...",
+      "delete": "Smazat",
+      "deleted": "Zpráva byla úspěšně smazána.",
+      "deleteConfirm": "Opravdu chcete tuto zprávu o údržbě smazat?",
+      "deleting": "Mažu...",
+      "displayed": "Právě zobrazovaná",
+      "empty": "Žádné zprávy o údržbě.",
+      "error": "Při ukládání zpráv o údržbě došlo k chybě.",
+      "listTitle": "Existující zprávy",
+      "loading": "Načítám zprávy...",
+      "maxLength": "Maximálně {{max}} znaků.",
+      "text": "Text",
+      "type": "Typ",
+      "type_danger": "Chyba",
+      "type_info": "Informace",
+      "type_success": "Úspěch",
+      "type_warning": "Varování"
+    },
     "playMessages": {
       "error": "Při ukládání textů došlo k chybě.",
       "language": "Jazyk",
@@ -1221,6 +1243,13 @@
       "traitsSubstitution": "Substituce užité v exportech traitů",
       "traitsTrue": "TRUE",
       "traitsUnmeasurable": "unmeasurable"
+    },
+    "systemTexts": {
+      "tab": {
+        "maintenance": "Zprávy o údržbě",
+        "playMessages": "Texty aplikace"
+      },
+      "title": "Systémové texty"
     },
     "usersAdministration": {
       "actions": "Akce",

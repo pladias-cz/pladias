@@ -126,6 +126,11 @@ GET    /playmessage/:key                controllers.common.PlayMessageController
 GET    /playmessage/all                 controllers.common.PlayMessageController.getAll(request: Request)
 GET    /playmessage/all/all-languages   controllers.common.PlayMessageController.getAllForAllLanguages()
 
+# Maintenance (heartbeat) messages - sysAdmin only, no editing of existing rows
+GET    /maintenance/all                controllers.common.MaintenanceController.getAll(request: Request)
+POST   /maintenance                    controllers.common.MaintenanceController.create(request: Request)
+DELETE /maintenance/:id               controllers.common.MaintenanceController.delete(request: Request, id: Integer)
+
 PATCH  /taxon/:id                       controllers.taxon.TaxonManagerController.patch(request: Request, id: Long)
 GET    /taxon/:id/stats                 controllers.taxon.TaxonController.getStatistics(id: Long)
 GET    /taxon/:id/traitCount            controllers.taxon.TaxonController.getTraitCount(id: Long)

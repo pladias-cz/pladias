@@ -56,7 +56,7 @@ const Settings = lazy(() => import('./pages/user/Settings'));
 const UsersAdministration = lazy(() => import('./pages/user/UsersAdministration'));
 const TaxaAdministration = lazy(() => import('./pages/user/TaxaAdministration'));
 const AddUser = lazy(() => import('./pages/user/AddUser'));
-const PlayMessages = lazy(() => import('./pages/user/PlayMessages'));
+const SystemTexts = lazy(() => import('./pages/user/SystemTexts'));
 const Docs = lazy(() => import('./pages/user/Docs'));
 
 export default function App() {
@@ -287,12 +287,16 @@ export default function App() {
                                                                           <AddUser/>
                                                                       </ProtectedRoute>
                                                                   }/>
-                                            <Route path="playMessages" element={
-                                                                            <ProtectedRoute requiredRole="sysAdmin">
-                                                                               <PlayMessages/>
-                                                                           </ProtectedRoute>
-                                                                       }/>
                                             <Route path="docs" element={<Docs/>}/>
+                                        </Route>
+
+                                        {/* System texts - sysAdmin only (PlayMessages + maintenance heartbeat messages) */}
+                                        <Route path="system">
+                                            <Route path="texts" element={
+                                                <ProtectedRoute requiredRole="sysAdmin">
+                                                    <SystemTexts/>
+                                                </ProtectedRoute>
+                                            }/>
                                         </Route>
                                     </Route>
                                 </Routes>

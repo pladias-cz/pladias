@@ -799,8 +799,8 @@
       "changePassword": "Zmiana hasła",
       "docs": "Dokumentacja",
       "logout": "Wyloguj się",
-      "playMessages": "Edycja tekstów aplikacji",
       "settings": "Ustawienia aplikacji",
+      "systemTexts": "Teksty systemowe",
       "taxaAdministration": "Zarządzanie taksonami",
       "usersAdministration": "Zarządzanie użytkownikami"
     }
@@ -1176,6 +1176,28 @@
       "tokenCreated": "Token (skopiuj go, nie będzie już dostępny):",
       "tokenError": "Podczas tworzenia tokenu wystąpił błąd."
     },
+    "maintenance": {
+      "add": "Dodaj",
+      "added": "Komunikat został dodany.",
+      "addTitle": "Dodanie nowego komunikatu",
+      "adding": "Dodaję...",
+      "delete": "Usuń",
+      "deleted": "Komunikat został usunięty.",
+      "deleteConfirm": "Czy na pewno chcesz usunąć ten komunikat o konserwacji?",
+      "deleting": "Usuwam...",
+      "displayed": "Aktualnie wyświetlany",
+      "empty": "Brak komunikatów o konserwacji.",
+      "error": "Podczas zapisywania komunikatów o konserwacji wystąpił błąd.",
+      "listTitle": "Istniejące komunikaty",
+      "loading": "Wczytywanie komunikatów...",
+      "maxLength": "Maksymalnie {{max}} znaků.",
+      "text": "Tekst",
+      "type": "Typ",
+      "type_danger": "Błąd",
+      "type_info": "Informacja",
+      "type_success": "Sukces",
+      "type_warning": "Ostrzeżenie"
+    },
     "playMessages": {
       "error": "Podczas zapisywania tekstów wystąpił błąd.",
       "language": "Język",
@@ -1221,6 +1243,13 @@
       "traitsSubstitution": "Podstawienia stosowane w eksportach cech",
       "traitsTrue": "TRUE",
       "traitsUnmeasurable": "niemierzalne"
+    },
+    "systemTexts": {
+      "tab": {
+        "maintenance": "Komunikaty o konserwacji",
+        "playMessages": "Teksty aplikacji"
+      },
+      "title": "Teksty systemowe"
     },
     "usersAdministration": {
       "actions": "Akcje",

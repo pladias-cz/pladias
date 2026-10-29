@@ -324,7 +324,7 @@ export function MapComponent({
     }
 
     return (
-        <div className="h-100 w-100" style={{position: 'relative'}}>
+        <div className="map-detail h-100 w-100" style={{position: 'relative'}}>
             {/* Current square status indicator */}
             {currentSquare && <CurrentSquareIndicator currentSquare={currentSquare}/>}
 

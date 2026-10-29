@@ -4,3 +4,18 @@
 
 // Layer switcher styles are imported here
 @use '@/core/mapLayers/components/LayerSwitcher';
+
+// Posun zoom controlu i layer switcheru o 50 px doprava oproti výchozímu umístění
+// (ve sdíleném LayerSwitcher.scss nesmíme měnit left – používá ho i mapMain).
+.map-detail {
+    // leaflet zoom control – roh .leaflet-top.leaflet-left (default: left: 0,
+    // control má vlastní margin 10 px), posun celého rohu o 50 px doprava
+    .leaflet-top.leaflet-left {
+        left: 50px;
+    }
+
+    // layer switcher – výchozí left: 3rem (vedle zoom controlu) + 50 px
+    .layer-switcher {
+        left: calc(3rem + 50px);
+    }
+}

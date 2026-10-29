@@ -2,6 +2,7 @@ import {Button, Table} from 'react-bootstrap';
 import {useTranslation} from 'react-i18next';
 import React, {useEffect, useRef, useState} from 'react';
 import type {RecordPladias} from '@/models';
+import type InstanceConfig from '@/models/InstanceConfig';
 import './RecordsTable.scss';
 import {HerbariumQualityCheckbox} from './HerbariumQualityCheckbox';
 import {AddCommentModal} from './AddCommentModal';
@@ -27,21 +28,17 @@ interface PladiasRecordsTableProps {
     showExpandAllButton?: boolean;
 }
 
-// Project ID for atlas excerptions (herbarium quality checkbox visibility)
-const ATLAS_EXCERPTIONS_PROJECT_ID = 14;
-const NDOP_PROJECT_ID = 9;
-
 // Helper function to determine visibility of UI elements based on validation status
 // Matches legacy JS behavior from atlas_detailed_map.js
-const getVisibilityByStatus = (record: RecordPladias) => {
+const getVisibilityByStatus = (record: RecordPladias, instanceConfig: InstanceConfig) => {
     const statusId = record.validationStatusId;
-    const isProjectExcerptions = record.projectId === ATLAS_EXCERPTIONS_PROJECT_ID;
+    const isProjectExcerptions = instanceConfig.isExcerptionProject(record.projectId);
 
     return {
         // IncludeInMap: shown for UNCERTAIN (1) and ACCEPTED (3), hidden for UNPROCESSED (0) and DECLINED (2)
         showIncludeInMap: statusId === ValidationStatusId.UNCERTAIN || statusId === ValidationStatusId.ACCEPTED,
 
-        // HerbariumQuality: shown only for project 14, and for statuses UNCERTAIN (1), DECLINED (2), ACCEPTED (3)
+        // HerbariumQuality: shown only for excerption projects (conf `atlas.excerptionProjectIds`), and for statuses UNCERTAIN (1), DECLINED (2), ACCEPTED (3)
         showHerbariumQuality: isProjectExcerptions &&
             (statusId === ValidationStatusId.UNCERTAIN ||
                 statusId === ValidationStatusId.DECLINED ||
@@ -64,8 +61,8 @@ export function PladiasRecordsTable({
                                     }: PladiasRecordsTableProps) {
     const {t} = useTranslation();
     const user = useUser();
-    const config = useInstanceConfig() as { isVascular?: boolean };
-    const isVascular = Boolean(config.isVascular);
+    const instanceConfig = useInstanceConfig();
+    const isVascular = instanceConfig.isVascular;
     const [expandedRecordIds, setExpandedRecordIds] = useState<Set<number>>(new Set());
     const [readCommentIds, setReadCommentIds] = useState<Set<number>>(new Set());
     const [markingCommentIds, setMarkingCommentIds] = useState<Set<number>>(new Set());
@@ -261,7 +258,7 @@ export function PladiasRecordsTable({
                                             ))}
                                             {/* Herbarium quality checkbox - visible based on validation status and project */}
                                             {(() => {
-                                                const visibility = getVisibilityByStatus(record);
+                                                const visibility = getVisibilityByStatus(record, instanceConfig);
                                                 if (visibility.showHerbariumQuality) {
                                                     return <HerbariumQualityCheckbox record={record}
                                                                                      onRecordUpdated={onRecordUpdated}/>;
@@ -298,7 +295,7 @@ export function PladiasRecordsTable({
                                 </td>
                                 <td className="align-text-top" style={{fontSize: '80%'}}>
                                     {record.projectName || '-'}
-                                    {record.projectId === NDOP_PROJECT_ID && record.originalId && (
+                                    {instanceConfig.isNdopProject(record.projectId) && record.originalId && (
                                         <>
                                             <br/>
                                             <a
@@ -310,9 +307,13 @@ export function PladiasRecordsTable({
                                             </a>
                                         </>
                                     )}
-                                    <br/>
-                                    -- <br/>
-                                    {t('atlas.mapDetail.importedBy')} <b>{record.batchAuthorName}</b>
+                                    {instanceConfig.isExcerptionProject(record.projectId) && (
+                                        <>
+                                            <br />
+                                            -- <br />
+                                            {t('atlas.mapDetail.importedBy')} <b>{record.batchAuthorName}</b>
+                                        </>
+                                    )}
 
                                 </td>
                                 <td className="align-text-top">
@@ -478,7 +479,7 @@ export function PladiasRecordsTable({
                                         {/* Include in Map - conditionally rendered based on validation status */}
                                         {record.canEditValidationFields ? (
                                             (() => {
-                                                const visibility = getVisibilityByStatus(record);
+                                                const visibility = getVisibilityByStatus(record, instanceConfig);
                                                 if (visibility.showIncludeInMap) {
                                                     return <IncludeInMapCheckbox record={record}
                                                                                  onRecordUpdated={onRecordUpdated}/>;
@@ -500,7 +501,7 @@ export function PladiasRecordsTable({
                                         <small>{t('atlas.mapDetail.originalOccurrenceLabel')}: </small>
                                         {record.canEditValidationFields ? (
                                             (() => {
-                                                const visibility = getVisibilityByStatus(record);
+                                                const visibility = getVisibilityByStatus(record, instanceConfig);
                                                 if (visibility.showOriginality) {
                                                     return <OriginalityStatusIcons record={record}
                                                                                    onRecordUpdated={onRecordUpdated}/>;

@@ -18,6 +18,10 @@ export interface ReactConfig {
     hasAtlasModule: boolean;
     hasBiblioModule: boolean;
     hasMeasurementsModule: boolean;
+    /** Excerpční projekty (conf `atlas.excerptionProjectIds`) – výjimečné chování v tabulce záznamů. */
+    excerptionProjectIds: number[];
+    /** NDOP projekty (conf `atlas.ndopProjectIds`) – přímý odkaz na kartu nálezu. */
+    ndopProjectIds: number[];
     /** Role přiřazené backendem (enum UserRole) – runtime kontrola driftu BE↔FE v `parseRoles`. */
     roles: UserRole[];
     userEmail: string;

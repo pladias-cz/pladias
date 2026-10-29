@@ -40,4 +40,8 @@ public class ProjectConstants {
     public static final String hasAtlasModuleKey = "hasAtlasModule";
     public static final String hasTraitModuleKey = "hasTraitModule";
     public static final String hasBiblioModuleKey = "hasBiblioModule";
+
+    // Projekty s výjimečným chováním v atlasovém modulu (ID dle DB dané instance)
+    public static final String ExcerptionProjectIdsKey = "atlas.excerptionProjectIds";
+    public static final String NdopProjectIdsKey = "atlas.ndopProjectIds";
 }

@@ -6,6 +6,7 @@ import models.Maintenance;
 import models.User;
 import models.UserRole;
 import models.UserSettings;
+import platform.ProjectConstants;
 import play.libs.Json;
 import play.mvc.Http;
 import play.mvc.Http.Session;
@@ -32,6 +33,9 @@ public class ConfigController extends ControllerBase {
         config.put("hasAtlasModule", configService.hasAtlasModule());
         config.put("hasMeasurementsModule", configService.hasTraitModule());
         config.put("hasBiblioModule", configService.hasBiblioModule());
+        // Projects with exceptional behavior in the atlas module (per-instance IDs, see common.conf)
+        config.put("excerptionProjectIds", configService.getIntList(ProjectConstants.ExcerptionProjectIdsKey));
+        config.put("ndopProjectIds", configService.getIntList(ProjectConstants.NdopProjectIdsKey));
 
         // User-specific data (can change during session)
         config.put("id", currentUser.getId());

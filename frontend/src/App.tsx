@@ -96,7 +96,9 @@ export default function App() {
         isVascular: config.isVascular,
         hasAtlasModule: config.hasAtlasModule,
         hasBiblioModule: config.hasBiblioModule,
-        hasMeasurementsModule: config.hasMeasurementsModule
+        hasMeasurementsModule: config.hasMeasurementsModule,
+        excerptionProjectIds: config.excerptionProjectIds ?? [],
+        ndopProjectIds: config.ndopProjectIds ?? []
     };
 
     const userData = {

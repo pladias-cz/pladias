@@ -2,8 +2,8 @@ import {useCallback, useMemo, useState} from 'react';
 import {Card, Spinner, Button, Form, Table} from 'react-bootstrap';
 import {
     flexRender,
-    getCoreRowModel,
-    useReactTable,
+    tableFeatures,
+    useTable,
 } from '@tanstack/react-table';
 import {type ColumnDef} from '@tanstack/react-table';
 import {useQuery, useQueryClient} from '@tanstack/react-query';
@@ -26,6 +26,10 @@ interface Props {
     taxon: Taxon;
     cacheKey: number;
 }
+
+// v9: features se deklarují explicitně; tato tabulka žádné extra nepotřebuje
+// (sort/filtr/paginaci řeší editační formuláře přímo, core row model je vždy k dispozici)
+const features = tableFeatures({});
 
 export default function TaxonSynonyms({taxon, cacheKey}: Props) {
     const {t} = useTranslation();
@@ -130,7 +134,7 @@ export default function TaxonSynonyms({taxon, cacheKey}: Props) {
        COLUMNS
     ========================= */
 
-    const columns = useMemo<ColumnDef<TaxonSynonym>[]>(() => [
+    const columns = useMemo<ColumnDef<typeof features, TaxonSynonym>[]>(() => [
         {
             header: t('taxon.synonyms.nameLatin'),
             accessorKey: 'name',
@@ -209,10 +213,10 @@ export default function TaxonSynonyms({taxon, cacheKey}: Props) {
         }
     ], [publications, savingId, updateField, deleteRow, saveRow, t]);
 
-    const table = useReactTable({
+    const table = useTable({
         data: synonyms,
         columns,
-        getCoreRowModel: getCoreRowModel(),
+        features,
     });
 
     /* =========================
@@ -247,7 +251,7 @@ export default function TaxonSynonyms({taxon, cacheKey}: Props) {
                         {table.getRowModel().rows.map(row => (
                             <tr key={row.id} className={row.original.id === successId ? 'table-success' : ''}>
 
-                                {row.getVisibleCells().map(cell => (
+                                {row.getAllCells().map(cell => (
                                     <td key={cell.id}>
                                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
                                     </td>

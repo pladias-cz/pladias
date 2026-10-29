@@ -39,7 +39,7 @@ export default function MapDetail() {
         gbif?: ((recordId: number) => void);
         inaturalist?: ((recordId: number) => void)
     }>({});
-    const hoverLockRef = useRef<{ recordId: number | null; timeoutId: NodeJS.Timeout | null }>({
+    const hoverLockRef = useRef<{ recordId: number | null; timeoutId: ReturnType<typeof setTimeout> | null }>({
         recordId: null,
         timeoutId: null
     });

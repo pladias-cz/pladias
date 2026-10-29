@@ -101,7 +101,7 @@ export function SquaresOverlay({visible, minZoom = 8, params, onSquareDoubleClic
     const currentPopupRef = useRef<Popup | null>(null);
     const currentLabelRef = useRef<L.Marker | null>(null);
     const visibleRef = useRef(visible);
-    const clickTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const clickTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     useEffect(() => {
         visibleRef.current = visible;

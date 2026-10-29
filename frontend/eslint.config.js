@@ -12,7 +12,7 @@ export default tseslint.config([
     extends: [
       js.configs.recommended,
       tseslint.configs.recommended,
-      reactHooks.configs['recommended-latest'],
+      reactHooks.configs.flat['recommended-latest'],
       reactRefresh.configs.vite,
     ],
     languageOptions: {
@@ -20,6 +20,22 @@ export default tseslint.config([
       globals: globals.browser,
     },
     rules: {
+      // eslint-plugin-react-hooks v7: nová "compiler" pravidla zatím jen jako
+      // varování – v kódu je ~30 zásahů ve 25 souborech. Postupně opravovat
+      // a poté tento override odebrat (pravidla se vrátí na error dle presetu).
+      'react-hooks/static-components': 'warn',
+      'react-hooks/use-memo': 'warn',
+      'react-hooks/void-use-memo': 'warn',
+      'react-hooks/preserve-manual-memoization': 'warn',
+      'react-hooks/immutability': 'warn',
+      'react-hooks/globals': 'warn',
+      'react-hooks/refs': 'warn',
+      'react-hooks/set-state-in-effect': 'warn',
+      'react-hooks/error-boundaries': 'warn',
+      'react-hooks/purity': 'warn',
+      'react-hooks/set-state-in-render': 'warn',
+      'react-hooks/config': 'warn',
+      'react-hooks/gating': 'warn',
       // Konvence `_` prefixu pro záměrně nepoužité parametry/proměnné
       // (adaptery vrstev `_definition`, `_url`, …) – sekce B.2 refactor.md.
       '@typescript-eslint/no-unused-vars': ['error', {

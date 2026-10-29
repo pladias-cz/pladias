@@ -43,11 +43,13 @@ export default defineConfig(({ command }) => ({
           chunkFileNames: 'chunks/[name]-[hash].js',
           entryFileNames: 'assets/[name]-[hash].js',
           assetFileNames: 'assets/[name]-[hash].[ext]',
-          manualChunks: {
-            'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-            'bootstrap-vendor': ['bootstrap', 'react-bootstrap'],
-            'map-vendor': ['leaflet', 'react-leaflet'],
-            'table-vendor': ['@tanstack/react-table']
+          // objektová podoba manualChunks v Rolldownu (Vite 8) není podporovaná
+          manualChunks(id) {
+            if (!id.includes('node_modules')) return;
+            if (/[\\/]node_modules[\\/](react|react-dom|react-router|react-router-dom)[\\/]/.test(id)) return 'react-vendor';
+            if (/[\\/]node_modules[\\/](bootstrap|react-bootstrap)[\\/]/.test(id)) return 'bootstrap-vendor';
+            if (/[\\/]node_modules[\\/](leaflet|react-leaflet)[\\/]/.test(id)) return 'map-vendor';
+            if (/[\\/]node_modules[\\/]@tanstack[\\/]react-table[\\/]/.test(id)) return 'table-vendor';
           }
         },
       },

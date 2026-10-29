@@ -7,16 +7,20 @@ import type {LatLngExpression} from 'leaflet';
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
+import markerIconRed from '@/assets/markers/marker-icon-red.png';
+import markerIcon2xRed from '@/assets/markers/marker-icon-2x-red.png';
 import type {RecordPladiasFull} from '@/models/RecordPladiasFull';
 import type {ReverseGeocodingResponse} from '@/models/ReverseGeocoding';
 import {reverseGeocode} from '@/services/recordApi';
 import {logError, logInfo} from '@/services/logger';
 import {useRecordPermissions} from './';
 
-// Create a red marker icon for proposed location
+// Red marker icon for the proposed location – images bundled locally (color
+// variants of the standard Leaflet markers, https://github.com/pointhi/leaflet-color-markers,
+// BSD-2-Clause); CSP img-src 'self' blocks loading images from external CDNs.
 const proposedLocationIcon = new Icon({
-    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
-    iconRetinaUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+    iconUrl: markerIconRed,
+    iconRetinaUrl: markerIcon2xRed,
     shadowUrl: markerShadow,
     iconSize: [25, 41],
     iconAnchor: [12, 41],

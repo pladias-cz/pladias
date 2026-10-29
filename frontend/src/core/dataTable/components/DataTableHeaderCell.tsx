@@ -12,10 +12,12 @@ interface DataTableHeaderCellProps {
     onSort: (columnId: string) => void;
     width?: string | number;
     minWidth?: string | number;
+    /** Tooltip pro neřaditelnou hlavičku (řaditelná si ho odvodí ze stavu řazení). */
+    title?: string;
 }
 
 export function DataTableHeaderCell(props: DataTableHeaderCellProps) {
-    const {label, columnId, sortIndicator, canSort, onSort, width, minWidth} = props;
+    const {label, columnId, sortIndicator, canSort, onSort, width, minWidth, title} = props;
     const {t} = useTranslation();
 
     const handleSortClick = () => {
@@ -57,7 +59,7 @@ export function DataTableHeaderCell(props: DataTableHeaderCellProps) {
                 cursor: canSort ? 'pointer' : 'default',
             }}
             className={canSort ? 'cursor-pointer select-none' : ''}
-            title={getSortTitle()}
+            title={canSort ? getSortTitle() : title}
         >
             {label}{getSortIcon()}
         </th>

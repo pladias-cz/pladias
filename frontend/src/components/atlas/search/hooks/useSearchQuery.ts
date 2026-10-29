@@ -10,6 +10,7 @@ import {downloadBlob} from '@/core/dataTable/export';
 import {ApiError, apiErrorMessage} from '@/services/apiClient';
 import {exportSearchExcel, searchRecords} from '@/services/searchApi';
 import {
+    DEFAULT_PAGE_SIZE,
     EXCEL_EXPORT_PAGE_SIZE,
     EXCEL_EXPORT_TYPE,
     buildSearchFormData,
@@ -25,25 +26,26 @@ export function useSearchQuery() {
 
     const [records, setRecords] = useState<RecordPladias[]>([]);
     const [currentPage, setCurrentPage] = useState<number>(1);
+    const [pageSize, setPageSize] = useState<number>(DEFAULT_PAGE_SIZE);
     const [totalCount, setTotalCount] = useState<number | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [submitMessage, setSubmitMessage] = useState<string>('');
     const [lastPayloadEntries, setLastPayloadEntries] = useState<SearchPayloadEntries>([]);
     const [sortBy, setSortBy] = useState<string | null>('taxonName');
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
-    const [sortDescending, setSortDescending] = useState<boolean>(false);
 
     const fetchSearchPage = useCallback(async (
         page: number,
         getCount: boolean,
         payloadEntries: SearchPayloadEntries,
-        activeSort?: { sortBy: string | null; sortOrder: 'asc' | 'desc' }
+        activeSort?: { sortBy: string | null; sortOrder: 'asc' | 'desc' },
+        activePageSize?: number,
     ) => {
         const effectiveSort = activeSort ?? {sortBy, sortOrder};
         const formData = buildSearchFormData(payloadEntries, effectiveSort.sortBy, effectiveSort.sortOrder);
 
         const exportType = getExportTypeFromPayload(payloadEntries);
-        const pageSize = resolvePageSize(exportType);
+        const requestPageSize = resolvePageSize(exportType, activePageSize ?? pageSize);
         const getCountParam = shouldForceCount(exportType) || getCount;
 
         setIsLoading(true);
@@ -70,7 +72,7 @@ export function useSearchQuery() {
                 return true;
             }
 
-            const payload = await searchRecords(page, pageSize, getCountParam, formData);
+            const payload = await searchRecords(page, requestPageSize, getCountParam, formData);
             const nextRecords = Array.isArray(payload.records) ? payload.records : [];
             setRecords(nextRecords);
 
@@ -97,7 +99,7 @@ export function useSearchQuery() {
         } finally {
             setIsLoading(false);
         }
-    }, [sortBy, sortOrder, t, totalCount]);
+    }, [sortBy, sortOrder, pageSize, t, totalCount]);
 
     /** Submit formuláře – první stránka s přepočtem total. */
     const search = useCallback(async (payloadEntries: SearchPayloadEntries) => {
@@ -140,6 +142,19 @@ export function useSearchQuery() {
         }
     }, [fetchSearchPage, lastPayloadEntries]);
 
+    /** Změna velikosti stránky – zpět na první stranu, total už známe. */
+    const changePageSize = useCallback(async (nextPageSize: number) => {
+        if (nextPageSize === pageSize || nextPageSize < 1 || lastPayloadEntries.length === 0) {
+            return;
+        }
+
+        setPageSize(nextPageSize);
+        const loaded = await fetchSearchPage(1, false, lastPayloadEntries, {sortBy, sortOrder}, nextPageSize);
+        if (loaded) {
+            setCurrentPage(1);
+        }
+    }, [fetchSearchPage, lastPayloadEntries, pageSize, sortBy, sortOrder]);
+
     /** Obnovení aktuální stránky po hromadné editaci. */
     const refreshAfterBulkEdit = useCallback(async () => {
         if (lastPayloadEntries.length === 0) {
@@ -149,7 +164,7 @@ export function useSearchQuery() {
         await fetchSearchPage(currentPage, false, lastPayloadEntries, {sortBy, sortOrder});
     }, [currentPage, fetchSearchPage, lastPayloadEntries, sortBy, sortOrder]);
 
-    /** Nové hledání – zahodit výsledky i řazení. */
+    /** Nové hledání – zahodit výsledky i řazení (velikost stránky je volba uživatele, zůstává). */
     const reset = useCallback(() => {
         setRecords([]);
         setCurrentPage(1);
@@ -157,22 +172,22 @@ export function useSearchQuery() {
         setSubmitMessage('');
         setSortBy('taxonName');
         setSortOrder('asc');
-        setSortDescending(false);
     }, []);
 
     return {
         records,
         currentPage,
+        pageSize,
         totalCount,
         isLoading,
         submitMessage,
         lastPayloadEntries,
         sortBy,
-        sortDescending,
-        setSortDescending,
+        sortOrder,
         search,
         changePage,
         changeSort,
+        changePageSize,
         refreshAfterBulkEdit,
         reset,
     };

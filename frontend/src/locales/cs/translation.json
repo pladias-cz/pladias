@@ -215,6 +215,7 @@
       "sourceLower": "pramen",
       "square": "čtverec",
       "squareAbbrev": "Kv.",
+      "taxon": "Taxon",
       "substrate": "Substrát",
       "title": "Detailní mapa",
       "unknownYear": "neznámý rok",
@@ -545,17 +546,6 @@
         "processingRequest": "Zpracovávám požadavek...",
         "searchFailed": "Vyhledávání selhalo.",
         "selectedTaxon": "Vybraný taxon: {{taxon}}",
-        "sortDescending": "sestupně",
-        "sortLabel": "Seřadit dle",
-        "sortOptions": {
-          "date": "data",
-          "locality": "lokality",
-          "nearestTownName": "nejbližší obce",
-          "phytochorion": "fytochorionu",
-          "square": "mapového pole",
-          "taxonName": "taxonu",
-          "validationStatus": "stavu validace"
-        },
         "submit": "vyhledat",
         "submitFailed": "Nepodařilo se odeslat formulář.",
         "taxonAutocompletePlaceholder": "Vyberte taxon...",
@@ -609,9 +599,7 @@
         "next": "Další",
         "noRecords": "Žádné záznamy",
         "page": "Strana {{page}}",
-        "pageOf": "Strana {{page}} z {{totalPages}}",
-        "previous": "Předchozí",
-        "totalFound": "Celkem nalezeno: {{totalCount}}"
+        "previous": "Předchozí"
       },
       "title": "Vyhledávání záznamů"
     },

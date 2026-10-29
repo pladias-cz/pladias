@@ -7,6 +7,7 @@
  */
 
 export const DEFAULT_PAGE_SIZE = 50;
+export const PAGE_SIZE_OPTIONS = [10, 20, 50, 100];
 export const EXCEL_EXPORT_PAGE_SIZE = 100000;
 export const EXCEL_EXPORT_TYPE = 'excel';
 export const BROWSER_EXPORT_TYPE = 'browser';
@@ -34,9 +35,9 @@ export function buildSearchFormData(
     return formData;
 }
 
-/** Excel export stahuje vše najednou, prohlížeč po stránkách. */
-export function resolvePageSize(exportType: string): number {
-    return exportType === EXCEL_EXPORT_TYPE ? EXCEL_EXPORT_PAGE_SIZE : DEFAULT_PAGE_SIZE;
+/** Excel stahuje vše najednou, prohlížeč po stránkách (uživatelem zvolené velikosti). */
+export function resolvePageSize(exportType: string, browserPageSize: number = DEFAULT_PAGE_SIZE): number {
+    return exportType === EXCEL_EXPORT_TYPE ? EXCEL_EXPORT_PAGE_SIZE : browserPageSize;
 }
 
 /** U Excelu vždy potřebujeme celkový počet (pro hlášku o exportu). */
@@ -45,28 +46,6 @@ export function shouldForceCount(exportType: string): boolean {
 }
 
 /** Počet stránek výsledků (min. 1) – null, když total ještě neznáme. */
-export function computeTotalPages(totalCount: number | null): number | null {
-    return totalCount != null ? Math.max(1, Math.ceil(totalCount / DEFAULT_PAGE_SIZE)) : null;
-}
-
-/** Viditelné stránky paginace (okno max 7 kolem aktuální stránky). */
-export function getVisiblePages(currentPage: number, totalPages: number | null): number[] {
-    if (totalPages == null) {
-        return [];
-    }
-
-    const maxVisible = 7;
-    const half = Math.floor(maxVisible / 2);
-    let start = Math.max(1, currentPage - half);
-    const end = Math.min(totalPages, start + maxVisible - 1);
-
-    if (end - start + 1 < maxVisible) {
-        start = Math.max(1, end - maxVisible + 1);
-    }
-
-    const pages: number[] = [];
-    for (let page = start; page <= end; page += 1) {
-        pages.push(page);
-    }
-    return pages;
+export function computeTotalPages(totalCount: number | null, pageSize: number): number | null {
+    return totalCount != null ? Math.max(1, Math.ceil(totalCount / pageSize)) : null;
 }

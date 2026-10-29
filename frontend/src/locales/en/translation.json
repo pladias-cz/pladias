@@ -215,6 +215,7 @@
       "sourceLower": "source",
       "square": "grid cell",
       "squareAbbrev": "Quad.",
+      "taxon": "Taxon",
       "substrate": "Substrate",
       "title": "Detailed map",
       "unknownYear": "unknown year",
@@ -545,17 +546,6 @@
         "processingRequest": "Processing the request...",
         "searchFailed": "Search failed.",
         "selectedTaxon": "Selected taxon: {{taxon}}",
-        "sortDescending": "descending",
-        "sortLabel": "Sort by",
-        "sortOptions": {
-          "date": "date",
-          "locality": "locality",
-          "nearestTownName": "nearest town",
-          "phytochorion": "phytochorion",
-          "square": "grid cell",
-          "taxonName": "taxon",
-          "validationStatus": "validation status"
-        },
         "submit": "search",
         "submitFailed": "Failed to submit the form.",
         "taxonAutocompletePlaceholder": "Select a taxon...",
@@ -609,9 +599,7 @@
         "next": "Next",
         "noRecords": "No records",
         "page": "Page {{page}}",
-        "pageOf": "Page {{page}} of {{totalPages}}",
-        "previous": "Previous",
-        "totalFound": "Total found: {{totalCount}}"
+        "previous": "Previous"
       },
       "title": "Record search"
     },

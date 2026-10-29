@@ -13,7 +13,8 @@ import {createTaxaImportableProvider} from '@/components/autocomplete/TaxaImport
 import BulkEdit from '@/components/atlas/search/BulkEdit';
 import {SearchFilterColumnOne, SearchFilterColumnTwo, SearchResultsView} from './components';
 import {useSearchFilters, useSearchOptions, useSearchQuery} from './hooks';
-import type {SortOption, TypeaheadOption} from './types';
+import {PAGE_SIZE_OPTIONS} from './searchRequest';
+import type {TypeaheadOption} from './types';
 import './SearchForm.scss';
 
 export default function SearchForm() {
@@ -51,16 +52,6 @@ export default function SearchForm() {
         {id: 1, label: t('atlas.search.form.options.validationUncertain')},
         {id: 0, label: t('atlas.search.form.options.validationNotValidated')},
     ]), [t]);
-
-    const sortOptions = useMemo<SortOption[]>(() => [
-        {value: 'taxonName', label: t('atlas.search.form.sortOptions.taxonName')},
-        {value: 'locality', label: t('atlas.search.form.sortOptions.locality')},
-        {value: 'nearestTownName', label: t('atlas.search.form.sortOptions.nearestTownName')},
-        {value: 'date', label: t('atlas.search.form.sortOptions.date')},
-        {value: 'validationStatus', label: t('atlas.search.form.sortOptions.validationStatus')},
-        {value: 'square', label: t('atlas.search.form.sortOptions.square')},
-        ...(isVascular ? [{value: 'phytochorion', label: t('atlas.search.form.sortOptions.phytochorion')}] : []),
-    ], [isVascular, t]);
 
     const handleSearchSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -148,19 +139,17 @@ export default function SearchForm() {
                     records={query.records}
                     totalCount={query.totalCount}
                     currentPage={query.currentPage}
+                    pageSize={query.pageSize}
+                    pageSizeOptions={PAGE_SIZE_OPTIONS}
                     isLoading={query.isLoading}
                     sortBy={query.sortBy}
-                    sortDescending={query.sortDescending}
-                    sortOptions={sortOptions}
+                    sortDescending={query.sortOrder === 'desc'}
                     onPageChange={query.changePage}
-                    onSortChange={(nextSortBy) => {
-                        void query.changeSort(nextSortBy, query.sortDescending ? 'desc' : 'asc');
+                    onPageSizeChange={(size) => {
+                        void query.changePageSize(size);
                     }}
-                    onSortDescendingChange={(nextDescending) => {
-                        query.setSortDescending(nextDescending);
-                        if (query.sortBy) {
-                            void query.changeSort(query.sortBy, nextDescending ? 'desc' : 'asc');
-                        }
+                    onSortChange={(nextSortBy, nextOrder) => {
+                        void query.changeSort(nextSortBy, nextOrder);
                     }}
                     onNewSearch={handleNewSearch}
                 >

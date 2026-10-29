@@ -1,4 +1,4 @@
-import {cleanup, render, screen, within} from '@testing-library/react';
+import {cleanup, fireEvent, render, screen, within} from '@testing-library/react';
 import {afterEach, describe, expect, it, vi} from 'vitest';
 import type {RecordPladias} from '@/models';
 import type {InstanceConfigData} from '@/models/InstanceConfig';
@@ -42,7 +42,11 @@ function makeRecord(id: number, projectId: number | null, batchAuthorName: strin
     } as unknown as RecordPladias;
 }
 
-function renderTable(records: RecordPladias[], configOverrides: Partial<InstanceConfigData> = {}) {
+function renderTable(
+    records: RecordPladias[],
+    configOverrides: Partial<InstanceConfigData> = {},
+    props: Partial<Parameters<typeof PladiasRecordsTable>[0]> = {},
+) {
     return render(
         <UserProvider user={{id: 1}}>
             <InstanceConfigProvider config={{
@@ -50,7 +54,7 @@ function renderTable(records: RecordPladias[], configOverrides: Partial<Instance
                 ndopProjectIds: [9],
                 ...configOverrides,
             }}>
-                <PladiasRecordsTable records={records}/>
+                <PladiasRecordsTable records={records} {...props}/>
             </InstanceConfigProvider>
         </UserProvider>,
     );
@@ -102,5 +106,57 @@ describe('PladiasRecordsTable – projektově podmíněné prvky', () => {
         expect(row).not.toHaveTextContent('--');
         expect(within(row).queryByTestId('herbarium-quality')).toBeNull();
         expect(within(row).queryByText('přímý odkaz')).toBeNull();
+    });
+});
+
+describe('PladiasRecordsTable – sloupec Taxon a řazení hlaviček', () => {
+    it('bez showTaxonName (mapDetail) se sloupec Taxon nevykreslí a hlavičky nejsou klikatelné', () => {
+        renderTable([makeRecord(5, 1, 'Autor')]);
+
+        expect(screen.queryByRole('columnheader', {name: 'Taxon'})).toBeNull();
+        const header = screen.getByRole('columnheader', {name: 'Lokalita'});
+        expect(header).not.toHaveClass('cursor-pointer');
+    });
+
+    it('showTaxonName: taxon má vlastní sloupec se jménem', () => {
+        renderTable(
+            [{...makeRecord(6, 1, 'Autor'), taxonNameHtml: '<i>Trifolium</i>'} as unknown as RecordPladias],
+            {},
+            {showTaxonName: true},
+        );
+
+        expect(screen.getByRole('columnheader', {name: 'Taxon'})).toBeInTheDocument();
+        expect(screen.getByText('Trifolium')).toBeInTheDocument();
+    });
+
+    it('klik na řaditelnou hlavičku volá onHeaderSort se sort klíčem backendu', () => {
+        const onHeaderSort = vi.fn();
+        renderTable(
+            [makeRecord(7, 1, 'Autor')],
+            {},
+            {
+                showTaxonName: true,
+                onHeaderSort,
+                sort: {sortBy: 'taxonName', descending: false},
+            },
+        );
+
+        // aktivní řazení dle taxonu vzestupně – hlavička nese indikátor
+        const header = screen.getByRole('columnheader', {name: /Taxon/});
+        expect(header).toHaveTextContent('🔼');
+        fireEvent.click(header);
+        expect(onHeaderSort).toHaveBeenCalledWith('taxonName');
+    });
+
+    it('klik na neřaditelnou hlavičku (Sběratelé) onHeaderSort nevolá', () => {
+        const onHeaderSort = vi.fn();
+        renderTable(
+            [makeRecord(8, 1, 'Autor')],
+            {},
+            {showTaxonName: true, onHeaderSort},
+        );
+
+        fireEvent.click(screen.getByRole('columnheader', {name: 'Sběratelé'}));
+        expect(onHeaderSort).not.toHaveBeenCalled();
     });
 });

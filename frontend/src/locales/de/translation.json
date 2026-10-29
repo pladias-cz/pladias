@@ -215,6 +215,7 @@
       "sourceLower": "Quelle",
       "square": "Rasterfeld",
       "squareAbbrev": "Quad.",
+      "taxon": "Taxon",
       "substrate": "Substrat",
       "title": "Detailkarte",
       "unknownYear": "unbekanntes Jahr",
@@ -545,17 +546,6 @@
         "processingRequest": "Anfrage wird verarbeitet...",
         "searchFailed": "Suche fehlgeschlagen.",
         "selectedTaxon": "Ausgewähltes Taxon: {{taxon}}",
-        "sortDescending": "absteigend",
-        "sortLabel": "Sortieren nach",
-        "sortOptions": {
-          "date": "Datum",
-          "locality": "Fundort",
-          "nearestTownName": "nächste Ortschaft",
-          "phytochorion": "Phytochorion",
-          "square": "Kartierungsfeld",
-          "taxonName": "Taxon",
-          "validationStatus": "Validierungsstatus"
-        },
         "submit": "suchen",
         "submitFailed": "Das Formular konnte nicht abgesendet werden.",
         "taxonAutocompletePlaceholder": "Taxon auswählen...",
@@ -609,9 +599,7 @@
         "next": "Weiter",
         "noRecords": "Keine Datensätze",
         "page": "Seite {{page}}",
-        "pageOf": "Seite {{page}} von {{totalPages}}",
-        "previous": "Zurück",
-        "totalFound": "Insgesamt gefunden: {{totalCount}}"
+        "previous": "Zurück"
       },
       "title": "Suche nach Datensätzen"
     },

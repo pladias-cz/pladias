@@ -215,6 +215,7 @@
       "sourceLower": "źródło",
       "square": "kwadrat",
       "squareAbbrev": "Kw.",
+      "taxon": "Takson",
       "substrate": "Substrat",
       "title": "Mapa szczegółowa",
       "unknownYear": "nieznany rok",
@@ -545,17 +546,6 @@
         "processingRequest": "Przetwarzanie zapytania...",
         "searchFailed": "Wyszukiwanie nie powiodło się.",
         "selectedTaxon": "Wybrany takson: {{taxon}}",
-        "sortDescending": "malejąco",
-        "sortLabel": "Sortuj według",
-        "sortOptions": {
-          "date": "daty",
-          "locality": "lokalizacji",
-          "nearestTownName": "najbliższej miejscowości",
-          "phytochorion": "fitochorionu",
-          "square": "pola mapowego",
-          "taxonName": "taksonu",
-          "validationStatus": "statusu walidacji"
-        },
         "submit": "szukaj",
         "submitFailed": "Nie udało się wysłać formularza.",
         "taxonAutocompletePlaceholder": "Wybierz takson...",
@@ -609,9 +599,7 @@
         "next": "Następna",
         "noRecords": "Brak rekordów",
         "page": "Strona {{page}}",
-        "pageOf": "Strona {{page}} z {{totalPages}}",
-        "previous": "Poprzednia",
-        "totalFound": "Łącznie znaleziono: {{totalCount}}"
+        "previous": "Poprzednia"
       },
       "title": "Wyszukiwanie rekordów"
     },

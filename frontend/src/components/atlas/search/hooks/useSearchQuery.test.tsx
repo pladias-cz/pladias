@@ -114,6 +114,28 @@ describe('useSearchQuery', () => {
         expect(searchRecords).toHaveBeenLastCalledWith(1, expect.anything(), true, expect.any(FormData));
     });
 
+    it('changePageSize načte první stránku s novou velikostí bez přepočtu total', async () => {
+        vi.mocked(searchRecords)
+            .mockResolvedValueOnce({records, totalCount: 42})
+            .mockResolvedValueOnce({records});
+
+        const {result} = renderHook(() => useSearchQuery());
+
+        await act(async () => {
+            await result.current.search(payload);
+        });
+        await act(async () => {
+            await result.current.changePageSize(20);
+        });
+
+        expect(result.current.currentPage).toBe(1);
+        expect(result.current.pageSize).toBe(20);
+        // druhé volání: stránka 1 s novou velikostí, bez count
+        expect(searchRecords).toHaveBeenLastCalledWith(1, 20, false, expect.any(FormData));
+        // total zůstává z prvního dotazu
+        expect(result.current.totalCount).toBe(42);
+    });
+
     it('reset zahodí výsledky i řazení', async () => {
         vi.mocked(searchRecords).mockResolvedValueOnce({records, totalCount: 42});
 

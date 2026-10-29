@@ -7,9 +7,3 @@ export type TypeaheadOption = {
     id: string | number;
     label: string;
 };
-
-/** Položka sort selectu výsledků. */
-export type SortOption = {
-    value: string;
-    label: string;
-};

@@ -11,6 +11,7 @@ import RichTextMessage from '@/components/RichTextMessage';
 import {ValidationStatusCheckboxes} from './ValidationStatusCheckboxes';
 import {OriginalityStatusIcons} from './OriginalityStatusIcons';
 import {IncludeInMapCheckbox} from './IncludeInMapCheckbox';
+import {DataTableHeaderCell} from '@/core/dataTable';
 import {useInstanceConfig} from '@/context/InstanceConfigContext';
 import {useUser} from '@/context/UserContext';
 import {markCommentAsRead} from '@/services/recordApi';
@@ -26,6 +27,10 @@ interface PladiasRecordsTableProps {
     onRecordUpdated?: (record: RecordPladias) => void;
     showTaxonName?: boolean;
     showExpandAllButton?: boolean;
+    /** Aktivní řazení vyhledávání (sort klíč backendu); hlavičky řadí jen s onHeaderSort. */
+    sort?: { sortBy: string | null; descending: boolean };
+    /** Klik na řaditelnou hlavičku – předává sort klíč backendu. */
+    onHeaderSort?: (sortBy: string) => void;
 }
 
 // Helper function to determine visibility of UI elements based on validation status
@@ -49,6 +54,19 @@ const getVisibilityByStatus = (record: RecordPladias, instanceConfig: InstanceCo
     };
 };
 
+/**
+ * Hlavička sloupce → sort klíč backendu (sortBy formuláře vyhledávání).
+ * Sloupce Nálezci a Původ backend řadit neumí, zůstávají vždy neřaditelné.
+ */
+const SORTABLE_HEADERS: Record<string, string> = {
+    taxon: 'taxonName',
+    square: 'square',
+    phytochorion: 'phytochorion',
+    locality: 'locality',
+    date: 'date',
+    validationStatus: 'validationStatus',
+};
+
 export function PladiasRecordsTable({
                                         records,
                                         highlightedRecordId,
@@ -57,7 +75,9 @@ export function PladiasRecordsTable({
                                         registerScrollFn,
                                         onRecordUpdated,
                                         showTaxonName = false,
-                                        showExpandAllButton = false
+                                        showExpandAllButton = false,
+                                        sort,
+                                        onHeaderSort
                                     }: PladiasRecordsTableProps) {
     const {t} = useTranslation();
     const user = useUser();
@@ -155,6 +175,34 @@ export function PladiasRecordsTable({
         }
     }, [registerScrollFn]);
 
+    const handleHeaderSort = (columnId: string) => {
+        const sortBy = SORTABLE_HEADERS[columnId];
+        if (sortBy != null && onHeaderSort) {
+            onHeaderSort(sortBy);
+        }
+    };
+
+    /** Hlavička sloupce: se zapnutým řazením standardní klikatelná buňka
+     * (DataTableHeaderCell – indikátor, tooltip, kurzor), jinak původní plain <th>
+     * (mapDetail řaditelné hlavičky nemá). */
+    const renderHeader = (columnId: string, label: string, title?: string) => {
+        if (!onHeaderSort) {
+            return <th title={title}>{label}</th>;
+        }
+        const sortBy = SORTABLE_HEADERS[columnId];
+        const isActive = sortBy != null && sortBy === sort?.sortBy;
+        return (
+            <DataTableHeaderCell
+                label={label}
+                columnId={columnId}
+                sortIndicator={isActive ? (sort?.descending ? 'desc' : 'asc') : null}
+                canSort={sortBy != null}
+                onSort={handleHeaderSort}
+                title={title}
+            />
+        );
+    };
+
     if (records.length === 0) {
         return null;
     }
@@ -171,15 +219,14 @@ export function PladiasRecordsTable({
             <Table striped bordered hover size="sm">
                 <thead>
                 <tr>
-                    <th title={t('atlas.mapDetail.quadrant')}>{t('atlas.mapDetail.squareAbbrev')}</th>
-                    {isVascular && (
-                        <th title={t('atlas.mapDetail.phytochorion')}>{t('atlas.mapDetail.phytochorionAbbrev')}</th>
-                    )}
-                    <th>{t('atlas.mapDetail.locality')}</th>
-                    <th>{t('atlas.mapDetail.collectors')}</th>
-                    <th>{t('atlas.mapDetail.date')}</th>
-                    <th>{t('atlas.mapDetail.originality')}</th>
-                    <th>{t('atlas.mapDetail.validationStatus')}</th>
+                    {showTaxonName && renderHeader('taxon', t('atlas.mapDetail.taxon'))}
+                    {renderHeader('square', t('atlas.mapDetail.squareAbbrev'), t('atlas.mapDetail.quadrant'))}
+                    {isVascular && renderHeader('phytochorion', t('atlas.mapDetail.phytochorionAbbrev'), t('atlas.mapDetail.phytochorion'))}
+                    {renderHeader('locality', t('atlas.mapDetail.locality'))}
+                    {renderHeader('finders', t('atlas.mapDetail.collectors'))}
+                    {renderHeader('date', t('atlas.mapDetail.date'))}
+                    {renderHeader('project', t('atlas.mapDetail.originality'))}
+                    {renderHeader('validationStatus', t('atlas.mapDetail.validationStatus'))}
                 </tr>
                 </thead>
                 <tbody>
@@ -199,6 +246,14 @@ export function PladiasRecordsTable({
                             >
                                 {/* Kvadrant (a-d) dopočítaný z GPS prostorovým dotazem; tooltip nese celý kód (např. 6152a).
                                     Tabulka obsahuje jen záznamy aktuálního čtverce, proto už není odkaz na jeho detail. */}
+                                {/* Taxon má vlastní sloupec (vyhledávání, nové komentáře); mapDetail ho nezobrazuje. */}
+                                {showTaxonName && (
+                                    <td className="align-text-top">
+                                        {record.taxonNameHtml
+                                            ? <RichTextMessage html={record.taxonNameHtml}/>
+                                            : (record.taxonNameLat ?? '-')}
+                                    </td>
+                                )}
                                 <td className="align-text-top" title={record.computedQuadrantCode || ''}>
                                     {record.computedQuadrantCode ? record.computedQuadrantCode.slice(-1) : '-'}
                                 </td>
@@ -214,12 +269,6 @@ export function PladiasRecordsTable({
                                         onClick={() => toggleExpand(record.id)}
                                         style={{textDecoration: 'none', color: 'inherit'}}
                                     >
-                                        {showTaxonName && record.taxonNameHtml && (
-                                            <>
-                                                <RichTextMessage html={record.taxonNameHtml}/>
-                                                <br/>
-                                            </>
-                                        )}
                                         <b>
                                             {isVascular
                                                 ? (record.nearestTownText || record.nearestTownName || '')
@@ -351,7 +400,7 @@ export function PladiasRecordsTable({
                                     onMouseEnter={() => onRecordHover?.(record.id)}
                                     onMouseLeave={() => onRecordHover?.(null)}
                                 >
-                                    <td colSpan={isVascular ? 5 : 6}
+                                    <td colSpan={(isVascular ? 5 : 6) + (showTaxonName ? 1 : 0)}
                                         style={{padding: '10px 20px', backgroundColor: '#f8f9fa'}}>
                                         <div className="row">
                                             <div className="col-md-6">

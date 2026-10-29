@@ -174,7 +174,7 @@ export function PladiasRecordsTable({
             <Table striped bordered hover size="sm">
                 <thead>
                 <tr>
-                    <th title={t('atlas.mapDetail.square')}>{t('atlas.mapDetail.squareAbbrev')}</th>
+                    <th title={t('atlas.mapDetail.quadrant')}>{t('atlas.mapDetail.squareAbbrev')}</th>
                     {isVascular && (
                         <th title={t('atlas.mapDetail.phytochorion')}>{t('atlas.mapDetail.phytochorionAbbrev')}</th>
                     )}
@@ -200,17 +200,10 @@ export function PladiasRecordsTable({
                                 onMouseEnter={() => onRecordHover?.(record.id)}
                                 onMouseLeave={() => onRecordHover?.(null)}
                             >
-                                <td className="align-text-top">
-                                    {record.computedSquareCode && record.taxonId ? (
-                                        <a
-                                            href={`/atlas/mapDetail/${record.taxonId}/${record.computedSquareCode}`}
-                                            className="text-decoration-none"
-                                        >
-                                            {record.computedSquareCode}
-                                        </a>
-                                    ) : (
-                                        record.computedSquareCode || '-'
-                                    )}
+                                {/* Kvadrant (a-d) dopočítaný z GPS prostorovým dotazem; tooltip nese celý kód (např. 6152a).
+                                    Tabulka obsahuje jen záznamy aktuálního čtverce, proto už není odkaz na jeho detail. */}
+                                <td className="align-text-top" title={record.computedQuadrantCode || ''}>
+                                    {record.computedQuadrantCode ? record.computedQuadrantCode.slice(-1) : '-'}
                                 </td>
                                 {isVascular && (
                                     <td className="align-text-top"

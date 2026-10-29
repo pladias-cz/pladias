@@ -323,12 +323,16 @@ public class MapDetailService {
      */
     private List<RecordPladiasDto> getSquarePladiasRecords(Long taxonId, String squareCode, User currentUser) {
 
-        // Query records where computed_square_code matches the given square
+        // Query records where computed_square_code matches the given square;
+        // quadrant code is computed via spatial join (same as the square assignment)
         String sql = """
-            SELECT r.id
+            SELECT r.id,
+                   q.code AS computed_quadrant_code
             FROM atlas.records r
             LEFT JOIN geodata.squares_full s
                    ON ST_Contains(s.geom_wgs, r.coords_wgs)
+            LEFT JOIN geodata.quadrants_full q
+                   ON ST_Contains(q.geom_wgs, r.coords_wgs)
             WHERE r.taxon_id = :taxonId
               AND s.code = :squareCode
             ORDER BY r.latitude DESC, r.longitude DESC, r.id;""";

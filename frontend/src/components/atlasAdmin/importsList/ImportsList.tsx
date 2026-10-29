@@ -11,6 +11,7 @@ import {
     DataTable,
     type DataTableColumnDef,
     createTextColumn,
+    createNumberColumn,
     createTimestampColumn,
     createActionColumn,
 } from '@/core/dataTable';
@@ -61,9 +62,9 @@ export default function ImportsList() {
             enableRangeFilter: true,
             dateFormat: 'dd.MM.yyyy HH:mm',
         }),
-        createTextColumn<ImportRecord>('batchId', t('atlas.admin.importsList.batchId'), {
+        createNumberColumn<ImportRecord>('batchId', t('atlas.admin.importsList.batchId'), {
             enableSorting: true,
-            enableFiltering: false,
+            enableFiltering: true,
         }),
         createActionColumn<ImportRecord>('data', t('atlas.admin.importsList.data'), (row) => (
             <ImportsListDataCell row={row}/>

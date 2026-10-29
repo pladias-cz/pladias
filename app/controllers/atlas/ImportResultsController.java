@@ -240,6 +240,7 @@ public class ImportResultsController extends ControllerBase {
 
             // Get filter parameters
             String filenameFilter = request.getQueryString("filenameFilter");
+            String batchIdFilter = request.getQueryString("BatchIdFilter");
             String importTimestampFromFilter = request.getQueryString("ImportTimestamp:fromFilter");
             String importTimestampToFilter = request.getQueryString("ImportTimestamp:toFilter");
 
@@ -252,6 +253,13 @@ public class ImportResultsController extends ControllerBase {
             // Apply filters
             if (filenameFilter != null && !filenameFilter.isEmpty()) {
                 query.where().ilike("filename", "%" + filenameFilter + "%");
+            }
+            if (batchIdFilter != null && !batchIdFilter.isEmpty()) {
+                try {
+                    query.where().eq("batch.id", Long.parseLong(batchIdFilter.trim()));
+                } catch (NumberFormatException e) {
+                    // Ignore invalid batch id
+                }
             }
 
             if (importTimestampFromFilter != null && !importTimestampFromFilter.isEmpty()) {
@@ -278,6 +286,7 @@ public class ImportResultsController extends ControllerBase {
                 String sortExpr = switch (sortBy) {
                     case "importTimestamp" -> "batch.createTimestamp";
                     case "filename" -> "filename";
+                    case "batchId" -> "batch.id";
                     default -> sortBy;
                 };
                 if ("desc".equalsIgnoreCase(sortOrder)) {
@@ -311,6 +320,13 @@ public class ImportResultsController extends ControllerBase {
 
             if (filenameFilter != null && !filenameFilter.isEmpty()) {
                 countQuery.where().ilike("filename", "%" + filenameFilter + "%");
+            }
+            if (batchIdFilter != null && !batchIdFilter.isEmpty()) {
+                try {
+                    countQuery.where().eq("batch.id", Long.parseLong(batchIdFilter.trim()));
+                } catch (NumberFormatException e) {
+                    // Ignore invalid batch id
+                }
             }
             if (importTimestampFromFilter != null && !importTimestampFromFilter.isEmpty()) {
                 try {

@@ -171,6 +171,7 @@ public class MapAdminImportController extends ControllerBase {
     private void applyImportsFilters(io.ebean.Query<models.Excel> query, Http.Request request) {
         // Get filter parameters
         String committerNameFilter = request.getQueryString("CommitterNameFilter");
+        String batchIdFilter = request.getQueryString("BatchIdFilter");
 
         String importTimestampFromFilter = request.getQueryString("ImportTimestamp:fromFilter");
         String importTimestampToFilter = request.getQueryString("ImportTimestamp:toFilter");
@@ -181,6 +182,13 @@ public class MapAdminImportController extends ControllerBase {
             query.where().or()
                 .ilike("batch.committer.name", "%" + committerNameFilter + "%")
                 .ilike("batch.committer.surname", "%" + committerNameFilter + "%");
+        }
+        if (batchIdFilter != null && !batchIdFilter.isEmpty()) {
+            try {
+                query.where().eq("batch.id", Long.parseLong(batchIdFilter.trim()));
+            } catch (NumberFormatException e) {
+                // Ignore invalid batch id
+            }
         }
 
         if (importTimestampFromFilter != null && !importTimestampFromFilter.isEmpty()) {

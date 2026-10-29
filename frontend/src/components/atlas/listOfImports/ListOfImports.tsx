@@ -12,6 +12,7 @@ import {
     type DataTableColumnDef,
     createTimestampColumn,
     createTextColumn,
+    createNumberColumn,
     createActionColumn,
 } from '@/core/dataTable';
 import {
@@ -58,6 +59,11 @@ export default function ListOfImports() {
         createTextColumn<ImportRecord>('id', 'ID', {
             enableSorting: true,
             enableFiltering: false,
+            minWidth: '80px',
+        }),
+        createNumberColumn<ImportRecord>('batchId', t('atlas.admin.importsList.batchId'), {
+            enableSorting: true,
+            enableFiltering: true,
             minWidth: '80px',
         }),
     ], [t]);

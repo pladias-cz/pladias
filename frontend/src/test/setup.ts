@@ -6,3 +6,19 @@ import {resetLogger} from '@/services/logger';
 // getRecentLogEntries() nebo si v beforeEach registrují vlastní transport
 // (services/logger.test.ts, httpLogTransport.test.ts).
 resetLogger();
+
+// jsdom neimplementuje window.matchMedia (react-bootstrap ho volá v Offcanvas
+// kvůli breakpointům přes @restart/hooks useMediaQuery) – stub vrací pro každý
+// dotaz „neodpovídá“ a posluchače ignoruje.
+if (!window.matchMedia) {
+    window.matchMedia = (query) => ({
+        matches: false,
+        media: query,
+        onchange: null,
+        addListener: () => {},
+        removeListener: () => {},
+        addEventListener: () => {},
+        removeEventListener: () => {},
+        dispatchEvent: () => false,
+    });
+}

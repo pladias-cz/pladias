@@ -375,6 +375,7 @@
           "taxonChangeReady": "Akcja (zmiana taksonu) przygotowana.",
           "tooManyRecords": "Filtru odpowiada {{count}} rekordów. Masowo można edytować maksymalnie {{max}} rekordów. Doprecyzuj filtr."
         },
+        "openButton": "Edycje masowe",
         "sections": {
           "buffer": {
             "label": "Nowy bufor",

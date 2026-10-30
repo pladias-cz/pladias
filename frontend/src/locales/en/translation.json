@@ -376,6 +376,7 @@
           "taxonChangeReady": "Action (change of the taxon) prepared.",
           "tooManyRecords": "The filter matches {{count}} records. At most {{max}} records can be bulk edited. Refine the filter."
         },
+        "openButton": "Bulk edits",
         "sections": {
           "buffer": {
             "label": "New buffer",

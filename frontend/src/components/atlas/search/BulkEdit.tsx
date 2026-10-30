@@ -30,9 +30,8 @@ export default function BulkEdit({records, totalCount, searchPayloadEntries, onB
     const bulkEdit = useBulkEdit({records, totalCount, searchPayloadEntries, onBulkEditComplete});
 
     return (
-        <section className="bulk-edit-panel p-3 p-lg-4 mt-4 w-100">
+        <section className="bulk-edit-panel p-3 p-lg-4 w-100">
             {bulkEdit.confirmDialog}
-            <h4 className="bulk-edit-title mb-3">{t('atlas.search.bulkEdit.title')}</h4>
 
             <div className="bulk-edit-warning alert mb-3">
                 {t('atlas.search.bulkEdit.warning')}

@@ -376,6 +376,7 @@
           "taxonChangeReady": "Aktion (Änderung des Taxons) vorbereitet.",
           "tooManyRecords": "Auf den Filter passen {{count}} Datensätze. Sammelmäßig können maximal {{max}} Datensätze bearbeitet werden. Präzisieren Sie den Filter."
         },
+        "openButton": "Sammelbearbeitungen",
         "sections": {
           "buffer": {
             "label": "Neuer Puffer",

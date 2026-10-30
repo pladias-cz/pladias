@@ -6,10 +6,8 @@
     font-family: "IBM Plex Sans Condensed", "Trebuchet MS", sans-serif;
 }
 
-.bulk-edit-title {
-    font-weight: 700;
-    letter-spacing: 0.02em;
-    text-transform: uppercase;
+.bulk-edit-offcanvas {
+    --bs-offcanvas-height: 80vh;
 }
 
 .bulk-edit-warning {

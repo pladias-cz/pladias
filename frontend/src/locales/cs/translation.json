@@ -376,6 +376,7 @@
           "taxonChangeReady": "Akce (změna taxonu) připravena.",
           "tooManyRecords": "Filtru odpovídá {{count}} záznamů. Hromadně lze upravit maximálně {{max}} záznamů. Zpřesněte filtr."
         },
+        "openButton": "Hromadné úpravy",
         "sections": {
           "buffer": {
             "label": "Nový buffer",

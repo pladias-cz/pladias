@@ -1,10 +1,13 @@
 /**
  * Zobrazení výsledků vyhledávání: paginace a počet řádků z core DataTable
  * (včetně volby počtu řádků na stránku), řazení kliknutím na hlavičku
- * sloupce tabulky záznamů. BulkEdit se vkládá jako children (jen pro editory).
+ * sloupce tabulky záznamů. BulkEdit se vkládá jako children (jen pro editory)
+ * a zobrazuje se v offcanvasu ze spodu – otevírá ho tlačítko „Hromadné
+ * úpravy“ vedle „Nového hledání“.
  */
 
-import type {ReactNode} from 'react';
+import {useState, type ReactNode} from 'react';
+import {Offcanvas} from 'react-bootstrap';
 import {useTranslation} from 'react-i18next';
 import {PladiasRecordsTable} from '@/components/atlas/mapDetail/PladiasRecordsTable';
 import type {RecordPladias} from '@/models';
@@ -25,7 +28,7 @@ interface SearchResultsViewProps {
     /** Klik na řaditelnou hlavičku sloupce – sort klíč backendu a směr. */
     onSortChange: (sortBy: string, sortOrder: 'asc' | 'desc') => void;
     onNewSearch: () => void;
-    /** BulkEdit panel – jen pro mapAdmin/bulkEditor. */
+    /** BulkEdit panel – jen pro mapAdmin/bulkEditor; vykresluje se v offcanvasu ze spodu. */
     children?: ReactNode;
 }
 
@@ -45,6 +48,7 @@ export function SearchResultsView({
                                       children,
                                   }: SearchResultsViewProps) {
     const {t} = useTranslation();
+    const [showBulkEdit, setShowBulkEdit] = useState(false);
 
     const totalPages = computeTotalPages(totalCount, pageSize);
     const canGoPrev = currentPage > 1 && !isLoading;
@@ -106,14 +110,25 @@ export function SearchResultsView({
                     total={totalCount ?? records.length}
                     loading={isLoading}
                 />
-                <button
-                    type="button"
-                    className="btn btn-outline-primary btn-sm"
-                    disabled={isLoading}
-                    onClick={onNewSearch}
-                >
-                    {t('atlas.search.grid.newSearch')}
-                </button>
+                <div className="d-flex gap-2">
+                    <button
+                        type="button"
+                        className="btn btn-outline-primary btn-sm"
+                        disabled={isLoading}
+                        onClick={onNewSearch}
+                    >
+                        {t('atlas.search.grid.newSearch')}
+                    </button>
+                    {children && (
+                        <button
+                            type="button"
+                            className="btn btn-outline-secondary btn-sm"
+                            onClick={() => setShowBulkEdit(true)}
+                        >
+                            {t('atlas.search.bulkEdit.openButton')}
+                        </button>
+                    )}
+                </div>
             </div>
 
             <div className="w-100">
@@ -127,7 +142,21 @@ export function SearchResultsView({
                 />
             </div>
 
-            {children}
+            {children && (
+                <Offcanvas
+                    show={showBulkEdit}
+                    onHide={() => setShowBulkEdit(false)}
+                    placement="bottom"
+                    className="bulk-edit-offcanvas"
+                >
+                    <Offcanvas.Header closeButton closeLabel={t('common.close')}>
+                        <Offcanvas.Title>{t('atlas.search.bulkEdit.title')}</Offcanvas.Title>
+                    </Offcanvas.Header>
+                    <Offcanvas.Body>
+                        {children}
+                    </Offcanvas.Body>
+                </Offcanvas>
+            )}
         </div>
     );
 }

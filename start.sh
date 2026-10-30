@@ -2,6 +2,8 @@
 #!/bin/bash
 set -e # stop if anything went wrong
 
+exec 1>&2 #no output on stdout from unknown reason
+
 cd /home/ubuntu/app
 
 echo "Starting database migration..."
@@ -16,10 +18,6 @@ java -cp "lib/*:conf" db.DbMigrationRunner \
   "$DB_USER" "$DB_PASSWORD"
 
 echo "Migration finished successfully."
-
-echo "Starting Play..."
-echo "Testing stdout"
-echo "Testing stderr" >&2
 
 exec /home/ubuntu/app/bin/pladiasweb
 ```

@@ -9,7 +9,9 @@ import io.ebean.DB;
 import io.ebean.SqlRow;
 import models.*;
 import models.Record;
+import platform.ProjectConstants;
 import play.i18n.Messages;
+import service.config.IConfigService;
 import service.records.RecordEditPermissions;
 import utils.MapSquareUtils;
 
@@ -21,6 +23,12 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class MapDetailService {
+
+    private final IConfigService _configService;
+
+    public MapDetailService(IConfigService configService) {
+        _configService = configService;
+    }
 
     /**
      * Get validation statuses for the 8 neighboring squares around the given square for a specific taxon.
@@ -58,6 +66,11 @@ public class MapDetailService {
         if (projectType == null) {
             return MapDetailResult.error("Invalid project type. Must be one of: gbif, inaturalist, pladias");
         }
+        if (!isProjectAvailable(projectType)) {
+            // Instance nemá data daného externího zdroje (conf atlas.externalRecordSources) –
+            // prázdná odpověď místo SQL chyby nad chybějícím schématem gbif.
+            return MapDetailResult.success(List.of());
+        }
 
         MapSquareNew square = MapSquareNew.find().query().where().eq("code", squareCode).findOne();
         if (square == null) {
@@ -88,6 +101,11 @@ public class MapDetailService {
         ProjectType projectType = ProjectType.fromString(project);
         if (projectType == null) {
             return MapDetailResult.error("Invalid project type. Must be one of: gbif, inaturalist, pladias");
+        }
+        if (!isProjectAvailable(projectType)) {
+            // Instance nemá data daného externího zdroje (conf atlas.externalRecordSources) –
+            // prázdná odpověď místo SQL chyby nad chybějícím schématem gbif.
+            return MapDetailResult.success(List.of());
         }
 
         // Delegate to specific project type method
@@ -510,6 +528,24 @@ public class MapDetailService {
 
         return dtos;
     }
+    /**
+     * Dostupnost zdroje záznamů v dané instanci – PLADIAS vždy, externí zdroje
+     * (gbif/inaturalist) dle conf `atlas.externalRecordSources`, protože schéma
+     * gbif v databázi instance nemusí existovat. Chybějící klíč v konfiguraci
+     * znamená dřívější chování (všechny zdroje).
+     */
+    private boolean isProjectAvailable(ProjectType projectType) {
+        if (projectType == ProjectType.PLADIAS) {
+            return true;
+        }
+        try {
+            return _configService.getStringList(ProjectConstants.ExternalRecordSourcesKey)
+                .contains(projectType.getAbbrev());
+        } catch (Exception e) {
+            return true;
+        }
+    }
+
     /**
      * Enum for project types supported by the nearby records endpoint.
      */

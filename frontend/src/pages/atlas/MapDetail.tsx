@@ -4,12 +4,13 @@ import {useTranslation} from 'react-i18next';
 import {useParams} from 'react-router-dom';
 import {useEffect, useMemo, useState, useRef, useCallback} from 'react';
 import {useQuery, useQueryClient} from '@tanstack/react-query';
+import {useInstanceConfig} from '@/context/InstanceConfigContext';
 import type {RecordPladias} from '@/models';
 import type {RecordsByProject, RecordsByProjectMinimal} from '@/models/AtlasRecords';
 import {
-    getNearbyExternalRecords,
+    getNearbyExternalRecordsBySources,
     getNearbyPladiasRecords,
-    getSquareExternalRecords,
+    getSquareExternalRecordsBySources,
     getSquarePladiasRecords,
 } from '@/services/atlasApi';
 import {getTaxon} from '@/services/taxonApi';
@@ -45,6 +46,8 @@ export default function MapDetail() {
     });
     // viditelnost skupin záznamů na mapě (checkboxy v InfoPanelu), perzistováno v user settings
     const {visibleProjects, toggleProjectVisibility} = useRecordSourceVisibility();
+    // externí zdroje záznamů dostupné v instanci (conf atlas.externalRecordSources)
+    const {externalRecordSources} = useInstanceConfig();
 
     usePageTitle(t('atlas.mapDetail.title'));
 
@@ -66,26 +69,26 @@ export default function MapDetail() {
         }
     }, [taxonError, t]);
 
-    // záznamy všech tří projektů – minimální data pro mapu (okolní kvadranty)
-    // a plná pro tabulku (aktuální kvadrant) se načítají společně jako dřív
-    const recordsKey = useMemo(() => ['squareRecords', squareId, id] as const, [squareId, id]);
+    // záznamy dostupných projektů – minimální data pro mapu (okolní kvadranty)
+    // a plná pro tabulku (aktuální kvadrant) se načítají společně jako dřív;
+    // externí zdroje omezuje konfigurace instance, takže instance bez
+    // GBIF/iNaturalist dat nevolá endpointy, které by na backendu selhaly
+    const recordsKey = useMemo(
+        () => ['squareRecords', squareId, id, externalRecordSources] as const,
+        [squareId, id, externalRecordSources],
+    );
     const recordsQuery = useQuery({
         queryKey: recordsKey,
         queryFn: async (): Promise<SquareRecords> => {
-            const [
-                mapPladias, mapGbif, mapInaturalist,
-                tablePladias, tableGbif, tableInaturalist
-            ] = await Promise.all([
+            const [mapPladias, tablePladias, mapExternal, tableExternal] = await Promise.all([
                 getNearbyPladiasRecords(squareId!, id!),
-                getNearbyExternalRecords(squareId!, id!, 'gbif'),
-                getNearbyExternalRecords(squareId!, id!, 'inaturalist'),
                 getSquarePladiasRecords(squareId!, id!),
-                getSquareExternalRecords(squareId!, id!, 'gbif'),
-                getSquareExternalRecords(squareId!, id!, 'inaturalist'),
+                getNearbyExternalRecordsBySources(squareId!, id!, externalRecordSources),
+                getSquareExternalRecordsBySources(squareId!, id!, externalRecordSources),
             ]);
             return {
-                mapRecords: {pladias: mapPladias, gbif: mapGbif, inaturalist: mapInaturalist},
-                tableRecords: {pladias: tablePladias, gbif: tableGbif, inaturalist: tableInaturalist},
+                mapRecords: {pladias: mapPladias, ...mapExternal},
+                tableRecords: {pladias: tablePladias, ...tableExternal},
             };
         },
         enabled: id !== null && squareId !== undefined,

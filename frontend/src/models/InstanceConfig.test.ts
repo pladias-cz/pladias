@@ -39,4 +39,27 @@ describe('InstanceConfig', () => {
         expect(config.isExcerptionProject(14)).toBe(false);
         expect(config.isNdopProject(9)).toBe(false);
     });
+
+    it('bez klíče (starší backend) jsou dostupné všechny externí zdroje záznamů', () => {
+        const config = new InstanceConfig({});
+
+        expect(config.externalRecordSources).toEqual(['gbif', 'inaturalist']);
+        expect(config.hasExternalRecordSource('gbif')).toBe(true);
+        expect(config.hasExternalRecordSource('inaturalist')).toBe(true);
+    });
+
+    it('instance bez GBIF/iNaturalist dat má prázdný seznam externích zdrojů', () => {
+        const config = new InstanceConfig({externalRecordSources: []});
+
+        expect(config.externalRecordSources).toEqual([]);
+        expect(config.hasExternalRecordSource('gbif')).toBe(false);
+        expect(config.hasExternalRecordSource('inaturalist')).toBe(false);
+    });
+
+    it('částečná konfigurace povolí jen vybrané externí zdroje', () => {
+        const config = new InstanceConfig({externalRecordSources: ['inaturalist']});
+
+        expect(config.hasExternalRecordSource('inaturalist')).toBe(true);
+        expect(config.hasExternalRecordSource('gbif')).toBe(false);
+    });
 });

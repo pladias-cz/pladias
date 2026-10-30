@@ -5,6 +5,8 @@
 
 import {ApiError, apiGet, apiPost, apiPut, ensureSuccess, requireData, requireEnvelope} from './apiClient';
 import type {ApiResult} from '@/models/ApiResponse';
+import type {ExternalProject} from '@/models/AtlasRecords';
+import {parseExternalSources} from '@/models/AtlasRecords';
 import type {UserId} from '@/models/UserId';
 import {parseRoles, type UserRole} from '@/models/UserRole';
 
@@ -22,6 +24,8 @@ export interface ReactConfig {
     excerptionProjectIds: number[];
     /** NDOP projekty (conf `atlas.ndopProjectIds`) – přímý odkaz na kartu nálezu. */
     ndopProjectIds: number[];
+    /** Externí zdroje záznamů dostupné v instanci (conf `atlas.externalRecordSources`) – map detail. */
+    externalRecordSources?: ExternalProject[];
     /** Role přiřazené backendem (enum UserRole) – runtime kontrola driftu BE↔FE v `parseRoles`. */
     roles: UserRole[];
     userEmail: string;
@@ -31,8 +35,13 @@ export interface ReactConfig {
 
 export async function loadReactConfig(): Promise<ReactConfig> {
     const config = await apiGet<ReactConfig>('/api/react/config');
-    // Sekce B: neznámé role z backendu se zalogují (drift BE↔FE) a zahodí.
-    return {...config, roles: parseRoles(config?.roles)};
+    // Sekce B: neznámé role z backendu se zalogují (drift BE↔FE) a zahodí;
+    // stejně tak externí zdroje záznamů (atlas.externalRecordSources).
+    return {
+        ...config,
+        roles: parseRoles(config?.roles),
+        externalRecordSources: parseExternalSources(config?.externalRecordSources),
+    };
 }
 
 export interface AddUserInput {

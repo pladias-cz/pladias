@@ -36,6 +36,8 @@ public class ConfigController extends ControllerBase {
         // Projects with exceptional behavior in the atlas module (per-instance IDs, see common.conf)
         config.put("excerptionProjectIds", configService.getIntList(ProjectConstants.ExcerptionProjectIdsKey));
         config.put("ndopProjectIds", configService.getIntList(ProjectConstants.NdopProjectIdsKey));
+        // External record sources available in this instance (map detail tabs, see common.conf)
+        config.put("externalRecordSources", configService.getStringList(ProjectConstants.ExternalRecordSourcesKey));
 
         // User-specific data (can change during session)
         config.put("id", currentUser.getId());

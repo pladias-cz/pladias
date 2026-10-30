@@ -3,6 +3,8 @@ import userEvent from '@testing-library/user-event';
 import type {ComponentProps} from 'react';
 import {afterEach, describe, expect, it, vi} from 'vitest';
 import type {RecordsByProject} from '@/models/AtlasRecords';
+import type {InstanceConfigData} from '@/models/InstanceConfig';
+import {InstanceConfigProvider} from '@/context/InstanceConfigContext';
 import {InfoPanel} from './InfoPanel';
 import {ALL_SOURCES_VISIBLE} from './recordSources';
 import '@/i18n/i18n';
@@ -12,6 +14,8 @@ import '@/i18n/i18n';
  * záznamů, přepínání tabů, checkboxy viditelnosti na mapě v hlavičkách –
  * klik na checkbox volá onToggleProjectVisibility se správným zdrojem a
  * nesmí přepnout aktivní tab (stopPropagation v RecordSourceTab).
+ * Taby omezuje konfigurace instance (externalRecordSources) – bez ní se
+ * renderují všechny tři zdroje (kompatibilita se starším backendem).
  * Tabulky jsou mocknuté – testuje se jen chování tabs, ne obsah tabulek.
  */
 
@@ -38,14 +42,16 @@ function makeRecords(pladiasCount: number, gbifCount: number, inaturalistCount: 
 
 type InfoPanelProps = ComponentProps<typeof InfoPanel>;
 
-function renderPanel(props: Partial<InfoPanelProps> = {}) {
+function renderPanel(props: Partial<InfoPanelProps> = {}, config: InstanceConfigData = {}) {
     return render(
-        <InfoPanel
-            records={makeRecords(2, 1, 0)}
-            visibleProjects={ALL_SOURCES_VISIBLE}
-            onToggleProjectVisibility={vi.fn()}
-            {...props}
-        />,
+        <InstanceConfigProvider config={config}>
+            <InfoPanel
+                records={makeRecords(2, 1, 0)}
+                visibleProjects={ALL_SOURCES_VISIBLE}
+                onToggleProjectVisibility={vi.fn()}
+                {...props}
+            />
+        </InstanceConfigProvider>,
     );
 }
 
@@ -125,5 +131,28 @@ describe('InfoPanel', () => {
 
         expect(screen.getByTestId('pladias-table-0')).toBeInTheDocument();
         expect(screen.getByText('Žádné záznamy')).toBeInTheDocument();
+    });
+
+    it('bez konfigurace instance vykreslí všechny tři taby (kompatibilita)', () => {
+        renderPanel();
+
+        expect(screen.getByRole('tab', {name: /PLADIAS/})).toBeInTheDocument();
+        expect(screen.getByRole('tab', {name: /GBIF/})).toBeInTheDocument();
+        expect(screen.getByRole('tab', {name: /iNaturalist/})).toBeInTheDocument();
+    });
+
+    it('instance bez externích zdrojů zobrazí jen tab PLADIAS', () => {
+        renderPanel({}, {externalRecordSources: []});
+
+        expect(screen.getByRole('tab', {name: /PLADIAS/})).toBeInTheDocument();
+        expect(screen.queryByRole('tab', {name: /GBIF/})).toBeNull();
+        expect(screen.queryByRole('tab', {name: /iNaturalist/})).toBeNull();
+    });
+
+    it('částečná konfigurace zobrazí jen dostupné externí taby', () => {
+        renderPanel({}, {externalRecordSources: ['inaturalist']});
+
+        expect(screen.queryByRole('tab', {name: /GBIF/})).toBeNull();
+        expect(screen.getByRole('tab', {name: /iNaturalist/})).toBeInTheDocument();
     });
 });

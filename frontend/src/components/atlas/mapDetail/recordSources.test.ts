@@ -2,6 +2,7 @@ import {describe, expect, it} from 'vitest';
 import {
     ALL_SOURCES_VISIBLE,
     RECORD_SOURCES,
+    availableRecordSources,
     filterRecordsByVisibility,
     parseSavedVisibility,
     visibleSourceIds,
@@ -11,6 +12,22 @@ describe('recordSources', () => {
     describe('RECORD_SOURCES', () => {
         it('obsahuje všechny tři zdroje v pořadí tabů', () => {
             expect(RECORD_SOURCES.map(source => source.id)).toEqual(['pladias', 'gbif', 'inaturalist']);
+        });
+    });
+
+    describe('availableRecordSources', () => {
+        it('bez externích zdrojů zůstane jen PLADIAS – je dostupný vždy', () => {
+            expect(availableRecordSources([]).map(source => source.id)).toEqual(['pladias']);
+        });
+
+        it('s oběma externími zdroji vrací celý registr (dřívější chování)', () => {
+            expect(availableRecordSources(['gbif', 'inaturalist']).map(source => source.id))
+                .toEqual(['pladias', 'gbif', 'inaturalist']);
+        });
+
+        it('vynechá jen nedostupné externí zdroje, pořadí přebírá z registru', () => {
+            expect(availableRecordSources(['inaturalist']).map(source => source.id))
+                .toEqual(['pladias', 'inaturalist']);
         });
     });
 

@@ -9,14 +9,22 @@ import models.User;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.mvc.Security;
+import service.config.IConfigService;
 import service.map.MapDetailService;
 import utils.JsonResult;
 import utils.SessionUtils;
 
+import javax.inject.Inject;
+
 @Security.Authenticated(Authorized.class)
 public class MapDetailController extends ControllerBase {
 
-    private final MapDetailService mapDetailService = new MapDetailService();
+    private final MapDetailService mapDetailService;
+
+    @Inject
+    public MapDetailController(IConfigService configService) {
+        this.mapDetailService = new MapDetailService(configService);
+    }
 
     /**
      * Get validation statuses for the 8 neighboring squares around the given square for a specific taxon.

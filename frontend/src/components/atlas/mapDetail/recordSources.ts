@@ -5,7 +5,7 @@
  * barvy markerů na mapě – nový zdroj = jeden záznam v RECORD_SOURCES.
  */
 
-import type {ProjectType} from '@/models/AtlasRecords';
+import type {ExternalProject, ProjectType} from '@/models/AtlasRecords';
 
 /** Konfigurace jednoho zdroje záznamů. */
 export interface RecordSourceConfig {
@@ -27,6 +27,19 @@ export const RECORD_SOURCES: readonly RecordSourceConfig[] = [
     // barva okraje iNaturalist markerů (RecordMarkers)
     {id: 'inaturalist', label: 'iNaturalist', markerColor: '#00AA00'},
 ];
+
+/**
+ * Zdroje dostupné v dané instanci – PLADIAS vždy, externí jen nakonfigurované
+ * (conf `atlas.externalRecordSources`, viz InstanceConfig). Instance bez
+ * GBIF/iNaturalist dat tak nekreslí jejich taby v InfoPanelu ani markery na mapě.
+ */
+export function availableRecordSources(
+    externalSources: readonly ExternalProject[],
+): readonly RecordSourceConfig[] {
+    return RECORD_SOURCES.filter(
+        source => source.id === 'pladias' || externalSources.includes(source.id),
+    );
+}
 
 /** Viditelnost skupin záznamů na mapě (checkboxy v hlavičkách tabů). */
 export type RecordSourceVisibility = Record<ProjectType, boolean>;

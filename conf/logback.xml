@@ -1,16 +1,15 @@
 <configuration>
-
     <conversionRule conversionWord="coloredLevel"
-                    converterClass="play.api.libs.logback.ColoredLevel" />
-
+                    class="play.api.libs.logback.ColoredLevel" />
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>%date [%level] %coloredLevel %logger{15} - %message%n%xException{10}</pattern>
         </encoder>
     </appender>
 
-    <logger name="play" level="INFO" />
+    <logger name="play" level="WARN" />
     <logger name="application" level="INFO" />
+    <logger name="org.hibernate" level="WARN" />
 
     <root level="INFO">
         <appender-ref ref="STDOUT" />

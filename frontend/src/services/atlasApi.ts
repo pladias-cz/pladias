@@ -70,6 +70,46 @@ export async function getSquareExternalRecords(
 }
 
 /**
+ * GET /api/react/atlas/records/{square}/{taxonId}/{project} pro externí zdroje
+ * dostupné v instanci – stahuje souběžně jen nakonfigurované zdroje (conf
+ * `atlas.externalRecordSources`), nedostupné doplní prázdnými poli, aby výsledek
+ * odpovídal kompletnímu tvaru RecordsByProject (taby/markery je nekreslí).
+ */
+export async function getNearbyExternalRecordsBySources(
+    squareCode: string,
+    taxonId: number,
+    sources: readonly ExternalProject[],
+): Promise<Record<ExternalProject, RecordGbifMinimal[]>> {
+    return collectExternalRecords(sources, source => getNearbyExternalRecords(squareCode, taxonId, source));
+}
+
+/** GET /api/react/atlas/records-square/{square}/{taxonId}/{project} – totéž pro data tabulky. */
+export async function getSquareExternalRecordsBySources(
+    squareCode: string,
+    taxonId: number,
+    sources: readonly ExternalProject[],
+): Promise<Record<ExternalProject, RecordGbifMinimal[]>> {
+    return collectExternalRecords(sources, source => getSquareExternalRecords(squareCode, taxonId, source));
+}
+
+/**
+ * Souběžné stažení záznamů dostupných externích zdrojů – objekt má vždy všechny
+ * klíče ExternalProject (prázdná pole pro nedostupné zdroje), takže se výsledek
+ * dá spreadovat do RecordsByProject/RecordsByProjectMinimal bez dalších kontrol.
+ */
+async function collectExternalRecords(
+    sources: readonly ExternalProject[],
+    load: (source: ExternalProject) => Promise<RecordGbifMinimal[]>,
+): Promise<Record<ExternalProject, RecordGbifMinimal[]>> {
+    const loaded = await Promise.all(sources.map(async source => [source, await load(source)] as const));
+    const result: Record<ExternalProject, RecordGbifMinimal[]> = {gbif: [], inaturalist: []};
+    for (const [source, records] of loaded) {
+        result[source] = records;
+    }
+    return result;
+}
+
+/**
  * GET /api/react/atlas/search/records-with-comments – záznamy s komentáři
  * aktuálního uživatele. Odpověď nese `data.records` (PageSearchResults).
  */

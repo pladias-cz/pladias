@@ -98,7 +98,8 @@ export default function App() {
         hasBiblioModule: config.hasBiblioModule,
         hasMeasurementsModule: config.hasMeasurementsModule,
         excerptionProjectIds: config.excerptionProjectIds ?? [],
-        ndopProjectIds: config.ndopProjectIds ?? []
+        ndopProjectIds: config.ndopProjectIds ?? [],
+        externalRecordSources: config.externalRecordSources
     };
 
     const userData = {

@@ -1,3 +1,5 @@
+import {EXTERNAL_PROJECTS, type ExternalProject} from './AtlasRecords';
+
 export interface InstanceConfigData {
     isVascular?: boolean;
     hasAtlasModule?: boolean;
@@ -7,6 +9,8 @@ export interface InstanceConfigData {
     excerptionProjectIds?: number[];
     /** NDOP projekty (conf `atlas.ndopProjectIds`) – ID dle DB dané instance. */
     ndopProjectIds?: number[];
+    /** Externí zdroje záznamů mapového detailu (conf `atlas.externalRecordSources`). */
+    externalRecordSources?: ExternalProject[];
 }
 
 /** Modul instance dostupný podle konfigurace (`ConfigController.config`). */
@@ -21,6 +25,8 @@ class InstanceConfig {
     readonly excerptionProjectIds: number[];
     /** NDOP projekty (conf `atlas.ndopProjectIds`) – ID dle DB dané instance. */
     readonly ndopProjectIds: number[];
+    /** Externí zdroje záznamů dostupné v instanci – omezují taby/markery map detailu. */
+    readonly externalRecordSources: ExternalProject[];
 
     constructor(data: InstanceConfigData) {
         this.isVascular = data.isVascular || false;
@@ -29,6 +35,9 @@ class InstanceConfig {
         this.hasMeasurementsModule = data.hasMeasurementsModule || false;
         this.excerptionProjectIds = data.excerptionProjectIds ?? [];
         this.ndopProjectIds = data.ndopProjectIds ?? [];
+        // Chybějící klíč (starší backend bez konfigurace) = všechny externí
+        // zdroje, tj. dřívější chování.
+        this.externalRecordSources = data.externalRecordSources ?? [...EXTERNAL_PROJECTS];
     }
 
     /**
@@ -61,6 +70,14 @@ class InstanceConfig {
      */
     isNdopProject(projectId: number | null | undefined): boolean {
         return projectId != null && this.ndopProjectIds.includes(projectId);
+    }
+
+    /**
+     * Dostupnost externího zdroje záznamů v map detailu (taby InfoPanelu, markery
+     * na mapě). PLADIAS není externí zdroj – vlastní data jsou dostupná vždy.
+     */
+    hasExternalRecordSource(source: ExternalProject): boolean {
+        return this.externalRecordSources.includes(source);
     }
 }
 

@@ -44,4 +44,8 @@ public class ProjectConstants {
     // Projekty s výjimečným chováním v atlasovém modulu (ID dle DB dané instance)
     public static final String ExcerptionProjectIdsKey = "atlas.excerptionProjectIds";
     public static final String NdopProjectIdsKey = "atlas.ndopProjectIds";
+
+    // Externí zdroje záznamů mapového detailu dostupné v instanci
+    // (schéma gbif v DB dané instance nemusí existovat)
+    public static final String ExternalRecordSourcesKey = "atlas.externalRecordSources";
 }

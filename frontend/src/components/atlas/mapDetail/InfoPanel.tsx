@@ -5,8 +5,9 @@ import {PladiasRecordsTable} from './PladiasRecordsTable';
 import {ExternalRecordsTable} from './ExternalRecordsTable';
 import {Tabs, Tab} from 'react-bootstrap';
 import {useState} from 'react';
-import {RECORD_SOURCES, type RecordSourceVisibility} from './recordSources';
+import {availableRecordSources, type RecordSourceVisibility} from './recordSources';
 import {RecordSourceTabTitle} from './RecordSourceTabTitle';
+import {useInstanceConfig} from '@/context/InstanceConfigContext';
 import './InfoPanel.scss';
 
 interface InfoPanelProps {
@@ -40,6 +41,10 @@ export function InfoPanel({
                               onToggleProjectVisibility
                           }: InfoPanelProps) {
     const {t} = useTranslation();
+    const instanceConfig = useInstanceConfig();
+    // Taby jen pro zdroje dostupné v instanci (atlas.externalRecordSources) –
+    // instance bez GBIF/iNaturalist dat zobrazí jen tab PLADIAS.
+    const sources = availableRecordSources(instanceConfig.externalRecordSources);
 
     const [activeKey, setActiveKey] = useState<ProjectType>('pladias');
 
@@ -60,7 +65,7 @@ export function InfoPanel({
                         activeKey={activeKey}
                         onSelect={(k) => k && setActiveKey(k as ProjectType)}
                     >
-                        {RECORD_SOURCES.map(source => (
+                        {sources.map(source => (
                             <Tab
                                 key={source.id}
                                 eventKey={source.id}

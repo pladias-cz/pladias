@@ -258,9 +258,10 @@ export function PladiasRecordsTable({
                                     {record.computedQuadrantCode ? record.computedQuadrantCode.slice(-1) : '-'}
                                 </td>
                                 {isVascular && (
+                                    // Fytochorion: v buňce jen kód (phytoId), celý název nese tooltip.
                                     <td className="align-text-top"
                                         title={record.phytochorionName || ''}>
-                                        {record.phytochorionName || '-'}
+                                        {record.phytochorionPhytoId || '-'}
                                     </td>
                                 )}
                                 <td className="align-text-top">

@@ -24,8 +24,8 @@ vi.mock('./AddCommentModal', () => ({
 
 /**
  * Minimální záznam – jen pole, ke kterým se collapsed řádek tabulky dostane.
- * Herbářová revize i NDOP odkaz se testují přes jednoznačný batchAuthorName,
- * protože projectName sdílí buňku s dalším textem (nedá se dohledat přes getByText).
+ * nearestTownName je jednoznačný dohledávací klíč řádku (sloupec Lokalita) –
+ * na rozdíl od projectName/batchAuthorName se vykresluje pro každý typ projektu.
  */
 function makeRecord(id: number, projectId: number | null, batchAuthorName: string): RecordPladias {
     return {
@@ -34,6 +34,8 @@ function makeRecord(id: number, projectId: number | null, batchAuthorName: strin
         projectName: `Projekt ${projectId ?? 'bez'}`,
         originalId: '123',
         batchAuthorName,
+        // jednoznačná obec – přes ni se dohledává řádek tabulky (rowOf)
+        nearestTownName: `Obec ${id}`,
         // ACCEPTED – u excerpčního projektu se herbářová revize zobrazuje
         validationStatusId: 3,
         herbariums: [{id: 1, name: 'CB', label: 'Herbář CB'}],
@@ -60,9 +62,9 @@ function renderTable(
     );
 }
 
-/** Řádek tabulky dohledaný přes jednoznačného autora importu. */
-function rowOf(batchAuthorName: string): HTMLElement {
-    return screen.getByText(batchAuthorName).closest('tr') as HTMLElement;
+/** Řádek tabulky dohledaný přes jednoznačnou obec záznamu (sloupec Lokalita). */
+function rowOf(nearestTownName: string): HTMLElement {
+    return screen.getByText(nearestTownName).closest('tr') as HTMLElement;
 }
 
 afterEach(() => cleanup());
@@ -71,7 +73,7 @@ describe('PladiasRecordsTable – projektově podmíněné prvky', () => {
     it('excerpční projekt: oddělovač "--" a herbářová revize, bez NDOP odkazu', () => {
         renderTable([makeRecord(1, 14, 'Excerpční autor')]);
 
-        const row = rowOf('Excerpční autor');
+        const row = rowOf('Obec 1');
         expect(row).toHaveTextContent('--');
         expect(within(row).getByTestId('herbarium-quality')).toBeInTheDocument();
         expect(within(row).queryByText('přímý odkaz')).toBeNull();
@@ -80,7 +82,7 @@ describe('PladiasRecordsTable – projektově podmíněné prvky', () => {
     it('NDOP projekt: přímý odkaz na kartu nálezu, bez oddělovače a herbářové revize', () => {
         renderTable([makeRecord(2, 9, 'NDOP autor')]);
 
-        const row = rowOf('NDOP autor');
+        const row = rowOf('Obec 2');
         const link = within(row).getByRole('link', {name: 'přímý odkaz'});
         expect(link).toHaveAttribute('href', 'http://portal.nature.cz/nd/find.php?akce=view&akce2=stopValidaci&karta_id=123');
         expect(row).not.toHaveTextContent('--');
@@ -90,7 +92,7 @@ describe('PladiasRecordsTable – projektově podmíněné prvky', () => {
     it('běžný projekt: bez oddělovače, herbářové revize i NDOP odkazu', () => {
         renderTable([makeRecord(3, 1, 'Ostatní autor')]);
 
-        const row = rowOf('Ostatní autor');
+        const row = rowOf('Obec 3');
         expect(row).not.toHaveTextContent('--');
         expect(within(row).queryByTestId('herbarium-quality')).toBeNull();
         expect(within(row).queryByText('přímý odkaz')).toBeNull();
@@ -102,7 +104,7 @@ describe('PladiasRecordsTable – projektově podmíněné prvky', () => {
             ndopProjectIds: [],
         });
 
-        const row = rowOf('Autor bez konfigurace');
+        const row = rowOf('Obec 4');
         expect(row).not.toHaveTextContent('--');
         expect(within(row).queryByTestId('herbarium-quality')).toBeNull();
         expect(within(row).queryByText('přímý odkaz')).toBeNull();
@@ -158,5 +160,38 @@ describe('PladiasRecordsTable – sloupec Taxon a řazení hlaviček', () => {
 
         fireEvent.click(screen.getByRole('columnheader', {name: 'Sběratelé'}));
         expect(onHeaderSort).not.toHaveBeenCalled();
+    });
+});
+
+describe('PladiasRecordsTable – sloupec Fytochorion', () => {
+    it('v buňce je jen kód fytochorionu, celý název nese tooltip', () => {
+        renderTable(
+            [{
+                ...makeRecord(9, 1, 'Autor fytochorionu'),
+                phytochorionPhytoId: '21',
+                phytochorionName: 'Předhoří Českomoravské',
+            } as unknown as RecordPladias],
+            {isVascular: true},
+        );
+
+        const cell = screen.getByText('21').closest('td') as HTMLElement;
+        expect(cell).toHaveAttribute('title', 'Předhoří Českomoravské');
+        // název fytochorionu už není přímo v buňce
+        expect(cell).toHaveTextContent('21');
+        expect(cell).not.toHaveTextContent('Předhoří Českomoravské');
+    });
+
+    it('bez fytochorionu se v buňce vypíše pomlčka', () => {
+        renderTable(
+            [{...makeRecord(10, 1, 'Autor bez fytochorionu')} as unknown as RecordPladias],
+            {isVascular: true},
+        );
+
+        const row = rowOf('Obec 10') as HTMLTableRowElement;
+        const headerIndex = (screen.getByRole('columnheader', {name: /Fyt\./}) as HTMLTableCellElement)
+            .cellIndex;
+        const cell = row.cells[headerIndex];
+        expect(cell).toHaveTextContent('-');
+        expect(cell).toHaveAttribute('title', '');
     });
 });

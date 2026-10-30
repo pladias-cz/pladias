@@ -235,3 +235,38 @@ describe('PladiasRecordsTable – sloupec Kvadrant', () => {
         expect(quadrantCell(row)).toHaveTextContent('-');
     });
 });
+
+describe('PladiasRecordsTable – tlačítko Rozbalit vše / Sbalit vše', () => {
+    /** Dva záznamy s unikátním taxonOriginal – child řádek je jediné místo, kde se vykresluje. */
+    const records = [
+        {...makeRecord(101, 1, 'Autor rozbalení'), taxonOriginal: 'Originaus primus'} as unknown as RecordPladias,
+        {...makeRecord(102, 1, 'Autorka rozbalení'), taxonOriginal: 'Originaus secundus'} as unknown as RecordPladias,
+    ];
+
+    it('defaultně (mapDetail) se tlačítko nevykreslí', () => {
+        renderTable(records);
+
+        expect(screen.queryByRole('button', {name: 'Rozbalit vše'})).toBeNull();
+        expect(screen.queryByRole('button', {name: 'Sbalit vše'})).toBeNull();
+    });
+
+    it('se showExpandAllButton rozbalí klikem všechny řádky a druhým klikem sbalí', () => {
+        renderTable(records, {}, {showExpandAllButton: true});
+
+        // sbalené – child řádky nejsou ve DOM
+        expect(screen.queryByText('Originaus primus')).toBeNull();
+        expect(screen.queryByText('Originaus secundus')).toBeNull();
+
+        fireEvent.click(screen.getByRole('button', {name: 'Rozbalit vše'}));
+
+        // rozbalené – oba child řádky vykreslené, tlačítko přepnuté na sbalení
+        expect(screen.getByText('Originaus primus')).toBeInTheDocument();
+        expect(screen.getByText('Originaus secundus')).toBeInTheDocument();
+
+        fireEvent.click(screen.getByRole('button', {name: 'Sbalit vše'}));
+
+        expect(screen.queryByText('Originaus primus')).toBeNull();
+        expect(screen.queryByText('Originaus secundus')).toBeNull();
+        expect(screen.getByRole('button', {name: 'Rozbalit vše'})).toBeInTheDocument();
+    });
+});

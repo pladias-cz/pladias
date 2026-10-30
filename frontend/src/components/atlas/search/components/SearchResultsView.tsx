@@ -120,6 +120,7 @@ export function SearchResultsView({
                 <PladiasRecordsTable
                     records={records}
                     showTaxonName={true}
+                    showExpandAllButton={true}
                     showFullQuadrantCode={true}
                     sort={{sortBy, descending: sortDescending}}
                     onHeaderSort={handleHeaderSort}

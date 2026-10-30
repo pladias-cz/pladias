@@ -4,7 +4,6 @@ import {useTranslation} from 'react-i18next';
 import {PladiasRecordsTable} from './PladiasRecordsTable';
 import {ExternalRecordsTable} from './ExternalRecordsTable';
 import {Tabs, Tab} from 'react-bootstrap';
-import {useState} from 'react';
 import {availableRecordSources, type RecordSourceVisibility} from './recordSources';
 import {RecordSourceTabTitle} from './RecordSourceTabTitle';
 import {useInstanceConfig} from '@/context/InstanceConfigContext';
@@ -26,6 +25,10 @@ interface InfoPanelProps {
     /** Viditelnost skupin záznamů na mapě (checkboxy v hlavičkách tabů). */
     visibleProjects: RecordSourceVisibility;
     onToggleProjectVisibility: (project: ProjectType) => void;
+    /** Aktivní tab zdrojů – řízený shora (mapa přepíná tab při hoveru markeru cizího zdroje). */
+    activeSource: ProjectType;
+    /** Přepnutí aktivního tabu klikem na hlavičku. */
+    onSelectSource: (project: ProjectType) => void;
 }
 
 export function InfoPanel({
@@ -38,15 +41,15 @@ export function InfoPanel({
                               currentSquareCode,
                               onRecordUpdated,
                               visibleProjects,
-                              onToggleProjectVisibility
+                              onToggleProjectVisibility,
+                              activeSource,
+                              onSelectSource
                           }: InfoPanelProps) {
     const {t} = useTranslation();
     const instanceConfig = useInstanceConfig();
     // Taby jen pro zdroje dostupné v instanci (atlas.externalRecordSources) –
     // instance bez GBIF/iNaturalist dat zobrazí jen tab PLADIAS.
     const sources = availableRecordSources(instanceConfig.externalRecordSources);
-
-    const [activeKey, setActiveKey] = useState<ProjectType>('pladias');
 
     return (
         <div className="d-flex flex-column h-100 overflow-hidden">
@@ -62,8 +65,8 @@ export function InfoPanel({
                         props (eventKey/title) a obalující komponentu by převedl
                         na pouhý tab-pane bez hlavičky. */}
                     <Tabs
-                        activeKey={activeKey}
-                        onSelect={(k) => k && setActiveKey(k as ProjectType)}
+                        activeKey={activeSource}
+                        onSelect={(k) => k && onSelectSource(k as ProjectType)}
                     >
                         {sources.map(source => (
                             <Tab

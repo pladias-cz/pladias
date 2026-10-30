@@ -443,10 +443,10 @@ public class MapDetailService {
             : "g.institution_code != 'iNaturalist'";
 
         String sql =
-            "SELECT g.id," +
+            "SELECT g.gbif_id," +
                 "       ST_Y(g.coords) AS latitude, " +
                 "       ST_X(g.coords) AS longitude, " +
-                " g.coords_precision AS gps_precision," +
+                " g.coords_precision," +
                 " g.year," +
                 "  g.recorded_by," +
                 "  g.institution_code," +
@@ -497,10 +497,10 @@ public class MapDetailService {
             ? "g.institution_code = 'iNaturalist'"
             : "g.institution_code != 'iNaturalist'";
 
-        String sql = "SELECT g.id, " +
+        String sql = "SELECT g.gbif_id, " +
             "       ST_Y(g.coords) AS latitude, " +
             "       ST_X(g.coords) AS longitude, " +
-            "       g.coords_precision AS gps_precision, " +
+            "       g.coords_precision, " +
             "       g.year, " +
             "       g.recorded_by, " +
             "       g.institution_code, " +

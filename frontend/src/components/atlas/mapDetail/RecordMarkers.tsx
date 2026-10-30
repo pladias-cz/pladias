@@ -1,24 +1,29 @@
 import {Circle, CircleMarker, Popup, Tooltip} from 'react-leaflet';
 import type {RecordGbifMinimal, ProjectType} from '@/models/AtlasRecords';
+import {EXTERNAL_MARKER_FILL_COLOR} from './recordSources';
 import './RecordMarkers.scss';
 
 interface RecordMarkersProps {
     records: RecordGbifMinimal[];
     highlightedRecordId?: number | null;
     onRecordHover?: (recordId: number | null) => void;
+    /** Kód aktuálního kvadrantu – jen jeho záznamy mají popup a interakce, okolní se jen vykreslují. */
+    currentSquareCode: string;
 }
 
+/**
+ * Okraj markeru odlišuje zdroj záznamu (černá/červená/oranžová – zrcadlí
+ * RECORD_SOURCES v recordSources.ts), výplň je pro všechny externí zdroje
+ * pevně šedá (EXTERNAL_MARKER_FILL_COLOR). Markery všech zdrojů mají
+ * stejnou velikost.
+ */
 const MARKER_CONFIG: Record<ProjectType, { shape: 'circle', baseRadius: number, strokeColor: string }> = {
     pladias: {shape: 'circle', baseRadius: 8, strokeColor: '#000000'},
-    gbif: {shape: 'circle', baseRadius: 12, strokeColor: '#000000'},
-    inaturalist: {shape: 'circle', baseRadius: 10, strokeColor: '#00aa00'},
+    gbif: {shape: 'circle', baseRadius: 8, strokeColor: '#CC0000'},
+    inaturalist: {shape: 'circle', baseRadius: 8, strokeColor: '#EF7C09'},
 };
 
-function RecordMarkers({records, highlightedRecordId, onRecordHover}: RecordMarkersProps) {
-    const getValidationColor = (record: RecordGbifMinimal): string => {
-        return record.validationStatusColor || '#808080';
-    };
-
+function RecordMarkers({records, highlightedRecordId, onRecordHover, currentSquareCode}: RecordMarkersProps) {
     const formatRecordLabel = (record: RecordGbifMinimal): string => {
         const parts: string[] = [];
         if (record.year) {
@@ -34,8 +39,9 @@ function RecordMarkers({records, highlightedRecordId, onRecordHover}: RecordMark
         <>
             {records.map((record) => {
                 const isHighlighted = highlightedRecordId === record.id;
-                const color = getValidationColor(record);
                 const label = formatRecordLabel(record);
+                // záznamy mimo aktuální kvadrant se na mapě jen vykreslují – bez popupu a interakcí
+                const isCurrentSquare = record.computedSquareCode === currentSquareCode;
                 const config = MARKER_CONFIG[record.project] || MARKER_CONFIG.gbif;
                 const baseRadius = config.baseRadius;
                 const radius = isHighlighted ? baseRadius + 4 : baseRadius;
@@ -70,7 +76,7 @@ function RecordMarkers({records, highlightedRecordId, onRecordHover}: RecordMark
                                 radius={record.gpsPrecision! / 2}
                                 pathOptions={{
                                     color: config.strokeColor,
-                                    fillColor: color,
+                                    fillColor: EXTERNAL_MARKER_FILL_COLOR,
                                     fillOpacity: 0.25,
                                     weight: 1,
                                     dashArray: '4, 4'
@@ -85,11 +91,11 @@ function RecordMarkers({records, highlightedRecordId, onRecordHover}: RecordMark
                             radius={radius}
                             pathOptions={{
                                 color: config.strokeColor,
-                                fillColor: color,
+                                fillColor: EXTERNAL_MARKER_FILL_COLOR,
                                 fillOpacity: isHighlighted ? 0.9 : 0.6,
                                 weight: 2
                             }}
-                            eventHandlers={commonEventHandlers}
+                            eventHandlers={isCurrentSquare ? commonEventHandlers : undefined}
                         >
                             {label && (
                                 <Tooltip permanent direction="top" offset={[0, -16]}
@@ -105,7 +111,7 @@ function RecordMarkers({records, highlightedRecordId, onRecordHover}: RecordMark
                                     </span>
                                 </Tooltip>
                             )}
-                            {commonPopup}
+                            {isCurrentSquare && commonPopup}
                         </CircleMarker>
                     </>
                 );

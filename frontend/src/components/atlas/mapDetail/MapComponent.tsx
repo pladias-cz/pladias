@@ -363,6 +363,7 @@ export function MapComponent({
                         records={records.pladias}
                         highlightedRecordId={highlightedRecordId}
                         onRecordHover={onRecordHover}
+                        currentSquareCode={squareId}
                     />
                 )}
 
@@ -371,6 +372,7 @@ export function MapComponent({
                         records={[...(records.gbif || []), ...(records.inaturalist || [])]}
                         highlightedRecordId={highlightedRecordId}
                         onRecordHover={onRecordHover}
+                        currentSquareCode={squareId}
                     />
                 )}
             </MapCanvas>

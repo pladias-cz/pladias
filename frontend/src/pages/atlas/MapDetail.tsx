@@ -6,7 +6,7 @@ import {useEffect, useMemo, useState, useRef, useCallback} from 'react';
 import {useQuery, useQueryClient} from '@tanstack/react-query';
 import {useInstanceConfig} from '@/context/InstanceConfigContext';
 import type {RecordPladias} from '@/models';
-import type {RecordsByProject, RecordsByProjectMinimal} from '@/models/AtlasRecords';
+import type {ProjectType, RecordsByProject, RecordsByProjectMinimal} from '@/models/AtlasRecords';
 import {
     getNearbyExternalRecordsBySources,
     getNearbyPladiasRecords,
@@ -19,7 +19,7 @@ import {MapComponent} from '@/components/atlas/mapDetail/MapComponent';
 import {InfoPanel} from '@/components/atlas/mapDetail/InfoPanel';
 import RichTextMessage from '@/components/RichTextMessage';
 import {useRecordSourceVisibility} from '@/components/atlas/mapDetail/hooks/useRecordSourceVisibility';
-import {filterRecordsByVisibility} from '@/components/atlas/mapDetail/recordSources';
+import {filterAndSortTableRecords, filterRecordsByVisibility} from '@/components/atlas/mapDetail/recordSources';
 
 /** Data mapy (minimal) a tabulky (full) kvadrantu – jeden query, jeden loading. */
 interface SquareRecords {
@@ -28,6 +28,7 @@ interface SquareRecords {
 }
 
 const EMPTY_RECORDS: RecordsByProjectMinimal = {pladias: [], gbif: [], inaturalist: []};
+const EMPTY_TABLE_RECORDS: RecordsByProject = {pladias: [], gbif: [], inaturalist: []};
 
 export default function MapDetail() {
     const {t} = useTranslation();
@@ -35,6 +36,9 @@ export default function MapDetail() {
     const queryClient = useQueryClient();
     const [highlightedRecordId, setHighlightedRecordId] = useState<number | null>(null);
     const [centerOnRecord, setCenterOnRecord] = useState<{ latitude: number; longitude: number } | null>(null);
+    // aktivní tab zdrojů v InfoPanelu – řízený odsud, aby ho mohl přepnout i
+    // hover nad markerem jiného zdroje (highlight záznamu musí být vidět)
+    const [activeSource, setActiveSource] = useState<ProjectType>('pladias');
     const tableScrollFnsRef = useRef<{
         pladias?: ((recordId: number) => void);
         gbif?: ((recordId: number) => void);
@@ -44,6 +48,10 @@ export default function MapDetail() {
         recordId: null,
         timeoutId: null
     });
+    // čekající scroll na řádek po přepnutí tabu z hoveru markeru – provede se
+    // v effectu na activeSource (neaktivní tab-pane je display:none, takže
+    // scrollIntoView před přepnutím tabu nic neudělá)
+    const pendingScrollRef = useRef<{ project: ProjectType; recordId: number } | null>(null);
     // viditelnost skupin záznamů na mapě (checkboxy v InfoPanelu), perzistováno v user settings
     const {visibleProjects, toggleProjectVisibility} = useRecordSourceVisibility();
     // externí zdroje záznamů dostupné v instanci (conf atlas.externalRecordSources)
@@ -94,7 +102,12 @@ export default function MapDetail() {
         enabled: id !== null && squareId !== undefined,
     });
     const mapRecords = recordsQuery.data?.mapRecords ?? EMPTY_RECORDS;
-    const tableRecords = recordsQuery.data?.tableRecords ?? {pladias: [], gbif: [], inaturalist: []};
+    // tabulky (a popupy markerů) jen pro záznamy aktuálního kvadrantu, seřazené
+    // dle písmene kvadrantu – záznamy okolí zůstávají na mapě bez interakcí
+    const tableRecords = useMemo(
+        () => filterAndSortTableRecords(recordsQuery.data?.tableRecords ?? EMPTY_TABLE_RECORDS, squareId ?? ''),
+        [recordsQuery.data, squareId],
+    );
     const recordsLoading = recordsQuery.isPending;
     // markery na mapě odpovídají zaškrtnutým skupinám – tabulky zůstávají kompletní
     const visibleMapRecords = useMemo(
@@ -107,6 +120,27 @@ export default function MapDetail() {
             notifyApiError(recordsQuery.error, t('atlas.mapDetail.loadRecordsFailed'));
         }
     }, [recordsQuery.error, t]);
+
+    // dokončení scrollu na řádek po přepnutí tabu z hoveru markeru – tab-pane
+    // je až po přepnutí viditelný, teprve pak funguje scrollIntoView
+    useEffect(() => {
+        const pending = pendingScrollRef.current;
+        if (pending && pending.project === activeSource) {
+            pendingScrollRef.current = null;
+            tableScrollFnsRef.current[pending.project]?.(pending.recordId);
+        }
+    }, [activeSource]);
+
+    /** Přepne InfoPanel na tab zdroje záznamu a odscrolluje v jeho tabulce na řádek. */
+    const scrollTableToRecord = (project: ProjectType, recordId: number) => {
+        if (project === activeSource) {
+            tableScrollFnsRef.current[project]?.(recordId);
+            return;
+        }
+        // tab se teprve přepíná – scroll až po jeho vykreslení (effect výše)
+        pendingScrollRef.current = {project, recordId};
+        setActiveSource(project);
+    };
 
     // Handle hover from map - triggers scroll in table with debounce
     const handleMapRecordHover = (recordId: number | null) => {
@@ -125,20 +159,17 @@ export default function MapDetail() {
                 hoverLockRef.current.timeoutId = null;
             }, 1800);
 
-            // Find which project this record belongs to and scroll to it
-            // Use tableRecords for scroll lookup since that's what the table displays
+            // Find which project this record belongs to, switch InfoPanel to
+            // its tab (hover can come from a marker of another source) and
+            // scroll to the row
             const pladiasRecord = tableRecords.pladias.find(r => r.id === recordId);
-            if (pladiasRecord && tableScrollFnsRef.current.pladias) {
-                tableScrollFnsRef.current.pladias(recordId);
+            if (pladiasRecord) {
+                scrollTableToRecord('pladias', recordId);
             } else {
                 // Check GBIF/iNaturalist records
-                const gbifInatRecords = [...tableRecords.gbif, ...tableRecords.inaturalist];
-                const record = gbifInatRecords.find(r => r.id === recordId);
-                if (record && tableScrollFnsRef.current[record.project as keyof typeof tableScrollFnsRef.current]) {
-                    const scrollFn = tableScrollFnsRef.current[record.project as keyof typeof tableScrollFnsRef.current];
-                    if (scrollFn) {
-                        scrollFn(recordId);
-                    }
+                const externalRecord = [...tableRecords.gbif, ...tableRecords.inaturalist].find(r => r.id === recordId);
+                if (externalRecord) {
+                    scrollTableToRecord(externalRecord.project, recordId);
                 }
             }
         } else {
@@ -239,6 +270,12 @@ export default function MapDetail() {
                             onRecordUpdated={handleRecordUpdated}
                             visibleProjects={visibleProjects}
                             onToggleProjectVisibility={toggleProjectVisibility}
+                            activeSource={activeSource}
+                            onSelectSource={(project) => {
+                                // uživatel přepnul tab sám – zrušit čekající scroll z hoveru markeru
+                                pendingScrollRef.current = null;
+                                setActiveSource(project);
+                            }}
                         />
                     </div>
                 </Col>

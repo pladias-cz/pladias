@@ -38,7 +38,7 @@ export function RecordsTable({records, highlightedRecordId, onRecordHover}: Reco
                             onMouseEnter={() => onRecordHover?.(record.id)}
                             onMouseLeave={() => onRecordHover?.(null)}
                         >
-                            <td style={{backgroundColor: record.validationStatusColor || '#808080'}}>
+                            <td>
                                 <a href={`https://www.gbif.org/occurrence/${record.id}`} target="_blank"
                                    rel="noopener noreferrer">
                                     {record.id}

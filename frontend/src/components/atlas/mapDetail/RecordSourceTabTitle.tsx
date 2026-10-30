@@ -1,9 +1,9 @@
 import {useTranslation} from 'react-i18next';
 import type {ProjectType} from '@/models/AtlasRecords';
-import type {RecordSourceConfig} from './recordSources';
+import {EXTERNAL_MARKER_FILL_COLOR, type RecordSourceConfig} from './recordSources';
 
 interface RecordSourceTabTitleProps {
-    /** Konfigurace zdroje (label, barva markeru). */
+    /** Konfigurace zdroje (label, barva okraje markerů). */
     source: RecordSourceConfig;
     /** Počet záznamů zdroje – ukazatel v hlavičce. */
     count: number;
@@ -15,8 +15,9 @@ interface RecordSourceTabTitleProps {
 
 /**
  * Hlavička tabu jednoho zdroje záznamů – obsah `title` prop react-bootstrap
- * Tabu. Nese checkbox „zobrazit na mapě", barevnou tečku (odkaz na barvu
- * markerů daného zdroje na mapě) a počet záznamů. Klik na checkbox nesmí
+ * Tabu. Nese checkbox „zobrazit na mapě", tečku (miniaturu markerů daného
+ * zdroje na mapě – šedá výplň, okraj v barvě okraje markerů zdroje) a počet
+ * záznamů. Klik na checkbox nesmí
  * přepnout aktivní tab – react-bootstrap Tabs poslouchá klik na celé hlavičce
  * (nav-link), proto obal checkboxu zastavuje propagaci (stopPropagation).
  */
@@ -38,7 +39,10 @@ export function RecordSourceTabTitle({source, count, visible, onToggleVisibility
             </span>
             <span
                 className="record-source-tab-title__dot"
-                style={{backgroundColor: source.markerColor}}
+                style={{
+                    backgroundColor: EXTERNAL_MARKER_FILL_COLOR,
+                    borderColor: source.strokeColor,
+                }}
                 aria-hidden="true"
             />
             {source.label}

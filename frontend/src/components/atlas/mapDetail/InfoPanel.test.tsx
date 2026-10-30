@@ -11,9 +11,11 @@ import '@/i18n/i18n';
 
 /**
  * Testy InfoPanelu po převodu na tabs: tři taby se jmény zdrojů a počty
- * záznamů, přepínání tabů, checkboxy viditelnosti na mapě v hlavičkách –
- * klik na checkbox volá onToggleProjectVisibility se správným zdrojem a
- * nesmí přepnout aktivní tab (stopPropagation v RecordSourceTab).
+ * záznamů, aktivní tab je řízený props activeSource/onSelectSource (mapa
+ * přepíná tab při hoveru nad markerem cizího zdroje), checkboxy viditelnosti
+ * na mapě v hlavičkách – klik na checkbox volá onToggleProjectVisibility
+ * se správným zdrojem a nesmí přepnout aktivní tab (stopPropagation v
+ * RecordSourceTab).
  * Taby omezuje konfigurace instance (externalRecordSources) – bez ní se
  * renderují všechny tři zdroje (kompatibilita se starším backendem).
  * Tabulky jsou mocknuté – testuje se jen chování tabs, ne obsah tabulek.
@@ -49,6 +51,8 @@ function renderPanel(props: Partial<InfoPanelProps> = {}, config: InstanceConfig
                 records={makeRecords(2, 1, 0)}
                 visibleProjects={ALL_SOURCES_VISIBLE}
                 onToggleProjectVisibility={vi.fn()}
+                activeSource="pladias"
+                onSelectSource={vi.fn()}
                 {...props}
             />
         </InstanceConfigProvider>,
@@ -81,18 +85,24 @@ describe('InfoPanel', () => {
         expect(screen.getByTestId('external-table-1').closest('.tab-pane')).not.toHaveClass('active');
     });
 
-    it('přepíná mezi taby', async () => {
+    it('klik na tab zavolá onSelectSource se zvoleným zdrojem', async () => {
         const user = userEvent.setup();
-        renderPanel();
+        const onSelectSource = vi.fn();
+        renderPanel({onSelectSource});
 
         await user.click(screen.getByRole('tab', {name: /GBIF/}));
-        expect(screen.getByRole('tab', {name: /GBIF/})).toHaveAttribute('aria-selected', 'true');
-        expect(screen.getByTestId('external-table-1').closest('.tab-pane')).toHaveClass('active');
-        expect(screen.getByTestId('pladias-table-2').closest('.tab-pane')).not.toHaveClass('active');
+        expect(onSelectSource).toHaveBeenCalledWith('gbif');
 
         await user.click(screen.getByRole('tab', {name: /iNaturalist/}));
+        expect(onSelectSource).toHaveBeenCalledWith('inaturalist');
+    });
+
+    it('aktivní tab řídí prop activeSource', () => {
+        renderPanel({activeSource: 'inaturalist'});
+
         expect(screen.getByRole('tab', {name: /iNaturalist/})).toHaveAttribute('aria-selected', 'true');
         expect(screen.getByTestId('external-table-0').closest('.tab-pane')).toHaveClass('active');
+        expect(screen.getByRole('tab', {name: /PLADIAS/})).toHaveAttribute('aria-selected', 'false');
     });
 
     it('klik na checkbox přepne viditelnost zdroje a nepřepne aktivní tab', async () => {

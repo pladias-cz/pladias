@@ -1,12 +1,29 @@
 import {describe, expect, it} from 'vitest';
+import type {RecordsByProject, RecordGbifMinimal} from '@/models/AtlasRecords';
+import type {RecordPladias} from '@/models/RecordPladias';
 import {
     ALL_SOURCES_VISIBLE,
     RECORD_SOURCES,
     availableRecordSources,
+    filterAndSortTableRecords,
     filterRecordsByVisibility,
     parseSavedVisibility,
     visibleSourceIds,
 } from './recordSources';
+
+/** Minimální PLADIAS záznam – filterAndSortTableRecords čte jen computed* pole. */
+function pladiasRecord(
+    id: number,
+    computedQuadrantCode: string | null,
+    computedSquareCode: string | null = computedQuadrantCode ? computedQuadrantCode.slice(0, -1) : null,
+): RecordPladias {
+    return {id, computedQuadrantCode, computedSquareCode} as unknown as RecordPladias;
+}
+
+/** Minimální externí záznam – filterAndSortTableRecords čte jen computed* pole. */
+function externalRecord(id: number, quadrantLetter: string | null, computedSquareCode: string | null): RecordGbifMinimal {
+    return {id, quadrantLetter, computedSquareCode} as unknown as RecordGbifMinimal;
+}
 
 describe('recordSources', () => {
     describe('RECORD_SOURCES', () => {
@@ -56,6 +73,60 @@ describe('recordSources', () => {
                 {pladias: false, gbif: false, inaturalist: false},
             );
             expect(result).toEqual({pladias: [], gbif: [], inaturalist: []});
+        });
+    });
+
+    describe('filterAndSortTableRecords', () => {
+        it('nechá jen záznamy aktuálního kvadrantu', () => {
+            const records: RecordsByProject = {
+                pladias: [
+                    pladiasRecord(1, '6152a'),
+                    pladiasRecord(2, '6451a'),
+                ],
+                gbif: [
+                    externalRecord(3, 'c', '6152'),
+                    externalRecord(4, 'a', '6855'),
+                    externalRecord(5, 'b', null),
+                ],
+                inaturalist: [externalRecord(6, 'b', '6152')],
+            };
+
+            const result = filterAndSortTableRecords(records, '6152');
+
+            expect(result.pladias.map(r => r.id)).toEqual([1]);
+            expect(result.gbif.map(r => r.id)).toEqual([3]);
+            expect(result.inaturalist.map(r => r.id)).toEqual([6]);
+        });
+
+        it('seřadí dle písmene kvadrantu, záznamy bez písmene na konec', () => {
+            const records: RecordsByProject = {
+                pladias: [
+                    pladiasRecord(1, '6152c'),
+                    pladiasRecord(2, null, '6152'),
+                    pladiasRecord(3, '6152a'),
+                    pladiasRecord(4, '6152b'),
+                ],
+                gbif: [
+                    externalRecord(5, 'd', '6152'),
+                    externalRecord(6, null, '6152'),
+                    externalRecord(7, 'a', '6152'),
+                ],
+                inaturalist: [],
+            };
+
+            const result = filterAndSortTableRecords(records, '6152');
+
+            expect(result.pladias.map(r => r.id)).toEqual([3, 4, 1, 2]);
+            expect(result.gbif.map(r => r.id)).toEqual([7, 5, 6]);
+        });
+
+        it('nezmutuje vstupní pole', () => {
+            const pladias = [pladiasRecord(1, '6152b'), pladiasRecord(2, '6152a')];
+            const records: RecordsByProject = {pladias, gbif: [], inaturalist: []};
+
+            filterAndSortTableRecords(records, '6152');
+
+            expect(pladias.map(r => r.id)).toEqual([1, 2]);
         });
     });
 

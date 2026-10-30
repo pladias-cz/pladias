@@ -47,6 +47,8 @@ export function ExternalRecordsTable({
             <thead>
             <tr>
                 <th>{t('atlas.mapDetail.recordId')}</th>
+                {/* písmeno kvadrantu – dle něj jsou řádky seřazeny (stejný sloupec jako v tabulce PLADIAS) */}
+                <th title={t('atlas.mapDetail.quadrant')}>{t('atlas.mapDetail.squareAbbrev')}</th>
                 <th>{t('atlas.mapDetail.source')}</th>
                 <th>{t('atlas.mapDetail.year')}</th>
                 <th>{t('atlas.mapDetail.latitude')}</th>
@@ -67,11 +69,14 @@ export function ExternalRecordsTable({
                         onMouseEnter={() => onRecordHover?.(record.id)}
                         onMouseLeave={() => onRecordHover?.(null)}
                     >
-                        <td style={{backgroundColor: record.validationStatusColor || '#808080'}}>
-                            <a href={`https://www.gbif.org/occurrence/search?entity=o_${record.id}`} target="_blank"
+                        <td>
+                            <a href={`https://www.gbif.org/occurrence/${record.id}`} target="_blank"
                                rel="noopener noreferrer">
                                 {record.id}
                             </a>
+                        </td>
+                        <td>
+                            {record.quadrantLetter || '-'}
                         </td>
                         <td>
                             <span className="text-uppercase fw-semibold">{record.project}</span>

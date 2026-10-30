@@ -25,19 +25,21 @@
     overflow: auto;
 }
 
-/* Hlavička tabu zdroje: checkbox viditelnosti, barevná tečka, label, počet. */
+/* Hlavička tabu zdroje: checkbox viditelnosti, tečka (miniatura markeru), label, počet. */
 .record-source-tab-title {
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
 }
 
+/* Tečka jako miniatura markeru zdroje: šedou výplň a barvu okraje dodává
+   komponenta inline (EXTERNAL_MARKER_FILL_COLOR / strokeColor zdroje). */
 .record-source-tab-title__dot {
     display: inline-block;
     width: 0.6rem;
     height: 0.6rem;
     border-radius: 50%;
-    border: 1px solid rgba(0, 0, 0, 0.25);
+    border: 2px solid;
 }
 
 .record-source-tab-title__check {

@@ -5,7 +5,14 @@
  * barvy markerů na mapě – nový zdroj = jeden záznam v RECORD_SOURCES.
  */
 
-import type {ExternalProject, ProjectType} from '@/models/AtlasRecords';
+import type {ExternalProject, ProjectType, RecordsByProject} from '@/models/AtlasRecords';
+
+/**
+ * Výplň markerů externích zdrojů (GBIF/iNaturalist) a tečky v hlavičkách tabů
+ * – zdroje se na mapě odlišují jen barvou okraje, výplň je neutrální šedá.
+ * Markery PLADIAS si výplň barví dle validačního statusu (z backendu).
+ */
+export const EXTERNAL_MARKER_FILL_COLOR = '#808080';
 
 /** Konfigurace jednoho zdroje záznamů. */
 export interface RecordSourceConfig {
@@ -13,19 +20,19 @@ export interface RecordSourceConfig {
     id: ProjectType;
     /** Jméno zdroje v UI (bez i18n – jde o názvy projektů). */
     label: string;
-    /** Barva tečky v hlavičce tabu – odkaz na markery daného zdroje na mapě. */
-    markerColor: string;
+    /** Barva okraje markerů zdroje na mapě – tečka v hlavičce tabu ji používá jako okraj. */
+    strokeColor: string;
 }
 
 /** Registry zdrojů – pořadí definuje pořadí tabů v InfoPanel. */
 export const RECORD_SOURCES: readonly RecordSourceConfig[] = [
     // markery PLADIAS jsou vícebarevné dle validationStatus (výplň z backendu)
-    // – tečka používá černou barvu okraje markeru
-    {id: 'pladias', label: 'PLADIAS', markerColor: '#000000'},
-    // fixní barva výplně GBIF markerů (backend dto.atlas.RecordGbifMinimalDto)
-    {id: 'gbif', label: 'GBIF', markerColor: '#C95740'},
-    // barva okraje iNaturalist markerů (RecordMarkers)
-    {id: 'inaturalist', label: 'iNaturalist', markerColor: '#00AA00'},
+    // a mají černý okraj – tečka používá černou barvu okraje markeru
+    {id: 'pladias', label: 'PLADIAS', strokeColor: '#000000'},
+    // barvy okrajů externích markerů (RecordMarkers), výplň je pro všechny
+    // externí zdroje šedá (EXTERNAL_MARKER_FILL_COLOR) – odlišují se jen okrajem
+    {id: 'gbif', label: 'GBIF', strokeColor: '#CC0000'},
+    {id: 'inaturalist', label: 'iNaturalist', strokeColor: '#EF7C09'},
 ];
 
 /**
@@ -66,6 +73,50 @@ export function filterRecordsByVisibility<T extends Record<ProjectType, readonly
         gbif: visibility.gbif ? records.gbif : [],
         inaturalist: visibility.inaturalist ? records.inaturalist : [],
     } as T;
+}
+
+/**
+ * Tabulková data mapového detailu: jen záznamy aktuálního kvadrantu
+ * (computedSquareCode == squareCode), seřazené dle písmene kvadrantu.
+ * Záznamy okolních kvadrantů zůstávají na mapě, ale do tabulek InfoPanelu
+ * (ani k popupům jejich markerů) se nedostanou.
+ */
+export function filterAndSortTableRecords(records: RecordsByProject, squareCode: string): RecordsByProject {
+    return {
+        pladias: inCurrentSquare(records.pladias, squareCode, r => quadrantLetter(r.computedQuadrantCode)),
+        gbif: inCurrentSquare(records.gbif, squareCode, r => r.quadrantLetter),
+        inaturalist: inCurrentSquare(records.inaturalist, squareCode, r => r.quadrantLetter),
+    };
+}
+
+/** Záznamy jednoho zdroje z daného kvadrantu, seřazené dle písmene kvadrantu. */
+function inCurrentSquare<T extends { computedSquareCode: string | null }>(
+    records: readonly T[],
+    squareCode: string,
+    quadrantLetterOf: (record: T) => string | null,
+): T[] {
+    return records
+        .filter(record => record.computedSquareCode === squareCode)
+        .sort((a, b) => compareQuadrantLetters(quadrantLetterOf(a), quadrantLetterOf(b)));
+}
+
+/** Písmeno kvadrantu z kompletního kódu kvadrantu – např. „6152a“ → „a“. */
+function quadrantLetter(quadrantCode: string | null): string | null {
+    return quadrantCode ? quadrantCode.slice(-1) : null;
+}
+
+/** Srovnání písmen kvadrantů vzestupně; záznamy bez písmene řadí na konec. */
+function compareQuadrantLetters(a: string | null, b: string | null): number {
+    if (a === b) {
+        return 0;
+    }
+    if (a === null) {
+        return 1;
+    }
+    if (b === null) {
+        return -1;
+    }
+    return a.localeCompare(b);
 }
 
 /**

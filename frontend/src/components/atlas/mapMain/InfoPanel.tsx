@@ -62,7 +62,9 @@ export function InfoPanel({taxonName, taxonId}: InfoPanelProps) {
     });
 
     // editovatelná pole (form state) naplněná z načteného nastavení; mutace
-    // (useTaxonUpdates) zůstávají imperativní a timestamp si drží lokálně
+    // (useTaxonUpdates) zůstávají imperativní a timestamp si drží lokálně.
+    // Render-phase update guarded by comparison (React docs: adjusting state
+    // when a prop changes) – kopie do formulářového stavu bez efektu.
     const [currentUserIsRevisor, setCurrentUserIsRevisor] = useState<boolean>(false);
     const [revisorsComment, setRevisorsComment] = useState<string>('');
     const [revisorsPrintMapComment, setRevisorsPrintMapComment] = useState<string>('');
@@ -79,19 +81,22 @@ export function InfoPanel({taxonName, taxonId}: InfoPanelProps) {
         updateRevisionStatusForTaxon
     } = useTaxonUpdates();
 
-    useEffect(() => {
+    // Načtené nastavení inicializuje editovatelná pole panelu (kopie do
+    // form state – mutation jinde nechává uživatelské úpravy nedotčené).
+    const [prevSettings, setPrevSettings] = useState(settingsQuery.data);
+    if (settingsQuery.data !== prevSettings) {
+        setPrevSettings(settingsQuery.data);
         const data = settingsQuery.data;
-        if (!data) {
-            return;
+        if (data) {
+            setCurrentUserIsRevisor(data.currentUserIsRevisor ?? false);
+            setRevisorsComment(data.revisorsComment ?? '');
+            setRevisorsPrintMapComment(data.revisorsPrintComment ?? '');
+            setMapType(data.mapType ?? 1);
+            setLastEditTimestamp(data.lastEditTimestamp);
+            setIsMapped(data.isMapped);
+            setRevisionStatusId(data.revisionStatusId);
         }
-        setCurrentUserIsRevisor(data.currentUserIsRevisor ?? false);
-        setRevisorsComment(data.revisorsComment ?? '');
-        setRevisorsPrintMapComment(data.revisorsPrintComment ?? '');
-        setMapType(data.mapType ?? 1);
-        setLastEditTimestamp(data.lastEditTimestamp);
-        setIsMapped(data.isMapped);
-        setRevisionStatusId(data.revisionStatusId);
-    }, [settingsQuery.data]);
+    }
 
     // chyby: statistiky se zobrazí inline, nastavení notifikací (jako dřív)
     const loading = statisticsQuery.isPending || settingsQuery.isPending;

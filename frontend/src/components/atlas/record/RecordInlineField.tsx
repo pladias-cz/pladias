@@ -1,4 +1,4 @@
-import {useState, useEffect} from 'react';
+import {useState} from 'react';
 import {Col, Form, Row, Spinner, Button} from 'react-bootstrap';
 import {useTranslation} from 'react-i18next';
 import {patchRecordField} from '@/services/recordApi';
@@ -48,12 +48,11 @@ export default function RecordInlineField({
     // Boolean switch keeps its own optimistic value; top-level hook (rules-of-hooks)
     const [internalValue, setInternalValue] = useState(draft);
 
-    // Sync internal timestamp with prop when prop changes (e.g., after another field was edited)
-    useEffect(() => {
-        if (lastEditTimestampNum !== undefined && lastEditTimestampNum !== lastTimestamp) {
-            setLastTimestamp(lastEditTimestampNum);
-        }
-    }, [lastEditTimestampNum, lastTimestamp]);
+    // Sync internal timestamp with prop when prop changes (e.g., after another field was edited) –
+    // render-phase update guarded by comparison (React docs: adjusting state when a prop changes)
+    if (lastEditTimestampNum !== undefined && lastEditTimestampNum !== lastTimestamp) {
+        setLastTimestamp(lastEditTimestampNum);
+    }
 
     async function save(valueToSave: unknown) {
         setSaving(true);
@@ -92,16 +91,6 @@ export default function RecordInlineField({
         save(draft);
     };
 
-    const EditIcon = ({onClick}: { onClick: () => void }) => (
-        <i
-            className="bi bi-pencil ms-2"
-            aria-hidden="true"
-            style={{cursor: 'pointer'}}
-            onClick={onClick}
-            title={t('common.inlineField.edit')}
-        />
-    );
-
     let content: React.ReactNode;
 
     if (type === 'boolean') {
@@ -121,7 +110,13 @@ export default function RecordInlineField({
         if (!editing) {
             content = (
                 <span className="d-inline-flex align-items-center">
-                    <EditIcon onClick={() => setEditing(true)}/>
+                    <i
+                        className="bi bi-pencil ms-2"
+                        aria-hidden="true"
+                        style={{cursor: 'pointer'}}
+                        onClick={() => setEditing(true)}
+                        title={t('common.inlineField.edit')}
+                    />
                     <span
                         className="editable-value ms-1"
                         style={{cursor: 'pointer'}}

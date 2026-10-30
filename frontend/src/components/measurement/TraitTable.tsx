@@ -44,9 +44,13 @@ export default function TraitTable({feature, refreshKey}: Props) {
         }
     }, [feature.id, t]);
 
+    // Zavolání sdíleného loaderu přes async IIFE – příslib je await-ován, takže
+    // se setState projeví až v asynchronní kontinuaci (react-hooks/set-state-in-effect).
     useEffect(() => {
         if (!feature?.id) return;
-        loadTraits();
+        (async () => {
+            await loadTraits();
+        })();
     }, [feature?.id, loadTraits, refreshKey]);
 
     async function handleDeleteTrait(traitId: number) {

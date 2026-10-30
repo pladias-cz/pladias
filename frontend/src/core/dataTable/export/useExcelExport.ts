@@ -2,7 +2,7 @@
  * Requests the XLSX variant of a server-side table endpoint
  */
 
-import {useCallback, useRef, useState} from 'react';
+import {useCallback, useState} from 'react';
 import {apiDownload, ApiError} from '@/services/apiClient';
 import {buildTableParams} from '../utils/tableParams';
 import {downloadBlob} from './downloadFile';
@@ -36,27 +36,24 @@ export function useExcelExport({
     const [exporting, setExporting] = useState<ExcelExportVariant | null>(null);
     const [error, setError] = useState<string | null>(null);
 
-    // Read at click time so the request always carries the state the table shows right now
-    const tableState = useRef({sorting, columnFilters, additionalParams});
-    tableState.current = {sorting, columnFilters, additionalParams};
-
     /**
      * Downloads the file the endpoint answers with for the current sorting and additional params.
      * No pagination is sent, so the backend returns all rows; only the "filtered" variant applies
      * the filters typed into the filter row, the "all" variant asks for the whole table.
+     * The callback closes over the current table state (identity changes with it), so a click
+     * always carries the state the table shows right now.
      */
     const exportExcel = useCallback(async (variant: ExcelExportVariant) => {
         setExporting(variant);
         setError(null);
 
-        const state = tableState.current;
         try {
             const file = await apiDownload(endpoint, {
                 params: buildTableParams({
-                    sorting: state.sorting,
-                    columnFilters: variant === 'filtered' ? state.columnFilters : [],
+                    sorting,
+                    columnFilters: variant === 'filtered' ? columnFilters : [],
                     buildFilterParams,
-                    additionalParams: state.additionalParams,
+                    additionalParams,
                 }),
                 headers: {Accept: XlsxAcceptHeader},
                 errorMessage,
@@ -70,7 +67,7 @@ export function useExcelExport({
         } finally {
             setExporting(current => (current === variant ? null : current));
         }
-    }, [endpoint, buildFilterParams, fallbackFilename, errorMessage]);
+    }, [endpoint, sorting, columnFilters, additionalParams, buildFilterParams, fallbackFilename, errorMessage]);
 
     return {exporting, error, exportExcel};
 }

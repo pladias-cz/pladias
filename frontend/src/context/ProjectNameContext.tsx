@@ -28,11 +28,19 @@ export const ProjectNameProvider: React.FC<Props> = ({children}) => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<Error | null>(null);
 
+    // Přepnutí jazyka přejde zpět do loading stavu – render-phase update
+    // guarded by comparison (React docs: adjusting state when a prop changes);
+    // samotný fetch zůstává v efektu níže.
+    const [prevLang, setPrevLang] = useState(i18n.language);
+    if (i18n.language !== prevLang) {
+        setPrevLang(i18n.language);
+        setLoading(true);
+    }
+
     useEffect(() => {
         const controller = new AbortController();
         const lang = i18n.language || 'cs';
 
-        setLoading(true);
         loadProjectName(lang, {signal: controller.signal})
             .then((name) => {
                 setProjectName(name);

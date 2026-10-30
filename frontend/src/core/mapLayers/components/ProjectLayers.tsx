@@ -6,7 +6,7 @@
  * Integrates with the layer management system for visibility control.
  */
 
-import {useEffect, useMemo, useState} from 'react';
+import {useMemo, useState} from 'react';
 import {WMSTileLayer} from 'react-leaflet';
 import type {WMSParams} from 'leaflet';
 import {useQuery} from '@tanstack/react-query';
@@ -35,7 +35,9 @@ export function ProjectLayers({taxonId, mapName}: ProjectLayersProps) {
         queryFn: () => getTaxonRecordsByProject(taxonId!),
         enabled: taxonId !== undefined,
     });
-    const projects = data ?? [];
+    // memoizace i pro prázdný fallback – jinak by identita pole měnila deps
+    // useMemo níže (eslint-plugin-react-hooks/exhaustive-deps) při každém renderu
+    const projects = useMemo(() => data ?? [], [data]);
 
     // Build WMS configs for each project - memoized to prevent re-renders
     const layerConfigs = useMemo(() => {
@@ -105,11 +107,12 @@ function ProjectLayer({
 
     // Lazy mount: create the layer only after it is enabled for the first time.
     // Once mounted it stays mounted and is hidden via opacity, so toggling
-    // visibility does not cancel or re-issue tile requests.
+    // visibility does not cancel or re-issue tile requests. Render-phase update
+    // guarded by comparison (React docs: adjusting state when a prop changes).
     const [mounted, setMounted] = useState(visible);
-    useEffect(() => {
-        if (visible) setMounted(true);
-    }, [visible]);
+    if (visible && !mounted) {
+        setMounted(true);
+    }
 
     if (!mounted) {
         return null;

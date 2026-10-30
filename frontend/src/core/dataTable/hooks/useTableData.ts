@@ -156,11 +156,15 @@ export function useTableData<T>(options: UseTableDataOptions<T>) {
     });
 
     /**
-     * Fresh data from the server discards the optimistic checkbox layer.
+     * Fresh data from the server discards the optimistic checkbox layer –
+     * render-phase update guarded by comparison (React docs: adjusting state
+     * when a prop changes, without an effect).
      */
-    useEffect(() => {
+    const [prevQueryData, setPrevQueryData] = useState(queryData);
+    if (queryData !== prevQueryData) {
+        setPrevQueryData(queryData);
         setLocalData(null);
-    }, [queryData]);
+    }
 
     const data = useMemo(
         () => localData ?? queryData?.data ?? [],
@@ -182,9 +186,13 @@ export function useTableData<T>(options: UseTableDataOptions<T>) {
      * Aktuálně vykreslované řádky v refu: setData tak zůstává stabilní identitou
      * (rodič si ji přes DataTable.onDataUpdater zaregistruje jednou po mountu)
      * a přece vždy aplikuje updater na čerstvá data (base při prev === null).
+     * Ref se aktualizuje v efektu po commitu – čtení probíhá až v event
+     * handlerech (kliky), které vždy běží po flushe efektů.
      */
     const dataRef = useRef<T[]>([]);
-    dataRef.current = data;
+    useEffect(() => {
+        dataRef.current = data;
+    }, [data]);
 
     /**
      * Optimistic setData (checkboxes) – functional updates over the rendered rows.

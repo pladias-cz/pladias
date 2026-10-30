@@ -2,7 +2,7 @@
  * Hook for managing server-side pagination state
  */
 
-import {useCallback, useEffect, useMemo, useState} from 'react';
+import {useCallback, useMemo, useState} from 'react';
 
 export interface UseServerPaginationOptions {
     initialPage?: number;
@@ -43,15 +43,20 @@ export function useServerPagination(options: UseServerPaginationOptions = {}): U
     const [filteredCount, setFilteredCount] = useState(initialFilteredCount);
 
     /**
-     * Update counts when they change from parent
+     * Update counts when they change from parent – render-phase updates guarded
+     * by comparison (React docs: adjusting state when a prop changes, without an effect)
      */
-    useEffect(() => {
+    const [prevInitialTotalCount, setPrevInitialTotalCount] = useState(initialTotalCount);
+    if (initialTotalCount !== prevInitialTotalCount) {
+        setPrevInitialTotalCount(initialTotalCount);
         setTotalCount(initialTotalCount);
-    }, [initialTotalCount]);
+    }
 
-    useEffect(() => {
+    const [prevInitialFilteredCount, setPrevInitialFilteredCount] = useState(initialFilteredCount);
+    if (initialFilteredCount !== prevInitialFilteredCount) {
+        setPrevInitialFilteredCount(initialFilteredCount);
         setFilteredCount(initialFilteredCount);
-    }, [initialFilteredCount]);
+    }
 
     /**
      * Calculate total pages based on current count

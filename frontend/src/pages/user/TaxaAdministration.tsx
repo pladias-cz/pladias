@@ -22,7 +22,11 @@ export default function TaxaAdministration() {
     usePageTitle(t('taxon.administration.pageTitle'));
 
     const {taxonId} = useParams<{ taxonId: string }>(); // ← parametr z URL
-    const [selectedTaxonId, setSelectedTaxonId] = useState<number | null>(null);
+    // taxon z URL rovnou při mountu; další změny parametru řeší render-phase sync níže
+    const [selectedTaxonId, setSelectedTaxonId] = useState<number | null>(() => {
+        const id = parseInt(taxonId ?? '', 10);
+        return isNaN(id) ? null : id;
+    });
     const [taxonVersion, setTaxonVersion] = useState(0);
 
     // --- handler pro autocomplete ---
@@ -37,13 +41,16 @@ export default function TaxaAdministration() {
         setTaxonVersion(v => v + 1);
     }
 
-    // --- načtení taxonu z URL při mountu i při změně parametru ---
-    useEffect(() => {
+    // --- načtení taxonu z URL při změně parametru – render-phase update
+    // guarded by comparison (React docs: adjusting state when a prop changes) ---
+    const [prevTaxonIdParam, setPrevTaxonIdParam] = useState(taxonId);
+    if (taxonId !== prevTaxonIdParam) {
+        setPrevTaxonIdParam(taxonId);
         const id = parseInt(taxonId ?? '', 10);
         if (!isNaN(id)) {
             setSelectedTaxonId(id);
         }
-    }, [taxonId]);
+    }
 
     // --- plný taxon podle id (bez cache, sekce J) ---
     const {data: selectedTaxon, isPending, error} = useQuery({

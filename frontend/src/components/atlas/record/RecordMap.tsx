@@ -1,6 +1,6 @@
 import {Card} from 'react-bootstrap';
 import {useTranslation} from 'react-i18next';
-import {useState, useCallback, useEffect} from 'react';
+import {useState, useCallback} from 'react';
 import {MapContainer, TileLayer, Marker, Popup, useMapEvents} from 'react-leaflet';
 import {Icon} from 'leaflet';
 import type {LatLngExpression} from 'leaflet';
@@ -70,14 +70,17 @@ export default function RecordMap({record, onLocationSelectWithGeocode, hasPropo
     const [selectedLocation, setSelectedLocation] = useState<[number, number] | null>(null);
     const [clickDetected, setClickDetected] = useState(false);
 
-    // Sync with external proposed location state
-    useEffect(() => {
+    // Sync with external proposed location state – render-phase update guarded
+    // by comparison (React docs: adjusting state when a prop changes, without an effect):
+    // cancelling the proposal clears the selection, (re)proposing keeps it.
+    const [prevHasProposedLocation, setPrevHasProposedLocation] = useState(hasProposedLocation);
+    if (hasProposedLocation !== prevHasProposedLocation) {
+        setPrevHasProposedLocation(hasProposedLocation);
         if (!hasProposedLocation) {
-            // Clear selection when proposal is cancelled
             setSelectedLocation(null);
             setClickDetected(false);
         }
-    }, [hasProposedLocation]);
+    }
 
     const center: [number, number] = selectedLocation ||
         (record.latitude && record.longitude ? [record.latitude, record.longitude] : [49.8, 15.5]);

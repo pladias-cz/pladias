@@ -61,17 +61,6 @@ export default function InlineField({
         }
     }
 
-    const EditIcon = ({onClick}: { onClick: () => void }) => (
-        <i
-            className="bi bi-pencil ms-2"
-            aria-hidden="true"
-            style={{cursor: 'pointer'}}
-            onClick={onClick}
-            title={t('common.inlineField.edit')}
-        />
-
-    );
-
     let content: React.ReactNode;
 
     if (type === 'boolean') {
@@ -89,16 +78,22 @@ export default function InlineField({
         if (!editing) {
             content = (
                 <span className="d-inline-flex align-items-center">
-        <EditIcon onClick={() => setEditing(true)}/>
-          <span
-              className="editable-value ms-1"
-              style={{cursor: 'pointer'}}
-              onClick={() => setEditing(true)}
-          >
-            {render ? render(value ?? null) : value ||
-                <span className="text-muted">{t('common.inlineField.add')}</span>}
-          </span>
-        </span>
+                    <i
+                        className="bi bi-pencil ms-2"
+                        aria-hidden="true"
+                        style={{cursor: 'pointer'}}
+                        onClick={() => setEditing(true)}
+                        title={t('common.inlineField.edit')}
+                    />
+                    <span
+                        className="editable-value ms-1"
+                        style={{cursor: 'pointer'}}
+                        onClick={() => setEditing(true)}
+                    >
+                        {render ? render(value ?? null) : value ||
+                            <span className="text-muted">{t('common.inlineField.add')}</span>}
+                    </span>
+                </span>
             );
         } else if (type === 'select') {
             content = (

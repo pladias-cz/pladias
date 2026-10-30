@@ -8,7 +8,7 @@
  * `services/bulkEditApi`, sekvenční běh dávky `bulkEditOperations`.
  * Parsery vstupů jsou čisté funkce v `valueParsing.ts` (s testy).
  */
-import {useCallback, useEffect, useMemo, useState} from 'react';
+import {useCallback, useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {createTaxaImportableProvider} from '@/components/autocomplete/TaxaImportableProvider';
 import {useConfirm} from '@/hooks/useConfirm';
@@ -127,10 +127,14 @@ export function useBulkEdit({records, totalCount, searchPayloadEntries, onBulkEd
     ), [finderAuthors]);
 
     // změna výběru záznamů vynuluje vybraného nálezce (číselník nálezců je
-    // navázaný na první záznam – bez cache se klíčem mění i načtená data)
-    useEffect(() => {
+    // navázaný na první záznam – bez cache se klíčem mění i načtená data) –
+    // render-phase update guarded by comparison (React docs: adjusting state
+    // when a value changes, without an effect)
+    const [prevRecordIds, setPrevRecordIds] = useState(recordIds);
+    if (recordIds !== prevRecordIds) {
+        setPrevRecordIds(recordIds);
         setSelectedFinder([]);
-    }, [recordIds]);
+    }
 
     const progressPercent = batchProgress.total > 0
         ? Math.round((batchProgress.processed / batchProgress.total) * 100)

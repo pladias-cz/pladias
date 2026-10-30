@@ -13,7 +13,7 @@
  *   prevent tile request cancellations when toggling visibility.
  */
 
-import {useEffect, useState} from 'react';
+import {useState} from 'react';
 import {logWarn} from '@/services/logger';
 import {getLayerDefinition} from '../registry/layerRegistry';
 import type {LayerParams} from '../types';
@@ -37,11 +37,12 @@ export function Layer({layerId, params = {}, visible = true, onSquareDoubleClick
     // Lazy mount: create the layer only once it has been visible for the first time.
     // Hidden layers therefore never load tiles/data from the backend. After the first
     // activation the layer stays mounted (hidden via opacity) so toggling visibility
-    // back and forth never cancels or re-issues tile requests.
+    // back and forth never cancels or re-issues tile requests. Render-phase update
+    // guarded by comparison (React docs: adjusting state when a prop changes).
     const [mounted, setMounted] = useState(visible);
-    useEffect(() => {
-        if (visible) setMounted(true);
-    }, [visible]);
+    if (visible && !mounted) {
+        setMounted(true);
+    }
 
     if (!mounted) {
         return null;

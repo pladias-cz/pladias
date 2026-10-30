@@ -2,7 +2,7 @@ import {Container, Row, Col} from 'react-bootstrap';
 import {usePageTitle} from '@/hooks/usePageTitle';
 import {useTranslation} from 'react-i18next';
 import {useParams} from 'react-router-dom';
-import {useEffect, useState, useMemo} from 'react';
+import {useEffect, useMemo} from 'react';
 import {useQuery} from '@tanstack/react-query';
 import {getTaxon} from '@/services/taxonApi';
 import {notifyApiError} from '@/stores/notificationStore';
@@ -14,7 +14,6 @@ export type MapPreviewType = 1 | 2 | 3 | 4;
 export default function MapPreview() {
     const {t} = useTranslation();
     const {taxonId: taxonIdParam, type} = useParams<{ taxonId: string; type: string }>();
-    const [mapType, setMapType] = useState<MapPreviewType>(1);
 
     usePageTitle(t('atlas.mapPreview.title'));
 
@@ -25,13 +24,10 @@ export default function MapPreview() {
         return isNaN(id) ? undefined : id;
     }, [taxonIdParam]);
 
-    useEffect(() => {
-        if (type) {
-            const mapTypeValue = parseInt(type, 10);
-            if ([1, 2, 3, 4].includes(mapTypeValue)) {
-                setMapType(mapTypeValue as MapPreviewType);
-            }
-        }
+    // Typ mapy je čistá derivace URL parametru (bez state/effectu)
+    const mapType = useMemo<MapPreviewType>(() => {
+        const mapTypeValue = type ? parseInt(type, 10) : 1;
+        return [1, 2, 3, 4].includes(mapTypeValue) ? (mapTypeValue as MapPreviewType) : 1;
     }, [type]);
 
     // taxon jen pro zobrazení názvu v panelu – bez cache (sekce J), načtení při mountu

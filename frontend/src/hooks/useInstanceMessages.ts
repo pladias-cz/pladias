@@ -11,7 +11,7 @@
  *  - **401:** vypršení session řeší apiClient (přesměrování na /login).
  */
 
-import {useRef} from 'react';
+import {useRef, useState} from 'react';
 import {useQuery} from '@tanstack/react-query';
 import {loadInstanceMessages} from '@/services/instanceApi';
 import type {InstanceMessage} from '@/models/InstanceMessage';
@@ -31,13 +31,17 @@ export interface InstanceMessagesState {
 export function useInstanceMessages(): InstanceMessagesState {
     // Po sobě jdoucí selhání nelze číst z `state.fetchFailureCount` – ten se
     // resetuje při každém startu fetche (počítá retry v rámci jednoho dotazu).
-    // Místo toho sledujeme monotónní čítače dotazu (`errorUpdateCount` roste
+    // Místo toho sledujeme monotónní čísla dotazu (`errorUpdateCount` roste
     // o 1 s každým selháním a nerezetuje se startem fetche, `dataUpdateCount`
     // s každým úspěchem). Callback `refetchInterval` běží při každé změně
     // stavu dotazu (start fetche, úspěch, selhání), takže značky drží krok.
+    // Běží vždy mimo render fázi Reactu (setOptions v efektu, subscribe při
+    // commitu, onQueryUpdate po fetchi), proto si v něm smíme dovolit i
+    // zrcadlení `unavailable` do stavu – čtení refu při renderu by pravidlo
+    // react-hooks/refs odmítlo.
     const lastDataUpdateCountRef = useRef(-1);
     const errorsAtLastSuccessRef = useRef(0);
-    const consecutiveFailuresRef = useRef(0);
+    const [unavailable, setUnavailable] = useState(false);
 
     const {data} = useQuery({
         queryKey: ['instanceMessages'],
@@ -50,24 +54,24 @@ export function useInstanceMessages(): InstanceMessagesState {
                 // přišla nová data → reset kadence i počítadla selhání
                 lastDataUpdateCountRef.current = dataUpdateCount;
                 errorsAtLastSuccessRef.current = errorUpdateCount;
-                consecutiveFailuresRef.current = 0;
+                setUnavailable(false);
                 return FAILURE_DELAYS_MS[0];
             }
             const failures = errorUpdateCount - errorsAtLastSuccessRef.current;
-            consecutiveFailuresRef.current = failures;
+            setUnavailable(failures >= UNAVAILABLE_AFTER_FAILURES);
             return FAILURE_DELAYS_MS[Math.min(failures, FAILURE_DELAYS_MS.length - 1)];
         },
         // Skrytá záložka intervalovým dotazům brání (refetchIntervalInBackground
         // zůstává false), návrat do záložky hned dotáhne – přebíjí klientský default.
         refetchOnWindowFocus: true,
         // Re-render po každé změně výsledku pollu (i při opakované stejné chybě,
-        // kdy se instance chyby ani data nemusejí změnit) – `unavailable` se
-        // jinak nemuselo přepočítat.
+        // kdy se instance chyby ani data nemusejí změnit) – zrcadlení `unavailable`
+        // do stavu v callbacku výše potřebuje re-render, aby se projevilo v UI.
         notifyOnChangeProps: 'all',
     });
 
     return {
         messages: data ?? [],
-        unavailable: consecutiveFailuresRef.current >= UNAVAILABLE_AFTER_FAILURES,
+        unavailable,
     };
 }

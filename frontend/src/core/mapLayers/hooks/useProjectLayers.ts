@@ -9,7 +9,7 @@
 import {useEffect, useMemo} from 'react';
 import {useQuery} from '@tanstack/react-query';
 import {useLayerStore, getVisibilityStorageKey} from '../store/layerStore';
-import {getTaxonRecordsByProject, type TaxonProjectRecords} from '@/services/taxonApi';
+import {getTaxonRecordsByProject} from '@/services/taxonApi';
 import {getUserSetting} from '@/services/settingsApi';
 
 export interface UseProjectLayersReturn {
@@ -39,7 +39,9 @@ export function useProjectLayers(
         queryFn: () => getTaxonRecordsByProject(taxonId!),
         enabled: taxonId !== undefined,
     });
-    const projects: TaxonProjectRecords[] = projectsQuery.data ?? [];
+    // memoizace i pro prázdný fallback – jinak by identita pole měnila deps
+    // efektu i useMemo níže (eslint-plugin-react-hooks/exhaustive-deps) při každém renderu
+    const projects = useMemo(() => projectsQuery.data ?? [], [projectsQuery.data]);
 
     // Load saved visibility BEFORE adding layers; selhání tichý fallback na
     // prázdnou množinu jako dřív (vrstvy začí s výchozí viditelností)

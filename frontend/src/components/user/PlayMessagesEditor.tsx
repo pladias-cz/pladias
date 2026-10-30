@@ -27,11 +27,16 @@ export default function PlayMessagesEditor() {
         queryFn: () => getPlayMessagesForLanguage(language),
     });
 
-    useEffect(() => {
+    // načtené konstanty naplní editovatelné hodnoty – kopie do state,
+    // render-phase update guarded by comparison (React docs: adjusting state
+    // when a prop changes, without an effect)
+    const [prevLoadedEntries, setPrevLoadedEntries] = useState(loadedEntries);
+    if (loadedEntries !== prevLoadedEntries) {
+        setPrevLoadedEntries(loadedEntries);
         if (loadedEntries) {
             setEntries(loadedEntries);
         }
-    }, [loadedEntries]);
+    }
 
     // chyba načtení → globální notifikace (Toast vpravo dole, sekce F)
     useEffect(() => {

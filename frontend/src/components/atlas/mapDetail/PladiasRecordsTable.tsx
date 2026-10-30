@@ -94,16 +94,18 @@ export function PladiasRecordsTable({
     const rowRefs = useRef<{ [key: number]: HTMLTableRowElement | null }>({});
     const isAllExpanded = records.length > 0 && expandedRecordIds.size === records.length;
 
-    // Hooks must run before the early return below (rules-of-hooks). With empty
-    // records both effects are harmless no-ops: filtering expanded ids finds
-    // nothing and the registered scroll function has no row to scroll to.
-    useEffect(() => {
+    // Hooks must stay above any conditional return (rules-of-hooks). Prune ids of rows
+    // that disappeared from `records` – render-phase update guarded by comparison
+    // (React docs: adjusting state when a prop changes, without an effect).
+    const [prevRecords, setPrevRecords] = useState(records);
+    if (records !== prevRecords) {
+        setPrevRecords(records);
         const validRecordIds = new Set(records.map((record) => record.id));
         setExpandedRecordIds((prev) => {
             const next = new Set(Array.from(prev).filter((id) => validRecordIds.has(id)));
             return next.size === prev.size ? prev : next;
         });
-    }, [records]);
+    }
 
     const toggleExpand = (recordId: number) => {
         const record = records.find(r => r.id === recordId);

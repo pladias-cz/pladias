@@ -65,10 +65,11 @@ export function useLayerManager(
     const initialized = useRef(false);
 
     // Stabilise the array reference so it doesn't trigger effects every render
+    const layerIdsKey = layerIds?.join(',');
     const managedLayers = useMemo(
         () => layerIds ?? ['osm', 'opentopo'],
         // eslint-disable-next-line react-hooks/exhaustive-deps
-        [layerIds?.join(',')],
+        [layerIdsKey],
     );
 
     // Initialise layers & load saved visibility once per map instance

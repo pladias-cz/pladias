@@ -33,23 +33,23 @@ export default function MultiSelectEdit({
     const [options, setOptions] = useState<MultiValueOption[]>([]);
     const [selected, setSelected] = useState<MultiValueOption[]>(currentValue);
     const [pendingAdd, setPendingAdd] = useState<MultiValueOption | null>(null);
-    const [availableOptions, setAvailableOptions] = useState<MultiValueOption[]>([]);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [editing, setEditing] = useState(false);
     const [lastTimestamp, setLastTimestamp] = useState(lastEditTimestampNum ?? 0);
 
-    // Sync selected with currentValue prop
-    useEffect(() => {
+    // Sync selected with currentValue prop – render-phase update guarded by
+    // comparison (React docs: adjusting state when a prop changes, without an effect)
+    const [prevCurrentValue, setPrevCurrentValue] = useState(currentValue);
+    if (currentValue !== prevCurrentValue) {
+        setPrevCurrentValue(currentValue);
         setSelected(currentValue);
-    }, [currentValue]);
+    }
 
-    // Sync internal timestamp with prop
-    useEffect(() => {
-        if (lastEditTimestampNum !== undefined && lastEditTimestampNum !== lastTimestamp) {
-            setLastTimestamp(lastEditTimestampNum);
-        }
-    }, [lastEditTimestampNum, lastTimestamp]);
+    // Sync internal timestamp with prop (e.g., after another field was edited)
+    if (lastEditTimestampNum !== undefined && lastEditTimestampNum !== lastTimestamp) {
+        setLastTimestamp(lastEditTimestampNum);
+    }
 
     // Fetch available options when editing starts
     useEffect(() => {
@@ -64,20 +64,12 @@ export default function MultiSelectEdit({
         }
     }, [editing, loadOptions, t]);
 
-    // Update available options when options or selected change
-    useEffect(() => {
-        if (options.length > 0) {
-            updateAvailableOptions(options, selected);
-        }
-    }, [options, selected]);
+    // Available options are a pure derivation of the loaded options minus the
+    // selected ones (no effect/state needed – React docs: you might not need an effect)
+    const selectedIds = new Set(selected.map(o => o.id));
+    const availableOptions = options.filter(o => !selectedIds.has(o.id));
 
     // No auto-clear of pendingAdd - it stays until submit or cancel
-
-    function updateAvailableOptions(allOptions: MultiValueOption[], selectedOptions: MultiValueOption[]) {
-        const selectedIds = new Set(selectedOptions.map(o => o.id));
-        const available = allOptions.filter(o => !selectedIds.has(o.id));
-        setAvailableOptions(available);
-    }
 
     async function sendApiRequest(key: string, value: number) {
         try {

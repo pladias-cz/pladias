@@ -103,10 +103,19 @@ export default function Settings() {
         queryFn: () => fetchUserSettings(language || 'cs', isTraitAdmin),
     });
 
-    useEffect(() => {
+    // Načtená nastavení naplní formulář – kopie do state, render-phase update
+    // guarded by comparison (React docs: adjusting state when a prop changes).
+    const [prevLoadedSettings, setPrevLoadedSettings] = useState(loadedSettings);
+    if (loadedSettings !== prevLoadedSettings) {
+        setPrevLoadedSettings(loadedSettings);
         if (loadedSettings) {
             setUserSettings(loadedSettings);
-            // Update i18n language if it was loaded
+        }
+    }
+
+    // Update i18n language after load (external side effect – stays in an effect)
+    useEffect(() => {
+        if (loadedSettings) {
             changeLanguage(loadedSettings.applicationLanguage);
         }
     }, [loadedSettings]);

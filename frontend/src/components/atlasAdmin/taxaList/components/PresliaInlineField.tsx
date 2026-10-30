@@ -1,4 +1,4 @@
-import {useEffect, useRef, useState} from 'react';
+import {useRef, useState} from 'react';
 import {Form, Spinner} from 'react-bootstrap';
 import {useTranslation} from 'react-i18next';
 
@@ -26,11 +26,11 @@ export function PresliaInlineField({
     // než React commitne nový render se saving=true.
     const saveLockRef = useRef(false);
 
-    useEffect(() => {
-        if (!editing) {
-            setDraft(value || '');
-        }
-    }, [value, editing]);
+    // Draft follows the prop value while not editing – render-phase update
+    // guarded by comparison (React docs: adjusting state when a prop changes).
+    if (!editing && draft !== (value || '')) {
+        setDraft(value || '');
+    }
 
     const handleSave = async () => {
         if (saveLockRef.current) {

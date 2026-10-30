@@ -34,12 +34,12 @@ export default function SingleSelectEdit({
     const [editing, setEditing] = useState(false);
     const [lastTimestamp, setLastTimestamp] = useState(lastEditTimestampNum ?? 0);
 
-    // Sync internal timestamp with prop
-    useEffect(() => {
-        if (lastEditTimestampNum !== undefined && lastEditTimestampNum !== lastTimestamp) {
-            setLastTimestamp(lastEditTimestampNum);
-        }
-    }, [lastEditTimestampNum, lastTimestamp]);
+    // Sync internal timestamp with prop when prop changes (e.g., after another
+    // field was edited) – render-phase update guarded by comparison
+    // (React docs: adjusting state when a prop changes, without an effect).
+    if (lastEditTimestampNum !== undefined && lastEditTimestampNum !== lastTimestamp) {
+        setLastTimestamp(lastEditTimestampNum);
+    }
 
     // Fetch available options when editing starts
     useEffect(() => {

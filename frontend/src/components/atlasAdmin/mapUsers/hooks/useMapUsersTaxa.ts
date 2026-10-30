@@ -57,10 +57,15 @@ export function useMapUsersTaxa(
                 fetchTaxa(taxonSearchTerm.trim());
             }, 300);
             return () => clearTimeout(timer);
-        } else if (showAddTaxonModal) {
-            setTaxa([]);
         }
     }, [taxonSearchTerm, showAddTaxonModal, fetchTaxa]);
+
+    // Prázdný vyhledávaný výraz nezahltává modal výsledky předchozího hledání –
+    // render-phase invariant guarded by comparison (React docs: adjusting
+    // state when a prop/state changes, without an effect).
+    if (showAddTaxonModal && !taxonSearchTerm.trim() && taxa.length > 0) {
+        setTaxa([]);
+    }
 
     // Focus input when modal opens
     useEffect(() => {

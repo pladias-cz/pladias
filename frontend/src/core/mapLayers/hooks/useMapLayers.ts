@@ -29,10 +29,11 @@ export function useMapLayers(
     } = useLayerStore();
 
     // Stabilise the array reference
+    const layerIdsKey = layerIds?.join(',');
     const managedLayers = useMemo(
         () => layerIds ?? ['osm', 'opentopo'],
         // eslint-disable-next-line react-hooks/exhaustive-deps
-        [layerIds?.join(',')],
+        [layerIdsKey],
     );
 
     // Set mapContext for other consumers

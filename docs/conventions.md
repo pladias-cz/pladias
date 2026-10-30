@@ -136,6 +136,15 @@ function useAtlasSearch(params) {
   derived from the monotonic `errorUpdateCount`/`dataUpdateCount` inside the `refetchInterval`
   callback; `notifyOnChangeProps: "all"` re-renders on every poll result even when the error
   instance is identical.
+- **No synchronous `setState` in effects** (enforced by `react-hooks/set-state-in-effect`): when
+  state must follow a prop/query value, use the render-phase update guarded by comparison
+  (React docs *You Might Not Need an Effect*) instead of `useEffect` + `setState` – a plain
+  `if (value !== state) setState(value)` (e.g. inline-field `lastEditTimestamp` sync), or a
+  `prevValue` mirror state when the value must not clobber local edits
+  (`useOptimisticRecord`, `PlayMessagesEditor`, `Settings`). Pure derivations compute inline
+  (`availableOptions` in `MultiSelectEdit`, `mapType` in `MapPreview`) or via `useMemo`. Calling
+  a shared `useCallback`'d async loader from an effect needs an `await`ing async IIFE
+  (`TraitTable`); `setState` stays only in async continuations (.then/setTimeout).
 - The `cancelled`-flag pattern below applies only to the remaining manual imperative loads
   (user-triggered flows: search submit, exports, mutations):
 ```typescript

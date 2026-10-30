@@ -221,7 +221,8 @@
       "unknownYear": "nieznany rok",
       "validationStatus": "Status",
       "year": "Rok",
-      "back2MainMap": "mapa glavna"
+      "back2MainMap": "mapa glavna",
+      "back2DetailMap": "mapa square"
     },
     "mapMain": {
       "infoPanel": {

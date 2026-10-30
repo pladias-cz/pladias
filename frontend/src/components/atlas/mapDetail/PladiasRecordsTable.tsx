@@ -371,6 +371,14 @@ export function PladiasRecordsTable({
                                             {t('atlas.mapDetail.importedBy')} <b>{record.batchAuthorName}</b>
                                         </>
                                     )}
+                                    {/* Importní poznámka (Record.comment) – pro kontrolu často klíčová
+                                        pro třídění záznamů; v Excel exportech je, tady chyběla. */}
+                                    {record.comment && (
+                                        <>
+                                            <br/>
+                                            <b>{t('atlas.mapDetail.comment')}:</b> {record.comment}
+                                        </>
+                                    )}
 
                                 </td>
                                 <td className="align-text-top">

@@ -270,3 +270,27 @@ describe('PladiasRecordsTable – tlačítko Rozbalit vše / Sbalit vše', () =>
         expect(screen.getByRole('button', {name: 'Rozbalit vše'})).toBeInTheDocument();
     });
 });
+
+describe('PladiasRecordsTable – importní poznámka ve sloupci Původ', () => {
+    /** Buňka sloupce Původ dohledaná přes index hlavičky v daném řádku. */
+    function originCell(row: HTMLTableRowElement): HTMLElement {
+        const header = screen.getByRole('columnheader', {name: 'Původ'}) as HTMLTableCellElement;
+        return row.cells[header.cellIndex];
+    }
+
+    it('záznam s importní poznámkou ji vypíše ve sloupci Původ', () => {
+        renderTable(
+            [{...makeRecord(201, 1, 'Autor s poznámkou'), comment: 'Duplicitní nález'} as unknown as RecordPladias],
+        );
+
+        const cell = originCell(rowOf('Obec 201') as HTMLTableRowElement);
+        expect(cell).toHaveTextContent('Importní poznámka: Duplicitní nález');
+    });
+
+    it('záznam bez poznámky popisek nevykreslí', () => {
+        renderTable([{...makeRecord(202, 1, 'Autor bez poznámky')} as unknown as RecordPladias]);
+
+        const cell = originCell(rowOf('Obec 202') as HTMLTableRowElement);
+        expect(cell).not.toHaveTextContent('Importní poznámka');
+    });
+});

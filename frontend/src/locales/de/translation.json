@@ -175,6 +175,7 @@
       "altitude": "Höhe über dem Meer",
       "collapseAll": "Alle einklappen",
       "collectors": "Sammler",
+      "comment": "Importanmerkung",
       "commented": "kommentiert",
       "comments": "Kommentare",
       "date": "Datum",
@@ -221,7 +222,8 @@
       "unknownYear": "unbekanntes Jahr",
       "validationStatus": "Status",
       "year": "Jahr",
-      "back2MainMap": "main map"
+      "back2MainMap": "main map",
+      "back2DetailMap": "square map"
     },
     "mapMain": {
       "infoPanel": {

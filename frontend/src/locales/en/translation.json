@@ -175,6 +175,7 @@
       "altitude": "altitude",
       "collapseAll": "Collapse all",
       "collectors": "Collectors",
+      "comment": "Import note",
       "commented": "commented",
       "comments": "Comments",
       "date": "Date",
@@ -221,7 +222,8 @@
       "unknownYear": "unknown year",
       "validationStatus": "Status",
       "year": "Year",
-      "back2MainMap": "main map"
+      "back2MainMap": "main map",
+      "back2DetailMap": "square map"
     },
     "mapMain": {
       "infoPanel": {

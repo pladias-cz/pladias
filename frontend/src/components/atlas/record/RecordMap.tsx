@@ -106,10 +106,9 @@ export default function RecordMap({record, onLocationSelectWithGeocode, hasPropo
     return (
         <Card className="mb-3">
             <Card.Header>
-                <strong>{t('record.map')}</strong>
                 <a href={`/atlas/mapDetail/${record.taxon.id}/${record.quadrantCodeComputed?.slice(0, 4) ?? ''}`}
                    className="small ms-2 fs-5">
-                    zpět na mapu
+                    {t('atlas.mapDetail.back2DetailMap')}
                 </a>
                 {canEdit && <span className="ms-2 text-muted">({t('record.clickOnMap')})</span>}
             </Card.Header>

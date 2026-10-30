@@ -175,6 +175,7 @@
       "altitude": "nadmořská výška",
       "collapseAll": "Sbalit vše",
       "collectors": "Sběratelé",
+      "comment": "Importní poznámka",
       "commented": "komentovaný",
       "comments": "Komentáře",
       "date": "Datum",
@@ -221,7 +222,8 @@
       "unknownYear": "neznámý rok",
       "validationStatus": "Status",
       "year": "Rok",
-      "back2MainMap": "hlavní mapa"
+      "back2MainMap": "hlavní mapa",
+      "back2DetailMap": "mapa čtverce"
     },
     "mapMain": {
       "infoPanel": {

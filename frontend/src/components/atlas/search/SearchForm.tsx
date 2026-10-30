@@ -4,7 +4,7 @@
  * dotaz (useSearchQuery) a layout polí. Bez přímého fetche.
  */
 
-import {type FormEvent, useMemo} from 'react';
+import {type FormEvent, useCallback, useMemo} from 'react';
 import {useTranslation} from 'react-i18next';
 import {useInstanceConfig} from '@/context/InstanceConfigContext';
 import {useProjectName} from '@/context/ProjectNameContext';
@@ -12,7 +12,7 @@ import {useUser} from '@/context/UserContext';
 import {createTaxaImportableProvider} from '@/components/autocomplete/TaxaImportableProvider';
 import BulkEdit from '@/components/atlas/search/BulkEdit';
 import {SearchFilterColumnOne, SearchFilterColumnTwo, SearchResultsView} from './components';
-import {useSearchFilters, useSearchOptions, useSearchQuery} from './hooks';
+import {useSearchFilters, useSearchOptions, useSearchQuery, useSearchResetOnNavigate} from './hooks';
 import {PAGE_SIZE_OPTIONS} from './searchRequest';
 import type {TypeaheadOption} from './types';
 import './SearchForm.scss';
@@ -62,10 +62,24 @@ export default function SearchForm() {
         await query.search(payloadEntries);
     };
 
-    const handleNewSearch = () => {
-        query.reset();
-        filters.reset();
-    };
+    // Stabilní reference resetů (v hookech useCallback s prázdnými deps) – bez
+    // destrukturalizace by eslint vyžadoval v deps celé objekty query/filters,
+    // které se při každém renderu vytváří znovu a handleNewSearch by byl nestabilní.
+    const {reset: resetQuery} = query;
+    const {reset: resetFilters} = filters;
+
+    /** Nové hledání – reset výsledků i filtrů; slouží tlačítku pod výsledky
+     * i odkazu „Vyhledávání“ v hlavním menu (useSearchResetOnNavigate). */
+    const handleNewSearch = useCallback(() => {
+        resetQuery();
+        resetFilters();
+    }, [resetQuery, resetFilters]);
+
+    // Klik na „Vyhledávání“ v hlavním menu na už otevřené stránce vyhledávání:
+    // router pushne novou location (nový key), komponenta se ale nepřemountuje.
+    // Reset na novou location tak dává odkazu v menu význam „nové hledání“ –
+    // na mountu je volání neškodný no-op na čerstvém stavu.
+    useSearchResetOnNavigate(handleNewSearch);
 
     return (
         <>

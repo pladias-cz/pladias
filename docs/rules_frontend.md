@@ -109,6 +109,7 @@ Vše probíhá přes hook `useRecordQuickUpdates` – optimistická změna, PATC
 
 - **Kdo smí:** každý přihlášený uživatel s atlas modulem; výsledky obsahují `canEditCommonFields`/`canEditValidationFields` per záznam, podle kterých se (i zde) řídí viditelnost rychlých editací.
 - **Excel export:** tlačítko vidí všichni; titulek se liší podle `isMapAdmin` (plná data vs. omezená). Samotné omezení dělá backend (mapAdmin dostává větší export, ostatní potřebují přiřazený příspěvkový projekt).
+- **Reset z hlavního menu:** položka „Vyhledávání“ funguje i na už otevřené stránce vyhledávání – klik resetuje výsledky i filtry (stejně jako tlačítko „Nové hledání“); řeší `useSearchResetOnNavigate` nad `location.key`.
 
 ### BulkEdit
 

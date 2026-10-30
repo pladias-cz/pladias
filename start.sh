@@ -17,5 +17,9 @@ java -cp "lib/*:conf" db.DbMigrationRunner \
 
 echo "Migration finished successfully."
 
+echo "Starting Play..."
+echo "Testing stdout"
+echo "Testing stderr" >&2
+
 exec /home/ubuntu/app/bin/pladiasweb
 ```

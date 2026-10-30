@@ -16,11 +16,13 @@ interface RichTextMessageProps {
     /** Obalující element dle místa použití (výchoze span – inline text). */
     as?: RichTextElement;
     className?: string;
+    /** Nativní hover title – např. ID taxonu u jeho jména v mapových hlavičkách. */
+    title?: string;
 }
 
-function RichTextMessage({html, as = 'span', className}: RichTextMessageProps) {
+function RichTextMessage({html, as = 'span', className, title}: RichTextMessageProps) {
     const Tag = as;
-    return <Tag className={className} dangerouslySetInnerHTML={{__html: html ?? ''}}/>;
+    return <Tag className={className} title={title} dangerouslySetInnerHTML={{__html: html ?? ''}}/>;
 }
 
 export default RichTextMessage;

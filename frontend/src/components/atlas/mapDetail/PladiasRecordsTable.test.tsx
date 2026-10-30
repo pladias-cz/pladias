@@ -195,3 +195,43 @@ describe('PladiasRecordsTable – sloupec Fytochorion', () => {
         expect(cell).toHaveAttribute('title', '');
     });
 });
+
+describe('PladiasRecordsTable – sloupec Kvadrant', () => {
+    /** Buňka sloupce Kv. dohledaná přes index hlavičky v daném řádku. */
+    function quadrantCell(row: HTMLTableRowElement): HTMLElement {
+        const header = screen.getByRole('columnheader', {name: 'Kv.'}) as HTMLTableCellElement;
+        return row.cells[header.cellIndex];
+    }
+
+    it('defaultně (mapDetail) jen písmeno kvadrantu, celý kód nese tooltip', () => {
+        renderTable(
+            [{...makeRecord(11, 1, 'Autor kvadrantu'), computedQuadrantCode: '6261b'} as unknown as RecordPladias],
+        );
+
+        const row = rowOf('Obec 11') as HTMLTableRowElement;
+        const cell = quadrantCell(row);
+        expect(cell).toHaveTextContent('b');
+        expect(cell).not.toHaveTextContent('6261b');
+        expect(cell).toHaveAttribute('title', '6261b');
+    });
+
+    it('se showFullQuadrantCode (vyhledávání) se v buňce vypíše plný kód', () => {
+        renderTable(
+            [{...makeRecord(12, 1, 'Autor plného kódu'), computedQuadrantCode: '6261b'} as unknown as RecordPladias],
+            {},
+            {showFullQuadrantCode: true},
+        );
+
+        const row = rowOf('Obec 12') as HTMLTableRowElement;
+        const cell = quadrantCell(row);
+        expect(cell).toHaveTextContent('6261b');
+        expect(cell).toHaveAttribute('title', '6261b');
+    });
+
+    it('bez kvadrantu se v buňce vypíše pomlčka', () => {
+        renderTable([{...makeRecord(13, 1, 'Autor bez kvadrantu')} as unknown as RecordPladias]);
+
+        const row = rowOf('Obec 13') as HTMLTableRowElement;
+        expect(quadrantCell(row)).toHaveTextContent('-');
+    });
+});

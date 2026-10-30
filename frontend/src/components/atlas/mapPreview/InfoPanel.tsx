@@ -65,8 +65,9 @@ export function InfoPanel({type = 1, taxonId, taxonName}: InfoPanelProps) {
                     href={`/atlas/mapMain/${taxonId}`}>{t('atlas.mapPreview.backToMainMap')}</a></span></h2>
                 {taxonName && (
                     <h4>
-                        <RichTextMessage html={taxonName}/>
-                        <span className="text-muted small"> ID: {taxonId}</span>
+                        {/* ID taxonu jako hover title jména (dříve viditelný text). */}
+                        <RichTextMessage html={taxonName}
+                                         title={taxonId != null ? `ID: ${taxonId}` : undefined}/>
                     </h4>
                 )}
                 <hr/>

@@ -160,8 +160,9 @@ export function InfoPanel({taxonName, taxonId}: InfoPanelProps) {
             <div className="flex-shrink-0 mb-3">
                 {taxonName && (
                     <h4>
-                        <RichTextMessage html={taxonName}/>
-                        <span className="text-muted small"> ID: {taxonId}</span>
+                        {/* ID taxonu jako hover title jména (dříve viditelný text). */}
+                        <RichTextMessage html={taxonName}
+                                         title={taxonId != null ? `ID: ${taxonId}` : undefined}/>
                     </h4>
                 )}
 

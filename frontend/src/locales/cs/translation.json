@@ -220,7 +220,8 @@
       "title": "Detailní mapa",
       "unknownYear": "neznámý rok",
       "validationStatus": "Status",
-      "year": "Rok"
+      "year": "Rok",
+      "back2MainMap": "hlavní mapa"
     },
     "mapMain": {
       "infoPanel": {

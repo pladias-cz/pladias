@@ -39,7 +39,7 @@ export default function NewComments() {
             )}
 
             {records.length > 0 &&
-                <PladiasRecordsTable records={records} showTaxonName={true} showExpandAllButton={true}/>}
+                <PladiasRecordsTable records={records} showTaxonName={true} showExpandAllButton={true} showFullQuadrantCode={true}/>}
         </Row>
     );
 }

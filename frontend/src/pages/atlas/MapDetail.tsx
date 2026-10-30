@@ -188,14 +188,16 @@ export default function MapDetail() {
             <Row className="g-0" style={{height: 'calc(90vh - 56px)'}}>
                 <Col md={12} lg={5} xl={4} className="h-100">
                     <h5>
-                        <RichTextMessage html={taxon?.nameHtml}/>
-                        <span className="text-muted small"> ID: {taxonId}</span>
+                        {/* ID taxonu jako hover title jména (dříve viditelný text). */}
+                        <RichTextMessage html={taxon?.nameHtml} title={`ID: ${taxonId}`}/>
                         <span className="text-muted small ms-2">
                                     ({t('atlas.mapDetail.square')} {squareId})
                                 </span>
-                        <a href={`/atlas/mapMain/${taxonId}`} className="small ms-2 fs-5">
-                            zpět na hlavní mapu
+                        <span className="small ms-2">
+                        <a href={`/atlas/mapMain/${taxonId}`}>
+                            {t('atlas.mapDetail.back2MainMap')}
                         </a>
+                        </span>
                     </h5>
                     <MapComponent
 

@@ -27,6 +27,9 @@ interface PladiasRecordsTableProps {
     onRecordUpdated?: (record: RecordPladias) => void;
     showTaxonName?: boolean;
     showExpandAllButton?: boolean;
+    /** Kvadrant v buňce: mapDetail (záznamy jednoho čtverce) jen písmeno, výsledky z celé
+     * republiky (vyhledávání, nové komentáře) plný kód, např. 6261b. Default: písmeno. */
+    showFullQuadrantCode?: boolean;
     /** Aktivní řazení vyhledávání (sort klíč backendu); hlavičky řadí jen s onHeaderSort. */
     sort?: { sortBy: string | null; descending: boolean };
     /** Klik na řaditelnou hlavičku – předává sort klíč backendu. */
@@ -76,6 +79,7 @@ export function PladiasRecordsTable({
                                         onRecordUpdated,
                                         showTaxonName = false,
                                         showExpandAllButton = false,
+                                        showFullQuadrantCode = false,
                                         sort,
                                         onHeaderSort
                                     }: PladiasRecordsTableProps) {
@@ -244,8 +248,9 @@ export function PladiasRecordsTable({
                                 onMouseEnter={() => onRecordHover?.(record.id)}
                                 onMouseLeave={() => onRecordHover?.(null)}
                             >
-                                {/* Kvadrant (a-d) dopočítaný z GPS prostorovým dotazem; tooltip nese celý kód (např. 6152a).
-                                    Tabulka obsahuje jen záznamy aktuálního čtverce, proto už není odkaz na jeho detail. */}
+                                {/* Kvadrant (a-d) dopočítaný z GPS prostorovým dotazem. Tooltip vždy nese celý kód
+                                    (např. 6152a); v buňce jen písmeno (mapDetail – záznamy jednoho čtverce) nebo
+                                    plný kód (vyhledávání, nové komentáře – záznamy z celé republiky). */}
                                 {/* Taxon má vlastní sloupec (vyhledávání, nové komentáře); mapDetail ho nezobrazuje. */}
                                 {showTaxonName && (
                                     <td className="align-text-top">
@@ -255,7 +260,9 @@ export function PladiasRecordsTable({
                                     </td>
                                 )}
                                 <td className="align-text-top" title={record.computedQuadrantCode || ''}>
-                                    {record.computedQuadrantCode ? record.computedQuadrantCode.slice(-1) : '-'}
+                                    {record.computedQuadrantCode
+                                        ? (showFullQuadrantCode ? record.computedQuadrantCode : record.computedQuadrantCode.slice(-1))
+                                        : '-'}
                                 </td>
                                 {isVascular && (
                                     // Fytochorion: v buňce jen kód (phytoId), celý název nese tooltip.

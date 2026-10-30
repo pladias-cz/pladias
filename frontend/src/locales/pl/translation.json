@@ -220,7 +220,8 @@
       "title": "Mapa szczegółowa",
       "unknownYear": "nieznany rok",
       "validationStatus": "Status",
-      "year": "Rok"
+      "year": "Rok",
+      "back2MainMap": "mapa glavna"
     },
     "mapMain": {
       "infoPanel": {

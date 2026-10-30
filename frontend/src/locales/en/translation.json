@@ -220,7 +220,8 @@
       "title": "Detailed map",
       "unknownYear": "unknown year",
       "validationStatus": "Status",
-      "year": "Year"
+      "year": "Year",
+      "back2MainMap": "main map"
     },
     "mapMain": {
       "infoPanel": {

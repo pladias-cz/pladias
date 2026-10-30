@@ -184,6 +184,14 @@ Reset hesla (self-service `/forgotPassword` i sysAdmin tlačítko v UsersTable) 
   and must not spam toasts.
 - `danger` notifications are sticky on purpose (no auto-dismiss); a toast that closes itself
   before the user reads it is worse than none.
+- The store itself keeps the stack from piling up/hanging: a push identical to a visible
+  notification (same type + `message`/`html`) merges into it and only resets its timer
+  (N parallel failed requests = one toast, not a column of copies); the visible stack is
+  capped at 5 – the oldest is closed first, sticky `danger` included; on
+  `visibilitychange` → visible, overdue auto-dismiss toasts are closed immediately and the
+  remaining timers re-armed with the rest of their time. Hidden-tab `setTimeout` throttling
+  (Chrome intensive throttling, Safari suspension) would otherwise keep expired toasts on
+  screen after the user returns to the tab.
 
 
 ## sekce atlas

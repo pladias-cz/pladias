@@ -4,8 +4,9 @@ import {getRecentLogEntries, resetLogger} from '@/services/logger';
 import {notifyApiError, pushNotification, useNotificationStore} from './notificationStore';
 
 /**
- * Testy globálního notifikačního store: push,
- * auto-dismiss timeouty (danger drží), dismiss/clear a deduplikace centrálně
+ * Testy globálního notifikačního store: push, auto-dismiss timeouty
+ * (danger drží), dedup identických hlášek, strop stacku, dorovnání
+ * expirací při návratu do záložky, dismiss/clear a deduplikace centrálně
  * oznámených chyb (`notifyApiError`). Timeouty se řídí fake timers.
  */
 
@@ -71,6 +72,75 @@ describe('notificationStore', () => {
         expect(notifications()).toHaveLength(0);
 
         vi.advanceTimersByTime(10_000);
+        expect(notifications()).toHaveLength(0);
+    });
+
+    it('merges an identical push into the visible notification and resets its timer', () => {
+        const first = pushNotification({type: 'success', message: 'Uloženo'});
+        vi.advanceTimersByTime(4_000);
+
+        const second = pushNotification({type: 'success', message: 'Uloženo'});
+
+        expect(second).toBe(first);
+        expect(notifications()).toHaveLength(1);
+
+        // timer běží znovu od druhého pushu (N stejných chyb = jedna hláška)
+        vi.advanceTimersByTime(4_999);
+        expect(notifications()).toHaveLength(1);
+
+        vi.advanceTimersByTime(1);
+        expect(notifications()).toHaveLength(0);
+    });
+
+    it('keeps notifications that differ in type or content separate', () => {
+        pushNotification({type: 'success', message: 'Uloženo'});
+        pushNotification({type: 'info', message: 'Uloženo'});
+        pushNotification({type: 'success', message: 'Změněno'});
+
+        expect(notifications()).toHaveLength(3);
+    });
+
+    it('keeps at most five notifications and closes the oldest', () => {
+        const ids = ['a', 'b', 'c', 'd', 'e', 'f']
+            .map((mark) => pushNotification({type: 'success', message: `Zpráva ${mark}`}));
+
+        expect(notifications()).toHaveLength(5);
+        expect(notifications().map((notification) => notification.id)).not.toContain(ids[0]);
+        expect(notifications()[0].id).toBe(ids[1]);
+    });
+
+    it('trims the oldest even when it is a sticky danger', () => {
+        const dangerId = pushNotification({type: 'danger', message: 'Chyba'});
+        for (let i = 1; i <= 5; i++) {
+            pushNotification({type: 'info', message: `Info ${i}`});
+        }
+
+        expect(notifications()).toHaveLength(5);
+        expect(notifications().map((notification) => notification.id)).not.toContain(dangerId);
+    });
+
+    it('closes overdue notifications on return to the tab (throttled timer never fired)', () => {
+        pushNotification({type: 'success', message: 'Uloženo'});
+
+        // skrytá záložka: hodiny pokročily o 10 s, throttlovaný timer se nespustil
+        vi.setSystemTime(Date.now() + 10_000);
+        expect(notifications()).toHaveLength(1);
+
+        document.dispatchEvent(new Event('visibilitychange'));
+
+        expect(notifications()).toHaveLength(0);
+    });
+
+    it('re-arms the remaining time on return to the tab', () => {
+        pushNotification({type: 'success', message: 'Uloženo'});
+        vi.advanceTimersByTime(4_000);
+
+        document.dispatchEvent(new Event('visibilitychange'));
+
+        vi.advanceTimersByTime(999);
+        expect(notifications()).toHaveLength(1);
+
+        vi.advanceTimersByTime(1);
         expect(notifications()).toHaveLength(0);
     });
 });

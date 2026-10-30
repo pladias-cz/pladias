@@ -8,6 +8,12 @@
  * `FlashMessages` z dat heartbeatu `useInstanceMessages` – Toast se ukáže
  * při prvním načtení, návratu do záložky a při změně obsahu.
  *
+ * Ochranu proti hromadění „visících“ hlášek řeší store sám (docs/gotchas.md):
+ *  - identická zobrazená notifikace se nezduplikuje, jen jí resetuje timer,
+ *  - stack má strop (`MAX_VISIBLE`) – přebývající nejstarší se zavře,
+ *  - návrat ze skryté záložky dorovná expirace (prohlížeč throttluje setTimeout
+ *    ve skryté záložce, toast tak „déle visí“, než měl).
+ *
  * Kdo smí volat push (conventions.md, „Error Handling & Resilience“):
  *  - komponenta/service po dokončení user akce (úspěch i kontextové chyby),
  *  - apiClient centrálně 403 a síťové chyby (handlery zapojuje App),
@@ -52,41 +58,116 @@ interface NotificationStore {
 /** Výchozí auto-dismiss pro success/info/warning. */
 const DEFAULT_TIMEOUT_MS = 5000;
 
+/** Strop současně viditelných notifikací – při přetečení se zavře nejstarší. */
+const MAX_VISIBLE = 5;
+
 /** id čítač a běžící timeouty mimo React state (akce jsou stabilní). */
 let nextId = 1;
 const timers = new Map<number, ReturnType<typeof setTimeout>>();
+/** Plánovaný konec auto-dismiss (absolutní čas) – korekce skryté záložky. */
+const expiries = new Map<number, number>();
 
-export const useNotificationStore = create<NotificationStore>((set) => ({
+/** Zruší auto-dismiss timer notifikace (zavření rukou, clear, nové nastavení). */
+function clearTimer(id: number): void {
+    const timer = timers.get(id);
+    if (timer) {
+        clearTimeout(timer);
+        timers.delete(id);
+    }
+    expiries.delete(id);
+}
+
+/** Nastaví auto-dismiss; `timeout <= 0` (danger drží) jen zruší starý timer. */
+function armTimer(id: number, timeout: number): void {
+    clearTimer(id);
+    if (timeout <= 0) {
+        return;
+    }
+    expiries.set(id, Date.now() + timeout);
+    timers.set(id, setTimeout(() => useNotificationStore.getState().dismiss(id), timeout));
+}
+
+/** Stejný obsah jako vstup push – klíč deduplikace (typ + message/html). */
+function isDuplicate(notification: Notification, input: NotificationInput): boolean {
+    return notification.type === input.type &&
+        notification.message === input.message &&
+        notification.html === input.html;
+}
+
+export const useNotificationStore = create<NotificationStore>((set, get) => ({
     notifications: [],
 
     push: (input) => {
+        const timeout = input.timeout ?? (input.type === 'danger' ? 0 : DEFAULT_TIMEOUT_MS);
+
+        // Identická zobrazená hláška se nezduplikuje – jen jí resetuje timer
+        // (N selhavších paralelních requestů = jedna notifikace, ne sloupec kopií).
+        const duplicate = get().notifications.find((notification) => isDuplicate(notification, input));
+        if (duplicate) {
+            armTimer(duplicate.id, timeout);
+            return duplicate.id;
+        }
+
         const id = nextId++;
         set((state) => ({
             notifications: [...state.notifications, {id, type: input.type, message: input.message, html: input.html}],
         }));
+        armTimer(id, timeout);
 
-        const timeout = input.timeout ?? (input.type === 'danger' ? 0 : DEFAULT_TIMEOUT_MS);
-        if (timeout > 0) {
-            timers.set(id, setTimeout(() => useNotificationStore.getState().dismiss(id), timeout));
-        }
+        // Strop stacku – přebývající nejstarší se zavře, aby hromada hlášek
+        // (opakované chyby) nepřerostla obrazovku; vidět je vždy aktuální konec.
+        get().notifications.slice(0, -MAX_VISIBLE).forEach((oldest) => get().dismiss(oldest.id));
+
         return id;
     },
 
     dismiss: (id) => {
-        const timer = timers.get(id);
-        if (timer) {
-            clearTimeout(timer);
-            timers.delete(id);
-        }
+        clearTimer(id);
         set((state) => ({notifications: state.notifications.filter((notification) => notification.id !== id)}));
     },
 
     clear: () => {
         timers.forEach((timer) => clearTimeout(timer));
         timers.clear();
+        expiries.clear();
         set({notifications: []});
     },
 }));
+
+/**
+ * Návrat do záložky: prohlížeč throttluje setTimeout ve skryté záložce
+ * (Chrome po 5 min max 1×/min, Safari záložku úplně uspí) – auto-dismiss
+ * tak mohl být odložen a toast, jenž měl expirovat, po návratu visí.
+ * Prošlé notifikace se zavřou okamžitě, zbývajícím se timer pře-rozejče
+ * zbytkem času. (Maintenance zprávy řeší stejný problém resyncem ve
+ * `FlashMessages`; tady je to pro celý zbytek store.)
+ */
+if (typeof document !== 'undefined') {
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState !== 'visible') {
+            return;
+        }
+        const now = Date.now();
+        const overdue: number[] = [];
+        const rearm: Array<[id: number, ms: number]> = [];
+        for (const [id, expiresAt] of expiries) {
+            const ms = expiresAt - now;
+            if (ms <= 0) {
+                overdue.push(id);
+            } else {
+                rearm.push([id, ms]);
+            }
+        }
+        overdue.forEach((id) => useNotificationStore.getState().dismiss(id));
+        for (const [id, ms] of rearm) {
+            const timer = timers.get(id);
+            if (timer) {
+                clearTimeout(timer);
+            }
+            timers.set(id, setTimeout(() => useNotificationStore.getState().dismiss(id), ms));
+        }
+    });
+}
 
 /** Akce store pro použití v komponentách (push je stabilní referencí). */
 export function useNotifications() {

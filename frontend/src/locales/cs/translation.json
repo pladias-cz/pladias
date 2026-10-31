@@ -607,6 +607,9 @@
       },
       "title": "Vyhledávání záznamů"
     },
+    "search2": {
+      "title": "Pokročilé vyhledávání"
+    },
     "taxesList": {
       "title": "Seznam přidělených taxonů"
     },
@@ -758,6 +761,7 @@
       "listOfTaxa": "Seznam přidělených taxonů",
       "newComments": "Nepřečtené komentáře",
       "search": "Vyhledávání záznamů",
+      "search2": "Pokročilé vyhledávání",
       "selectTaxon": "Příprava mapy"
     },
     "atlasAdmin": {

@@ -607,6 +607,9 @@
       },
       "title": "Suche nach Datensätzen"
     },
+    "search2": {
+      "title": "Erweiterte Suche"
+    },
     "taxesList": {
       "title": "Liste der zugewiesenen Taxa"
     },
@@ -758,6 +761,7 @@
       "listOfTaxa": "Liste der zugewiesenen Taxa",
       "newComments": "Ungelesene Kommentare",
       "search": "Suche nach Datensätzen",
+      "search2": "Erweiterte Suche",
       "selectTaxon": "Kartenvorbereitung"
     },
     "atlasAdmin": {

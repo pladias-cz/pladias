@@ -606,6 +606,9 @@
       },
       "title": "Wyszukiwanie rekordów"
     },
+    "search2": {
+      "title": "Wyszukiwanie zaawansowane"
+    },
     "taxesList": {
       "title": "Lista przydzielonych taksonów"
     },
@@ -757,6 +760,7 @@
       "listOfTaxa": "Lista przydzielonych taksonów",
       "newComments": "Nieprzeczytane komentarze",
       "search": "Wyszukiwanie rekordów",
+      "search2": "Wyszukiwanie zaawansowane",
       "selectTaxon": "Przygotowanie mapy"
     },
     "atlasAdmin": {

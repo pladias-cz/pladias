@@ -19,6 +19,7 @@ const UnauthorizedPage = lazy(() => import('./pages/Unauthorized'));
 // Atlas
 const NewComments = lazy(() => import('./pages/atlas/NewComments'));
 const AtlasSearch = lazy(() => import('./pages/atlas/Search'));
+const Search2 = lazy(() => import('./pages/atlas/Search2'));
 const ListOfControls = lazy(() => import('./pages/atlas/ListOfControls'));
 const AtlasListOfImports = lazy(() => import('./pages/atlas/ListOfImports'));
 const AtlasListOfTaxa = lazy(() => import('./pages/atlas/ListOfTaxa'));
@@ -184,6 +185,13 @@ export default function App() {
                                                                                </ProtectedRoute>
                                                                            }/>
                                         </Route>
+
+                                        {/* Advanced search - top-level route /search2, requires atlas module */}
+                                        <Route path="search2" element={
+                                            <ProtectedRoute requiredModule="atlas">
+                                                <Search2/>
+                                            </ProtectedRoute>
+                                        }/>
 
                                         {/* AtlasAdmin routes - requires atlas module + map admin permission */}
                                         <Route path="atlasAdmin">

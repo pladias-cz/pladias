@@ -86,11 +86,13 @@ const MainMenu = React.forwardRef<HTMLDivElement>(function MainMenu(_props, ref)
                     <Nav className="me-auto">
                         {hasAtlasModule && (
                             <>
-                                <ActiveDropdown title={t('menu.atlas.dropdown')} prefixes={['/atlas']}>
+                                <ActiveDropdown title={t('menu.atlas.dropdown')} prefixes={['/atlas', '/search2']}>
                                     <NavDropdown.Item as={NavLink}
                                                       to="/atlas/newComments">{t('menu.atlas.newComments')}</NavDropdown.Item>
                                     <NavDropdown.Item as={NavLink}
                                                       to="/atlas/search">{t('menu.atlas.search')}</NavDropdown.Item>
+                                    <NavDropdown.Item as={NavLink}
+                                                      to="/search2">{t('menu.atlas.search2')}</NavDropdown.Item>
                                     <NavDropdown.Divider/>
                                     <NavDropdown.Item as={NavLink}
                                                       to="/atlas/listOfControls">{t('menu.atlas.listOfControls')}</NavDropdown.Item>

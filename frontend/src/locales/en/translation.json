@@ -607,6 +607,9 @@
       },
       "title": "Record search"
     },
+    "search2": {
+      "title": "Advanced search"
+    },
     "taxesList": {
       "title": "List of assigned taxa"
     },
@@ -758,6 +761,7 @@
       "listOfTaxa": "List of assigned taxa",
       "newComments": "Unread comments",
       "search": "Record search",
+      "search2": "Advanced search",
       "selectTaxon": "Map preparation"
     },
     "atlasAdmin": {

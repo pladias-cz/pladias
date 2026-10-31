@@ -121,6 +121,40 @@
         "title": "Przesłanie pliku"
       }
     },
+    "advancedSearch": {
+      "download": {
+        "formatExcel": "Excel",
+        "formatLabel": "Format eksportu",
+        "submit": "Eksportuj"
+      },
+      "filterRow": {
+        "addFilter": "Filtr",
+        "addFilterTitle": "Włącz pojedyncze filtry",
+        "categories": {
+          "locality": "Lokalizacja",
+          "origin": "Pochodzenie danych",
+          "remarks": "Uwagi",
+          "taxon": "Takson"
+        },
+        "clearValue": "Wyczyść wartość filtra",
+        "reset": "Reset"
+      },
+      "filters": {
+        "appComment": "komentarz w aplikacji",
+        "commented": "tylko z komentarzami",
+        "unresolvedComment": "tylko z nierozwiązanymi komentarzami"
+      },
+      "hint": "Ustaw filtry – nazwę filtra rozwiń kliknięciem lub najechaniem kursorem; wyszukiwanie uruchomi się samo po zamknięciu filtra.",
+      "tabs": {
+        "dashboard": "Pulpit",
+        "dashboardPlaceholder": "Zagregowane wyniki zostaną dodane.",
+        "download": "Pobierz",
+        "map": "Mapa",
+        "mapPlaceholder": "Mapowe przedstawienie wyników zostanie dodane.",
+        "table": "Tabela"
+      },
+      "title": "Wyszukiwanie zaawansowane"
+    },
     "controls": {
       "title": "Lista kontroli"
     },
@@ -606,9 +640,6 @@
       },
       "title": "Wyszukiwanie rekordów"
     },
-    "search2": {
-      "title": "Wyszukiwanie zaawansowane"
-    },
     "taxesList": {
       "title": "Lista przydzielonych taksonów"
     },
@@ -751,6 +782,7 @@
   },
   "menu": {
     "atlas": {
+      "advancedSearch": "Wyszukiwanie zaawansowane",
       "bulkEdit": "Edycje masowe",
       "dropdown": "Mapy",
       "import": "Import danych",
@@ -760,7 +792,6 @@
       "listOfTaxa": "Lista przydzielonych taksonów",
       "newComments": "Nieprzeczytane komentarze",
       "search": "Wyszukiwanie rekordów",
-      "search2": "Wyszukiwanie zaawansowane",
       "selectTaxon": "Przygotowanie mapy"
     },
     "atlasAdmin": {

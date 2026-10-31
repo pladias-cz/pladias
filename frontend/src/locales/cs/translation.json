@@ -121,6 +121,40 @@
         "title": "Nahrání souboru"
       }
     },
+    "advancedSearch": {
+      "download": {
+        "formatExcel": "Excel",
+        "formatLabel": "Exportní formát",
+        "submit": "Exportovat"
+      },
+      "filterRow": {
+        "addFilter": "Filtr",
+        "addFilterTitle": "Zapnutí jednotlivých filtrů",
+        "categories": {
+          "locality": "Lokalita",
+          "origin": "Původ dat",
+          "remarks": "Poznámky",
+          "taxon": "Taxon"
+        },
+        "clearValue": "Vymazat hodnotu filtru",
+        "reset": "Reset"
+      },
+      "filters": {
+        "appComment": "komentář v aplikaci",
+        "commented": "jen s komentářem",
+        "unresolvedComment": "jen s nevyřešeným komentářem"
+      },
+      "hint": "Nastavte filtry – název filtru rozbalte kliknutím nebo najetím kurzoru; vyhledávání se spustí samo po zavření filtru.",
+      "tabs": {
+        "dashboard": "Dashboard",
+        "dashboardPlaceholder": "Agregované výsledky budou doplněny.",
+        "download": "Download",
+        "map": "Mapa",
+        "mapPlaceholder": "Mapový výpis výsledků bude doplněn.",
+        "table": "Tabulka"
+      },
+      "title": "Pokročilé vyhledávání"
+    },
     "controls": {
       "title": "Seznam kontrol"
     },
@@ -607,9 +641,6 @@
       },
       "title": "Vyhledávání záznamů"
     },
-    "search2": {
-      "title": "Pokročilé vyhledávání"
-    },
     "taxesList": {
       "title": "Seznam přidělených taxonů"
     },
@@ -752,6 +783,7 @@
   },
   "menu": {
     "atlas": {
+      "advancedSearch": "Pokročilé vyhledávání",
       "bulkEdit": "Hromadné úpravy",
       "dropdown": "Mapy",
       "import": "Import dat",
@@ -761,7 +793,6 @@
       "listOfTaxa": "Seznam přidělených taxonů",
       "newComments": "Nepřečtené komentáře",
       "search": "Vyhledávání záznamů",
-      "search2": "Pokročilé vyhledávání",
       "selectTaxon": "Příprava mapy"
     },
     "atlasAdmin": {

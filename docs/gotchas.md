@@ -196,6 +196,48 @@ Reset hesla (self-service `/forgotPassword` i sysAdmin tlačítko v UsersTable) 
 
 ## sekce atlas
 
+### Pokročilé vyhledávání (`/atlas/advancedSearch`, `components/atlas/search/advanced/`)
+
+- **`committerId` musí být ve formuláři vždy přítomný** (fallback `-1`): `PageSearchService` v podmínce JOINu
+  čte `form.committerId != -1` bez null kontroly – Integer unboxing NULL vyhodí NPE a vyhledávání selže.
+  `buildAdvancedSearchPayload` proto vždy appenduje `committerId=-1`, když filtr není vyplněný/viditelný
+  (parita se starým formulářem, který měl hidden input s fallbackem -1).
+- **`include_subtaxa` má výchozí `true`** (backend `getInclude_subtaxa()` NULL → false); store proto
+  inicializuje i resetuje hodnoty na `{includeSubtaxa: true}`. Odškrtnutí se posílá jako nepřítomnost klíče.
+- **Viditelnost filtru = aktivita filtru**: skrytý chip se do dotazu neposílá, jeho hodnota ale zůstává ve
+  store (sessionStorage) a po znovuzobrazení se vrátí na chip. Hodnoty filtrů nejsou server data → zustand
+  store s persist do sessionStorage (+ userId guard proti logout/login ve stejném tabu); viditelnost je
+  user setting na backendu (`atlas_advancedsearch_filtersvisible`, JSON pole FilterId, vzor
+  useRecordSourceVisibility).
+- **Auto-vyhledávání** (bez tlačítka Vyhledat): spouští se s debouncem 200 ms po zavření popoveru chipu
+  (mouseleave / klik mimo / Esc) nebo po přepnutí viditelnosti filtru. Spustí se jen při změně payloadu
+  (`payloadEntriesEqual` – pořadí položek určuje registr) a jen když payload má hodnoty filtrů, nebo už
+  proběhlo hledání (`hasFilterValues`) – pouhý přeběh myší přes chip nespustí dotaz na všechny záznamy.
+  Po refreshi / návratu na stránku se vyhledávání automaticky spustí, pokud jsou uložené hodnoty filtrů
+  (čeká se na načtení viditelnosti filtrů z backendu, aby se poslal správný payload).
+- **Popover místo Dropdownu v chip řádce** (FilterChip/AddFilterPopover): react-bootstrap `Dropdown`
+  s `autoClose="outside"` nešel po otevření zavřít klikem na toggle (zavření na mousedown + následný click
+  na toggle ho znovu otevřel). Používáme řízený `Overlay` + `Popover` s vlastním document listenerem
+  (mousedown mimo chip/popover + Esc zavírá). Pozor: odmontování popoveru po `show=false` probíhá
+  **asynchronně** (NoopTransition onExited efekt) – testy musí čekat (`waitFor`).
+- **react-bootstrap Overlay přepisuje ref child elementu** (`cloneElement` injektuje vlastní ref pro
+  popper) – `ref` na `<Popover>`/jakkoli Overlay child tedy **nikdy nezavolá vlastní callback**. Pro
+  dotazy „je klik uvnitř popoveru?" proto používáme `event.target.closest('.filter-chip__popover')`
+  (popover je v portálu na body), ne ref. A testy interakcí s popoverem musí simulovat reálnou sekvenci
+  `fireEvent.mouseDown` + `fireEvent.click` – samotný `click` mousedown nespustí a skryté chyby
+  „mousedown zavře popover dřív, než doběhne click" neprojeví.
+- **Zvětšení popoveru vyžaduje přepis `--bs-popover-max-width`** se zvýšenou specificitou
+  (`.popover.filter-add-popover { --bs-popover-max-width: … }`): bootstrap `.popover` sám nastavuje
+  `max-width: var(--bs-popover-max-width)` i proměnnou (default 276px) – jednoduchá třída
+  `.filter-add-popover { max-width: … }` má stejnou specificitu a podle pořadí CSS chunků prohraje,
+  popover zůstane úzký a sloupce v něm se srovnají pod sebe.
+- **Excel export z tabu Download záměrně nechodí přes `useSearchQuery.search`** – excel payload (`export_type=excel`)
+  by zůstal v `lastPayloadEntries` a rozbil stránkování tabulky (`resolvePageSize` vynucuje exportní page size).
+  Používá vlastní `useAdvancedSearchExport` nad stejnou službou.
+- **Dynamické i18n klíče z registru filtrů** se typují `t(key as never)` (typované i18n zná jen literály; vzor
+  useSearchOptions) – klíče v datech (labelKey/titleKey) nevidí i18n audit, proto sanity test v
+  `advancedSearchRequest.test.ts`.
+
 ### CSP: externí obrázky a mapové podklady
 CSP `img-src` (conf/common.conf) povoluje jen `'self' data:` + GeoServery CZ/SK a tile servery podkladů (OSM/OpenTopoMap/ČUZK). Obrázky (markery apod.) proto **nikdy nenačítat z externího CDN** (raw.githubusercontent.com apod. – produkce je zablokuje), ale bundlovat lokálně přes Vite import (vzor: `RecordMap.tsx` – `leaflet/dist/images/*`, `src/assets/markers/*`). Přidání nového tile/WMS zdroje vyžaduje rozšíření `img-src` v conf/common.conf (tiles jsou `<img>`, WFS GeoJSON jde přes `connect-src`).
 

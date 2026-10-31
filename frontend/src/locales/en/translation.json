@@ -121,6 +121,40 @@
         "title": "File upload"
       }
     },
+    "advancedSearch": {
+      "download": {
+        "formatExcel": "Excel",
+        "formatLabel": "Export format",
+        "submit": "Export"
+      },
+      "filterRow": {
+        "addFilter": "Filter",
+        "addFilterTitle": "Enable individual filters",
+        "categories": {
+          "locality": "Locality",
+          "origin": "Data origin",
+          "remarks": "Remarks",
+          "taxon": "Taxon"
+        },
+        "clearValue": "Clear filter value",
+        "reset": "Reset"
+      },
+      "filters": {
+        "appComment": "in-app comment",
+        "commented": "only with comments",
+        "unresolvedComment": "only with unresolved comments"
+      },
+      "hint": "Set filters – open a filter name by clicking or hovering; the search runs automatically when the filter closes.",
+      "tabs": {
+        "dashboard": "Dashboard",
+        "dashboardPlaceholder": "Aggregated results will be added.",
+        "download": "Download",
+        "map": "Map",
+        "mapPlaceholder": "Map output of results will be added.",
+        "table": "Table"
+      },
+      "title": "Advanced search"
+    },
     "controls": {
       "title": "List of controls"
     },
@@ -607,9 +641,6 @@
       },
       "title": "Record search"
     },
-    "search2": {
-      "title": "Advanced search"
-    },
     "taxesList": {
       "title": "List of assigned taxa"
     },
@@ -752,6 +783,7 @@
   },
   "menu": {
     "atlas": {
+      "advancedSearch": "Advanced search",
       "bulkEdit": "Bulk edits",
       "dropdown": "Maps",
       "import": "Data import",
@@ -761,7 +793,6 @@
       "listOfTaxa": "List of assigned taxa",
       "newComments": "Unread comments",
       "search": "Record search",
-      "search2": "Advanced search",
       "selectTaxon": "Map preparation"
     },
     "atlasAdmin": {

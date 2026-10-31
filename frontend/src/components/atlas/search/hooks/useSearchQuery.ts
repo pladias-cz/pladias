@@ -192,3 +192,6 @@ export function useSearchQuery() {
         reset,
     };
 }
+
+/** Typ vráceného objektu useSearchQuery (pro props podkomponent – vzor useSearchFilters). */
+export type SearchQuery = ReturnType<typeof useSearchQuery>;

@@ -121,6 +121,40 @@
         "title": "Datei-Upload"
       }
     },
+    "advancedSearch": {
+      "download": {
+        "formatExcel": "Excel",
+        "formatLabel": "Exportformat",
+        "submit": "Exportieren"
+      },
+      "filterRow": {
+        "addFilter": "Filter",
+        "addFilterTitle": "Einzelne Filter aktivieren",
+        "categories": {
+          "locality": "Lokalität",
+          "origin": "Datenherkunft",
+          "remarks": "Anmerkungen",
+          "taxon": "Taxon"
+        },
+        "clearValue": "Filterwert löschen",
+        "reset": "Zurücksetzen"
+      },
+      "filters": {
+        "appComment": "Kommentar in der App",
+        "commented": "nur mit Kommentaren",
+        "unresolvedComment": "nur mit ungelösten Kommentaren"
+      },
+      "hint": "Filter setzen – Filternamen durch Klicken oder Überfahren mit der Maus öffnen; die Suche startet automatisch beim Schließen des Filters.",
+      "tabs": {
+        "dashboard": "Dashboard",
+        "dashboardPlaceholder": "Aggregierte Ergebnisse werden ergänzt.",
+        "download": "Download",
+        "map": "Karte",
+        "mapPlaceholder": "Die Kartenausgabe der Ergebnisse wird ergänzt.",
+        "table": "Tabelle"
+      },
+      "title": "Erweiterte Suche"
+    },
     "controls": {
       "title": "Liste der Kontrollen"
     },
@@ -607,9 +641,6 @@
       },
       "title": "Suche nach Datensätzen"
     },
-    "search2": {
-      "title": "Erweiterte Suche"
-    },
     "taxesList": {
       "title": "Liste der zugewiesenen Taxa"
     },
@@ -752,6 +783,7 @@
   },
   "menu": {
     "atlas": {
+      "advancedSearch": "Erweiterte Suche",
       "bulkEdit": "Sammelbearbeitungen",
       "dropdown": "Karten",
       "import": "Datenimport",
@@ -761,7 +793,6 @@
       "listOfTaxa": "Liste der zugewiesenen Taxa",
       "newComments": "Ungelesene Kommentare",
       "search": "Suche nach Datensätzen",
-      "search2": "Erweiterte Suche",
       "selectTaxon": "Kartenvorbereitung"
     },
     "atlasAdmin": {

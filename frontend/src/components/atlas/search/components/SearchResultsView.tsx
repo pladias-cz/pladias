@@ -27,7 +27,9 @@ interface SearchResultsViewProps {
     onPageSizeChange: (size: number) => void;
     /** Klik na řaditelnou hlavičku sloupce – sort klíč backendu a směr. */
     onSortChange: (sortBy: string, sortOrder: 'asc' | 'desc') => void;
-    onNewSearch: () => void;
+    /** Reset („Nové hledání"). Nepovinné – bez něj se tlačítko nevykreslí
+     * (pokročilé vyhledávání má Reset v řádce filtrů). */
+    onNewSearch?: () => void;
     /** BulkEdit panel – jen pro mapAdmin/bulkEditor; vykresluje se v offcanvasu ze spodu. */
     children?: ReactNode;
 }
@@ -111,14 +113,16 @@ export function SearchResultsView({
                     loading={isLoading}
                 />
                 <div className="d-flex gap-2">
-                    <button
-                        type="button"
-                        className="btn btn-outline-primary btn-sm"
-                        disabled={isLoading}
-                        onClick={onNewSearch}
-                    >
-                        {t('atlas.search.grid.newSearch')}
-                    </button>
+                    {onNewSearch && (
+                        <button
+                            type="button"
+                            className="btn btn-outline-primary btn-sm"
+                            disabled={isLoading}
+                            onClick={onNewSearch}
+                        >
+                            {t('atlas.search.grid.newSearch')}
+                        </button>
+                    )}
                     {children && (
                         <button
                             type="button"

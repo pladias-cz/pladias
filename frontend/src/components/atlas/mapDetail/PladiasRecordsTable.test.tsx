@@ -269,6 +269,25 @@ describe('PladiasRecordsTable – tlačítko Rozbalit vše / Sbalit vše', () =>
         expect(screen.queryByText('Originaus secundus')).toBeNull();
         expect(screen.getByRole('button', {name: 'Rozbalit vše'})).toBeInTheDocument();
     });
+
+    it('v řízeném režimu (expandedRecordIds) rozbalí řádky podle množiny a klik na řádek notifikuje rodiče', () => {
+        const onExpandedRecordIdsChange = vi.fn();
+        renderTable(records, {}, {
+            expandedRecordIds: new Set([101]),
+            onExpandedRecordIdsChange,
+        });
+
+        // interní tlačítko se nevykresluje – o jeho umístění se stará rodič (SearchResultsView)
+        expect(screen.queryByRole('button', {name: 'Rozbalit vše'})).toBeNull();
+
+        // řádek 101 rozbalený (child řádek v DOM), 102 sbalený
+        expect(screen.getByText('Originaus primus')).toBeInTheDocument();
+        expect(screen.queryByText('Originaus secundus')).toBeNull();
+
+        // klik na lokalitu sbaleného řádku → notifikace s množinou o obě id
+        fireEvent.click(screen.getByRole('button', {name: 'Obec 102'}));
+        expect(onExpandedRecordIdsChange).toHaveBeenCalledWith(new Set([101, 102]));
+    });
 });
 
 describe('PladiasRecordsTable – importní poznámka ve sloupci Původ', () => {

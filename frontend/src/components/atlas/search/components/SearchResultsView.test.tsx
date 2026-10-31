@@ -15,8 +15,18 @@ import {SearchResultsView} from './SearchResultsView';
 import '@/i18n/i18n';
 
 vi.mock('@/components/atlas/mapDetail/PladiasRecordsTable', () => ({
-    PladiasRecordsTable: ({onHeaderSort}: {onHeaderSort?: (sortBy: string) => void}) => (
-        <div data-testid="records-table" onClick={() => onHeaderSort?.('taxonName')}/>
+    PladiasRecordsTable: ({
+        onHeaderSort,
+        expandedRecordIds,
+    }: {
+        onHeaderSort?: (sortBy: string) => void;
+        expandedRecordIds?: Set<number>;
+    }) => (
+        <div
+            data-testid="records-table"
+            data-expanded-ids={expandedRecordIds ? Array.from(expandedRecordIds).join(',') : undefined}
+            onClick={() => onHeaderSort?.('taxonName')}
+        />
     ),
 }));
 
@@ -95,5 +105,24 @@ describe('SearchResultsView', () => {
         render(<SearchResultsView {...baseProps}/>);
 
         expect(screen.queryByRole('button', {name: 'Hromadné úpravy'})).toBeNull();
+    });
+
+    it('tlačítko „Rozbalit vše“ v řádce s paginací rozbalí záznamy a přepne se na „Sbalit vše“', () => {
+        render(<SearchResultsView {...baseProps}/>);
+
+        // sbaleno – tabulka v řízeném režimu dostala prázdnou množinu
+        expect(screen.getByTestId('records-table')).toHaveAttribute('data-expanded-ids', '');
+
+        fireEvent.click(screen.getByRole('button', {name: 'Rozbalit vše'}));
+
+        // rozbaleno – množina se všemi id záznamů, tlačítko přepnuté na sbalení
+        expect(screen.getByTestId('records-table')).toHaveAttribute('data-expanded-ids', '1,2,3');
+        expect(screen.getByRole('button', {name: 'Sbalit vše'})).toBeInTheDocument();
+    });
+
+    it('bez záznamů se tlačítko „Rozbalit vše“ nezobrazí', () => {
+        render(<SearchResultsView {...baseProps} records={[]}/>);
+
+        expect(screen.queryByRole('button', {name: 'Rozbalit vše'})).toBeNull();
     });
 });

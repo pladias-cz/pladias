@@ -27,6 +27,12 @@ interface PladiasRecordsTableProps {
     onRecordUpdated?: (record: RecordPladias) => void;
     showTaxonName?: boolean;
     showExpandAllButton?: boolean;
+    /** Řízená množina rozbalených řádků – vyhledávání ji potřebuje, aby mohlo tlačítko
+     *  „Rozbalit vše“ vykreslit v jedné řádce s paginací (SearchResultsView). Bez zadání
+     *  se použije interní state a tlačítko (showExpandAllButton) zůstane nad tabulkou. */
+    expandedRecordIds?: Set<number>;
+    /** Notifikace o změně množiny rozbalených řádků v řízeném režimu. */
+    onExpandedRecordIdsChange?: (ids: Set<number>) => void;
     /** Kvadrant v buňce: mapDetail (záznamy jednoho čtverce) jen písmeno, výsledky z celé
      * republiky (vyhledávání, nové komentáře) plný kód, např. 6261b. Default: písmeno. */
     showFullQuadrantCode?: boolean;
@@ -79,6 +85,8 @@ export function PladiasRecordsTable({
                                         onRecordUpdated,
                                         showTaxonName = false,
                                         showExpandAllButton = false,
+                                        expandedRecordIds,
+                                        onExpandedRecordIdsChange,
                                         showFullQuadrantCode = false,
                                         sort,
                                         onHeaderSort
@@ -87,12 +95,27 @@ export function PladiasRecordsTable({
     const user = useUser();
     const instanceConfig = useInstanceConfig();
     const isVascular = instanceConfig.isVascular;
-    const [expandedRecordIds, setExpandedRecordIds] = useState<Set<number>>(new Set());
+    const [internalExpandedIds, setInternalExpandedIds] = useState<Set<number>>(new Set());
     const [readCommentIds, setReadCommentIds] = useState<Set<number>>(new Set());
     const [markingCommentIds, setMarkingCommentIds] = useState<Set<number>>(new Set());
     const [commentModalRecordId, setCommentModalRecordId] = useState<number | null>(null);
     const rowRefs = useRef<{ [key: number]: HTMLTableRowElement | null }>({});
-    const isAllExpanded = records.length > 0 && expandedRecordIds.size === records.length;
+
+    // Řízený režim rozbalení (vyhledávání): o rozbalených řádcích rozhoduje rodič,
+    // který tlačítko „Rozbalit vše“ vykresluje ve svém toolbatu paginace; jinak
+    // interní state (mapDetail, nové komentáře). Přechody vedou vždy přes setExpandedIds.
+    const effectiveExpandedIds = expandedRecordIds ?? internalExpandedIds;
+
+    const setExpandedIds = (updater: (prev: Set<number>) => Set<number>) => {
+        const next = updater(effectiveExpandedIds);
+        if (expandedRecordIds !== undefined) {
+            onExpandedRecordIdsChange?.(next);
+            return;
+        }
+        setInternalExpandedIds(next);
+    };
+
+    const isAllExpanded = records.length > 0 && effectiveExpandedIds.size === records.length;
 
     // Hooks must stay above any conditional return (rules-of-hooks). Prune ids of rows
     // that disappeared from `records` – render-phase update guarded by comparison
@@ -100,11 +123,14 @@ export function PladiasRecordsTable({
     const [prevRecords, setPrevRecords] = useState(records);
     if (records !== prevRecords) {
         setPrevRecords(records);
-        const validRecordIds = new Set(records.map((record) => record.id));
-        setExpandedRecordIds((prev) => {
-            const next = new Set(Array.from(prev).filter((id) => validRecordIds.has(id)));
-            return next.size === prev.size ? prev : next;
-        });
+        // v řízeném režimu prune řeší rodič – dítě nesmí měnit stav rodiče během renderu
+        if (expandedRecordIds === undefined) {
+            const validRecordIds = new Set(records.map((record) => record.id));
+            setInternalExpandedIds((prev) => {
+                const next = new Set(Array.from(prev).filter((id) => validRecordIds.has(id)));
+                return next.size === prev.size ? prev : next;
+            });
+        }
     }
 
     const toggleExpand = (recordId: number) => {
@@ -113,7 +139,7 @@ export function PladiasRecordsTable({
             onRecordCenter(record);
         }
 
-        setExpandedRecordIds((prev) => {
+        setExpandedIds((prev) => {
             const next = new Set(prev);
             if (next.has(recordId)) {
                 next.delete(recordId);
@@ -134,11 +160,11 @@ export function PladiasRecordsTable({
 
     const toggleExpandAll = () => {
         if (isAllExpanded) {
-            setExpandedRecordIds(new Set());
+            setExpandedIds(() => new Set());
             return;
         }
 
-        setExpandedRecordIds(new Set(records.map((record) => record.id)));
+        setExpandedIds(() => new Set(records.map((record) => record.id)));
     };
 
     const handleMarkCommentAsRead = async (commentId: number) => {
@@ -238,7 +264,7 @@ export function PladiasRecordsTable({
                 <tbody>
                 {records.map((record) => {
                     const isHighlighted = highlightedRecordId === record.id;
-                    const isExpanded = expandedRecordIds.has(record.id);
+                    const isExpanded = effectiveExpandedIds.has(record.id);
                     return (
                         <>
                             <tr

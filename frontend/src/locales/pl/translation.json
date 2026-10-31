@@ -145,12 +145,16 @@
         "unresolvedComment": "tylko z nierozwiązanymi komentarzami"
       },
       "hint": "Ustaw filtry – nazwę filtra rozwiń kliknięciem lub najechaniem kursorem; wyszukiwanie uruchomi się samo po zamknięciu filtra.",
+      "map": {
+        "loadFailed": "Nie udało się wczytać wyników mapy.",
+        "noResults": "Wynik nie zawiera żadnych kwadrantów.",
+        "recordsCount": "Zapisów: {{count}}"
+      },
       "tabs": {
         "dashboard": "Pulpit",
         "dashboardPlaceholder": "Zagregowane wyniki zostaną dodane.",
         "download": "Pobierz",
         "map": "Mapa",
-        "mapPlaceholder": "Mapowe przedstawienie wyników zostanie dodane.",
         "table": "Tabela"
       },
       "title": "Wyszukiwanie zaawansowane"

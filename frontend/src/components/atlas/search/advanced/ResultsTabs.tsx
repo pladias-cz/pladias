@@ -9,6 +9,7 @@ import {useState, type ReactNode} from 'react';
 import {Alert, Button, Form, Offcanvas, Tab, Tabs} from 'react-bootstrap';
 import {useTranslation} from 'react-i18next';
 import {SearchResultsView} from '../components/SearchResultsView';
+import {ResultsMap} from './ResultsMap';
 import type {SearchQuery} from '../hooks/useSearchQuery';
 import {PAGE_SIZE_OPTIONS} from '../searchRequest';
 
@@ -68,17 +69,15 @@ export function ResultsTabs({
                                 }}
                             />
                         </Tab>
-// __APPEND_MARKER__
-
-                        {/* ponytail: mapový výpis – až backend dodá geo výsledky; do té doby placeholder */}
+                        {/* Mapový výpis: mřížka jako v MapPreview + markery centroidů
+                            kvadrantů celého výsledku (agregace na backendu).
+                            mountOnEnter = lazy load při prvním překliknutí na tab. */}
                         <Tab
                             eventKey="map"
                             title={<span><i className="bi bi-map me-1" aria-hidden="true"/>{t('atlas.advancedSearch.tabs.map')}</span>}
+                            mountOnEnter
                         >
-                            <Alert variant="info" className="mt-3">
-                                <i className="bi bi-map me-1" aria-hidden="true"/>
-                                {t('atlas.advancedSearch.tabs.mapPlaceholder')}
-                            </Alert>
+                            <ResultsMap payloadEntries={query.lastPayloadEntries}/>
                         </Tab>
 
                         {/* ponytail: dashboard agregovaných výsledků – až backend dodá agregace */}

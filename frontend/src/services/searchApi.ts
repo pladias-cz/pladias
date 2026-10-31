@@ -63,6 +63,15 @@ export interface SearchPage {
     totalCount?: number;
 }
 
+/** Kvadrant zastoupený ve výsledku hledání – centroid pro marker na mapě výsledků. */
+export interface SearchQuadrant {
+    id: number;
+    code: string;
+    lat: number;
+    lon: number;
+    recordsCount?: number;
+}
+
 /** Výsledek Excel exportu vyhledávání (soubor + metadata z hlaviček). */
 export interface SearchExcelExport {
     blob: Blob;
@@ -117,6 +126,18 @@ export async function searchRecords(page: number, pageSize: number, getCount: bo
         'Vyhledávání selhalo.',
     );
     return (envelope.data ?? {}) as SearchPage;
+}
+
+/**
+ * POST /api/react/atlas/search/quadrants – agregované kvadranty zastoupené v CELÉM
+ * výsledku hledání (bez ohledu na stránkování); stejný multipart payload jako
+ * searchRecords (sort i export_type backend ignoruje).
+ */
+export async function searchQuadrants(formData: FormData): Promise<SearchQuadrant[]> {
+    return requireData<SearchQuadrant[]>(
+        await apiPost('/api/react/atlas/search/quadrants', formData),
+        'Načtení kvadrantů výsledku selhalo.',
+    );
 }
 
 /**

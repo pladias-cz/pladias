@@ -22,3 +22,9 @@ if (!window.matchMedia) {
         dispatchEvent: () => false,
     });
 }
+
+// jsdom neimplementuje Element.scrollIntoView (PladiasRecordsTable scrolluje na
+// řádek po kliku na lokalitu) – testy klikající na řádek tabulky by jinak padaly.
+if (!Element.prototype.scrollIntoView) {
+    Element.prototype.scrollIntoView = () => {};
+}

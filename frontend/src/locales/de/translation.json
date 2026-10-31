@@ -145,12 +145,16 @@
         "unresolvedComment": "nur mit ungelösten Kommentaren"
       },
       "hint": "Filter setzen – Filternamen durch Klicken oder Überfahren mit der Maus öffnen; die Suche startet automatisch beim Schließen des Filters.",
+      "map": {
+        "loadFailed": "Das Laden der Kartenergebnisse ist fehlgeschlagen.",
+        "noResults": "Das Ergebnis enthält keine Quadranten.",
+        "recordsCount": "Datensätze: {{count}}"
+      },
       "tabs": {
         "dashboard": "Dashboard",
         "dashboardPlaceholder": "Aggregierte Ergebnisse werden ergänzt.",
         "download": "Download",
         "map": "Karte",
-        "mapPlaceholder": "Die Kartenausgabe der Ergebnisse wird ergänzt.",
         "table": "Tabelle"
       },
       "title": "Erweiterte Suche"

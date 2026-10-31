@@ -1,8 +1,10 @@
 /**
  * Testy tabů výsledků: tlačítko hromadných úprav je MIMO taby (viditelné pro
  * všechny), otevírá offcanvas s children (BulkEdit jen pro editory); tabulkový
- * výpis v tabu Tabulka nemá tlačítko „Nové hledání" (Reset je v řádce filtrů).
- * PladiasRecordsTable je mocknutá – její chování pokrývá vlastní test.
+ * výpis v tabu Tabulka nemá tlačítko „Nové hledání" (Reset je v řádce filtrů);
+ * mapový výpis se mountuje lazy – až po překliknutí na tab Mapa.
+ * PladiasRecordsTable i ResultsMap jsou mocknuté – jejich chování pokrývají
+ * vlastní testy.
  */
 
 import {cleanup, fireEvent, render, screen} from '@testing-library/react';
@@ -16,6 +18,12 @@ vi.mock('@/components/atlas/mapDetail/PladiasRecordsTable', () => ({
     PladiasRecordsTable: () => <div data-testid="records-table"/>,
 }));
 
+vi.mock('./ResultsMap', () => ({
+    ResultsMap: ({payloadEntries}: {payloadEntries: unknown[]}) => (
+        <div data-testid="results-map">{payloadEntries.length}</div>
+    ),
+}));
+
 const query = {
     records: [{id: 1}] as unknown as RecordPladias[],
     currentPage: 1,
@@ -23,7 +31,7 @@ const query = {
     totalCount: 1,
     isLoading: false,
     submitMessage: '',
-    lastPayloadEntries: [],
+    lastPayloadEntries: [['taxon_name', 'Carex']] as Array<[string, FormDataEntryValue]>,
     sortBy: null,
     sortOrder: 'asc' as const,
     search: vi.fn(),
@@ -73,5 +81,19 @@ describe('ResultsTabs', () => {
         render(<ResultsTabs query={query} onExport={vi.fn()} exportLoading={false} exportMessage="" exportHint="hint"/>);
 
         expect(screen.queryByRole('button', {name: 'Hromadné úpravy'})).toBeNull();
+    });
+
+    it('mapový výpis se mountuje lazy – až po překliknutí na tab Mapa (dostane payload hledání)', () => {
+        render(<ResultsTabs query={query} onExport={vi.fn()} exportLoading={false} exportMessage="" exportHint="hint"/>);
+
+        // před překliknutím se mapový obsah (a dotaz na kvadranty) nenačítá
+        expect(screen.queryByTestId('results-map')).toBeNull();
+
+        fireEvent.click(screen.getByRole('tab', {name: 'Mapa'}));
+
+        // po překliknutí mount + předání filtrů posledního hledání
+        const resultsMap = screen.getByTestId('results-map');
+        expect(resultsMap).toBeInTheDocument();
+        expect(resultsMap).toHaveTextContent('1');
     });
 });

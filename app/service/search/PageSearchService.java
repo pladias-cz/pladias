@@ -2,6 +2,7 @@ package service.search;
 
 import com.google.inject.Inject;
 import controllers.atlas.SearchController;
+import dto.atlas.QuadrantAggregateDto;
 import dto.atlas.RecordPladiasDto;
 import excel.LicenseDictionary;
 import io.ebean.DB;
@@ -92,6 +93,53 @@ public class PageSearchService implements IPageSearchService {
             logger.error("Failure during record edit timestamps loading.", e);
         }
 
+        return List.of();
+    }
+
+    @Override
+    public List<QuadrantAggregateDto> searchQuadrants(User currentUser, SearchController.SearchForm form) {
+        try {
+            SearchFilterContext filterContext = buildSearchFilterContext(currentUser, form);
+            String fromClause = buildFromClause(currentUser, form, false);
+
+            // buildFromClause vždy začíná pevnou hlavičkou „FROM atlas.records AS R“ –
+            // kvadrantovou mřížku vložíme mezi tabulku záznamů a ostatní joiny filtrů,
+            // aby podmínka ON následovala přímo za INNER JOIN records.
+            String recordsHeader = " FROM " + Record.QualifiedTableName + " AS R ";
+            String remainingJoins = fromClause.substring(recordsHeader.length());
+
+            // Agregace kvadrantů celého výsledku (stránkování se ignoruje): kvadrant
+            // záznamu z přesných souřadnic (st_within) – stejná sémantika jako sloupec
+            // Kvadrant v tabulkovém výpisu; záznamy bez souřadnic marker nepřidají.
+            // COUNT(DISTINCT) kvůli duplicitám z INNER JOINů filtrů (authors, herbariums).
+            String sql = "SELECT Q.id AS quadrant_id, Q.code AS quadrant_code, " +
+                "ST_Y(ST_Centroid(Q.geom_wgs)) AS lat, ST_X(ST_Centroid(Q.geom_wgs)) AS lon, " +
+                "COUNT(DISTINCT R.id) AS records_count " +
+                "FROM " + QuadrantNew.QualifiedTableName + " AS Q " +
+                "INNER JOIN " + Record.QualifiedTableName + " AS R ON st_within(R.coords_wgs, Q.geom_wgs) " +
+                remainingJoins +
+                filterContext.whereClause +
+                "GROUP BY Q.id, Q.code, Q.geom_wgs " +
+                "ORDER BY Q.code";
+
+            SqlQuery sqlQuery = DB.sqlQuery(sql);
+            filterContext.parameters.applyTo(sqlQuery);
+            List<SqlRow> rows = sqlQuery.findList();
+
+            List<QuadrantAggregateDto> result = new ArrayList<>();
+            for (SqlRow row : rows) {
+                result.add(new QuadrantAggregateDto(
+                    row.getInteger("quadrant_id"),
+                    row.getString("quadrant_code"),
+                    row.getDouble("lat"),
+                    row.getDouble("lon"),
+                    row.getInteger("records_count")
+                ));
+            }
+            return result;
+        } catch (Exception e) {
+            logger.error("Failure during search quadrants aggregation loading.", e);
+        }
         return List.of();
     }
 

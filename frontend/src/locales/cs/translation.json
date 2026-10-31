@@ -145,12 +145,16 @@
         "unresolvedComment": "jen s nevyřešeným komentářem"
       },
       "hint": "Nastavte filtry – název filtru rozbalte kliknutím nebo najetím kurzoru; vyhledávání se spustí samo po zavření filtru.",
+      "map": {
+        "loadFailed": "Načtení mapových výsledků se nezdařilo.",
+        "noResults": "Ve výsledku nejsou žádné kvadranty.",
+        "recordsCount": "Záznamů: {{count}}"
+      },
       "tabs": {
         "dashboard": "Dashboard",
         "dashboardPlaceholder": "Agregované výsledky budou doplněny.",
         "download": "Download",
         "map": "Mapa",
-        "mapPlaceholder": "Mapový výpis výsledků bude doplněn.",
         "table": "Tabulka"
       },
       "title": "Pokročilé vyhledávání"

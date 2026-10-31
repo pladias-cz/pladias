@@ -145,12 +145,16 @@
         "unresolvedComment": "only with unresolved comments"
       },
       "hint": "Set filters – open a filter name by clicking or hovering; the search runs automatically when the filter closes.",
+      "map": {
+        "loadFailed": "Failed to load the map results.",
+        "noResults": "The result contains no quadrants.",
+        "recordsCount": "Records: {{count}}"
+      },
       "tabs": {
         "dashboard": "Dashboard",
         "dashboardPlaceholder": "Aggregated results will be added.",
         "download": "Download",
         "map": "Map",
-        "mapPlaceholder": "Map output of results will be added.",
         "table": "Table"
       },
       "title": "Advanced search"

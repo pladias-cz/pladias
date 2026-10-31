@@ -131,6 +131,26 @@ public class SearchController extends ControllerBase {
         }
     }
 
+    /**
+     * Agregované kvadranty zastoupené v CELÉM výsledku hledání (bez ohledu na
+     * stránkování) – id, kód a centroid kvadrantu pro markery mapového výpisu.
+     * Přijímá tentýž multipart payload jako search; export_type se ignoruje
+     * (agregace je vždy „prohlížečová") a UserActivity se nezaznamenává – hledání
+     * už bylo evidováno při submitu formuláře.
+     */
+    public Result searchQuadrants(Http.Request request) {
+        Form<SearchForm> searchForm = formFactory.form(SearchForm.class).bindFromRequest(request);
+        if (searchForm.hasErrors()) {
+            return badRequest(JsonResult.error("Neplatna data vyhledavaciho formulare"));
+        }
+
+        SearchForm form = searchForm.get();
+        form.projects = retrieveProjectsFromRequest(request);
+        User currentUser = SessionUtils.getCurrentUser(request.session());
+
+        return ok(JsonResult.buildSuccess(searchService.searchQuadrants(currentUser, form)));
+    }
+
     public Result getRecordsWithComments(Http.Request request, Long commentsOwnerUserId) {
         User currentUser = SessionUtils.getCurrentUser(request.session());
         User masterAdmin = UserUtils.getMasterAdmin();

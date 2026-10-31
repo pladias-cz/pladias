@@ -144,6 +144,19 @@
         "commented": "tylko z komentarzami",
         "unresolvedComment": "tylko z nierozwiązanymi komentarzami"
       },
+      "dashboard": {
+        "loadFailed": "Nie udało się wczytać zagregowanych wyników.",
+        "noActive": "Żaden przegląd nie jest aktywny – włącz go przyciskami powyżej.",
+        "notSpecified": "nie określono",
+        "recordCount": "Liczba zapisów",
+        "toggleGroup": "Wybór przeglądów",
+        "widgets": {
+          "altitude": "Wysokość n.p.m.",
+          "herbarium": "Zielnik",
+          "license": "Licencja",
+          "year": "Rok znaleziska"
+        }
+      },
       "hint": "Ustaw filtry – nazwę filtra rozwiń kliknięciem lub najechaniem kursorem; wyszukiwanie uruchomi się samo po zamknięciu filtra.",
       "map": {
         "loadFailed": "Nie udało się wczytać wyników mapy.",
@@ -152,7 +165,6 @@
       },
       "tabs": {
         "dashboard": "Pulpit",
-        "dashboardPlaceholder": "Zagregowane wyniki zostaną dodane.",
         "download": "Pobierz",
         "map": "Mapa",
         "table": "Tabela"

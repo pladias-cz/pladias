@@ -131,13 +131,33 @@ export async function searchRecords(page: number, pageSize: number, getCount: bo
 /**
  * POST /api/react/atlas/search/quadrants – agregované kvadranty zastoupené v CELÉM
  * výsledku hledání (bez ohledu na stránkování); stejný multipart payload jako
- * searchRecords (sort i export_type backend ignoruje).
+ * searchRecords (sort i export_type backend ignoruje). Standardní HTTP kódy –
+ * čisté JSON pole v těle, chybu nese ApiError.
  */
 export async function searchQuadrants(formData: FormData): Promise<SearchQuadrant[]> {
-    return requireData<SearchQuadrant[]>(
-        await apiPost('/api/react/atlas/search/quadrants', formData),
-        'Načtení kvadrantů výsledku selhalo.',
-    );
+    return apiPost<SearchQuadrant[]>('/api/react/atlas/search/quadrants', formData, {
+        errorMessage: 'Načtení kvadrantů výsledku selhalo.',
+    });
+}
+
+/** Bucket jedné agregace dashboardu – label (null = hodnota nezadána, přeloží FE). */
+export interface DashboardBucket {
+    label: string | null;
+    count: number;
+}
+
+/** Agregace dashboardu výsledku – mapa id widgetu → buckety (jen požadované klíče). */
+export type DashboardAggregates = Record<string, DashboardBucket[]>;
+
+/**
+ * POST /api/react/atlas/search/aggregates – agregované přehledy výsledku hledání
+ * (dashboard). Formulář nese kromě filtrů pole `aggregates` (comma-separated id
+ * aktivních widgetů). Standardní HTTP kódy – čistý JSON objekt v těle.
+ */
+export async function searchAggregates(formData: FormData): Promise<DashboardAggregates> {
+    return apiPost<DashboardAggregates>('/api/react/atlas/search/aggregates', formData, {
+        errorMessage: 'Načtení agregací selhalo.',
+    });
 }
 
 /**

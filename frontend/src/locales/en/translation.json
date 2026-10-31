@@ -144,6 +144,19 @@
         "commented": "only with comments",
         "unresolvedComment": "only with unresolved comments"
       },
+      "dashboard": {
+        "loadFailed": "Failed to load the aggregated results.",
+        "noActive": "No overview is active – enable one with the buttons above.",
+        "notSpecified": "not specified",
+        "recordCount": "Number of records",
+        "toggleGroup": "Overview selection",
+        "widgets": {
+          "altitude": "Altitude",
+          "herbarium": "Herbarium",
+          "license": "License",
+          "year": "Year of find"
+        }
+      },
       "hint": "Set filters – open a filter name by clicking or hovering; the search runs automatically when the filter closes.",
       "map": {
         "loadFailed": "Failed to load the map results.",
@@ -152,7 +165,6 @@
       },
       "tabs": {
         "dashboard": "Dashboard",
-        "dashboardPlaceholder": "Aggregated results will be added.",
         "download": "Download",
         "map": "Map",
         "table": "Table"

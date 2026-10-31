@@ -144,6 +144,19 @@
         "commented": "jen s komentářem",
         "unresolvedComment": "jen s nevyřešeným komentářem"
       },
+      "dashboard": {
+        "loadFailed": "Načtení agregovaných výsledků se nezdařilo.",
+        "noActive": "Není aktivní žádný přehled – zapněte ho tlačítky výše.",
+        "notSpecified": "neurčeno",
+        "recordCount": "Počet záznamů",
+        "toggleGroup": "Výběr přehledů",
+        "widgets": {
+          "altitude": "Nadmořská výška",
+          "herbarium": "Herbář",
+          "license": "Licence",
+          "year": "Rok nálezu"
+        }
+      },
       "hint": "Nastavte filtry – název filtru rozbalte kliknutím nebo najetím kurzoru; vyhledávání se spustí samo po zavření filtru.",
       "map": {
         "loadFailed": "Načtení mapových výsledků se nezdařilo.",
@@ -152,7 +165,6 @@
       },
       "tabs": {
         "dashboard": "Dashboard",
-        "dashboardPlaceholder": "Agregované výsledky budou doplněny.",
         "download": "Download",
         "map": "Mapa",
         "table": "Tabulka"

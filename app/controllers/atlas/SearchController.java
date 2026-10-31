@@ -12,6 +12,7 @@ import play.data.Form;
 import play.data.FormFactory;
 import play.data.validation.Constraints.Required;
 import play.i18n.Messages;
+import play.libs.Json;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.mvc.Security;
@@ -137,18 +138,41 @@ public class SearchController extends ControllerBase {
      * Přijímá tentýž multipart payload jako search; export_type se ignoruje
      * (agregace je vždy „prohlížečová") a UserActivity se nezaznamenává – hledání
      * už bylo evidováno při submitu formuláře.
+     *
+     * Konvence odpovědi: standardní HTTP kódy (docs/gotchas) – úspěch je HTTP 200
+     * s čistým JSON polem, chybu nese stavový kód a pole `message` v těle.
      */
     public Result searchQuadrants(Http.Request request) {
         Form<SearchForm> searchForm = formFactory.form(SearchForm.class).bindFromRequest(request);
         if (searchForm.hasErrors()) {
-            return badRequest(JsonResult.error("Neplatna data vyhledavaciho formulare"));
+            return badRequest(Json.newObject().put("message", "Neplatna data vyhledavaciho formulare"));
         }
 
         SearchForm form = searchForm.get();
         form.projects = retrieveProjectsFromRequest(request);
         User currentUser = SessionUtils.getCurrentUser(request.session());
 
-        return ok(JsonResult.buildSuccess(searchService.searchQuadrants(currentUser, form)));
+        return ok(Json.toJson(searchService.searchQuadrants(currentUser, form)));
+    }
+
+    /**
+     * Agregované přehledy výsledku hledání (dashboard) – požadované agregace
+     * (pole `aggregates`, comma-separated id widgetů) jako mapa seznamů bucketů
+     * label→count. Přijímá tentýž multipart payload jako search; sort i
+     * export_type se ignorují, UserActivity se nezaznamenává (hledání už bylo
+     * evidováno). Standardní HTTP kódy – úspěch je HTTP 200 s čistým JSON objektem.
+     */
+    public Result searchAggregates(Http.Request request) {
+        Form<SearchForm> searchForm = formFactory.form(SearchForm.class).bindFromRequest(request);
+        if (searchForm.hasErrors()) {
+            return badRequest(Json.newObject().put("message", "Neplatna data vyhledavaciho formulare"));
+        }
+
+        SearchForm form = searchForm.get();
+        form.projects = retrieveProjectsFromRequest(request);
+        User currentUser = SessionUtils.getCurrentUser(request.session());
+
+        return ok(Json.toJson(searchService.searchAggregates(currentUser, form)));
     }
 
     public Result getRecordsWithComments(Http.Request request, Long commentsOwnerUserId) {
@@ -265,6 +289,8 @@ public class SearchController extends ControllerBase {
         public Integer buffer;
         public String sortBy;
         public String sortOrder;
+        /** Dashboard agregace (comma-separated id) – samotné vyhledávání pole ignoruje. */
+        public String aggregates;
         @play.data.format.Formats.DateTime(pattern = "yyyy-MM-dd")
         public Date dateFromImported;
         @play.data.format.Formats.DateTime(pattern = "yyyy-MM-dd")
@@ -307,6 +333,14 @@ public class SearchController extends ControllerBase {
 
         public void setSortOrder(String sortOrder) {
             this.sortOrder = sortOrder;
+        }
+
+        public String getAggregates() {
+            return aggregates;
+        }
+
+        public void setAggregates(String aggregates) {
+            this.aggregates = aggregates;
         }
 
         public String getExport_type() {

@@ -1,17 +1,21 @@
 /**
  * Čtyři taby výsledků: tabulkový výpis (SearchResultsView – paginace, řazení),
- * mapový výpis a dashboard (placeholdery připravovaných funkcí) a download
+ * mapový výpis (ResultsMap – markery kvadrantů celého výsledku), dashboard
+ * (ResultsDashboard – agregované barploty, lazy chunk kvůli recharts) a download
  * (volba exportního formátu). Tlačítko hromadných úprav je mimo taby (viditelné
  * pro všechny taby), panel se vykresluje v offcanvasu ze spodu jako doteď.
  */
 
-import {useState, type ReactNode} from 'react';
-import {Alert, Button, Form, Offcanvas, Tab, Tabs} from 'react-bootstrap';
+import {lazy, Suspense, useState, type ReactNode} from 'react';
+import {Button, Form, Offcanvas, Tab, Tabs} from 'react-bootstrap';
 import {useTranslation} from 'react-i18next';
 import {SearchResultsView} from '../components/SearchResultsView';
 import {ResultsMap} from './ResultsMap';
 import type {SearchQuery} from '../hooks/useSearchQuery';
 import {PAGE_SIZE_OPTIONS} from '../searchRequest';
+
+/** Dashboard widgety (recharts ~100+ kB) – chunk se stáhne až při prvním otevření tabu. */
+const ResultsDashboard = lazy(() => import('./ResultsDashboard'));
 
 /** Exportní formáty tabu Download – dnes aktivní jen Excel; další (CSV, GeoJSON) přidáním záznamu. */
 const EXPORT_FORMATS = [
@@ -80,15 +84,25 @@ export function ResultsTabs({
                             <ResultsMap payloadEntries={query.lastPayloadEntries}/>
                         </Tab>
 
-                        {/* ponytail: dashboard agregovaných výsledků – až backend dodá agregace */}
+                        {/* Dashboard agregovaných výsledků: barploty (rok, výška, licence,
+                            herbář – další přibývají přes registr widgetů), výběr aktivních
+                            widgetů perzistentní (user setting). mountOnEnter + React.lazy =
+                            první otevření tabu načte data i recharts chunk. */}
                         <Tab
                             eventKey="dashboard"
                             title={<span><i className="bi bi-graph-up me-1" aria-hidden="true"/>{t('atlas.advancedSearch.tabs.dashboard')}</span>}
+                            mountOnEnter
                         >
-                            <Alert variant="info" className="mt-3">
-                                <i className="bi bi-graph-up me-1" aria-hidden="true"/>
-                                {t('atlas.advancedSearch.tabs.dashboardPlaceholder')}
-                            </Alert>
+                            <Suspense
+                                fallback={
+                                    <div className="mt-3 text-center">
+                                        <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"/>
+                                        {t('common.loading')}
+                                    </div>
+                                }
+                            >
+                                <ResultsDashboard payloadEntries={query.lastPayloadEntries}/>
+                            </Suspense>
                         </Tab>
 
                         <Tab

@@ -2,6 +2,7 @@ package service.search;
 
 import com.google.inject.Inject;
 import controllers.atlas.SearchController;
+import dto.atlas.DashboardBucketDto;
 import dto.atlas.QuadrantAggregateDto;
 import dto.atlas.RecordPladiasDto;
 import excel.LicenseDictionary;
@@ -26,6 +27,13 @@ import java.util.stream.Collectors;
 
 public class PageSearchService implements IPageSearchService {
     private static final int SEARCH_RESULTS_BATCH_SIZE = 10000;
+    /** Klíče agregací dashboardu – sdílené s frontend registry (form.aggregates). */
+    private static final String AGGREGATE_YEAR = "year";
+    private static final String AGGREGATE_ALTITUDE = "altitude";
+    private static final String AGGREGATE_LICENSE = "license";
+    private static final String AGGREGATE_HERBARIUM = "herbarium";
+    /** Šířka výškového pásma dashboardu (m). */
+    private static final int ALTITUDE_BAND_SIZE = 200;
     private static final Logger logger = LoggerFactory.getLogger(PageSearchService.class);
     private static ISquareRepository squareRepository;
     private final IConfigService configService;
@@ -141,6 +149,108 @@ public class PageSearchService implements IPageSearchService {
             logger.error("Failure during search quadrants aggregation loading.", e);
         }
         return List.of();
+    }
+
+    @Override
+    public Map<String, List<DashboardBucketDto>> searchAggregates(User currentUser, SearchController.SearchForm form) {
+        Map<String, List<DashboardBucketDto>> result = new LinkedHashMap<>();
+        Set<String> requested = parseRequestedAggregates(form.getAggregates());
+        if (requested.isEmpty()) {
+            return result;
+        }
+
+        try {
+            SearchFilterContext filterContext = buildSearchFilterContext(currentUser, form);
+            String fromClause = buildFromClause(currentUser, form, false);
+            String whereClause = filterContext.whereClause;
+
+            // rok nálezu – label přímo v SQL (to_char), vzestupně; bez data → bucket bez labelu
+            if (requested.contains(AGGREGATE_YEAR)) {
+                String yearExpression = "to_char(R.datum, 'YYYY')";
+                String sql = "SELECT " + yearExpression + " AS label, COUNT(DISTINCT R.id) AS cnt " +
+                    fromClause + whereClause +
+                    "GROUP BY " + yearExpression + " ORDER BY label";
+                result.put(AGGREGATE_YEAR, mapLabelBuckets(runAggregationQuery(sql, filterContext)));
+            }
+
+            // nadmořská výška – reprezentativní hodnota COALESCE(min, max) v pásmech;
+            // label pásma („200–399") se skládá v Javě; bez výšky → bucket bez labelu
+            if (requested.contains(AGGREGATE_ALTITUDE)) {
+                String bandExpression = "(COALESCE(R.altitude_min, R.altitude_max) / " + ALTITUDE_BAND_SIZE
+                    + ") * " + ALTITUDE_BAND_SIZE;
+                String sql = "SELECT " + bandExpression + " AS band_start, COUNT(DISTINCT R.id) AS cnt " +
+                    fromClause + whereClause +
+                    "GROUP BY " + bandExpression + " ORDER BY band_start";
+                List<DashboardBucketDto> buckets = new ArrayList<>();
+                for (SqlRow row : runAggregationQuery(sql, filterContext)) {
+                    Integer bandStart = row.getInteger("band_start");
+                    String label = bandStart == null ? null : bandStart + "–" + (bandStart + ALTITUDE_BAND_SIZE - 1);
+                    buckets.add(new DashboardBucketDto(label, row.getLong("cnt")));
+                }
+                result.put(AGGREGATE_ALTITUDE, buckets);
+            }
+
+            // licence – LEFT JOIN: záznamy bez licence tvoří bucket bez labelu; sestupně podle počtu
+            if (requested.contains(AGGREGATE_LICENSE)) {
+                String sql = "SELECT L.key AS label, COUNT(DISTINCT R.id) AS cnt " +
+                    fromClause + " LEFT JOIN " + License.QualifiedTableName + " AS L ON R.license_id = L.id " +
+                    whereClause +
+                    "GROUP BY L.key ORDER BY cnt DESC, label";
+                result.put(AGGREGATE_LICENSE, mapLabelBuckets(runAggregationQuery(sql, filterContext)));
+            }
+
+            // herbář – LEFT JOIN: záznam s více herbáři se započte do každého, bez
+            // herbáře tvoří bucket bez labelu; sestupně podle počtu
+            if (requested.contains(AGGREGATE_HERBARIUM)) {
+                String sql = "SELECT H.name AS label, COUNT(DISTINCT R.id) AS cnt " +
+                    fromClause +
+                    " LEFT JOIN atlas.records_herbariums AS RH ON R.id = RH.records_id" +
+                    " LEFT JOIN " + Herbarium.QualifiedTableName + " AS H ON RH.herbariums_id = H.id " +
+                    whereClause +
+                    "GROUP BY H.name ORDER BY cnt DESC, label";
+                result.put(AGGREGATE_HERBARIUM, mapLabelBuckets(runAggregationQuery(sql, filterContext)));
+            }
+
+            return result;
+        } catch (Exception e) {
+            logger.error("Failure during search aggregates loading.", e);
+        }
+        return result;
+    }
+
+    /** Spustí agregační dotaz se svázanými parametry filtrů vyhledávání. */
+    private List<SqlRow> runAggregationQuery(String sql, SearchFilterContext filterContext) {
+        SqlQuery sqlQuery = DB.sqlQuery(sql);
+        filterContext.parameters.applyTo(sqlQuery);
+        return sqlQuery.findList();
+    }
+
+    /** Mapuje řádky (label, cnt) na buckety – label null znamená „hodnota nezadána". */
+    private List<DashboardBucketDto> mapLabelBuckets(List<SqlRow> rows) {
+        List<DashboardBucketDto> buckets = new ArrayList<>();
+        for (SqlRow row : rows) {
+            buckets.add(new DashboardBucketDto(row.getString("label"), row.getLong("cnt")));
+        }
+        return buckets;
+    }
+
+    /** Parsování form.aggregates – comma-separated id; neznámá id se ignorují
+     * (dopředná kompatibilita s uloženým výběrem widgetů). */
+    private Set<String> parseRequestedAggregates(String aggregates) {
+        if (StringUtils.isBlank(aggregates)) {
+            return Set.of();
+        }
+        Set<String> known = Set.of(AGGREGATE_YEAR, AGGREGATE_ALTITUDE, AGGREGATE_LICENSE, AGGREGATE_HERBARIUM);
+        Set<String> requested = new LinkedHashSet<>();
+        for (String token : aggregates.split(",")) {
+            String id = token.trim();
+            if (known.contains(id)) {
+                requested.add(id);
+            } else {
+                logger.warn("Unknown search aggregate requested: {}", id);
+            }
+        }
+        return requested;
     }
 
     @Override

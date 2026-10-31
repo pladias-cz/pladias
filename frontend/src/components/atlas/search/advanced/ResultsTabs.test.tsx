@@ -2,9 +2,9 @@
  * Testy tabů výsledků: tlačítko hromadných úprav je MIMO taby (viditelné pro
  * všechny), otevírá offcanvas s children (BulkEdit jen pro editory); tabulkový
  * výpis v tabu Tabulka nemá tlačítko „Nové hledání" (Reset je v řádce filtrů);
- * mapový výpis se mountuje lazy – až po překliknutí na tab Mapa.
- * PladiasRecordsTable i ResultsMap jsou mocknuté – jejich chování pokrývají
- * vlastní testy.
+ * mapový výpis i dashboard se mountují lazy – až po překliknutí na tab.
+ * PladiasRecordsTable, ResultsMap i ResultsDashboard jsou mocknuté – jejich
+ * chování pokrývají vlastní testy.
  */
 
 import {cleanup, fireEvent, render, screen} from '@testing-library/react';
@@ -22,6 +22,11 @@ vi.mock('./ResultsMap', () => ({
     ResultsMap: ({payloadEntries}: {payloadEntries: unknown[]}) => (
         <div data-testid="results-map">{payloadEntries.length}</div>
     ),
+}));
+
+vi.mock('./ResultsDashboard', () => ({
+    // React.lazy očekává default export
+    default: () => <div data-testid="results-dashboard"/>,
 }));
 
 const query = {
@@ -95,5 +100,16 @@ describe('ResultsTabs', () => {
         const resultsMap = screen.getByTestId('results-map');
         expect(resultsMap).toBeInTheDocument();
         expect(resultsMap).toHaveTextContent('1');
+    });
+
+    it('dashboard se mountuje lazy – až po překliknutí na tab Dashboard', async () => {
+        render(<ResultsTabs query={query} onExport={vi.fn()} exportLoading={false} exportMessage="" exportHint="hint"/>);
+
+        // před překliknutím se dashboard (ani recharts chunk) nenačítá
+        expect(screen.queryByTestId('results-dashboard')).toBeNull();
+
+        fireEvent.click(screen.getByRole('tab', {name: 'Dashboard'}));
+
+        expect(await screen.findByTestId('results-dashboard')).toBeInTheDocument();
     });
 });

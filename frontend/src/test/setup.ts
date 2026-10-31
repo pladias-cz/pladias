@@ -28,3 +28,14 @@ if (!window.matchMedia) {
 if (!Element.prototype.scrollIntoView) {
     Element.prototype.scrollIntoView = () => {};
 }
+
+// jsdom neimplementuje ResizeObserver (recharts ResponsiveContainer v dashboardu
+// výsledků podle něj mění velikost grafů) – v testech se grafy nevykreslí, ale
+// komponenta nesmí padat.
+if (!window.ResizeObserver) {
+    window.ResizeObserver = class {
+        observe() {}
+        unobserve() {}
+        disconnect() {}
+    } as unknown as typeof ResizeObserver;
+}

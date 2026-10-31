@@ -144,6 +144,19 @@
         "commented": "nur mit Kommentaren",
         "unresolvedComment": "nur mit ungelösten Kommentaren"
       },
+      "dashboard": {
+        "loadFailed": "Das Laden der aggregierten Ergebnisse ist fehlgeschlagen.",
+        "noActive": "Keine Übersicht aktiv – über die Schaltflächen oben aktivieren.",
+        "notSpecified": "nicht angegeben",
+        "recordCount": "Anzahl der Datensätze",
+        "toggleGroup": "Auswahl der Übersichten",
+        "widgets": {
+          "altitude": "Höhe ü. M.",
+          "herbarium": "Herbar",
+          "license": "Lizenz",
+          "year": "Fundjahr"
+        }
+      },
       "hint": "Filter setzen – Filternamen durch Klicken oder Überfahren mit der Maus öffnen; die Suche startet automatisch beim Schließen des Filters.",
       "map": {
         "loadFailed": "Das Laden der Kartenergebnisse ist fehlgeschlagen.",
@@ -152,7 +165,6 @@
       },
       "tabs": {
         "dashboard": "Dashboard",
-        "dashboardPlaceholder": "Aggregierte Ergebnisse werden ergänzt.",
         "download": "Download",
         "map": "Karte",
         "table": "Tabelle"

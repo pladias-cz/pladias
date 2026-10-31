@@ -35,6 +35,12 @@ function sampleValue(filter: FilterDefinition): FilterValue | undefined {
     switch (filter.kind) {
         case 'checkbox':
             return true;
+        case 'checkboxGroup':
+            return [{id: 'commented', label: 'ukázka'}];
+        case 'taxonAutocomplete':
+            return [{id: 1, label: 'Quercus'}];
+        case 'polygonMap':
+            return 'POLYGON ((14 49, 15 49, 15 50, 14 49))';
         case 'typeahead':
             return [{id: 1, label: 'ukázka'}];
         case 'numberRange':
@@ -83,16 +89,25 @@ describe('buildAdvancedSearchPayload', () => {
         expect(map['town']).toBeUndefined();
     });
 
-    it('vyplněný taxon se posílá i s podtaxonami', () => {
-        const map = toMap(buildAdvancedSearchPayload({taxonName: 'Quercus'}, DEFAULT_VISIBLE_FILTERS, true));
+    it('vyplněný taxon se posílá i s podtaxonami; vícenásobný výběr odděluje středníkem', () => {
+        const map = toMap(buildAdvancedSearchPayload(
+            {
+                taxonName: [
+                    {id: 1, label: 'Quercus'},
+                    {id: 2, label: 'Carex pilulifera'},
+                ],
+            },
+            DEFAULT_VISIBLE_FILTERS,
+            true,
+        ));
 
-        expect(map['taxon_name']).toBe('Quercus');
+        expect(map['taxon_name']).toBe('Quercus;Carex pilulifera');
         expect(map['include_subtaxa']).toBe('true');
     });
 
     it('odškrtnuté podtaxony se neposílají', () => {
         const map = toMap(buildAdvancedSearchPayload(
-            {taxonName: 'Quercus', includeSubtaxa: false},
+            {taxonName: [{id: 1, label: 'Quercus'}], includeSubtaxa: false},
             DEFAULT_VISIBLE_FILTERS,
             true,
         ));
@@ -102,10 +117,17 @@ describe('buildAdvancedSearchPayload', () => {
 
     it('companion (podtaxony) se posílá jen s viditelným taxonem', () => {
         const visibleWithoutTaxon = DEFAULT_VISIBLE_FILTERS.filter((id) => id !== 'taxonName');
-        const map = toMap(buildAdvancedSearchPayload({taxonName: 'Quercus'}, visibleWithoutTaxon, true));
+        const map = toMap(buildAdvancedSearchPayload({taxonName: [{id: 1, label: 'Quercus'}]}, visibleWithoutTaxon, true));
 
         expect(map['taxon_name']).toBeUndefined();
         expect(map['include_subtaxa']).toBeUndefined();
+    });
+
+    it('polygon se posílá jako polygonWkt (WKT řetězec)', () => {
+        const wkt = 'POLYGON ((14.1 49.5, 14.2 49.6, 14.3 49.4, 14.1 49.5))';
+        const map = toMap(buildAdvancedSearchPayload({polygon: wkt}, ALL_VISIBLE, true));
+
+        expect(map['polygonWkt']).toBe(wkt);
     });
 
     it('typeahead: single posílá id, multiple posílá každé id zvlášť pod stejným klíčem', () => {
@@ -126,10 +148,18 @@ describe('buildAdvancedSearchPayload', () => {
         expect(map['maxYear']).toBeUndefined();
     });
 
-    it('checkboxy: true ano, false ne', () => {
-        const map = toMap(buildAdvancedSearchPayload({commented: true, noMapSquare: false}, ALL_VISIBLE, true));
+    it('checkboxy: true ano, false ne; skupina stavu komenářů emituje jen zaškrtnuté volby', () => {
+        const values: FilterValues = {
+            commentStatus: [
+                {id: 'commented', label: 'jen s komentářem'},
+                {id: 'unresolvedComment', label: 'jen s nevyřešeným komentářem'},
+            ],
+            noMapSquare: false,
+        };
+        const map = toMap(buildAdvancedSearchPayload(values, ALL_VISIBLE, true));
 
         expect(map['commented']).toBe('true');
+        expect(map['unresolvedComment']).toBe('true');
         expect(map['no_map_square_or_quadrant']).toBeUndefined();
     });
 

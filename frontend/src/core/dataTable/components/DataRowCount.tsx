@@ -12,6 +12,9 @@ interface DataRowCountProps {
     loading?: boolean;
 }
 
+/** Mezera jako oddělovač tisíců („4 280") – stejný formát jako číselné sloupce tabulky (DataTable). */
+const numberFormat = new Intl.NumberFormat('cs');
+
 export function DataRowCount(props: DataRowCountProps) {
     const {fromIndex, toIndex, total, loading} = props;
     const {t} = useTranslation();
@@ -25,9 +28,9 @@ export function DataRowCount(props: DataRowCountProps) {
     }
 
     const text = t('common.table.showing', {
-        from: fromIndex,
-        to: toIndex,
-        total,
+        from: numberFormat.format(fromIndex),
+        to: numberFormat.format(toIndex),
+        total: numberFormat.format(total),
     });
 
     return <p className="mb-0">{text}</p>;

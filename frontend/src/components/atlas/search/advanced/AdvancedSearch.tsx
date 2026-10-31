@@ -69,15 +69,23 @@ export function AdvancedSearch() {
     const hasSearched = query.totalCount != null || query.records.length > 0;
 
     /**
-     * Auto-vyhledávání po změně filtrů (zavření popoveru chipu, přepnutí
-     * viditelnosti). Debounce timer čte hodnoty z closures, viditelnost přes
-     * ref (efekt ji zrcadlí po každé změně; handler ji nastaví okamžitě).
+     * Auto-vyhledávání po změně filtrů (potvrzení hodnoty výběrem –
+     * autocomplete / typeahead, zavření popoveru chipu, přepnutí
+     * viditelnosti). Timer čte hodnoty až v okamžiku spuštění ze store a
+     * dotaz přes refy: commit přichází ze stejné události jako zápis hodnoty,
+     * closure z renderu by byla zastaralá a poslal by se payload bez nové
+     * hodnoty. Viditelnost nastavuje handler ref hned (nesměřuje starý
+     * výběr).
      */
     const autoSearchTimer = useRef<number | null>(null);
     const visibleRef = useRef(visibleIds);
+    const queryRef = useRef(query);
     useEffect(() => {
         visibleRef.current = visibleIds;
     }, [visibleIds]);
+    useEffect(() => {
+        queryRef.current = query;
+    }, [query]);
 
     const runAutoSearch = useCallback(() => {
         if (autoSearchTimer.current != null) {
@@ -85,19 +93,21 @@ export function AdvancedSearch() {
         }
         autoSearchTimer.current = window.setTimeout(() => {
             autoSearchTimer.current = null;
-            const entries = buildAdvancedSearchPayload(values, visibleRef.current, isVascular);
+            const currentQuery = queryRef.current;
+            const entries = buildAdvancedSearchPayload(useAdvancedSearchStore.getState().values, visibleRef.current, isVascular);
             // bez hodnot filtrů a bez předchozího hledání nehledáme (přeběh
             // myší přes chip nespouští dotaz na všechny záznamy)
-            if (!hasSearched && !hasFilterValues(entries)) {
+            const hasResults = currentQuery.totalCount != null || currentQuery.records.length > 0;
+            if (!hasResults && !hasFilterValues(entries)) {
                 return;
             }
             // beze změny payloadu se neposílá nic (pouhé zavření popoveru)
-            if (payloadEntriesEqual(entries, query.lastPayloadEntries)) {
+            if (payloadEntriesEqual(entries, currentQuery.lastPayloadEntries)) {
                 return;
             }
-            void query.search(entries);
+            void currentQuery.search(entries);
         }, AUTO_SEARCH_DEBOUNCE_MS);
-    }, [values, isVascular, hasSearched, query]);
+    }, [isVascular]);
 
     // Zrušení čekajícího timeru při odmontování.
     useEffect(() => () => {

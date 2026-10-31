@@ -88,6 +88,23 @@ describe('ResultsTabs', () => {
         expect(screen.queryByRole('button', {name: 'Hromadné úpravy'})).toBeNull();
     });
 
+    it('položka s taby má flex-basis 0 – tlačítko hromadných úprav nezalamuje pod tabulku', () => {
+        render(
+            <ResultsTabs query={query} onExport={vi.fn()} exportLoading={false} exportMessage="" exportHint="hint">
+                <div>BULK_EDIT_CONTENT</div>
+            </ResultsTabs>,
+        );
+
+        // jsdom nepočítá layout (flex wrap), proto regresační pojistka na styl:
+        // flex-grow-1 nechává basis auto → hypotetická šířka položky je dána
+        // tabulkou uvnitř a tlačítko vypadne z flex-wrap na další řádku pod
+        // celou tabulku (až na konec stránky)
+        const bulkEditButton = screen.getByRole('button', {name: 'Hromadné úpravy'});
+        const tabsItem = bulkEditButton.parentElement?.firstElementChild as HTMLElement;
+        expect(tabsItem.style.flexBasis).toBe('0%');
+        expect(tabsItem.style.minWidth).toBe('0px');
+    });
+
     it('mapový výpis se mountuje lazy – až po překliknutí na tab Mapa (dostane payload hledání)', () => {
         render(<ResultsTabs query={query} onExport={vi.fn()} exportLoading={false} exportMessage="" exportHint="hint"/>);
 

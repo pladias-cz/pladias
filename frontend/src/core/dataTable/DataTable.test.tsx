@@ -11,6 +11,7 @@ import {act, cleanup, fireEvent, render, screen, waitFor, within} from '@testing
 import {afterEach, describe, expect, it, vi} from 'vitest';
 import {QueryClientProvider} from '@tanstack/react-query';
 import {DataTable} from './DataTable';
+import {DataRowCount} from './components';
 import {withQueryClient} from '@/test/withQueryClient';
 import {createQueryClient} from '@/query/queryClient';
 import type {DataTableColumnDef} from './types';
@@ -163,6 +164,14 @@ describe('DataTable', () => {
 
         // rozsah řádků
         expect(screen.getByText('Zobrazeno od 1 do 2 z 2 řádků celkem')).toBeInTheDocument();
+    });
+
+    it('DataRowCount formátuje čísla s mezerou jako oddělovačem tisíců', () => {
+        render(<DataRowCount fromIndex={1} toIndex={50} total={4280}/>);
+
+        // Intl vrací oddělovač U+00A0, DOM query normalizuje mezery → NFKC
+        const expected = `Zobrazeno od 1 do 50 z ${new Intl.NumberFormat('cs').format(4280)} řádků celkem`;
+        expect(screen.getByText(expected.normalize('NFKC'))).toBeInTheDocument();
     });
 
     it('zobrazí spinner během načítání a prázdný stav, když fetcher nevrátí data', async () => {

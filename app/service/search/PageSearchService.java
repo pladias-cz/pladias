@@ -47,6 +47,12 @@ public class PageSearchService implements IPageSearchService {
     @Override
     public PageSearchResults search(User currentUser, SearchController.SearchForm form,
                                     int page, int pageSize, boolean getTotalCount) {
+        // Ochrana proti přetížení: bez aplikovaného filtru vracíme prázdný
+        // výsledek (záznamy, total count i excel export) – vylistování celé
+        // tabulky záznamů nemá smysl.
+        if (!form.hasActiveFilter()) {
+            return new PageSearchResults();
+        }
         try {
             SearchFilterContext filterContext = buildSearchFilterContext(currentUser, form);
 
@@ -106,6 +112,11 @@ public class PageSearchService implements IPageSearchService {
 
     @Override
     public List<QuadrantAggregateDto> searchQuadrants(User currentUser, SearchController.SearchForm form) {
+        // Ochrana proti přetížení: bez aplikovaného filtru žádné kvadranty
+        // (viz search) – neagregujeme celou tabulku pro markery mapy.
+        if (!form.hasActiveFilter()) {
+            return List.of();
+        }
         try {
             SearchFilterContext filterContext = buildSearchFilterContext(currentUser, form);
             String fromClause = buildFromClause(currentUser, form, false);
@@ -156,6 +167,16 @@ public class PageSearchService implements IPageSearchService {
         Map<String, List<DashboardBucketDto>> result = new LinkedHashMap<>();
         Set<String> requested = parseRequestedAggregates(form.getAggregates());
         if (requested.isEmpty()) {
+            return result;
+        }
+
+        // Ochrana proti přetížení: bez aplikovaného filtru prázdné agregace
+        // (viz search) – widgety dashboardu dostanou prázdné buckety, ale
+        // neagregujeme celou tabulku.
+        if (!form.hasActiveFilter()) {
+            for (String aggregate : requested) {
+                result.put(aggregate, List.of());
+            }
             return result;
         }
 
@@ -572,6 +593,7 @@ public class PageSearchService implements IPageSearchService {
         addLicenseFilter(form, whereClause, parameters);
         addQuadrantsSquaresFilter(quadrants, squares, whereClause, parameters);
         addInstitutionFilter(form, whereClause, parameters);
+        addPolygonWktFilter(form, whereClause, parameters);
 
         if (configService.isNonVascular()) {
             extendWhereClauseForNonVascular(form, whereClause, parameters);
@@ -848,29 +870,43 @@ public class PageSearchService implements IPageSearchService {
     }
 
     private void addTaxonFilter(SearchController.SearchForm form, StringBuilder whereClause, QueryParameters parameters) throws Exception {
-        Taxon selectedTaxon = null;
         List<Taxon> searchTaxa = null;
 
         if (StringUtils.isNotBlank(form.taxon_name)) {
-            selectedTaxon = Taxon.find().query().where().ieq("nameLat", form.taxon_name.trim()).findOne();
-            if (selectedTaxon == null) {
+            List<String> taxonNames = form.getTaxonNameValues();
+            if (taxonNames.isEmpty()) {
+                // samé oddělovače – jako dřív neexistující název (fail-safe,
+                // vyhledávání skončí prázdným výsledkem)
                 throw new Exception("Invalid taxon name");
             }
-            if (form.getInclude_subtaxa()) {
-                searchTaxa = Taxon.find().query().where().ge("lft", selectedTaxon.getLeft()).le("rgt", selectedTaxon.getRight()).findList();
-            } else {
-                searchTaxa = List.of(selectedTaxon);
+            // vícenásobný výběr: taxony všech názvů (každý případně rozbalený
+            // o podtaxony přes include_subtaxa) sdílejí jednu společnou
+            // podmínku IN – mezi vybranými taxony je OR
+            searchTaxa = new ArrayList<>();
+            for (String taxonName : taxonNames) {
+                Taxon selectedTaxon = Taxon.find().query().where().ieq("nameLat", taxonName).findOne();
+                if (selectedTaxon == null) {
+                    throw new Exception("Invalid taxon name");
+                }
+                if (form.getInclude_subtaxa()) {
+                    searchTaxa.addAll(Taxon.find().query().where()
+                        .ge("lft", selectedTaxon.getLeft()).le("rgt", selectedTaxon.getRight()).findList());
+                } else {
+                    searchTaxa.add(selectedTaxon);
+                }
             }
         }
 
         if (searchTaxa != null) {
-            if (searchTaxa.size() == 1) {
-                String param = parameters.bind("taxonId", searchTaxa.getFirst().getId());
+            // vybrané taxony i podtaxony se mohou překrývat – deduplikace id
+            List<Long> taxonIds = searchTaxa.stream()
+                .map(Taxon::getId)
+                .distinct()
+                .collect(Collectors.toList());
+            if (taxonIds.size() == 1) {
+                String param = parameters.bind("taxonId", taxonIds.getFirst());
                 whereClause.append(" R.taxon_id=").append(param).append(" AND ");
             } else {
-                List<Long> taxonIds = searchTaxa.stream()
-                    .map(Taxon::getId)
-                    .collect(Collectors.toList());
                 String param = parameters.bind("taxonIds", taxonIds);
                 whereClause.append(" R.taxon_id IN (").append(param).append(") AND ");
             }
@@ -882,6 +918,18 @@ public class PageSearchService implements IPageSearchService {
             // I.id je numerické – text neumíme porovnat, nečíselná hodnota selže explicitně při parsování
             String param = parameters.bind("institutionId", Integer.parseInt(form.institution.trim()));
             whereClause.append(" I.id = ").append(param).append(" AND ");
+        }
+    }
+
+    /**
+     * Uživatelem nakreslený polygon (WKT, SRID 4326) – záznamy, jejichž souřadnice
+     * protínají polygon. Validaci tvaru dělá frontend (uzavřený prstenec);
+     * nevalidní WKT selže na DB a vyhledávání skončí prázdným výsledkem.
+     */
+    private void addPolygonWktFilter(SearchController.SearchForm form, StringBuilder whereClause, QueryParameters parameters) {
+        if (StringUtils.isNotBlank(form.polygonWkt)) {
+            String param = parameters.bind("polygonWkt", form.polygonWkt.trim());
+            whereClause.append(" ST_Intersects(ST_GeomFromText(").append(param).append(", 4326), R.coords_wgs) AND ");
         }
     }
 

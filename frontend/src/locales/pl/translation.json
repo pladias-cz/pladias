@@ -141,7 +141,9 @@
       },
       "filters": {
         "appComment": "komentarz w aplikacji",
+        "commentStatus": "status komentarzy",
         "commented": "tylko z komentarzami",
+        "polygon": "w wielokącie",
         "unresolvedComment": "tylko z nierozwiązanymi komentarzami"
       },
       "dashboard": {
@@ -158,6 +160,12 @@
         }
       },
       "hint": "Ustaw filtry – nazwę filtra rozwiń kliknięciem lub najechaniem kursorem; wyszukiwanie uruchomi się samo po zamknięciu filtra.",
+      "polygon": {
+        "clear": "Wyczyść",
+        "finish": "Zamknij wielokąt",
+        "hint": "Klikaj mapę, aby dodawać wierzchołki wielokąta; zamknij go po co najmniej trzech wierzchołkach.",
+        "undo": "Cofnij"
+      },
       "map": {
         "loadFailed": "Nie udało się wczytać wyników mapy.",
         "noResults": "Wynik nie zawiera żadnych kwadrantów.",

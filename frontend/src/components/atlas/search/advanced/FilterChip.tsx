@@ -1,9 +1,10 @@
 /**
  * Chip jednoho filtru v horní řádce – button s názvem filtru a zformátovanou
- * hodnotou. Hover otevře popover se vstupem (FilterEditor), klik popover
- * „připíchne" (pinned) pro pohodlné psaní, klik mimo / Esc zavře; kliknutí
- * dovnitř popoveru ho také připíchne, aby psaní nezavřelo mouseleave.
- * Křížek maže hodnotu filtru (chip zůstává viditelný).
+ * hodnotou. Hover otevře popover se vstupem (FilterEditor) a focusne jeho
+ * první relevantní vstup, klik popover „připíchne" (pinned) pro pohodlné
+ * psaní, klik mimo / Esc zavře; kliknutí nebo psaní dovnitř popoveru ho také
+ * připíchne, aby psaní nezavřelo mouseleave. Křížek maže hodnotu filtru
+ * (chip zůstává viditelný).
  */
 
 import {useEffect, useRef, useState} from 'react';
@@ -20,6 +21,9 @@ import type {TypeaheadOption} from '../types';
 /** O kolik ms po opuštění chipu/popoveru se popover zavře (přesun myši mezi nimi). */
 const CLOSE_DELAY_MS = 150;
 
+/** Kolik snímků čekat na mount vstupu právě otevřeného popoveru (portál + transition). */
+const FOCUS_RETRY_FRAMES = 10;
+
 interface FilterChipProps {
     filter: FilterDefinition;
     value: FilterValue | undefined;
@@ -34,6 +38,8 @@ interface FilterChipProps {
     onCompanionChange?: (value: FilterValue) => void;
     /** Zavření popoveru – spouštěč auto-vyhledávání (rozhoduje orchestrátor). */
     onPopoverClose?: () => void;
+    /** Potvrzení hodnoty výběrem (autocomplete / typeahead / přepnutí checkboxu) – spouštěč auto-vyhledávání bez zavření popoveru. */
+    onValueCommitted?: () => void;
 }
 
 export function FilterChip({
@@ -46,6 +52,7 @@ export function FilterChip({
                                companionValue,
                                onCompanionChange,
                                onPopoverClose,
+                               onValueCommitted,
                            }: FilterChipProps) {
     const {t} = useTranslation();
     const [show, setShow] = useState(false);
@@ -102,14 +109,60 @@ export function FilterChip({
         }
     };
 
-    /** Klik dovnitř popoveru (např. do vstupu) ho připíchne – myš pak může odejít. */
-    const handlePopoverInteract = () => {
+    /**
+     * Klik nebo klávesa (psaní) dovnitř popoveru ho připíchne – myš pak může
+     * odejít, aniž by psaní zavřelo mouseleave.
+     */
+    const pinPopover = () => {
         cancelClose();
         setPinned(true);
     };
 
     // Čištění timeru při odmontování.
     useEffect(() => () => cancelClose(), []);
+
+    // Otevřený popover focusne svůj první relevantní vstup (text, typeahead,
+    // autocomplete…; checkbox ne) – psát lze rovnou bez kliknutí dovnitř.
+    // Popover je v portálu na body; čeká se na jeho první napozicování
+    // popperem (inline position) a focus jde s preventScroll – čerstvě
+    // mountovaný popover leží před ním ve statické pozici na konci body a
+    // obyčejný focus by odscrolloval stránku na její konec. Focus se navíc
+    // nepřebírá, pokud uživatel píše jinde (přeběh myší přes řádku chipů
+    // nesmí přepnout psaní do cizího pole); focus v jiném popoveru filtru
+    // (umírající popover sousedního chipu po přeběhu) se za psaní jinde
+    // nepovažuje – nový popover ho přebírá.
+    useEffect(() => {
+        if (!show) {
+            return undefined;
+        }
+        let frame = 0;
+        let attempts = 0;
+        const focusInput = () => {
+            const popover = document.getElementById(`filter-popover-${filter.id}`);
+            if (popover == null || !popover.style.position) {
+                if (attempts < FOCUS_RETRY_FRAMES) {
+                    attempts += 1;
+                    frame = window.requestAnimationFrame(focusInput);
+                }
+                return;
+            }
+            const active = document.activeElement;
+            const typingElsewhere = active instanceof HTMLElement
+                && active.closest('.filter-chip__popover') == null
+                && (active.tagName === 'INPUT'
+                    || active.tagName === 'TEXTAREA'
+                    || active.tagName === 'SELECT'
+                    || active.isContentEditable);
+            if (!typingElsewhere) {
+                popover.querySelector<HTMLElement>('input:not([type="checkbox"]), textarea')
+                    ?.focus({preventScroll: true});
+            }
+        };
+        focusInput();
+        return () => {
+            window.cancelAnimationFrame(frame);
+        };
+    }, [show, filter.id]);
 
     // Klik mimo chip i popover zavře popover (Esc také). Vlastní listener místo
     // Overlay rootClose – ten se v kombinaci s portalem chová nespolehlivě.
@@ -172,10 +225,11 @@ export function FilterChip({
             <Overlay target={target} show={show} placement="bottom">
                 <Popover
                     id={`filter-popover-${filter.id}`}
-                    className="filter-chip__popover"
+                    className={`filter-chip__popover ${filter.kind === 'polygonMap' ? 'filter-chip__popover--wide' : ''}`}
                     onMouseEnter={openPopover}
                     onMouseLeave={scheduleClose}
-                    onMouseDown={handlePopoverInteract}
+                    onMouseDown={pinPopover}
+                    onKeyDown={pinPopover}
                 >
                     <Popover.Header as="h3">{filter.titleKey ? t(filter.titleKey as never) : label}</Popover.Header>
                     <Popover.Body>
@@ -188,6 +242,8 @@ export function FilterChip({
                             companion={companion}
                             companionValue={companionValue}
                             onCompanionChange={onCompanionChange}
+                            onCommit={onValueCommitted}
+                            onEnter={close}
                         />
                     </Popover.Body>
                 </Popover>

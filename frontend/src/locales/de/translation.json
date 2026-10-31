@@ -141,7 +141,9 @@
       },
       "filters": {
         "appComment": "Kommentar in der App",
+        "commentStatus": "Kommentarstatus",
         "commented": "nur mit Kommentaren",
+        "polygon": "im Polygon",
         "unresolvedComment": "nur mit ungelösten Kommentaren"
       },
       "dashboard": {
@@ -158,6 +160,12 @@
         }
       },
       "hint": "Filter setzen – Filternamen durch Klicken oder Überfahren mit der Maus öffnen; die Suche startet automatisch beim Schließen des Filters.",
+      "polygon": {
+        "clear": "Löschen",
+        "finish": "Polygon schließen",
+        "hint": "Klicken Sie auf die Karte, um Polygon-Ecken hinzuzufügen; schließen Sie es nach mindestens drei Ecken.",
+        "undo": "Zurück"
+      },
       "map": {
         "loadFailed": "Das Laden der Kartenergebnisse ist fehlgeschlagen.",
         "noResults": "Das Ergebnis enthält keine Quadranten.",

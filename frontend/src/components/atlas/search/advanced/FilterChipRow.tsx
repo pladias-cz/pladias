@@ -2,7 +2,9 @@
  * Horní řádka aktivních filtrů: chipy viditelných filtrů, „+" dropdown pro
  * individuální zapnutí dalších filtrů (uspořádaný do sloupců podle kategorií)
  * a tlačítko Reset. Vyhledávání se spouští automaticky po zavření popoveru
- * chipu (onFiltersChanged) nebo změně viditelnosti (onToggleVisibility).
+ * chipu nebo potvrzení hodnoty výběrem (výběr z autocomplete / typeahead,
+ * přepnutí checkboxu) – obojí onFiltersChanged – a po změně viditelnosti
+ * (onToggleVisibility).
  * Hodnoty filtrů čte přímo ze store (advancedSearchStore) – jeho doména.
  */
 
@@ -22,7 +24,7 @@ interface FilterChipRowProps {
     filters: readonly FilterDefinition[];
     visibleIds: readonly FilterId[];
     onToggleVisibility: (id: FilterId) => void;
-    /** Zavření popoveru chipu – možná změna hodnoty, spouštěč vyhledávání. */
+    /** Zavření popoveru chipu nebo potvrzení hodnoty výběrem – spouštěč vyhledávání. */
     onFiltersChanged: () => void;
     taxonProvider: AutocompleteProvider<TaxonId>;
     /** Číselníky typeahead filtrů podle zdroje. */
@@ -65,6 +67,7 @@ export function FilterChipRow({
                 companionValue={companion ? values[companion.id] : undefined}
                 onCompanionChange={companion ? (value: FilterValue) => setFilterValue(companion.id, value) : undefined}
                 onPopoverClose={onFiltersChanged}
+                onValueCommitted={onFiltersChanged}
             />
         );
     };

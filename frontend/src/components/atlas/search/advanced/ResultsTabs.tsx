@@ -49,7 +49,13 @@ export function ResultsTabs({
         <div className="mt-3">
             {/* Hlavička výsledků: taby vlevo, hromadné úpravy vpravo (mimo taby). */}
             <div className="d-flex align-items-start justify-content-between gap-2 flex-wrap">
-                <div className="flex-grow-1">
+                {/* flex-basis 0 + min-width 0 (bootstrap utility chybí): samotné
+                    flex-grow-1 nechává basis auto, takže hypotetická šířka položky
+                    pro zalomení řádku je dána obsahem (tabulkou) a tlačítko hromadných
+                    úprav vypadne z flex-wrap na další řádku POD celou tabulku, až na
+                    konec stránky. S basis 0 položka vyroste do zbývající šířky a
+                    tabulka se při potřebě scrolluje v .table-responsive. */}
+                <div className="flex-grow-1" style={{flexBasis: '0%', minWidth: 0}}>
                     <Tabs defaultActiveKey="table">
                         <Tab
                             eventKey="table"

@@ -270,6 +270,8 @@ public class SearchController extends ControllerBase {
         public Integer altitude_min;
         public Integer altitude_max;
         public String quadrant;
+        /** Uživatelem nakreslený polygon (WKT, lon lat, SRID 4326) – filtr „je v polygonu". */
+        public String polygonWkt;
         public Integer phytochorion; //phytochorion rowId
         public String comment; //taxonomic note
         public String pladias_comment;
@@ -554,6 +556,83 @@ public class SearchController extends ControllerBase {
                 .filter(token -> token.chars().allMatch(Character::isDigit))
                 .map(Integer::valueOf)
                 .collect(Collectors.toList());
+        }
+
+        /**
+         * Hodnoty filtru taxon (latinské názvy) – vícenásobný výběr pokročilého
+         * vyhledávání se posílá jako středníky (případně konce řádků) oddělený
+         * seznam; starý formulář posílá jediný název a split vrátí singleton.
+         */
+        public List<String> getTaxonNameValues() {
+            if (StringUtils.isBlank(this.taxon_name)) {
+                return Collections.emptyList();
+            }
+
+            return Arrays.stream(this.taxon_name.split("[;\\r\\n]+"))
+                .map(String::trim)
+                .filter(StringUtils::isNotBlank)
+                .distinct()
+                .collect(Collectors.toList());
+        }
+
+        public String getPolygonWkt() {
+            return polygonWkt;
+        }
+
+        public void setPolygonWkt(String polygonWkt) {
+            this.polygonWkt = polygonWkt;
+        }
+
+        /**
+         * Je aplikovaný nějaký filtr vyhledávání? Ochrana proti přetížení –
+         * bez filtru by vyhledávání vylistovalo celou tabulku záznamů, proto
+         * PageSearchService vrací prázdný výsledek (záznamy, kvadranty mapy
+         * i agregace dashboardu). Řídicí pole filtr nejsou (export_type,
+         * sortBy/sortOrder, aggregates, include_subtaxa – jen rozšiřuje volbu
+         * taxonu) a committerId = -1 znamená „bez výběru" (parita se starým
+         * formulářem, který posílal hidden input s fallbackem -1).
+         */
+        public boolean hasActiveFilter() {
+            return StringUtils.isNotBlank(taxon_name)
+                || StringUtils.isNotBlank(taxon_name_original)
+                || StringUtils.isNotBlank(town)
+                || StringUtils.isNotBlank(locality_description)
+                || StringUtils.isNotBlank(locality_or_town)
+                || StringUtils.isNotBlank(localityExtra)
+                || StringUtils.isNotBlank(quadrant)
+                || StringUtils.isNotBlank(polygonWkt)
+                || StringUtils.isNotBlank(comment)
+                || StringUtils.isNotBlank(pladias_comment)
+                || StringUtils.isNotBlank(finderName)
+                || StringUtils.isNotBlank(finderSurname)
+                || StringUtils.isNotBlank(source)
+                || StringUtils.isNotBlank(herbariumText)
+                || StringUtils.isNotBlank(institution)
+                || StringUtils.isNotBlank(foreignId)
+                || StringUtils.isNotBlank(validationStatus)
+                || StringUtils.isNotBlank(historyFlag)
+                || StringUtils.isNotBlank(no_map_square_or_quadrant)
+                || StringUtils.isNotBlank(substrateText)
+                || StringUtils.isNotBlank(substrate1)
+                || StringUtils.isNotBlank(substrate2)
+                || StringUtils.isNotBlank(chemicalData)
+                || license != null
+                || altitude_min != null
+                || altitude_max != null
+                || phytochorion != null
+                || herbarium != null
+                || minYear != null
+                || maxYear != null
+                || buffer != null
+                || dateFromImported != null
+                || dateToImported != null
+                || dateFromLastEdit != null
+                || dateToLastEdit != null
+                || commented != null
+                || unresolvedComment != null
+                || (committerId != null && committerId != -1)
+                || (projects != null && projects.length > 0)
+                || !getPladiasIdValues().isEmpty();
         }
 
         public Integer getBuffer() {

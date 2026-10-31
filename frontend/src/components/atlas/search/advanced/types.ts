@@ -11,9 +11,11 @@ export type FilterKind =
     | 'numberRange'
     | 'dateRange'
     | 'checkbox'
+    | 'checkboxGroup'
     | 'textarea'
     | 'typeahead'
-    | 'taxonAutocomplete';
+    | 'taxonAutocomplete'
+    | 'polygonMap';
 
 /** Kategorie filtru – seskupení do sloupců „+" dropdownu. */
 export type FilterCategory = 'locality' | 'origin' | 'taxon' | 'remarks';
@@ -29,6 +31,7 @@ export type FilterId =
     | 'localityExtra'
     | 'altitude'
     | 'quadrant'
+    | 'polygon'
     | 'noMapSquare'
     | 'buffer'
     | 'phytochorion'
@@ -50,8 +53,7 @@ export type FilterId =
     | 'license'
     | 'externalId'
     | 'pladiasId'
-    | 'commented'
-    | 'unresolvedComment'
+    | 'commentStatus'
     | 'substrateText'
     | 'substrate1'
     | 'substrate2'

@@ -2,12 +2,12 @@
  * Registr filtrů pokročilého vyhledávání – jediný zdroj pravdy o tom, jaké
  * filtry existují, jak se vykreslují (kind) a co odesílají do backendu
  * (payloadKeys). Nový filtr = nový záznam tady (+ případně nová větev ve
- * FilterEditoru); budoucí polygon bude jen dalším kind a záznamem.
+ * FilterEditoru); polygon je jen dalším kindem (polygonMap) a záznamem.
  *
  * Labely/tooltipy reuse klíčů starého formuláře (atlas.search.form.*), kde
- * nejsou interpolované (bez {{projectName}}) – pro appComment/commented/
- * unresolvedComment jsou v atlas.advancedSearch.filters krátké chipové labely,
- * protože původní texty jsou celé věty s interpolací.
+ * nejsou interpolované (bez {{projectName}}) – pro appComment a checkboxy
+ * stavu komentářů (commented/unresolvedComment) jsou v atlas.advancedSearch.filters
+ * krátké labely, protože původní texty jsou celé věty s interpolací.
  */
 
 import type {FilterCategory, FilterId, FilterKind, FilterValue, FilterValues, RangeValue} from './types';
@@ -22,6 +22,15 @@ export type TypeaheadSource =
     | 'historyFlags'
     | 'licenses'
     | 'validationStatus';
+
+/**
+ * Volba skupiny checkboxů (kind checkboxGroup) – id je zároveň podklíč
+ * hodnoty filtru i payload klíč, který zaškrtnutá volba posílá do backendu.
+ */
+export interface CheckboxOption {
+    readonly id: string;
+    readonly labelKey: string;
+}
 
 export interface FilterDefinition {
     readonly id: FilterId;
@@ -40,10 +49,19 @@ export interface FilterDefinition {
     readonly companionOf?: FilterId;
     /** Omezení na typ instance; bez scope platí pro obě. */
     readonly scope?: 'vascular' | 'nonVascular';
+    /**
+     * Číselný seznam id (pladiasId) – FilterEditor normalizuje vstup: jakákoli
+     * sekvence znaků jiných než číslice (mezera, čárka, konec řádku, středník…)
+     * se sloučí na jediný středník, ať už uživatel seznam vloží s libovolným
+     * oddělovačem.
+     */
+    readonly idList?: boolean;
     readonly typeahead?: {
         readonly multiple?: boolean;
         readonly source: TypeaheadSource;
     };
+    /** Volby skupiny checkboxů (kind checkboxGroup – stav komenářů). */
+    readonly checkboxes?: readonly CheckboxOption[];
     /** Parametry FormData, které filtr emituje (dokumentace kontraktu + sanity test). */
     readonly payloadKeys: readonly string[];
 }
@@ -149,6 +167,13 @@ export const FILTER_DEFINITIONS: readonly FilterDefinition[] = [
         placeholderKey: 'atlas.search.form.placeholders.buffer',
         kind: 'number',
         payloadKeys: ['buffer'],
+    },
+    {
+        id: 'polygon',
+        category: 'locality',
+        labelKey: 'atlas.advancedSearch.filters.polygon',
+        kind: 'polygonMap',
+        payloadKeys: ['polygonWkt'],
     },
     {
         id: 'phytochorion',
@@ -317,21 +342,19 @@ export const FILTER_DEFINITIONS: readonly FilterDefinition[] = [
         category: 'origin',
         labelKey: 'atlas.search.form.labels.pladiasId',
         kind: 'textarea',
+        idList: true,
         payloadKeys: ['pladiasId'],
     },
     {
-        id: 'commented',
+        id: 'commentStatus',
         category: 'remarks',
-        labelKey: 'atlas.advancedSearch.filters.commented',
-        kind: 'checkbox',
-        payloadKeys: ['commented'],
-    },
-    {
-        id: 'unresolvedComment',
-        category: 'remarks',
-        labelKey: 'atlas.advancedSearch.filters.unresolvedComment',
-        kind: 'checkbox',
-        payloadKeys: ['unresolvedComment'],
+        labelKey: 'atlas.advancedSearch.filters.commentStatus',
+        kind: 'checkboxGroup',
+        checkboxes: [
+            {id: 'commented', labelKey: 'atlas.advancedSearch.filters.commented'},
+            {id: 'unresolvedComment', labelKey: 'atlas.advancedSearch.filters.unresolvedComment'},
+        ],
+        payloadKeys: ['commented', 'unresolvedComment'],
     },
 
     // jen non-vascular instance
@@ -455,6 +478,10 @@ export function formatFilterValue(filter: FilterDefinition, value: FilterValue |
     }
     if (filter.kind === 'checkbox') {
         return isCheckboxChecked(filter, value) ? '✓' : null;
+    }
+    if (filter.kind === 'polygonMap') {
+        // nakreslený polygon – na chipu jen značka, tvar je vidět na mapě v popoveru
+        return '✓';
     }
     if (isEmptyFilterValue(value)) {
         return null;

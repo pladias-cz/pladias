@@ -141,7 +141,9 @@
       },
       "filters": {
         "appComment": "komentář v aplikaci",
+        "commentStatus": "stav komentáře",
         "commented": "jen s komentářem",
+        "polygon": "je v polygonu",
         "unresolvedComment": "jen s nevyřešeným komentářem"
       },
       "dashboard": {
@@ -158,6 +160,12 @@
         }
       },
       "hint": "Nastavte filtry – název filtru rozbalte kliknutím nebo najetím kurzoru; vyhledávání se spustí samo po zavření filtru.",
+      "polygon": {
+        "clear": "Vymazat",
+        "finish": "Uzavřít polygon",
+        "hint": "Klikáním do mapy přidávejte vrcholy polygonu; po nejméně třech vrcholech ho uzavřete.",
+        "undo": "Zpět"
+      },
       "map": {
         "loadFailed": "Načtení mapových výsledků se nezdařilo.",
         "noResults": "Ve výsledku nejsou žádné kvadranty.",

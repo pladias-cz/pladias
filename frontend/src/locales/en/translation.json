@@ -141,7 +141,9 @@
       },
       "filters": {
         "appComment": "in-app comment",
+        "commentStatus": "comment status",
         "commented": "only with comments",
+        "polygon": "in polygon",
         "unresolvedComment": "only with unresolved comments"
       },
       "dashboard": {
@@ -158,6 +160,12 @@
         }
       },
       "hint": "Set filters – open a filter name by clicking or hovering; the search runs automatically when the filter closes.",
+      "polygon": {
+        "clear": "Clear",
+        "finish": "Close polygon",
+        "hint": "Click the map to add polygon vertices; close it after at least three vertices.",
+        "undo": "Undo"
+      },
       "map": {
         "loadFailed": "Failed to load the map results.",
         "noResults": "The result contains no quadrants.",

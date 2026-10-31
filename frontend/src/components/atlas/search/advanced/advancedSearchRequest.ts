@@ -57,6 +57,25 @@ function appendFilterEntries(entries: SearchPayloadEntries, filter: FilterDefini
     if (value === undefined) {
         return;
     }
+    if (filter.kind === 'checkboxGroup') {
+        // zaškrtnuté volby skupiny (stav komenářů) posílají každá svůj klíč
+        const selected = Array.isArray(value) ? value : [];
+        for (const option of selected) {
+            entries.push([String(option.id), 'true']);
+        }
+        return;
+    }
+    if (filter.kind === 'taxonAutocomplete') {
+        // vícenásobný výběr taxonů – latinské názvy oddělené středníkem
+        // (backend getTaxonNameValues splituje [;\r\n]+; starý formulář
+        // posílá jeden název a zůstává kompatibilní)
+        const selected = Array.isArray(value) ? value : [];
+        const names = selected.map((option) => option.label).join(';');
+        if (names) {
+            entries.push([filter.payloadKeys[0], names]);
+        }
+        return;
+    }
     if (filter.kind === 'typeahead') {
         const selected = Array.isArray(value) ? value : [];
         for (const option of selected) {
@@ -74,7 +93,7 @@ function appendFilterEntries(entries: SearchPayloadEntries, filter: FilterDefini
         }
         return;
     }
-    // text / number / textarea / taxonAutocomplete (latinský název taxonu)
+    // text / number / textarea
     const text = String(value).trim();
     if (text) {
         entries.push([filter.payloadKeys[0], text]);

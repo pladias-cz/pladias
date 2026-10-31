@@ -102,6 +102,18 @@
     --bs-popover-max-width: 360px;
 }
 
+// širší popover pro mapový editor polygonu (kreslení potřebuje prostor) –
+// musí stát až po základním pravidle, jinak by podle pořadí CSS chunků
+// prohrálo se stejnou specificitou
+.popover.filter-chip__popover--wide {
+    --bs-popover-max-width: min(680px, 94vw);
+}
+
+// mapa editoru polygonu – pevná výška (MapCanvas se roztahuje na 100 %)
+.polygon-map-editor__map {
+    height: 320px;
+}
+
 // „+" popover pro zapnutí dalších filtrů – kategorie ve sloupcích (grid).
 // max-width přes bootstrap proměnnou se zvýšenou specificitou
 // (.popover.filter-add-popover) – samotná třída by podle pořadí CSS chunků

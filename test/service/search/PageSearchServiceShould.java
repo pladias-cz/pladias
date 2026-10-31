@@ -1,6 +1,7 @@
 package service.search;
 
 import controllers.atlas.SearchController;
+import dto.atlas.DashboardBucketDto;
 import models.MapSquareNew;
 import models.QuadrantNew;
 import org.junit.Before;
@@ -14,10 +15,12 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -61,6 +64,103 @@ public class PageSearchServiceShould {
 
         assertEquals(" WHERE TRUE AND R.taxon_id IS NOT NULL AND  TRUE ", where);
         assertTrue(parameters.asMap().isEmpty());
+    }
+
+    @Test
+    public void reportNoActiveFilterForEmptyForm() {
+        assertFalse(browserForm().hasActiveFilter());
+    }
+
+    @Test
+    public void bindPolygonWktAsParameterInsteadOfSqlLiteral() throws Exception {
+        SearchController.SearchForm form = browserForm();
+        form.polygonWkt = "POLYGON ((14.1 49.5, 14.2 49.6, 14.3 49.4, 14.1 49.5))";
+
+        PageSearchService.QueryParameters parameters = new PageSearchService.QueryParameters();
+        String where = buildWhere(form, parameters);
+
+        // WKT se váže jako pojmenovaný parametr (prevence SQL injection),
+        // nikdy se nekonkatenuje do SQL textu
+        assertTrue(where.contains("ST_Intersects(ST_GeomFromText(:polygonWkt, 4326), R.coords_wgs)"));
+        assertFalse(where.contains("14.1 49.5"));
+        assertEquals("POLYGON ((14.1 49.5, 14.2 49.6, 14.3 49.4, 14.1 49.5))",
+            parameters.asMap().get("polygonWkt"));
+    }
+
+    @Test
+    public void parseTaxonNameValues() {
+        SearchController.SearchForm form = browserForm();
+
+        // vícenásobný výběr: středníky (i konce řádků), mezery okolo, prázdné
+        // tokeny a duplicity se zahazují
+        form.taxon_name = "Quercus robur; Carex pilulifera ;;Quercus robur\nCarex davalliana";
+        assertEquals(Arrays.asList("Quercus robur", "Carex pilulifera", "Carex davalliana"),
+            form.getTaxonNameValues());
+
+        // starý formulář: jediný název bez oddělovačů
+        form.taxon_name = "Quercus robur";
+        assertEquals(List.of("Quercus robur"), form.getTaxonNameValues());
+
+        // samé oddělovače – žádné platné názvy
+        form.taxon_name = " ; ;; ";
+        assertTrue(form.getTaxonNameValues().isEmpty());
+    }
+
+    @Test
+    public void reportActiveFilterForRepresentativeFields() {
+        SearchController.SearchForm form = browserForm();
+        form.taxon_name = "Quercus";
+        assertTrue(form.hasActiveFilter());
+
+        form = browserForm();
+        form.pladiasId = "3299984";
+        assertTrue(form.hasActiveFilter());
+
+        form = browserForm();
+        form.commented = "true";
+        assertTrue(form.hasActiveFilter());
+
+        form = browserForm();
+        form.polygonWkt = "POLYGON ((14.1 49.5, 14.2 49.6, 14.3 49.4, 14.1 49.5))";
+        assertTrue(form.hasActiveFilter());
+
+        form = browserForm();
+        form.committerId = 7;
+        assertTrue(form.hasActiveFilter());
+
+        form = browserForm();
+        form.projects = new Integer[]{3};
+        assertTrue(form.hasActiveFilter());
+
+        form = browserForm();
+        form.dateFromImported = new Date(0);
+        assertTrue(form.hasActiveFilter());
+    }
+
+    @Test
+    public void returnEmptySearchResultsWithoutFilters() {
+        PageSearchResults results = service.search(null, browserForm(), 1, 50, true);
+
+        assertTrue(results.getRows().isEmpty());
+        assertTrue(results.getRecords().isEmpty());
+        assertNull(results.getTotalCount());
+    }
+
+    @Test
+    public void returnEmptyQuadrantsWithoutFilters() {
+        assertTrue(service.searchQuadrants(null, browserForm()).isEmpty());
+    }
+
+    @Test
+    public void returnEmptyAggregatesWithoutFilters() {
+        SearchController.SearchForm form = browserForm();
+        form.aggregates = "year,altitude";
+
+        Map<String, List<DashboardBucketDto>> aggregates = service.searchAggregates(null, form);
+
+        assertEquals(2, aggregates.size());
+        assertTrue(aggregates.get("year").isEmpty());
+        assertTrue(aggregates.get("altitude").isEmpty());
     }
 
     @Test

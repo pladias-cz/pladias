@@ -202,6 +202,12 @@ Reset hesla (self-service `/forgotPassword` i sysAdmin tlačítko v UsersTable) 
   čte `form.committerId != -1` bez null kontroly – Integer unboxing NULL vyhodí NPE a vyhledávání selže.
   `buildAdvancedSearchPayload` proto vždy appenduje `committerId=-1`, když filtr není vyplněný/viditelný
   (parita se starým formulářem, který měl hidden input s fallbackem -1).
+- **Vyhledávání bez filtru vrací prázdný výsledek (ochrana proti přetížení)**: `SearchController.SearchForm`
+  .`hasActiveFilter()` pokrývá všechna filtrovací pole (řídicí pole `export_type`/`sortBy`/`sortOrder`/`aggregates`
+  a `include_subtaxa` nejsou filtr, `committerId=-1` = „bez výběru"); bez filtru `PageSearchService` vrací prázdné
+  záznamy/kvadranty/agregace (dashboard widgety dostanou prázdné buckety) a excel export prázdný soubor. Chrání to
+  všechny UI (pokročilé vyhledávání i starý formulář) proti vylistování/agregaci celé tabulky záznamů. FE parita:
+  `hasFilterValues` (advancedSearchRequest) používá stejné vyloučení base klíčů.
 - **`include_subtaxa` má výchozí `true`** (backend `getInclude_subtaxa()` NULL → false); store proto
   inicializuje i resetuje hodnoty na `{includeSubtaxa: true}`. Odškrtnutí se posílá jako nepřítomnost klíče.
 - **Viditelnost filtru = aktivita filtru**: skrytý chip se do dotazu neposílá, jeho hodnota ale zůstává ve
@@ -210,11 +216,57 @@ Reset hesla (self-service `/forgotPassword` i sysAdmin tlačítko v UsersTable) 
   user setting na backendu (`atlas_advancedsearch_filtersvisible`, JSON pole FilterId, vzor
   useRecordSourceVisibility).
 - **Auto-vyhledávání** (bez tlačítka Vyhledat): spouští se s debouncem 200 ms po zavření popoveru chipu
-  (mouseleave / klik mimo / Esc) nebo po přepnutí viditelnosti filtru. Spustí se jen při změně payloadu
-  (`payloadEntriesEqual` – pořadí položek určuje registr) a jen když payload má hodnoty filtrů, nebo už
+  (mouseleave / klik mimo / Esc), po **potvrzení hodnoty výběrem** (výběr z taxon autocomplete / typeahead,
+  přepnutí jakéhokoli checkboxu v popoveru – `onCommit`/`onValueCommitted`, popover zůstává otevřený) nebo po
+  přepnutí viditelnosti filtru. Spustí se jen při
+  změně payloadu (`payloadEntriesEqual` – pořadí položek určuje registr) a jen když payload má hodnoty filtrů, nebo už
   proběhlo hledání (`hasFilterValues`) – pouhý přeběh myší přes chip nespustí dotaz na všechny záznamy.
   Po refreshi / návratu na stránku se vyhledávání automaticky spustí, pokud jsou uložené hodnoty filtrů
-  (čeká se na načtení viditelnosti filtrů z backendu, aby se poslal správný payload).
+  (čeká se na načtení viditelnosti filtrů z backendu, aby se poslal správný payload). Timer si hodnoty filtrů čte
+  **až v okamžiku spuštění ze store** (`useAdvancedSearchStore.getState().values`) a dotaz přes `queryRef` – commit
+  přichází ze stejné události jako `setFilterValue`, closure z renderu by držela hodnoty před výběrem.
+- **Popover chipu focusne vstup hned po otevření** (hover i klik-pin; FilterChip efekt na `show`): vstup se hledá
+  přes `document.getElementById('filter-popover-{id}')` (popover je v portálu na body). **Focus musí čekat na první
+  napozicování popperem a jít s `preventScroll: true`** – bootstrap `.popover` nemá v CSS `position` a `usePopper`
+  vrací před prvním update **prázdné styly**, takže čerstvě mountovaný popover leží ve statické pozici na konci
+  `document.body` (portál se připojuje za `#react-app`) – obyčejný `focus()` by odscrolloval stránku na její konec.
+  Focus se **nepřebírá, když uživatel píše jinde** (`document.activeElement` je input/textarea/select/
+  contenteditable **mimo všechny popovery filtrů**) – přeběh myší přes řádku chipů nesmí přepnout psaní do cizího
+  pole (např. filtr tabulky výsledků). Focus v **jiném** `.filter-chip__popover` se za psaní jinde nepovažuje:
+  při přeběhu mezi chipy drží umírající popover předchozího chipu (zavírá se až po CLOSE_DELAY_MS) stále focus
+  – nový popover ho proto musí převzít hned, jinak by autofocus fungoval jen „na liché hovry". Psaní (jakákoliv klávesa) dovnitř popoveru ho připíchne (pin), aby odjetí myši nezavřelo popover uprostřed
+  psaní; **Enter v textových vstupech** (text/number/textarea/rozsahy, `onEnter`) popover zavře → spustí vyhledávání.
+- **Hlavička výsledků (ResultsTabs): flex položka s taby potřebuje `flex-basis: 0` a `min-width: 0`** (inline
+  styl, bootstrap utility chybí – `flex-grow-1` nastavuje jen grow). Bez basis 0 je hypotetická hlavní velikost
+  položky (podle níž flexbox rozhoduje o **zalomení řádku** – nikoli podle min-content) daná obsahem, tedy celou
+  tabulkou uvnitř, a tlačítko „Hromadné úpravy" (`justify-content-between flex-wrap`) vypadne na další flex řádku
+  **pod celou tabulku**, až na konec stránky. S basis 0 položka vyroste do zbývající šířky řádku a tabulka se při
+  potřebě scrolluje horizontálně ve svém `.table-responsive` (react-bootstrap `Table responsive`).
+- **Pladias ID filtr normalizuje vstup na čísla oddělená středníky** (FilterEditor, flag `idList` v registru):
+  `raw.replace(/\D+/g, ';')` – jakákoli sekvence necel (mezera, čárka, konec řádku, písmeno i vícenásobný středník)
+  se sloučí na jediný `;`, takže vložení seznamu funguje s libovolným oddělovačem. Backend
+  (`SearchController.getPladiasIdValues`) splituje `[;\r\n]+`, trimuje a necelé tokeny zahazuje – čárka by bez
+  normalizace hodnotu tiše rozbila (tokeny by se vyfiltrovaly).
+- **Taxon filtr podporuje vícenásobný výběr**: hodnota je pole vybraných taxonů (`TypeaheadOption[]`, vykresluje
+  `AutocompleteMultiple` – řízený multi typeahead nad providerem), do payloadu jde `taxon_name` s latinskými názvy
+  oddělenými středníkem. Backend `SearchForm.getTaxonNameValues()` splituje `[;\r\n]+` (starý formulář s jediným
+  názvem zůstává kompatibilní) a `addTaxonFilter` staví jednu IN podmínku přes všechna vybraná taxa i jejich
+  podtaxony (deduplikovaně, mezi taxony je OR); neexistující název i samé oddělovače končí výjimkou
+  „Invalid taxon name" → prázdný výsledek (fail-safe jako dřív).
+- **Filtr „je v polygonu"** (`polygon`, kind `polygonMap`): klikáním do mapy ČR (`MapCanvas` + osm vrstva,
+  `PolygonMapEditor` – bez pluginu pro kreslení, vrcholy přidává `useMapEvents` click) se staví uzavřený prstenec,
+  který se jako **WKT (lon lat, SRID 4326, 6 desetinných míst)** posílá v `polygonWkt`. Konverzi [lat, lon] ↔ WKT
+  drží `polygonWkt.ts` (Leaflet a WKT mají opačné pořadí souřadnic; uzavření = duplikát prvního bodu). Backend
+  (`addPolygonWktFilter`) váže WKT jako pojmenovaný parametr do
+  `ST_Intersects(ST_GeomFromText(:polygonWkt, 4326), R.coords_wgs)` – záznamy bez souřadnic protínání nesplní.
+  Popover chipu je pro tento kind rozšířený (`.filter-chip__popover--wide`, max-width přes bootstrap proměnnou –
+  stejné pravidlo specificity jako základní 360px varianta, musí stát v SCSS za ní).
+- **„Jen s komentářem" + „jen s nevyřešeným komentářem" = jeden filtr „stav komentáře"** (`commentStatus`, kind
+  `checkboxGroup`): hodnota je pole vybraných voleb (`TypeaheadOption[]` s řetězcovými id = payload klíče
+  `commented`/`unresolvedComment`) – reuse existujícího zpracování polí (store, chip label, `isEmptyFilterValue`),
+  pořadí voleb drží registr (stabilní chip i payload). Po sloučení se stará persistovaná hodnota/viditelnost
+  (`commented`/`unresolvedComment` v sessionStorage/user settings) ignoruje: neznámá id zahazuje `parseVisibleFilters`,
+  osiřelé klíče hodnot se do dotazu nedostanou (payload se staví z registru).
 - **Popover místo Dropdownu v chip řádce** (FilterChip/AddFilterPopover): react-bootstrap `Dropdown`
   s `autoClose="outside"` nešel po otevření zavřít klikem na toggle (zavření na mousedown + následný click
   na toggle ho znovu otevřel). Používáme řízený `Overlay` + `Popover` s vlastním document listenerem

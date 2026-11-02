@@ -114,6 +114,7 @@ describe('getNearbyExternalRecordsBySources', () => {
         await expect(getNearbyExternalRecordsBySources('6152', 5, ['inaturalist'])).resolves.toEqual({
             gbif: [],
             inaturalist: [{id: 21, project: 'inaturalist'}],
+            cbs: [],
         });
         expect(fetchMock).toHaveBeenCalledTimes(1);
         expect(fetchMock).toHaveBeenCalledWith('/api/react/atlas/records/6152/5/inaturalist', expect.anything());
@@ -123,6 +124,7 @@ describe('getNearbyExternalRecordsBySources', () => {
         await expect(getNearbyExternalRecordsBySources('6152', 5, [])).resolves.toEqual({
             gbif: [],
             inaturalist: [],
+            cbs: [],
         });
         expect(fetchMock).not.toHaveBeenCalled();
     });
@@ -136,6 +138,7 @@ describe('getSquareExternalRecordsBySources', () => {
         await expect(getSquareExternalRecordsBySources('6152', 5, ['gbif', 'inaturalist'])).resolves.toEqual({
             gbif: [{id: 22, project: 'gbif'}],
             inaturalist: [{id: 22, project: 'inaturalist'}],
+            cbs: [],
         });
         expect(fetchMock).toHaveBeenCalledTimes(2);
         expect(fetchMock).toHaveBeenCalledWith('/api/react/atlas/records-square/6152/5/gbif', expect.anything());

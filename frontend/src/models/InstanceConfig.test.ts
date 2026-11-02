@@ -43,9 +43,10 @@ describe('InstanceConfig', () => {
     it('bez klíče (starší backend) jsou dostupné všechny externí zdroje záznamů', () => {
         const config = new InstanceConfig({});
 
-        expect(config.externalRecordSources).toEqual(['gbif', 'inaturalist']);
+        expect(config.externalRecordSources).toEqual(['gbif', 'inaturalist', 'cbs']);
         expect(config.hasExternalRecordSource('gbif')).toBe(true);
         expect(config.hasExternalRecordSource('inaturalist')).toBe(true);
+        expect(config.hasExternalRecordSource('cbs')).toBe(true);
     });
 
     it('instance bez GBIF/iNaturalist dat má prázdný seznam externích zdrojů', () => {

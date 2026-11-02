@@ -2,7 +2,7 @@ import {logWarn} from '@/services/logger';
 import type {RecordPladias} from './RecordPladias';
 
 /** Projekt mapového detailu (vlastní data PLADIAS vs. externí GBIF/iNaturalist). */
-export type ProjectType = 'pladias' | 'gbif' | 'inaturalist';
+export type ProjectType = 'pladias' | 'gbif' | 'inaturalist' | 'cbs';
 
 /** Externí projekty sdílející stejné minimální DTO záznamu. */
 export type ExternalProject = Exclude<ProjectType, 'pladias'>;
@@ -12,7 +12,7 @@ export type ExternalProject = Exclude<ProjectType, 'pladias'>;
  * (components/atlas/mapDetail/recordSources.ts). Validuje seznam zdrojů z
  * konfigurace instance (drift BE↔FE, vzor USER_ROLES u rolí).
  */
-export const EXTERNAL_PROJECTS: readonly ExternalProject[] = ['gbif', 'inaturalist'];
+export const EXTERNAL_PROJECTS: readonly ExternalProject[] = ['gbif', 'inaturalist', 'cbs'];
 
 /** Type guard pro id externího projektu (hodnota z conf `atlas.externalRecordSources`). */
 export function isExternalProject(value: unknown): value is ExternalProject {
@@ -93,6 +93,7 @@ export interface RecordsByProject {
     pladias: RecordPladias[];
     gbif: RecordGbifMinimal[];
     inaturalist: RecordGbifMinimal[];
+    cbs: RecordGbifMinimal[];
 }
 
 /** Záznamy s minimálními daty pro mapu (včetně okolních kvadrantů). */
@@ -100,4 +101,5 @@ export interface RecordsByProjectMinimal {
     pladias: RecordPladiasMinimal[];
     gbif: RecordGbifMinimal[];
     inaturalist: RecordGbifMinimal[];
+    cbs: RecordGbifMinimal[];
 }

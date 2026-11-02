@@ -4,7 +4,7 @@ import {getRecentLogEntries, resetLogger} from '@/services/logger';
 
 describe('EXTERNAL_PROJECTS', () => {
     it('zrcadlí externí zdroje registru RECORD_SOURCES', () => {
-        expect([...EXTERNAL_PROJECTS]).toEqual(['gbif', 'inaturalist']);
+        expect([...EXTERNAL_PROJECTS]).toEqual(['gbif', 'inaturalist', 'cbs']);
     });
 });
 
@@ -12,6 +12,7 @@ describe('isExternalProject', () => {
     it('přijímá známá id zdrojů', () => {
         expect(isExternalProject('gbif')).toBe(true);
         expect(isExternalProject('inaturalist')).toBe(true);
+        expect(isExternalProject('cbs')).toBe(true);
     });
 
     it('odmítá neznámá id a překlepy', () => {
@@ -36,8 +37,8 @@ describe('parseExternalSources', () => {
     });
 
     it('chybějící klíč (starší backend) = všechny externí zdroje', () => {
-        expect(parseExternalSources(undefined)).toEqual(['gbif', 'inaturalist']);
-        expect(parseExternalSources(null)).toEqual(['gbif', 'inaturalist']);
+        expect(parseExternalSources(undefined)).toEqual(['gbif', 'inaturalist', 'cbs']);
+        expect(parseExternalSources(null)).toEqual(['gbif', 'inaturalist', 'cbs']);
         expect(getRecentLogEntries()).toHaveLength(0);
     });
 

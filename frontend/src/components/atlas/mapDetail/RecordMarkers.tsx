@@ -21,6 +21,7 @@ const MARKER_CONFIG: Record<ProjectType, { shape: 'circle', baseRadius: number, 
     pladias: {shape: 'circle', baseRadius: 8, strokeColor: '#000000'},
     gbif: {shape: 'circle', baseRadius: 8, strokeColor: '#CC0000'},
     inaturalist: {shape: 'circle', baseRadius: 8, strokeColor: '#EF7C09'},
+    cbs: {shape: 'circle', baseRadius: 8, strokeColor: '#7030A0'},
 };
 
 function RecordMarkers({records, highlightedRecordId, onRecordHover, currentSquareCode}: RecordMarkersProps) {

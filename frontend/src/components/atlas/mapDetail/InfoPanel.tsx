@@ -19,7 +19,8 @@ interface InfoPanelProps {
     registerScrollFns?: {
         pladias?: (scrollFn: (recordId: number) => void) => void;
         gbif?: (scrollFn: (recordId: number) => void) => void;
-        inaturalist?: (scrollFn: (recordId: number) => void) => void
+        inaturalist?: (scrollFn: (recordId: number) => void) => void;
+        cbs?: (scrollFn: (recordId: number) => void) => void
     };
     onRecordUpdated?: (record: RecordPladias) => void;
     /** Viditelnost skupin záznamů na mapě (checkboxy v hlavičkách tabů). */
@@ -32,7 +33,7 @@ interface InfoPanelProps {
 }
 
 export function InfoPanel({
-                              records = {pladias: [], gbif: [], inaturalist: []},
+                              records = {pladias: [], gbif: [], inaturalist: [], cbs: []},
                               recordsLoading = false,
                               highlightedRecordId,
                               onRecordHover,

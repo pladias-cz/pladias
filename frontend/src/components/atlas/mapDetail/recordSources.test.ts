@@ -27,8 +27,8 @@ function externalRecord(id: number, quadrantLetter: string | null, computedSquar
 
 describe('recordSources', () => {
     describe('RECORD_SOURCES', () => {
-        it('obsahuje všechny tři zdroje v pořadí tabů', () => {
-            expect(RECORD_SOURCES.map(source => source.id)).toEqual(['pladias', 'gbif', 'inaturalist']);
+        it('obsahuje všechny čtyři zdroje v pořadí tabů', () => {
+            expect(RECORD_SOURCES.map(source => source.id)).toEqual(['pladias', 'gbif', 'inaturalist', 'cbs']);
         });
     });
 
@@ -37,9 +37,9 @@ describe('recordSources', () => {
             expect(availableRecordSources([]).map(source => source.id)).toEqual(['pladias']);
         });
 
-        it('s oběma externími zdroji vrací celý registr (dřívější chování)', () => {
-            expect(availableRecordSources(['gbif', 'inaturalist']).map(source => source.id))
-                .toEqual(['pladias', 'gbif', 'inaturalist']);
+        it('se všemi externími zdroji vrací celý registr (dřívější chování)', () => {
+            expect(availableRecordSources(['gbif', 'inaturalist', 'cbs']).map(source => source.id))
+                .toEqual(['pladias', 'gbif', 'inaturalist', 'cbs']);
         });
 
         it('vynechá jen nedostupné externí zdroje, pořadí přebírá z registru', () => {
@@ -50,7 +50,7 @@ describe('recordSources', () => {
 
     describe('filterRecordsByVisibility', () => {
         it('při všem viditelném vrací záznamy beze změny', () => {
-            const records = {pladias: [1], gbif: [2, 3], inaturalist: [4]};
+            const records = {pladias: [1], gbif: [2, 3], inaturalist: [4], cbs: [5]};
             expect(filterRecordsByVisibility(records, ALL_SOURCES_VISIBLE)).toEqual(records);
         });
 
@@ -58,21 +58,23 @@ describe('recordSources', () => {
             const pladias = [{id: 1}];
             const gbif = [{id: 2}];
             const inaturalist = [{id: 3}];
+            const cbs = [{id: 4}];
             const result = filterRecordsByVisibility(
-                {pladias, gbif, inaturalist},
-                {pladias: true, gbif: false, inaturalist: false},
+                {pladias, gbif, inaturalist, cbs},
+                {pladias: true, gbif: false, inaturalist: false, cbs: true},
             );
             expect(result.pladias).toEqual(pladias);
             expect(result.gbif).toEqual([]);
             expect(result.inaturalist).toEqual([]);
+            expect(result.cbs).toEqual(cbs);
         });
 
         it('vše skryté = všechna pole prázdná', () => {
             const result = filterRecordsByVisibility(
-                {pladias: [{id: 1}], gbif: [{id: 2}], inaturalist: [{id: 3}]},
-                {pladias: false, gbif: false, inaturalist: false},
+                {pladias: [{id: 1}], gbif: [{id: 2}], inaturalist: [{id: 3}], cbs: [{id: 4}]},
+                {pladias: false, gbif: false, inaturalist: false, cbs: false},
             );
-            expect(result).toEqual({pladias: [], gbif: [], inaturalist: []});
+            expect(result).toEqual({pladias: [], gbif: [], inaturalist: [], cbs: []});
         });
     });
 
@@ -89,6 +91,7 @@ describe('recordSources', () => {
                     externalRecord(5, 'b', null),
                 ],
                 inaturalist: [externalRecord(6, 'b', '6152')],
+                cbs: [externalRecord(7, 'a', '6152'), externalRecord(8, 'c', '6855')],
             };
 
             const result = filterAndSortTableRecords(records, '6152');
@@ -96,6 +99,7 @@ describe('recordSources', () => {
             expect(result.pladias.map(r => r.id)).toEqual([1]);
             expect(result.gbif.map(r => r.id)).toEqual([3]);
             expect(result.inaturalist.map(r => r.id)).toEqual([6]);
+            expect(result.cbs.map(r => r.id)).toEqual([7]);
         });
 
         it('seřadí dle písmene kvadrantu, záznamy bez písmene na konec', () => {
@@ -112,6 +116,7 @@ describe('recordSources', () => {
                     externalRecord(7, 'a', '6152'),
                 ],
                 inaturalist: [],
+                cbs: [],
             };
 
             const result = filterAndSortTableRecords(records, '6152');
@@ -122,7 +127,7 @@ describe('recordSources', () => {
 
         it('nezmutuje vstupní pole', () => {
             const pladias = [pladiasRecord(1, '6152b'), pladiasRecord(2, '6152a')];
-            const records: RecordsByProject = {pladias, gbif: [], inaturalist: []};
+            const records: RecordsByProject = {pladias, gbif: [], inaturalist: [], cbs: []};
 
             filterAndSortTableRecords(records, '6152');
 
@@ -132,8 +137,8 @@ describe('recordSources', () => {
 
     describe('visibleSourceIds', () => {
         it('vrací seznam viditelných zdrojů v pořadí registru', () => {
-            expect(visibleSourceIds(ALL_SOURCES_VISIBLE)).toEqual(['pladias', 'gbif', 'inaturalist']);
-            expect(visibleSourceIds({pladias: false, gbif: true, inaturalist: false})).toEqual(['gbif']);
+            expect(visibleSourceIds(ALL_SOURCES_VISIBLE)).toEqual(['pladias', 'gbif', 'inaturalist', 'cbs']);
+            expect(visibleSourceIds({pladias: false, gbif: true, inaturalist: false, cbs: false})).toEqual(['gbif']);
         });
     });
 
@@ -150,15 +155,16 @@ describe('recordSources', () => {
         });
 
         it('naparsuje uložený seznam viditelných zdrojů', () => {
-            expect(parseSavedVisibility('["pladias","inaturalist"]')).toEqual({
+            expect(parseSavedVisibility('["pladias","inaturalist","cbs"]')).toEqual({
                 pladias: true,
                 gbif: false,
                 inaturalist: true,
+                cbs: true,
             });
         });
 
         it('prázdné pole je validní stav – vše skryto', () => {
-            expect(parseSavedVisibility('[]')).toEqual({pladias: false, gbif: false, inaturalist: false});
+            expect(parseSavedVisibility('[]')).toEqual({pladias: false, gbif: false, inaturalist: false, cbs: false});
         });
 
         it('neznámé klíče odfiltruje', () => {
@@ -166,6 +172,7 @@ describe('recordSources', () => {
                 pladias: false,
                 gbif: true,
                 inaturalist: false,
+                cbs: false,
             });
         });
     });

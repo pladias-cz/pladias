@@ -27,8 +27,8 @@ interface SquareRecords {
     tableRecords: RecordsByProject;
 }
 
-const EMPTY_RECORDS: RecordsByProjectMinimal = {pladias: [], gbif: [], inaturalist: []};
-const EMPTY_TABLE_RECORDS: RecordsByProject = {pladias: [], gbif: [], inaturalist: []};
+const EMPTY_RECORDS: RecordsByProjectMinimal = {pladias: [], gbif: [], inaturalist: [], cbs: []};
+const EMPTY_TABLE_RECORDS: RecordsByProject = {pladias: [], gbif: [], inaturalist: [], cbs: []};
 
 export default function MapDetail() {
     const {t} = useTranslation();
@@ -42,7 +42,8 @@ export default function MapDetail() {
     const tableScrollFnsRef = useRef<{
         pladias?: ((recordId: number) => void);
         gbif?: ((recordId: number) => void);
-        inaturalist?: ((recordId: number) => void)
+        inaturalist?: ((recordId: number) => void);
+        cbs?: ((recordId: number) => void)
     }>({});
     const hoverLockRef = useRef<{ recordId: number | null; timeoutId: ReturnType<typeof setTimeout> | null }>({
         recordId: null,
@@ -166,8 +167,8 @@ export default function MapDetail() {
             if (pladiasRecord) {
                 scrollTableToRecord('pladias', recordId);
             } else {
-                // Check GBIF/iNaturalist records
-                const externalRecord = [...tableRecords.gbif, ...tableRecords.inaturalist].find(r => r.id === recordId);
+                // Check GBIF/iNaturalist/ČBS records
+                const externalRecord = [...tableRecords.gbif, ...tableRecords.inaturalist, ...tableRecords.cbs].find(r => r.id === recordId);
                 if (externalRecord) {
                     scrollTableToRecord(externalRecord.project, recordId);
                 }
@@ -265,6 +266,9 @@ export default function MapDetail() {
                                 },
                                 inaturalist: (scrollFn) => {
                                     tableScrollFnsRef.current.inaturalist = scrollFn;
+                                },
+                                cbs: (scrollFn) => {
+                                    tableScrollFnsRef.current.cbs = scrollFn;
                                 }
                             }}
                             onRecordUpdated={handleRecordUpdated}

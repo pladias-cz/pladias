@@ -10,14 +10,14 @@ import {ALL_SOURCES_VISIBLE} from './recordSources';
 import '@/i18n/i18n';
 
 /**
- * Testy InfoPanelu po převodu na tabs: tři taby se jmény zdrojů a počty
+ * Testy InfoPanelu po převodu na tabs: čtyři taby se jmény zdrojů a počty
  * záznamů, aktivní tab je řízený props activeSource/onSelectSource (mapa
  * přepíná tab při hoveru nad markerem cizího zdroje), checkboxy viditelnosti
  * na mapě v hlavičkách – klik na checkbox volá onToggleProjectVisibility
  * se správným zdrojem a nesmí přepnout aktivní tab (stopPropagation v
  * RecordSourceTab).
  * Taby omezuje konfigurace instance (externalRecordSources) – bez ní se
- * renderují všechny tři zdroje (kompatibilita se starším backendem).
+ * renderují všechny čtyři zdroje (kompatibilita se starším backendem).
  * Tabulky jsou mocknuté – testuje se jen chování tabs, ne obsah tabulek.
  */
 
@@ -34,11 +34,12 @@ vi.mock('./ExternalRecordsTable', () => ({
 }));
 
 /** Záznamy jen pro počty v hlavičkách – obsah tabulek je mocknutý. */
-function makeRecords(pladiasCount: number, gbifCount: number, inaturalistCount: number): RecordsByProject {
+function makeRecords(pladiasCount: number, gbifCount: number, inaturalistCount: number, cbsCount: number = 0): RecordsByProject {
     return {
         pladias: Array.from({length: pladiasCount}, (_, i) => ({id: i + 1})),
         gbif: Array.from({length: gbifCount}, (_, i) => ({id: 100 + i})),
         inaturalist: Array.from({length: inaturalistCount}, (_, i) => ({id: 200 + i})),
+        cbs: Array.from({length: cbsCount}, (_, i) => ({id: 300 + i})),
     } as unknown as RecordsByProject;
 }
 
@@ -48,7 +49,7 @@ function renderPanel(props: Partial<InfoPanelProps> = {}, config: InstanceConfig
     return render(
         <InstanceConfigProvider config={config}>
             <InfoPanel
-                records={makeRecords(2, 1, 0)}
+                records={makeRecords(2, 1, 0, 3)}
                 visibleProjects={ALL_SOURCES_VISIBLE}
                 onToggleProjectVisibility={vi.fn()}
                 activeSource="pladias"
@@ -62,18 +63,21 @@ function renderPanel(props: Partial<InfoPanelProps> = {}, config: InstanceConfig
 afterEach(() => cleanup());
 
 describe('InfoPanel', () => {
-    it('vykreslí tři taby se jmény zdrojů a počty záznamů', () => {
+    it('vykreslí čtyři taby se jmény zdrojů a počty záznamů', () => {
         renderPanel();
 
         const pladiasTab = screen.getByRole('tab', {name: /PLADIAS/});
         const gbifTab = screen.getByRole('tab', {name: /GBIF/});
         const inaturalistTab = screen.getByRole('tab', {name: /iNaturalist/});
+        const cbsTab = screen.getByRole('tab', {name: /ČBS/});
         expect(pladiasTab).toHaveTextContent('PLADIAS');
         expect(pladiasTab).toHaveTextContent('(2)');
         expect(gbifTab).toHaveTextContent('GBIF');
         expect(gbifTab).toHaveTextContent('(1)');
         expect(inaturalistTab).toHaveTextContent('iNaturalist');
         expect(inaturalistTab).toHaveTextContent('(0)');
+        expect(cbsTab).toHaveTextContent('ČBS');
+        expect(cbsTab).toHaveTextContent('(3)');
     });
 
     it('defaultně je aktivní tab PLADIAS, ostatní taby nejsou aktivní', () => {
@@ -122,11 +126,12 @@ describe('InfoPanel', () => {
     });
 
     it('checkboxy odrážejí předanou viditelnost zdrojů', () => {
-        renderPanel({visibleProjects: {pladias: true, gbif: false, inaturalist: true}});
+        renderPanel({visibleProjects: {pladias: true, gbif: false, inaturalist: true, cbs: true}});
 
         expect(within(screen.getByRole('tab', {name: /PLADIAS/})).getByRole('checkbox')).toBeChecked();
         expect(within(screen.getByRole('tab', {name: /GBIF/})).getByRole('checkbox')).not.toBeChecked();
         expect(within(screen.getByRole('tab', {name: /iNaturalist/})).getByRole('checkbox')).toBeChecked();
+        expect(within(screen.getByRole('tab', {name: /ČBS/})).getByRole('checkbox')).toBeChecked();
     });
 
     it('při načítání zobrazí spinner a ne taby', () => {
@@ -143,12 +148,13 @@ describe('InfoPanel', () => {
         expect(screen.getByText('Žádné záznamy')).toBeInTheDocument();
     });
 
-    it('bez konfigurace instance vykreslí všechny tři taby (kompatibilita)', () => {
+    it('bez konfigurace instance vykreslí všechny čtyři taby (kompatibilita)', () => {
         renderPanel();
 
         expect(screen.getByRole('tab', {name: /PLADIAS/})).toBeInTheDocument();
         expect(screen.getByRole('tab', {name: /GBIF/})).toBeInTheDocument();
         expect(screen.getByRole('tab', {name: /iNaturalist/})).toBeInTheDocument();
+        expect(screen.getByRole('tab', {name: /ČBS/})).toBeInTheDocument();
     });
 
     it('instance bez externích zdrojů zobrazí jen tab PLADIAS', () => {
@@ -157,6 +163,7 @@ describe('InfoPanel', () => {
         expect(screen.getByRole('tab', {name: /PLADIAS/})).toBeInTheDocument();
         expect(screen.queryByRole('tab', {name: /GBIF/})).toBeNull();
         expect(screen.queryByRole('tab', {name: /iNaturalist/})).toBeNull();
+        expect(screen.queryByRole('tab', {name: /ČBS/})).toBeNull();
     });
 
     it('částečná konfigurace zobrazí jen dostupné externí taby', () => {

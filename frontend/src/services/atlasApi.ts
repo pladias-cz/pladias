@@ -102,7 +102,7 @@ async function collectExternalRecords(
     load: (source: ExternalProject) => Promise<RecordGbifMinimal[]>,
 ): Promise<Record<ExternalProject, RecordGbifMinimal[]>> {
     const loaded = await Promise.all(sources.map(async source => [source, await load(source)] as const));
-    const result: Record<ExternalProject, RecordGbifMinimal[]> = {gbif: [], inaturalist: []};
+    const result: Record<ExternalProject, RecordGbifMinimal[]> = {gbif: [], inaturalist: [], cbs: []};
     for (const [source, records] of loaded) {
         result[source] = records;
     }

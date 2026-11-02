@@ -293,6 +293,10 @@ Reset hesla (self-service `/forgotPassword` i sysAdmin tlačítko v UsersTable) 
 ### CSP: externí obrázky a mapové podklady
 CSP `img-src` (conf/common.conf) povoluje jen `'self' data:` + GeoServery CZ/SK a tile servery podkladů (OSM/OpenTopoMap/ČUZK). Obrázky (markery apod.) proto **nikdy nenačítat z externího CDN** (raw.githubusercontent.com apod. – produkce je zablokuje), ale bundlovat lokálně přes Vite import (vzor: `RecordMap.tsx` – `leaflet/dist/images/*`, `src/assets/markers/*`). Přidání nového tile/WMS zdroje vyžaduje rozšíření `img-src` v conf/common.conf (tiles jsou `<img>`, WFS GeoJSON jde přes `connect-src`).
 
+### nový zdroj záznamů map detailu (tab/markery)
+
+`ProjectType` je union v `frontend/src/models/AtlasRecords.ts` a většina FE struktur je `Record<ProjectType, …>` – compiler vynutí nový klíč ve všech tvarech, ale **ne** v runtime asercích testů (vitest `toEqual`), ani v `RECORD_SOURCES` (viz níže – bez něj se tab nevykreslí, jen ticho). Checklist FE: `ProjectType`/`EXTERNAL_PROJECTS`/`RecordsByProject(Minimal)` (AtlasRecords.ts), `RECORD_SOURCES` + helpery (recordSources.ts), `MARKER_CONFIG` (RecordMarkers.tsx), typy scroll-fn (MapDetail.tsx + InfoPanel.tsx), fixtures testů (InfoPanel.test `makeRecords` bez nového klíče spadne na `records[source.id].length`, protože default config renderuje všechny taby). BE: enum `ProjectType` (abbrev = URL segment i hodnota v conf `atlas.externalRecordSources` – překlep jako `CBS("csb")` znamená „Invalid project type“), case v **obou** switcích (`getNearbyRecords` i `getSquareRecords`) + SQL aliasy dle `RecordGbifMinimalDto.fromSqlRow` (čte `gbif_id`, ne `id`). Zapnutí v conf dřív, než jede BE část, rozbije **celé** načtení záznamů – FE stahuje mapu i tabulky v jednom `Promise.all`.
+
 ### Komentáře u atlas.record
 Uživatel nemůže svůj komentář editovat aby nedocházelo k nejasnostem s ohledem na to že není verzován. Pouze osobám s vyšším oprváněním je tato možnost o pravena aby mohli např. smazat nevhodné výrazy.
 

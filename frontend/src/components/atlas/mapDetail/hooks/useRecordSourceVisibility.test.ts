@@ -30,7 +30,7 @@ describe('useRecordSourceVisibility', () => {
         vi.mocked(getUserSetting).mockResolvedValue('["pladias"]');
         const {result} = renderHook(() => useRecordSourceVisibility());
         await waitFor(() => {
-            expect(result.current.visibleProjects).toEqual({pladias: true, gbif: false, inaturalist: false});
+            expect(result.current.visibleProjects).toEqual({pladias: true, gbif: false, inaturalist: false, cbs: false});
         });
         expect(getUserSetting).toHaveBeenCalledWith(SETTING_KEY);
     });
@@ -39,14 +39,14 @@ describe('useRecordSourceVisibility', () => {
         vi.mocked(getUserSetting).mockResolvedValue(null);
         const {result} = renderHook(() => useRecordSourceVisibility());
         await waitFor(() => expect(getUserSetting).toHaveBeenCalledTimes(1));
-        expect(result.current.visibleProjects).toEqual({pladias: true, gbif: true, inaturalist: true});
+        expect(result.current.visibleProjects).toEqual({pladias: true, gbif: true, inaturalist: true, cbs: true});
     });
 
     it('nevalidní uložená hodnota znamená výchozí stav', async () => {
         vi.mocked(getUserSetting).mockResolvedValue('{"pladias":true}');
         const {result} = renderHook(() => useRecordSourceVisibility());
         await waitFor(() => expect(getUserSetting).toHaveBeenCalledTimes(1));
-        expect(result.current.visibleProjects).toEqual({pladias: true, gbif: true, inaturalist: true});
+        expect(result.current.visibleProjects).toEqual({pladias: true, gbif: true, inaturalist: true, cbs: true});
     });
 
     it('toggle přepne stav a uloží JSON seznam viditelných zdrojů', async () => {
@@ -55,10 +55,10 @@ describe('useRecordSourceVisibility', () => {
         await waitFor(() => expect(getUserSetting).toHaveBeenCalledTimes(1));
 
         act(() => result.current.toggleProjectVisibility('gbif'));
-        expect(result.current.visibleProjects).toEqual({pladias: true, gbif: false, inaturalist: true});
+        expect(result.current.visibleProjects).toEqual({pladias: true, gbif: false, inaturalist: true, cbs: true});
         expect(saveUserSetting).toHaveBeenCalledWith(
             SETTING_KEY,
-            JSON.stringify(['pladias', 'inaturalist']),
+            JSON.stringify(['pladias', 'inaturalist', 'cbs']),
         );
     });
 
@@ -69,7 +69,7 @@ describe('useRecordSourceVisibility', () => {
         await waitFor(() => expect(getUserSetting).toHaveBeenCalledTimes(1));
 
         act(() => result.current.toggleProjectVisibility('inaturalist'));
-        expect(result.current.visibleProjects).toEqual({pladias: true, gbif: true, inaturalist: false});
+        expect(result.current.visibleProjects).toEqual({pladias: true, gbif: true, inaturalist: false, cbs: true});
         // chybu hlásí centrálně useUserSettings (notifikace), stav zůstává
     });
 });

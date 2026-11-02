@@ -255,7 +255,7 @@ export function MapComponent({
                                  initialZoom = 12,
                                  taxonId,
                                  squareId,
-                                 records = {pladias: [], gbif: [], inaturalist: []},
+                                 records = {pladias: [], gbif: [], inaturalist: [], cbs: []},
                                  highlightedRecordId,
                                  onRecordHover,
                                  centerOnRecord,
@@ -367,9 +367,9 @@ export function MapComponent({
                     />
                 )}
 
-                {records && ((records.gbif?.length > 0 || records.inaturalist?.length > 0)) && (
+                {records && ((records.gbif?.length > 0 || records.inaturalist?.length > 0 || records.cbs?.length > 0)) && (
                     <RecordMarkers
-                        records={[...(records.gbif || []), ...(records.inaturalist || [])]}
+                        records={[...(records.gbif || []), ...(records.inaturalist || []), ...(records.cbs || [])]}
                         highlightedRecordId={highlightedRecordId}
                         onRecordHover={onRecordHover}
                         currentSquareCode={squareId}

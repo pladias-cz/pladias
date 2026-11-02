@@ -1,8 +1,9 @@
 /**
- * Registr zdrojů záznamů mapového detailu (PLADIAS/GBIF/iNaturalist).
+ * Registr zdrojů záznamů mapového detailu (PLADIAS/GBIF/iNaturalist/ČBS).
  *
  * Jediné místo, kde se definují skupiny záznamů (tabs v InfoPanel) a jejich
- * barvy markerů na mapě – nový zdroj = jeden záznam v RECORD_SOURCES.
+ * barvy markerů na mapě – nový zdroj = záznam v RECORD_SOURCES + klíč v
+ * ProjectType/RecordsByProject (models/AtlasRecords.ts).
  */
 
 import type {ExternalProject, ProjectType, RecordsByProject} from '@/models/AtlasRecords';
@@ -33,6 +34,7 @@ export const RECORD_SOURCES: readonly RecordSourceConfig[] = [
     // externí zdroje šedá (EXTERNAL_MARKER_FILL_COLOR) – odlišují se jen okrajem
     {id: 'gbif', label: 'GBIF', strokeColor: '#CC0000'},
     {id: 'inaturalist', label: 'iNaturalist', strokeColor: '#EF7C09'},
+    {id: 'cbs', label: 'ČBS', strokeColor: '#7030A0'},
 ];
 
 /**
@@ -52,7 +54,7 @@ export function availableRecordSources(
 export type RecordSourceVisibility = Record<ProjectType, boolean>;
 
 /** Výchozí stav – všechny skupiny na mapě viditelné. */
-export const ALL_SOURCES_VISIBLE: RecordSourceVisibility = {pladias: true, gbif: true, inaturalist: true};
+export const ALL_SOURCES_VISIBLE: RecordSourceVisibility = {pladias: true, gbif: true, inaturalist: true, cbs: true};
 
 /** Seznam viditelných zdrojů – formát pro perzistenci do user settings. */
 export function visibleSourceIds(visibility: RecordSourceVisibility): ProjectType[] {
@@ -72,6 +74,7 @@ export function filterRecordsByVisibility<T extends Record<ProjectType, readonly
         pladias: visibility.pladias ? records.pladias : [],
         gbif: visibility.gbif ? records.gbif : [],
         inaturalist: visibility.inaturalist ? records.inaturalist : [],
+        cbs: visibility.cbs ? records.cbs : [],
     } as T;
 }
 
@@ -86,6 +89,7 @@ export function filterAndSortTableRecords(records: RecordsByProject, squareCode:
         pladias: inCurrentSquare(records.pladias, squareCode, r => quadrantLetter(r.computedQuadrantCode)),
         gbif: inCurrentSquare(records.gbif, squareCode, r => r.quadrantLetter),
         inaturalist: inCurrentSquare(records.inaturalist, squareCode, r => r.quadrantLetter),
+        cbs: inCurrentSquare(records.cbs, squareCode, r => r.quadrantLetter),
     };
 }
 
@@ -148,5 +152,6 @@ export function parseSavedVisibility(saved: string | null): RecordSourceVisibili
         pladias: known.includes('pladias'),
         gbif: known.includes('gbif'),
         inaturalist: known.includes('inaturalist'),
+        cbs: known.includes('cbs'),
     };
 }

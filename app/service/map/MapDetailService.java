@@ -57,14 +57,14 @@ public class MapDetailService {
      *
      * @param squareCode The square code (e.g., 5252)
      * @param taxonId    The taxon ID
-     * @param project    Project type (gbif, inaturalist, pladias)
+     * @param project    Project type (gbif, inaturalist, cbs, pladias)
      * @param currentUser The current user for permission checks
      * @return Object containing Result or error message
      */
     public Object getNearbyRecords(String squareCode, Long taxonId, String project, User currentUser) {
         ProjectType projectType = ProjectType.fromString(project);
         if (projectType == null) {
-            return MapDetailResult.error("Invalid project type. Must be one of: gbif, inaturalist, pladias");
+            return MapDetailResult.error("Invalid project type. Must be one of: gbif, inaturalist, cbs, pladias");
         }
         if (!isProjectAvailable(projectType)) {
             // Instance nemá data daného externího zdroje (conf atlas.externalRecordSources) –
@@ -82,6 +82,7 @@ public class MapDetailService {
             case PLADIAS -> MapDetailResult.success(getNearbyPladiasRecords(taxonId, square, currentUser));
             case INATURALIST -> MapDetailResult.success(getNearbyGbifRecords(taxonId, square, true));
             case GBIF -> MapDetailResult.success(getNearbyGbifRecords(taxonId, square, false));
+            case CBS -> MapDetailResult.success(getNearbyCBSRecords(taxonId, square));
             default -> MapDetailResult.error("Unsupported project type");
         };
     }
@@ -93,14 +94,14 @@ public class MapDetailService {
      *
      * @param squareCode The square code (e.g., 5252)
      * @param taxonId    The taxon ID
-     * @param project    Project type (gbif, inaturalist, pladias)
+     * @param project    Project type (gbif, inaturalist, cbs, pladias)
      * @param currentUser The current user for permission checks
      * @return Object containing Result or error message
      */
     public Object getSquareRecords(String squareCode, Long taxonId, String project, User currentUser) {
         ProjectType projectType = ProjectType.fromString(project);
         if (projectType == null) {
-            return MapDetailResult.error("Invalid project type. Must be one of: gbif, inaturalist, pladias");
+            return MapDetailResult.error("Invalid project type. Must be one of: gbif, inaturalist, cbs, pladias");
         }
         if (!isProjectAvailable(projectType)) {
             // Instance nemá data daného externího zdroje (conf atlas.externalRecordSources) –
@@ -113,6 +114,7 @@ public class MapDetailService {
             case PLADIAS -> MapDetailResult.success(getSquarePladiasRecords(taxonId, squareCode, currentUser));
             case INATURALIST -> MapDetailResult.success(getSquareGbifRecords(taxonId, squareCode, true));
             case GBIF -> MapDetailResult.success(getSquareGbifRecords(taxonId, squareCode, false));
+            case CBS -> MapDetailResult.success(getSquareCBSRecords(taxonId, squareCode));
             default -> MapDetailResult.error("Unsupported project type");
         };
     }
@@ -528,6 +530,101 @@ public class MapDetailService {
 
         return dtos;
     }
+
+    /**
+         * Get ČBS internal iNaturalist records ONLY from the given square.
+         * Returns MINIMAL data suitable for map display.
+         *
+         * @param taxon         The taxon to filter by
+         * @param square        The square code
+         * @return List of RecordGbifMinimalDto
+         */
+        private List<RecordGbifMinimalDto> getSquareCBSRecords(Long taxon, String square) {
+
+            String sql = "SELECT g.id AS gbif_id, " +
+                "       ST_Y(g.geom) AS latitude, " +
+                "       ST_X(g.geom) AS longitude, " +
+                "       g.positional_accuracy as coords_precision, " +
+//                 "       g.year, " +
+                "       g.user_login as recorded_by, " +
+                "       q.letter AS quadrant_letter, " +
+                "       s.code AS square_code, " +
+                "       s.code AS computed_square_code " +
+                "FROM gbif.geoserver_inat_cbs_main g " +
+                "LEFT JOIN geodata.quadrants_full q ON ST_Contains(q.geom_wgs, g.geom) " +
+                "LEFT JOIN geodata.squares_full s ON s.id = q.square_id " +
+                "WHERE g.pladias_taxon_id = :taxonId " +
+                "  AND s.code = :squareCode " +
+                "ORDER BY q.letter";
+
+            List<SqlRow> rows = DB.sqlQuery(sql)
+                .setParameter("taxonId", taxon)
+                .setParameter("squareCode", square)
+                .findList();
+
+            List<RecordGbifMinimalDto> dtos = new ArrayList<>();
+            for (SqlRow row : rows) {
+                dtos.add(RecordGbifMinimalDto.fromSqlRow(row));
+            }
+
+            return dtos;
+        }
+
+    /**
+     * Get ČBS internal iNaturalist records within ~7km from the square centroid.
+     * Returns MINIMAL data suitable for map display.
+     *
+     * @param taxon  The taxon to filter by
+     * @param square The square to get centroid from
+     * @return List of RecordGbifMinimalDto
+     */
+    private List<RecordGbifMinimalDto> getNearbyCBSRecords(Long taxon, MapSquareNew square) {
+        geom.Point centroid = square.getCentroid();
+        double longitude = centroid.getX();
+        double latitude = centroid.getY();
+
+        // Search buffer around KFME square centroid (same as GBIF/iNaturalist)
+        final double bufferMeters = 7000; // meters around square centroid
+
+        double latDegrees = bufferMeters / 111320.0;
+        double lonDegrees = bufferMeters / (111320.0 * Math.cos(Math.toRadians(latitude)));
+
+        String sql = "SELECT g.id AS gbif_id, " +
+                "       ST_Y(g.geom) AS latitude, " +
+                "       ST_X(g.geom) AS longitude, " +
+                "       g.positional_accuracy as coords_precision, " +
+                "       g.user_login as recorded_by, " +
+                "       q.letter AS quadrant_letter, " +
+                "       s.code AS square_code " +
+                "FROM gbif.geoserver_inat_cbs_main g " +
+                "LEFT JOIN geodata.quadrants_full q ON ST_Contains(q.geom_wgs, g.geom) " +
+                "LEFT JOIN geodata.squares_full s ON s.id = q.square_id " +
+                "WHERE g.pladias_taxon_id = :taxonId " +
+                "  AND g.geom && ST_MakeEnvelope(" +
+                "   :longitude - :dLon," +
+                "   :latitude  - :dLat," +
+                "   :longitude + :dLon," +
+                "    :latitude  + :dLat," +
+                "    4326" +
+                " )" +
+                " ORDER BY latitude DESC, longitude DESC";
+
+        List<SqlRow> rows = DB.sqlQuery(sql)
+                .setParameter("taxonId", taxon)
+                .setParameter("longitude", longitude)
+                .setParameter("latitude", latitude)
+                .setParameter("dLat", latDegrees)
+                .setParameter("dLon", lonDegrees)
+                .findList();
+
+        List<RecordGbifMinimalDto> dtos = new ArrayList<>();
+        for (SqlRow row : rows) {
+            dtos.add(RecordGbifMinimalDto.fromSqlRow(row));
+        }
+
+        return dtos;
+    }
+
     /**
      * Dostupnost zdroje záznamů v dané instanci – PLADIAS vždy, externí zdroje
      * (gbif/inaturalist) dle conf `atlas.externalRecordSources`, protože schéma
@@ -552,7 +649,8 @@ public class MapDetailService {
     public enum ProjectType {
         GBIF("gbif"),
         INATURALIST("inaturalist"),
-        PLADIAS("pladias");
+        PLADIAS("pladias"),
+        CBS("cbs");
 
         private final String abbrev;
 

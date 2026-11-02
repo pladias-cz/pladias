@@ -21,6 +21,7 @@ const MAP_MAIN_LAYERS = [
     'technical_phytochorion',
     'interactive_squares',
     'gbif_quadrants_inaturalist',
+    'inat_cbs_quadrants',
     'validation_semafor',
     'validation_common_3',
     'validation_common_2',

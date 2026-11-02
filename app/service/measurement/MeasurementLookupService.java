@@ -86,11 +86,16 @@ public class MeasurementLookupService {
     }
 
     public List<MeasurementFeatureDto> getFeaturesOfGroup(User currentUser, int groupId) {
+        Section group = Section.find().byId(groupId);
+            if (group == null) {
+                return List.of();
+            }
         List<Feature> features = Feature.find().query()
             .fetch("section")
             .where()
-            .eq("section.id", groupId)
-            .orderBy("succession")
+            .ge("section.left", group.getLeft())
+            .le("section.right", group.getRight())
+            .orderBy("section.left, succession")
             .findList();
         Map<Integer, Integer> traitCounts = getTraitCountsByFeature(
             features.stream().map(Feature::getId).toList());

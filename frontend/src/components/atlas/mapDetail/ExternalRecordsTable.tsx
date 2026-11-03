@@ -4,6 +4,17 @@ import {useRef, useEffect} from 'react';
 import type {RecordGbifMinimal} from '@/models/AtlasRecords';
 import './RecordsTable.scss';
 
+/**
+ * URL detailu záznamu podle zdroje: ČBS záznamy nesou iNaturalist observation id
+ * (z tabulky gbif.geoserver_inat_cbs_main), záznamy GBIF/iNaturalist GBIF
+ * occurrence id (z tabulky gbif.records) – jen ČBS tedy odkazuje na iNaturalist.
+ */
+function externalRecordDetailUrl(record: Pick<RecordGbifMinimal, 'id' | 'project'>): string {
+    return record.project === 'cbs'
+        ? `https://www.inaturalist.org/observations/${record.id}`
+        : `https://www.gbif.org/occurrence/${record.id}`;
+}
+
 interface ExternalRecordsTableProps {
     records: RecordGbifMinimal[];
     highlightedRecordId?: number | null;
@@ -70,7 +81,7 @@ export function ExternalRecordsTable({
                         onMouseLeave={() => onRecordHover?.(null)}
                     >
                         <td>
-                            <a href={`https://www.gbif.org/occurrence/${record.id}`} target="_blank"
+                            <a href={externalRecordDetailUrl(record)} target="_blank"
                                rel="noopener noreferrer">
                                 {record.id}
                             </a>

@@ -545,7 +545,7 @@ public class MapDetailService {
                 "       ST_Y(g.geom) AS latitude, " +
                 "       ST_X(g.geom) AS longitude, " +
                 "       g.positional_accuracy as coords_precision, " +
-//                 "       g.year, " +
+                "       DATE_PART('year', observed_on) as year, " +
                 "       g.user_login as recorded_by, " +
                 "       q.letter AS quadrant_letter, " +
                 "       s.code AS square_code, " +
@@ -593,6 +593,7 @@ public class MapDetailService {
                 "       ST_Y(g.geom) AS latitude, " +
                 "       ST_X(g.geom) AS longitude, " +
                 "       g.positional_accuracy as coords_precision, " +
+                "       DATE_PART('year', observed_on) as year, " +
                 "       g.user_login as recorded_by, " +
                 "       q.letter AS quadrant_letter, " +
                 "       s.code AS square_code " +

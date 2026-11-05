@@ -2,11 +2,13 @@ package controllers.measurement;
 
 import controllers.ControllerBase;
 import controllers.security.Authorized;
+import helpers.http.ContentDisposition;
 import exceptions.NotEligibleException;
 import models.User;
 import models.UserActivity;
 import models.traits.Feature;
 import models.traits.Trait;
+import models.traits.VisibilityStatus;
 import models.traitsExport.TraitExportSnapshot;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -80,10 +82,6 @@ public class TraitExportController extends ControllerBase {
             return badRequest(JsonResult.error(messages.at("TraitExportController.noTraitsSelected")));
         }
 
-        if (exportRequest.getRanks() == null || exportRequest.getRanks().length == 0) {
-            return badRequest(JsonResult.error(messages.at("TraitExportController.noRanksSelected")));
-        }
-
         List<String> invalidTaxonNames = requestFactory.selectInvalidTaxonNames(exportRequest.getTaxonList());
         if (!invalidTaxonNames.isEmpty()) {
             // invalid names are returned separately so the UI can show them line by line for copy&fix
@@ -132,7 +130,7 @@ public class TraitExportController extends ControllerBase {
         User currentUser = SessionUtils.getCurrentUser(request.session());
 
         if (!UserUtils.isElligibleForTraitDownload(currentUser, trait)) {
-            return ok(JsonResult.error(messages.at("TraitsController.UserNotElligible")));
+            return forbidden(JsonResult.error(messages.at("TraitsController.UserNotElligible")));
         }
 
         Locale lang = Locale.forLanguageTag(language);
@@ -140,6 +138,8 @@ public class TraitExportController extends ControllerBase {
     }
 
     //this method is intentionally NOT secured with authentication - as it is accessed from pladias.cz
+    //public access is limited to public traits - downloadService.findPublicTraitForFeature only ever returns
+    //a non-deleted trait with VisibilityStatus PublicAccessId (preferably the default one)
     public Result downloadTraitDataByFeature(Request request, int featureId, String language) {
         Messages messages = getMessages(request);
         Feature feature = downloadService.findFeature(featureId);
@@ -155,22 +155,38 @@ public class TraitExportController extends ControllerBase {
             return ok(messages.at("TraitsController.NoSuitableTraitFound"));
         }
 
+        if (candidate.getVisibilityStatus().getId() != VisibilityStatus.PublicAccessId) {
+            //defense in depth - findPublicTraitForFeature should never return anything else
+            return ok(messages.at("TraitsController.NoSuitableTraitFound"));
+        }
+
         return downloadOrReportError(request, candidate, null, messages, locale);
     }
 
     @Security.Authenticated(Authorized.class)
-    public Result downloadAttachment(int traitId) {
+    public Result downloadAttachment(Request request, int traitId) {
+        Messages messages = getMessages(request);
+        Trait trait = downloadService.findTrait(traitId);
+
+        if (trait == null) {
+            return notFound();
+        }
+
+        User currentUser = SessionUtils.getCurrentUser(request.session());
+        if (!UserUtils.isElligibleForTraitDownload(currentUser, trait)) {
+            return badRequest(messages.at("TraitsController.UserNotElligible"));
+        }
+
         try {
-            Trait trait = downloadService.findTrait(traitId);
             TraitExportResponse attachment = downloadService.downloadAttachment(trait);
             if (attachment == null) {
-                return ok();
+                return notFound(JsonResult.error(messages.at("TraitExportController.attachmentNotFound")));
             }
 
             return toResult(attachment);
         } catch (Exception e) {
             logger.error("error during trait attachment export:", e);
-            return ok("export se nezdaril");
+            return internalServerError(JsonResult.error(messages.at("TraitExportController.exportFailed")));
         }
     }
 
@@ -184,7 +200,7 @@ public class TraitExportController extends ControllerBase {
 
         TraitExportSnapshot snapshot = backupService.getSnapshot(id);
         if (snapshot == null) {
-            return notFound("trait export not found");
+            return notFound(JsonResult.error(messages.at("TraitExportController.backupNotFound")));
         }
 
         return toResult(snapshot.toExportResponse());
@@ -195,7 +211,7 @@ public class TraitExportController extends ControllerBase {
             return toResult(downloadService.downloadTraitData(request.session(), trait, user, messages, locale));
         } catch (Exception e) {
             logger.error("error during trait export:", e);
-            return ok("export se nezdaril");
+            return internalServerError(JsonResult.error(messages.at("TraitExportController.exportFailed")));
         }
     }
 
@@ -210,10 +226,8 @@ public class TraitExportController extends ControllerBase {
     }
 
     private Result toResult(TraitExportResponse traitDetails) {
-        String filename = String.format("attachment; filename=%s", traitDetails.getFilename());
-
         return ok(traitDetails.getBytes())
-            .withHeader("Content-disposition", filename)
+            .withHeader("Content-disposition", ContentDisposition.attachment(traitDetails.getFilename()))
             .as("application/x-download");
     }
 }

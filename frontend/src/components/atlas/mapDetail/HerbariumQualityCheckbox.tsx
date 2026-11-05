@@ -1,7 +1,7 @@
-import type { RecordPladias } from '@/models';
+import type {RecordPladias} from '@/models';
 import {useRecordPermissions} from '@/components/atlas/record';
 import {useState} from 'react';
-import {useRecordQuickUpdates} from "@/components/atlas/mapDetail/hooks/useRecordQuickUpdates.ts";
+import {useRecordQuickUpdates} from '@/components/atlas/mapDetail/hooks/useRecordQuickUpdates';
 
 interface HerbariumQualityCheckboxProps {
     record: RecordPladias;
@@ -9,7 +9,7 @@ interface HerbariumQualityCheckboxProps {
 }
 
 export function HerbariumQualityCheckbox({record, onRecordUpdated}: HerbariumQualityCheckboxProps) {
-    const {canEdit} = useRecordPermissions(record);
+    const {canEditValidationFields: canEdit} = useRecordPermissions(record);
     const {updateHerbariumQuality} = useRecordQuickUpdates();
     const [isChecked, setIsChecked] = useState(record.herbariumQuality ?? false);
 
@@ -17,21 +17,20 @@ export function HerbariumQualityCheckbox({record, onRecordUpdated}: HerbariumQua
         const newValue = e.target.checked;
         // Optimistic update
         setIsChecked(newValue);
-        
+
         const result = await updateHerbariumQuality(
-            {...record, herbariumQuality: newValue}, 
+            {...record, herbariumQuality: newValue},
             newValue,
             (updatedRecord) => {
                 // Propagate updated record with new timestamp to parent
                 onRecordUpdated?.(updatedRecord);
             },
-            (error) => {
-                // Revert on error
-                console.error(error);
+            () => {
+                // Revert on error – chybu ohlásí notifikační store (updateField v hooku)
                 setIsChecked(!newValue);
             }
         );
-        
+
         // Also revert if failed
         if (!result.success) {
             setIsChecked(!newValue);
@@ -46,7 +45,7 @@ export function HerbariumQualityCheckbox({record, onRecordUpdated}: HerbariumQua
                     checked={isChecked}
                     disabled={!canEdit}
                     onChange={handleChange}
-                />{" "}
+                />{' '}
                 Revidovaný herbář
             </label>
         </div>

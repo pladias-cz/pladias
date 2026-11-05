@@ -1,29 +1,29 @@
-import {Row} from "react-bootstrap";
-import 'bootstrap-icons/font/bootstrap-icons.css';
-import {useTranslation} from "react-i18next";
+import {Row} from 'react-bootstrap';
+import {useTranslation} from 'react-i18next';
 
 
-import {usePageTitle} from "@/hooks/usePageTitle";
-import DatatypesTable from "@/components/measurement/DatatypesTable.tsx";
+import {usePageTitle} from '@/hooks/usePageTitle';
+import DatatypesTable from '@/components/measurement/DatatypesTable';
 
 export default function Datatypes() {
     const {t} = useTranslation();
-    usePageTitle(t("trait.datatypes.title"));
+    usePageTitle(t('trait.datatypes.title'));
     return (
         <>
-        <Row>
-            <h3>{t("trait.datatypes.title")}</h3>
-            <p>{t("trait.datatypes.text1")} <a href="mailto:mar.reznickova@@seznam.cz"
-                                                            title="poslat email"><i className="bi bi-envelope fs-4 text-primary"></i>
+            <Row>
+                <h3>{t('trait.datatypes.title')}</h3>
+                <p>{t('trait.datatypes.text1')} <a href="mailto:mar.reznickova@@seznam.cz"
+                                                   title="poslat email"><i
+                    className="bi bi-envelope fs-4 text-primary"></i>
                 </a>.
-            </p>
+                </p>
 
-            <hr/>
+                <hr/>
 
-            <p>{t("trait.datatypes.text2")}</p>
+                <p>{t('trait.datatypes.text2')}</p>
 
-        </Row>
-        <DatatypesTable></DatatypesTable>
+            </Row>
+            <DatatypesTable></DatatypesTable>
         </>
     );
 }

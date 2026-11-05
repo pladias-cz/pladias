@@ -28,13 +28,15 @@ GET     /atlas/pngMap/taxon/:taxonId      controllers.atlas.PdfMapController.dow
 POST    /atlas/pngMap/taxon/:taxonId      controllers.atlas.PdfMapController.uploadPng(request: Request, taxonId: Long)
 POST    /atlas/search/page/:page/pageSize/:pageSize/getCount/:getCount  controllers.atlas.SearchController.search(request: Request, page: Integer, pageSize: Integer, getCount: Boolean)
 POST    /atlas/search/records-edit-timestamps  controllers.atlas.SearchController.searchRecordEditTimestamps(request: Request)
+POST    /atlas/search/quadrants                controllers.atlas.SearchController.searchQuadrants(request: Request)
+POST    /atlas/search/aggregates               controllers.atlas.SearchController.searchAggregates(request: Request)
 GET     /atlas/search/records-with-comments/:commentsOwnerUserId  controllers.atlas.SearchController.getRecordsWithComments(request: Request, commentsOwnerUserId: Long)
 GET     /atlas/search/records-with-comments  controllers.atlas.SearchController.getRecordsWithCommentsCurrentUser(request: Request)
 
 POST    /atlasadmin/assignUserTaxon      controllers.atlas.MapReportsController.assignUserTaxon(request: Request)
 DELETE  /atlasadmin/removeUserTaxon/user/:userId/taxon/:taxonId  controllers.atlas.MapReportsController.removeUserTaxon(request: Request, userId: Long, taxonId: Long)
-GET     /atlas/map-reports/download-csv/:id  controllers.atlas.MapReportsController.downloadCsvMapDetails(id: Integer)
-GET     /atlas/map-reports/download-csv-map/:id  controllers.atlas.MapReportsController.downloadCsvRenderMapDetails(id: Integer)
+GET     /atlas/map-reports/download-csv/:id  controllers.atlas.MapReportsController.downloadCsvMapDetails(request: Request, id: Integer)
+GET     /atlas/map-reports/download-csv-map/:id  controllers.atlas.MapReportsController.downloadCsvRenderMapDetails(request: Request, id: Integer)
 GET     /atlas/map-reports/taxa-in-publication-process-csv  controllers.atlas.MapReportsController.taxaOverviewInPublicationProcessCSV(request: Request)
 
 GET     /atlas/common/phytochorions          controllers.atlas.CommonController.getPhytochorions()
@@ -50,6 +52,9 @@ POST    /atlasadmin/taxonMapSettings     controllers.atlas.TaxonMapSettingsContr
 
 GET /atlasadmin/userrights/:id           controllers.atlas.MapAdminUserRightsController.getRights(request: Request, id: Long)
 GET /atlasadmin/userrights               controllers.atlas.MapAdminUserRightsController.getRightsBatch(request: Request)
+GET /atlasadmin/users                    controllers.atlas.MapAdminUserRightsController.getUsers(request: Request)
+POST /atlasadmin/users/:userId/projects   controllers.atlas.MapAdminUserRightsController.assignProject(request: Request, userId: Long)
+DELETE /atlasadmin/users/:userId/projects/:projectId  controllers.atlas.MapAdminUserRightsController.removeProject(request: Request, userId: Long, projectId: Integer)
 
 # Taxa Map Settings - Taxa list for admin overview
 GET /atlasadmin/taxa                     controllers.atlas.TaxonMapSettingsController.getTaxa(request: Request)
@@ -66,7 +71,7 @@ GET /atlasadmin/publication-statuses          controllers.atlas.MapStatusControl
 GET /occurrence/projects                      controllers.atlas.ProjectsController.getAll(request: Request)
 
 GET   /atlasadmin/imports                controllers.atlas.MapAdminImportController.getImports(request: Request)
-GET   /occurrence/imports/:id                 controllers.atlas.UploadExcel.downloadDecorated(id: Long)
+GET   /occurrence/imports/:id                 controllers.atlas.UploadExcel.downloadDecorated(request: Request, id: Long)
 GET   /atlasadmin/downloadBatchModified/:batchId    controllers.atlas.MapAdminImportController.downloadBatchModified(request: Request, batchId: Long)
 GET   /atlasadmin/prepareBatchDelete/:batchId       controllers.atlas.MapAdminImportController.prepareDeletion(request: Request, batchId: Long)
 GET   /atlasadmin/deleteBatch/:batchId/password/:password  controllers.atlas.MapAdminImportController.completeDeletion(request: Request, batchId: Long, password: String)
@@ -117,9 +122,16 @@ GET    /taxonrank/queryAll              controllers.taxon.TaxonRankController.ge
 GET    /taxonrank/queryExportable       controllers.taxon.TaxonRankController.getExportable()
 
 # Play Messages API
+GET    /playmessage/admin/all              controllers.common.PlayMessageController.getAllForAdmin(request: Request)
+PUT    /playmessage/admin/save             controllers.common.PlayMessageController.save(request: Request)
 GET    /playmessage/:key                controllers.common.PlayMessageController.getByKey(key: String, request: Request)
 GET    /playmessage/all                 controllers.common.PlayMessageController.getAll(request: Request)
 GET    /playmessage/all/all-languages   controllers.common.PlayMessageController.getAllForAllLanguages()
+
+# Maintenance (heartbeat) messages - sysAdmin only, no editing of existing rows
+GET    /maintenance/all                controllers.common.MaintenanceController.getAll(request: Request)
+POST   /maintenance                    controllers.common.MaintenanceController.create(request: Request)
+DELETE /maintenance/:id               controllers.common.MaintenanceController.delete(request: Request, id: Integer)
 
 PATCH  /taxon/:id                       controllers.taxon.TaxonManagerController.patch(request: Request, id: Long)
 GET    /taxon/:id/stats                 controllers.taxon.TaxonController.getStatistics(id: Long)
@@ -131,14 +143,17 @@ DELETE /taxon/:id                       controllers.taxon.TaxonManagerController
 POST   /taxon/moveBeforeSibling         controllers.taxon.TaxonManagerController.moveBeforeSibling(request: Request)
 
 GET   /downloads                        controllers.common.DownloadsController.getAll(request: Request)
+GET   /downloads/taxa                   controllers.common.DownloadsController.exportTaxons(request: Request)
+GET   /downloads/herbaria               controllers.common.DownloadsController.exportHerbariums(request: Request)
+GET   /downloads/finders                controllers.common.DownloadsController.exportFinders(request: Request)
 GET   /tempfiles/:fileId                controllers.common.TemporaryFilesProviderController.download(request: Request, fileId: Integer)
 
 # Measurements - data of the measurement module
 GET   /measurement/datatypes                 controllers.measurement.MeasurementController.getDatatypes()
 GET   /measurement/aggregation-types         controllers.measurement.MeasurementController.getAggregationTypes()
 GET   /measurement/feature-groups            controllers.measurement.MeasurementController.getFeatureGroups()
-GET   /measurement/features-by-group/:id     controllers.measurement.MeasurementController.getFeaturesOfGroup(id: Integer)
-GET   /measurement/features/:id              controllers.measurement.MeasurementController.getFeature(id: Integer)
+GET   /measurement/features-by-group/:id     controllers.measurement.MeasurementController.getFeaturesOfGroup(request: Request, id: Integer)
+GET   /measurement/features/:id              controllers.measurement.MeasurementController.getFeature(request: Request, id: Integer)
 GET   /measurement/enumerate-values/:id      controllers.measurement.MeasurementController.getEnumerateValues(id: Integer)
 GET   /measurement/visibility-status         controllers.measurement.MeasurementController.getVisibilityStatus()
 GET   /measurement/traits-of-feature/:id     controllers.measurement.MeasurementController.getTraitsOfFeature(request: Request, id: Integer)
@@ -156,7 +171,8 @@ POST  /measurement/complexExport               controllers.measurement.TraitExpo
 GET   /measurement/backup/:id                  controllers.measurement.TraitExportController.downloadSnapshot(request: Request, id: Integer)
 GET   /measurement/trait/export/:traitId       controllers.measurement.TraitExportController.exportTrait(request: Request, traitId: Integer)
 GET   /measurement/trait/download/:traitId/lang/:language controllers.measurement.TraitExportController.downloadTraitData(request: Request, traitId: Integer, language: String)
-GET   /measurement/trait/downloadAttachment/:traitId controllers.measurement.TraitExportController.downloadAttachment(traitId: Integer)
+GET   /measurement/trait/downloadByFeature/:featureId/lang/:language controllers.measurement.TraitExportController.downloadTraitDataByFeature(request: Request, featureId: Integer, language: String)
+GET   /measurement/trait/downloadAttachment/:traitId controllers.measurement.TraitExportController.downloadAttachment(request: Request, traitId: Integer)
 
 
 GET   /bibliography/journals                 controllers.bibliography.BibliographyController.getJournals()

@@ -2,6 +2,7 @@ package controllers.atlas;
 
 import controllers.ControllerBase;
 import controllers.security.Authorized;
+import helpers.http.ContentDisposition;
 import models.User;
 import models.UserActivity;
 import org.apache.commons.lang3.StringUtils;
@@ -11,6 +12,7 @@ import play.data.Form;
 import play.data.FormFactory;
 import play.data.validation.Constraints.Required;
 import play.i18n.Messages;
+import play.libs.Json;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.mvc.Security;
@@ -101,9 +103,7 @@ public class SearchController extends ControllerBase {
         SearchForm form = searchForm.get();
         form.projects = retrieveProjectsFromRequest(request);
         User currentUser = SessionUtils.getCurrentUser(request.session());
-        User bulkImporter = UserUtils.getBulkImporter();
-        boolean isBulkEditUser = bulkImporter != null && Objects.equals(bulkImporter.getId(), currentUser.getId());
-        if (!currentUser.isMapAdmin() && !isBulkEditUser) {
+        if (!currentUser.isMapAdmin() && !UserUtils.isBulkEditor(currentUser)) {
             return forbidden(JsonResult.error("User not authorized to call searchRecordEditTimestamps"));
         }
 
@@ -130,6 +130,49 @@ public class SearchController extends ControllerBase {
             logger.error("Error while processing search record edit timestamps request:", e);
             return ok(JsonResult.error(e.getMessage()));
         }
+    }
+
+    /**
+     * Agregované kvadranty zastoupené v CELÉM výsledku hledání (bez ohledu na
+     * stránkování) – id, kód a centroid kvadrantu pro markery mapového výpisu.
+     * Přijímá tentýž multipart payload jako search; export_type se ignoruje
+     * (agregace je vždy „prohlížečová") a UserActivity se nezaznamenává – hledání
+     * už bylo evidováno při submitu formuláře.
+     *
+     * Konvence odpovědi: standardní HTTP kódy (docs/gotchas) – úspěch je HTTP 200
+     * s čistým JSON polem, chybu nese stavový kód a pole `message` v těle.
+     */
+    public Result searchQuadrants(Http.Request request) {
+        Form<SearchForm> searchForm = formFactory.form(SearchForm.class).bindFromRequest(request);
+        if (searchForm.hasErrors()) {
+            return badRequest(Json.newObject().put("message", "Neplatna data vyhledavaciho formulare"));
+        }
+
+        SearchForm form = searchForm.get();
+        form.projects = retrieveProjectsFromRequest(request);
+        User currentUser = SessionUtils.getCurrentUser(request.session());
+
+        return ok(Json.toJson(searchService.searchQuadrants(currentUser, form)));
+    }
+
+    /**
+     * Agregované přehledy výsledku hledání (dashboard) – požadované agregace
+     * (pole `aggregates`, comma-separated id widgetů) jako mapa seznamů bucketů
+     * label→count. Přijímá tentýž multipart payload jako search; sort i
+     * export_type se ignorují, UserActivity se nezaznamenává (hledání už bylo
+     * evidováno). Standardní HTTP kódy – úspěch je HTTP 200 s čistým JSON objektem.
+     */
+    public Result searchAggregates(Http.Request request) {
+        Form<SearchForm> searchForm = formFactory.form(SearchForm.class).bindFromRequest(request);
+        if (searchForm.hasErrors()) {
+            return badRequest(Json.newObject().put("message", "Neplatna data vyhledavaciho formulare"));
+        }
+
+        SearchForm form = searchForm.get();
+        form.projects = retrieveProjectsFromRequest(request);
+        User currentUser = SessionUtils.getCurrentUser(request.session());
+
+        return ok(Json.toJson(searchService.searchAggregates(currentUser, form)));
     }
 
     public Result getRecordsWithComments(Http.Request request, Long commentsOwnerUserId) {
@@ -200,7 +243,7 @@ public class SearchController extends ControllerBase {
         String filename = String.format("PladiasExport_%s.xlsx",
             df.format(Calendar.getInstance().getTime()));
         Result response = ok(inputStream)
-            .withHeader("Content-disposition", String.format("attachment; filename=%s", filename))
+            .withHeader("Content-disposition", ContentDisposition.attachment(filename))
             .withHeader("X-Excel-Records-Exported", String.valueOf(exportedRecords))
             .as("application/x-download");
         if (totalRecords != null) {
@@ -227,6 +270,8 @@ public class SearchController extends ControllerBase {
         public Integer altitude_min;
         public Integer altitude_max;
         public String quadrant;
+        /** Uživatelem nakreslený polygon (WKT, lon lat, SRID 4326) – filtr „je v polygonu". */
+        public String polygonWkt;
         public Integer phytochorion; //phytochorion rowId
         public String comment; //taxonomic note
         public String pladias_comment;
@@ -246,6 +291,8 @@ public class SearchController extends ControllerBase {
         public Integer buffer;
         public String sortBy;
         public String sortOrder;
+        /** Dashboard agregace (comma-separated id) – samotné vyhledávání pole ignoruje. */
+        public String aggregates;
         @play.data.format.Formats.DateTime(pattern = "yyyy-MM-dd")
         public Date dateFromImported;
         @play.data.format.Formats.DateTime(pattern = "yyyy-MM-dd")
@@ -288,6 +335,14 @@ public class SearchController extends ControllerBase {
 
         public void setSortOrder(String sortOrder) {
             this.sortOrder = sortOrder;
+        }
+
+        public String getAggregates() {
+            return aggregates;
+        }
+
+        public void setAggregates(String aggregates) {
+            this.aggregates = aggregates;
         }
 
         public String getExport_type() {
@@ -501,6 +556,83 @@ public class SearchController extends ControllerBase {
                 .filter(token -> token.chars().allMatch(Character::isDigit))
                 .map(Integer::valueOf)
                 .collect(Collectors.toList());
+        }
+
+        /**
+         * Hodnoty filtru taxon (latinské názvy) – vícenásobný výběr pokročilého
+         * vyhledávání se posílá jako středníky (případně konce řádků) oddělený
+         * seznam; starý formulář posílá jediný název a split vrátí singleton.
+         */
+        public List<String> getTaxonNameValues() {
+            if (StringUtils.isBlank(this.taxon_name)) {
+                return Collections.emptyList();
+            }
+
+            return Arrays.stream(this.taxon_name.split("[;\\r\\n]+"))
+                .map(String::trim)
+                .filter(StringUtils::isNotBlank)
+                .distinct()
+                .collect(Collectors.toList());
+        }
+
+        public String getPolygonWkt() {
+            return polygonWkt;
+        }
+
+        public void setPolygonWkt(String polygonWkt) {
+            this.polygonWkt = polygonWkt;
+        }
+
+        /**
+         * Je aplikovaný nějaký filtr vyhledávání? Ochrana proti přetížení –
+         * bez filtru by vyhledávání vylistovalo celou tabulku záznamů, proto
+         * PageSearchService vrací prázdný výsledek (záznamy, kvadranty mapy
+         * i agregace dashboardu). Řídicí pole filtr nejsou (export_type,
+         * sortBy/sortOrder, aggregates, include_subtaxa – jen rozšiřuje volbu
+         * taxonu) a committerId = -1 znamená „bez výběru" (parita se starým
+         * formulářem, který posílal hidden input s fallbackem -1).
+         */
+        public boolean hasActiveFilter() {
+            return StringUtils.isNotBlank(taxon_name)
+                || StringUtils.isNotBlank(taxon_name_original)
+                || StringUtils.isNotBlank(town)
+                || StringUtils.isNotBlank(locality_description)
+                || StringUtils.isNotBlank(locality_or_town)
+                || StringUtils.isNotBlank(localityExtra)
+                || StringUtils.isNotBlank(quadrant)
+                || StringUtils.isNotBlank(polygonWkt)
+                || StringUtils.isNotBlank(comment)
+                || StringUtils.isNotBlank(pladias_comment)
+                || StringUtils.isNotBlank(finderName)
+                || StringUtils.isNotBlank(finderSurname)
+                || StringUtils.isNotBlank(source)
+                || StringUtils.isNotBlank(herbariumText)
+                || StringUtils.isNotBlank(institution)
+                || StringUtils.isNotBlank(foreignId)
+                || StringUtils.isNotBlank(validationStatus)
+                || StringUtils.isNotBlank(historyFlag)
+                || StringUtils.isNotBlank(no_map_square_or_quadrant)
+                || StringUtils.isNotBlank(substrateText)
+                || StringUtils.isNotBlank(substrate1)
+                || StringUtils.isNotBlank(substrate2)
+                || StringUtils.isNotBlank(chemicalData)
+                || license != null
+                || altitude_min != null
+                || altitude_max != null
+                || phytochorion != null
+                || herbarium != null
+                || minYear != null
+                || maxYear != null
+                || buffer != null
+                || dateFromImported != null
+                || dateToImported != null
+                || dateFromLastEdit != null
+                || dateToLastEdit != null
+                || commented != null
+                || unresolvedComment != null
+                || (committerId != null && committerId != -1)
+                || (projects != null && projects.length > 0)
+                || !getPladiasIdValues().isEmpty();
         }
 
         public Integer getBuffer() {

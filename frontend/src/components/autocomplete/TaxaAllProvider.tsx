@@ -1,5 +1,6 @@
-import type { AutocompleteProvider } from '@/components/autocomplete/AutocompleteProvider';
-import type { TaxonId } from '@/models/TaxonId';
+import type {AutocompleteProvider} from '@/components/autocomplete/AutocompleteProvider';
+import {searchTaxaByPrefix} from '@/services/taxonApi';
+import type {TaxonId} from '@/models/TaxonId';
 
 export function createTaxaAllProvider(placeholder: string): AutocompleteProvider<TaxonId> {
     return {
@@ -10,17 +11,8 @@ export function createTaxaAllProvider(placeholder: string): AutocompleteProvider
             return taxon.nameLat;
         },
 
-        async search(query) {
-            const res = await fetch(
-                `/api/react/taxa/queryAll?prefix=${encodeURIComponent(query)}`
-            );
-            const json = await res.json();
-
-            return (json.data ?? []).map((t: any): TaxonId => ({
-                id: t.id,
-                nameLat: t.nameLat,
-                nameHtml: t.nameHtml
-            }));
+        async search(query, signal) {
+            return searchTaxaByPrefix(query, signal);
         },
     };
 }

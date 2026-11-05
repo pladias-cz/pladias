@@ -4,8 +4,8 @@ public class BiblioSearchForm {
     public String author;
     public String title;
     public String etc;
-    public String minYear;
-    public String maxYear;
+    public Integer minYear;
+    public Integer maxYear;
     public String excerpted;
     public String journal;
 
@@ -33,19 +33,19 @@ public class BiblioSearchForm {
         this.etc = etc;
     }
 
-    public String getMinYear() {
+    public Integer getMinYear() {
         return minYear;
     }
 
-    public void setMinYear(String minYear) {
+    public void setMinYear(Integer minYear) {
         this.minYear = minYear;
     }
 
-    public String getMaxYear() {
+    public Integer getMaxYear() {
         return maxYear;
     }
 
-    public void setMaxYear(String maxYear) {
+    public void setMaxYear(Integer maxYear) {
         this.maxYear = maxYear;
     }
 

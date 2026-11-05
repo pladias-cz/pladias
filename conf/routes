@@ -11,10 +11,14 @@ GET     /geoserver2/*params         controllers.GeoServer.processRequest2(reques
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.at(path="/public", file)
 GET     /login                      controllers.Application.login(request: Request)
-GET     /logout                     controllers.Application.logout(request: Request)
+POST    /logout                     controllers.Application.logout(request: Request)
 POST    /login                      controllers.Application.authenticate(request: Request)
 
-GET     /tempfiles/download/:fileId   controllers.TemporaryFilesProvider.download(request: Request, fileId: Integer)
+# Password reset (veřejné, viz PasswordResetService)
+GET     /forgotPassword             controllers.Application.forgotPassword(request: Request)
+POST    /forgotPassword             controllers.Application.requestPasswordReset(request: Request)
+GET     /resetPassword              controllers.Application.resetPassword(request: Request, token: String ?= "")
+POST    /resetPassword              controllers.Application.performPasswordReset(request: Request)
 
 # React UI
 ->    /api/react            react.Routes

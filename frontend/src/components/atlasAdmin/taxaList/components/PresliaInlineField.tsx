@@ -1,4 +1,4 @@
-import {useEffect, useState} from 'react';
+import {useRef, useState} from 'react';
 import {Form, Spinner} from 'react-bootstrap';
 import {useTranslation} from 'react-i18next';
 
@@ -10,36 +10,48 @@ interface PresliaInlineFieldProps {
 }
 
 export function PresliaInlineField({
-    value,
-    onSave,
-    disabled
-}: PresliaInlineFieldProps) {
+                                       value,
+                                       onSave,
+                                       disabled
+                                   }: PresliaInlineFieldProps) {
     const {t} = useTranslation();
     const [editing, setEditing] = useState(false);
     const [draft, setDraft] = useState(value || '');
     const [saving, setSaving] = useState(false);
-    const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
-        if (!editing) {
-            setDraft(value || '');
-        }
-    }, [value, editing]);
+    // Zámek proti dvojitému odeslání: Enter nastaví saving=true, input se
+    // zablokuje a prohlížeč na něm vystřelí blur, který by handleSave spustil
+    // znovu (druhý POST se stejným timestampem pak selže na concurrency
+    // kontrole). Ref místo state v closure – blur může proběhnout dřív,
+    // než React commitne nový render se saving=true.
+    const saveLockRef = useRef(false);
+
+    // Draft follows the prop value while not editing – render-phase update
+    // guarded by comparison (React docs: adjusting state when a prop changes).
+    if (!editing && draft !== (value || '')) {
+        setDraft(value || '');
+    }
 
     const handleSave = async () => {
+        if (saveLockRef.current) {
+            return;
+        }
+
         if (draft === value) {
             setEditing(false);
             return;
         }
 
+        saveLockRef.current = true;
         setSaving(true);
-        setError(null);
 
         try {
             await onSave(draft);
             setEditing(false);
-        } catch (e: any) {
-            setError(e.message || t("common.inlineField.saveFailed"));
+        } catch {
+            // Chybu hlásí rodič přes notifikační store (toast); pole zůstává
+            // otevřené s rozpracovanou hodnotou pro opravu a opakování.
+            saveLockRef.current = false; // umožnit opravu a opakování
         } finally {
             setSaving(false);
         }
@@ -52,6 +64,14 @@ export function PresliaInlineField({
             setDraft(value || '');
             setEditing(false);
         }
+    };
+
+    const handleEdit = () => {
+        if (disabled) {
+            return;
+        }
+        saveLockRef.current = false; // nová editační relace
+        setEditing(true);
     };
 
     if (editing) {
@@ -68,7 +88,6 @@ export function PresliaInlineField({
                     style={{width: '120px', display: 'inline-block'}}
                 />
                 {saving && <Spinner size="sm" className="ms-1"/>}
-                {error && <span className="text-danger ms-1 small">{error}</span>}
             </>
         );
     }
@@ -77,8 +96,8 @@ export function PresliaInlineField({
         <span
             className="editable-value"
             style={{cursor: 'pointer'}}
-            onClick={() => !disabled && setEditing(true)}
-            title={disabled ? 'Saving...' : t("common.inlineField.edit")}
+            onClick={handleEdit}
+            title={disabled ? 'Saving...' : t('common.inlineField.edit')}
         >
             {value || <span className="text-muted">—</span>}
             {!disabled && <i className="bi bi-pencil ms-1 small" aria-hidden="true"/>}

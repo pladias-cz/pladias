@@ -2,7 +2,17 @@
  * Column helper functions for type-safe column creation
  */
 
-import type {DataTableColumnDef, TextColumnDef, BooleanColumnDef, CheckboxColumnDef, NumberColumnDef, DateColumnDef, TimestampColumnDef, ActionColumnDef} from '../types.ts';
+import type {
+    DataTableColumnDef,
+    TextColumnDef,
+    BooleanColumnDef,
+    CheckboxColumnDef,
+    NumberColumnDef,
+    DateColumnDef,
+    TimestampColumnDef,
+    ActionColumnDef
+} from '../types';
+import type {TFunction} from 'i18next';
 
 /**
  * Create a text column definition with strict typing
@@ -14,10 +24,10 @@ export function createTextColumn<T extends object>(
         enableSorting?: boolean;
         enableFiltering?: boolean;
         filterPlaceholder?: string;
-        filterOptions?: Array<{value: string; label: string}>;
+        filterOptions?: Array<{ value: string; label: string }>;
         width?: string | number;
         minWidth?: string | number;
-        cellRenderer?: (value: any, row: T) => React.ReactNode;
+        cellRenderer?: (value: string, row: T) => React.ReactNode;
     }
 ): TextColumnDef<T> {
     return {
@@ -210,18 +220,21 @@ export function createCheckboxColumn<T extends object>(
 
 /**
  * Get the filter placeholder for a column based on its type
- * Uses generic i18n keys that work for all columns
+ * Custom per-column placeholder takes precedence over generic i18n keys
  */
-export function getFilterPlaceholder<T>(column: DataTableColumnDef<T>, t: (key: string) => string): string {
+export function getFilterPlaceholder<T>(column: DataTableColumnDef<T>, t: TFunction): string {
+    if (column.type === 'text' && column.filterPlaceholder) {
+        return column.filterPlaceholder;
+    }
     switch (column.type) {
         case 'text':
-            return t("common.table.filter.all");
+            return t('common.table.filter.all');
         case 'boolean':
-            return t("common.table.filter.all");
+            return t('common.table.filter.all');
         case 'number':
-            return t("common.table.filter.all");
+            return t('common.table.filter.all');
         case 'date':
-            return t("common.table.filter.all");
+            return t('common.table.filter.all');
         case 'action':
             return '';
         default:

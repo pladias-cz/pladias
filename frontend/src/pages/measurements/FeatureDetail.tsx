@@ -1,87 +1,75 @@
-import {Col, Row} from "react-bootstrap";
-import {usePageTitle} from "@/hooks/usePageTitle";
-import {NavLink, useParams} from "react-router-dom";
-import type {Feature} from "@/models/Feature.ts";
-import {useEffect, useState, type FormEvent} from "react";
-import {useTranslation} from "react-i18next";
-import TraitTable from "@/components/measurement/TraitTable.tsx";
-import FeatureDescription from "@/components/measurement/FeatureDescription.tsx";
-import TraitUpload from "@/components/measurement/TraitUpload.tsx";
-import type {Flash} from "@/models/Flash.ts";
+import {Col, Row} from 'react-bootstrap';
+import {usePageTitle} from '@/hooks/usePageTitle';
+import {NavLink, useParams} from 'react-router-dom';
+import {useEffect, useState, type FormEvent} from 'react';
+import {useTranslation} from 'react-i18next';
+import {useQuery} from '@tanstack/react-query';
+import TraitTable from '@/components/measurement/TraitTable';
+import FeatureDescription from '@/components/measurement/FeatureDescription';
+import TraitUpload from '@/components/measurement/TraitUpload';
+import {getFeature, importTrait} from '@/services/traitApi';
+import {ApiError, apiErrorMessage} from '@/services/apiClient';
+import {useNotifications} from '@/stores/notificationStore';
 
 export default function FeatureDetail() {
     const {t} = useTranslation();
-    usePageTitle(t("trait.featureDetail.title"));
+    usePageTitle(t('trait.featureDetail.title'));
     const {featureId} = useParams<{ featureId: string }>();
-    const [selectedFeature, setSelectedFeature] = useState<Feature | null>(null);
-    const [flash, setFlash] = useState<Flash | null>(null);
     const [submitting, setSubmitting] = useState(false);
     // po úspěšném importu je třeba znovu načíst tabulku datových řad
     const [traitsRefreshKey, setTraitsRefreshKey] = useState(0);
+    const {push} = useNotifications();
+
+    // vlastnost k zobrazení – bez cache (sekce J), načtení při mountu
+    const {data: selectedFeature} = useQuery({
+        queryKey: ['feature', featureId],
+        queryFn: () => getFeature(parseInt(featureId!, 10)),
+        enabled: featureId !== undefined,
+    });
 
     useEffect(() => {
-        const f = (window as any).__FLASH__;
-        if (!f) return;
+        // hlášku po přesměrování z legacy stránky injectuje backend do data-flash-*
+        // atributů #react-app (app/views/react/index.scala.html) – gotchas.md;
+        // dříve inline script window.__FLASH__, nahrazeno kvůli CSP script-src 'self'
+        const flash = document.getElementById('react-app')?.dataset;
+        const success = flash?.flashSuccess;
+        const error = flash?.flashError;
 
-        if (f.success) {
-            setFlash({type: "success", message: f.success});
-        } else if (f.error) {
-            setFlash({type: "danger", message: f.error});
+        // obsah může nést HTML s odkazem na sešit s chybami importu
+        if (success) {
+            push({type: 'success', html: success});
+        } else if (error) {
+            push({type: 'danger', html: error});
         }
-    }, []);
-
-    async function loadFeature(id: number) {
-        try {
-            const res = await fetch(`/api/react/measurement/features/${id}`);
-            const json = await res.json();
-            setSelectedFeature(json.data);
-        } catch (e) {
-            console.error(e);
-        }
-    }
-
-    useEffect(() => {
-        if (!featureId) return;
-        const id = parseInt(featureId, 10);
-        if (!isNaN(id)) loadFeature(id);
-    }, [featureId]);
+    }, [push]);
 
     async function uploadTrait(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
 
         const form = event.currentTarget;
         const formData = new FormData(form);
-        const isImport = formData.get("operation") === "import";
+        const isImport = formData.get('operation') === 'import';
 
         setSubmitting(true);
-        setFlash(null);
 
         try {
-            const res = await fetch("/api/react/measurement/trait", {
-                method: "POST",
-                body: formData
-            });
+            const message = await importTrait(formData);
 
-            // při úspěchu vrací backend samotný JSON řetězec s hlášením, při chybě JsonResult
-            const json = await res.json().catch(() => null);
-            const message: string | null = typeof json === "string" ? json : json?.message ?? null;
-
-            if (!res.ok) {
-                setFlash({type: "danger", message: message || "Operace se nezdařila"});
-                return;
-            }
-
-            setFlash({
-                type: "success",
-                message: message || (isImport ? "Datová řada byla importována" : "Soubor je validní")
+            push({
+                type: 'success',
+                html: message || (isImport ? t('trait.upload.imported') : t('trait.upload.validated'))
             });
 
             if (isImport) {
                 form.reset();
                 setTraitsRefreshKey(key => key + 1);
             }
-        } catch {
-            setFlash({type: "danger", message: "Chyba komunikace se serverem"});
+        } catch (e) {
+            // hláška z backendu může nést HTML s odkazem na chybový sešit,
+            // proto jde do notifikace jako html; již ohlášené chyby (síť, 403)
+            // notifyApiError vylučuje, abychom je nezobrazili dvakrát
+            if (e instanceof ApiError && e.notified) return;
+            push({type: 'danger', html: apiErrorMessage(e, t('trait.upload.failed'))});
         } finally {
             setSubmitting(false);
         }
@@ -91,8 +79,8 @@ export default function FeatureDetail() {
         return (
             <Row>
                 <Col>
-                    <h1>{t("trait.featureDetail.title")}</h1>
-                    <p>{t("common.loading")}</p>
+                    <h1>{t('trait.featureDetail.title')}</h1>
+                    <p>{t('common.loading')}</p>
                 </Col>
             </Row>
         );
@@ -111,17 +99,16 @@ export default function FeatureDetail() {
 
             <Row>
                 <Col>
-                    {flash && (
-                        /* hlášení z importu/validace obsahuje odkaz na sešit s vyznačenými chybnými řádky */
-                        <div
-                            className={`alert alert-${flash.type}`}
-                            role="alert"
-                            dangerouslySetInnerHTML={{__html: flash.message}}
-                        />
+                    {/* importovat/smazat datovou řadu smí jen traitAdmin nebo admin vlastnosti (BE: user.supervises(feature)) */}
+                    {selectedFeature.canAdminister ? (
+                        <form onSubmit={uploadTrait} className="form-horizontal">
+                            <TraitUpload feature={selectedFeature} submitting={submitting}/>
+                        </form>
+                    ) : (
+                        <div className="alert alert-info" role="alert">
+                            {t('trait.featureDetail.uploadNotAllowed')}
+                        </div>
                     )}
-                    <form onSubmit={uploadTrait} className="form-horizontal">
-                        <TraitUpload feature={selectedFeature} submitting={submitting}/>
-                    </form>
 
                 </Col>
                 <Col>

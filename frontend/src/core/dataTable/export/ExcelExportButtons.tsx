@@ -4,24 +4,24 @@
 
 import {Spinner} from 'react-bootstrap';
 import {useTranslation} from 'react-i18next';
-import {useExcelExport, type ExcelExportVariant} from './useExcelExport.ts';
+import {useExcelExport, type ExcelExportVariant} from './useExcelExport';
 
 interface ExcelExportButtonsProps {
     endpoint: string;
-    sorting: Array<{id: string; desc: boolean}>;
-    columnFilters: Array<{id: string; value: string}>;
+    sorting: Array<{ id: string; desc: boolean }>;
+    columnFilters: Array<{ id: string; value: string }>;
     /** Builds the filter params of endpoints that do not use the "<Column>Filter" convention */
-    buildFilterParams?: (columnFilters: Array<{id: string; value: string}>) => Record<string, string>;
+    buildFilterParams?: (columnFilters: Array<{ id: string; value: string }>) => Record<string, string>;
     additionalParams?: Record<string, string>;
 }
 
 export function ExcelExportButtons({
-    endpoint,
-    sorting,
-    columnFilters,
-    buildFilterParams,
-    additionalParams,
-}: ExcelExportButtonsProps) {
+                                       endpoint,
+                                       sorting,
+                                       columnFilters,
+                                       buildFilterParams,
+                                       additionalParams,
+                                   }: ExcelExportButtonsProps) {
     const {t} = useTranslation();
     const {exporting, error, exportExcel} = useExcelExport({
         endpoint,
@@ -29,7 +29,7 @@ export function ExcelExportButtons({
         columnFilters,
         buildFilterParams,
         additionalParams,
-        errorMessage: t("common.table.exportFailed"),
+        errorMessage: t('common.table.exportFailed'),
     });
 
     const button = (variant: ExcelExportVariant, label: string) => (
@@ -39,15 +39,15 @@ export function ExcelExportButtons({
             disabled={exporting !== null}
             onClick={() => exportExcel(variant)}
         >
-            {exporting === variant && <Spinner animation="border" size="sm" className="me-1" />}
+            {exporting === variant && <Spinner animation="border" size="sm" className="me-1"/>}
             {label}
         </button>
     );
 
     return (
         <div className="d-flex align-items-center gap-2 flex-wrap">
-            {button('all', t("common.table.excelAll"))}
-            {button('filtered', t("common.table.excelFiltered"))}
+            {button('all', t('common.table.excelAll'))}
+            {button('filtered', t('common.table.excelFiltered'))}
             {error && <span className="text-danger small">{error}</span>}
         </div>
     );

@@ -7,7 +7,7 @@
  * Refactored with shared configuration to reduce duplication.
  */
 
-import type { LayerDefinition } from '../../types';
+import type {LayerDefinition} from '../../types';
 
 /**
  * Shared radius configuration across zoom levels

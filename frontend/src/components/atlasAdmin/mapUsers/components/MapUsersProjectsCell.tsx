@@ -18,28 +18,28 @@ export function MapUsersProjectsCell({row, onAddProject, onRemoveProject}: MapUs
     return (
         <div className="d-flex flex-wrap align-items-center gap-1">
             {row.contributionProjects?.map((project) => (
-                <Badge 
-                    key={project.id} 
-                    bg="primary" 
+                <Badge
+                    key={project.id}
+                    bg="primary"
                     className="d-inline-flex align-items-center gap-1"
                 >
                     <span>{project.abbrev || project.name}</span>
-                    <span 
+                    <span
                         style={{cursor: 'pointer'}}
                         onClick={() => onRemoveProject(row.id, project.id)}
-                        title={t("user.usersAdministration.removeProject")}
+                        title={t('user.usersAdministration.removeProject')}
                     >
                         &times;
                     </span>
                 </Badge>
             ))}
-            <Button 
-                variant="outline-primary" 
+            <Button
+                variant="outline-primary"
                 size="sm"
                 onClick={() => onAddProject(row.id)}
                 className="py-0 px-1 d-inline-flex align-items-center justify-content-center"
                 style={{lineHeight: 1, minHeight: '1.5em'}}
-                aria-label={t("user.usersAdministration.addProject")}
+                aria-label={t('user.usersAdministration.addProject')}
             >
                 +
             </Button>

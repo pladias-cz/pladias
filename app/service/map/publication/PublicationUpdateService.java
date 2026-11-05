@@ -51,6 +51,15 @@ public class PublicationUpdateService extends MapStatusUpdateService {
             throw new IllegalArgumentException(messages.at("MapStatusUpdateService.invalidStatus"));
         }
         PublicationStatus oldStatus = settings.getPublicationStatus();
+        if (oldStatus == null) {
+            // NULL v DB chápeme jako StatusNotStarted (id 0): DTO ho FE mapuje na 0,
+            // TaxonUpdaterService ho novým taxonům nastavuje explicitně. Bez fallbacku
+            // padal update statusu u starších řádků s NULL na NPE.
+            oldStatus = PublicationStatus.find().byId(PublicationStatus.StatusNotStarted);
+            if (oldStatus == null) {
+                throw new IllegalArgumentException(messages.at("MapStatusUpdateService.invalidStatus"));
+            }
+        }
         verifyTransitionIsFeasible(oldStatus, newStatus);
 
         settings.setPublicationStatus(newStatus);

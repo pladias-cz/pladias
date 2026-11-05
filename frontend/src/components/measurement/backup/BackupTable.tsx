@@ -1,80 +1,55 @@
-import { useEffect, useState } from "react";
-import { Table, Spinner, Alert } from "react-bootstrap";
-import { useTranslation } from "react-i18next";
-import type { TraitBackup } from "@/models/TraitBackup.ts";
+import {Table, Spinner} from 'react-bootstrap';
+import {useTranslation} from 'react-i18next';
+import {useQuery} from '@tanstack/react-query';
+import {downloadTraitBackup, getTraitBackups} from '@/services/traitApi';
+import {useQueryErrorNotify} from '@/query/useQueryErrorNotify';
+import FileDownloadLink from '@/components/FileDownloadLink';
 
 export default function BackupTable() {
-    const { t } = useTranslation();
+    const {t} = useTranslation();
 
-    const [backups, setBackups] = useState<TraitBackup[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-
-    useEffect(() => {
-        const load = async () => {
-            try {
-                const res = await fetch("/api/react/measurement/backups");
-
-                if (!res.ok) {
-                    throw new Error(`HTTP ${res.status}`);
-                }
-
-                const result = await res.json();
-                setBackups(result.data);
-            } catch (e) {
-                setError(e instanceof Error ? e.message : "Unknown error");
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        load();
-    }, []);
+    // dostupné zálohy – bez cache (sekce J), při mountu znovu; chyba jde do toastu
+    const {data: backups = [], isPending: loading, error} = useQuery({
+        queryKey: ['traitBackups'],
+        queryFn: getTraitBackups,
+    });
+    useQueryErrorNotify(error, t('common.loadFailed'));
 
     if (loading) {
         return (
             <div className="text-center my-4">
-                <Spinner animation="border" />
+                <Spinner animation="border"/>
             </div>
         );
     }
 
-    if (error) {
-        return (
-            <Alert variant="danger" className="my-3">
-                {t("trait.backup.error")}: {error}
-            </Alert>
-        );
-    }
-
     const formatDate = (iso?: string | null) =>
-        iso ? new Date(iso).toLocaleString("cs-CZ") : "—";
+        iso ? new Date(iso).toLocaleString('cs-CZ') : '—';
 
     return (
         <Table striped bordered hover responsive>
             <thead>
             <tr>
-                <th>{t("trait.backup.description")}</th>
-                <th>{t("trait.backup.createdAt")}</th>
+                <th>{t('trait.backup.description')}</th>
+                <th>{t('trait.backup.createdAt')}</th>
                 <th className="text-center">
-                    {t("trait.backup.download")}
+                    {t('trait.backup.download')}
                 </th>
             </tr>
             </thead>
             <tbody>
             {backups.map((b) => (
                 <tr key={b.id}>
-                    <td>{b.description ?? "—"}</td>
+                    <td>{b.description ?? '—'}</td>
                     <td>{formatDate(b.createdAt)}</td>
                     <td className="text-center">
-                        <a
-                            href={`/api/react/measurement/backup/${b.id}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="btn btn-sm btn-primary"
+                        <FileDownloadLink
+                            variant="primary"
+                            size="sm"
+                            fetchFile={() => downloadTraitBackup(b.id)}
                         >
-                            {t("trait.backup.download")}
-                        </a>
+                            {t('trait.backup.download')}
+                        </FileDownloadLink>
                     </td>
                 </tr>
             ))}

@@ -12,10 +12,12 @@ interface DataTableHeaderCellProps {
     onSort: (columnId: string) => void;
     width?: string | number;
     minWidth?: string | number;
+    /** Tooltip pro neřaditelnou hlavičku (řaditelná si ho odvodí ze stavu řazení). */
+    title?: string;
 }
 
 export function DataTableHeaderCell(props: DataTableHeaderCellProps) {
-    const {label, columnId, sortIndicator, canSort, onSort, width, minWidth} = props;
+    const {label, columnId, sortIndicator, canSort, onSort, width, minWidth, title} = props;
     const {t} = useTranslation();
 
     const handleSortClick = () => {
@@ -28,11 +30,11 @@ export function DataTableHeaderCell(props: DataTableHeaderCellProps) {
         if (!canSort) return '';
         switch (sortIndicator) {
             case 'asc':
-                return t("common.table.sort.ascending");
+                return t('common.table.sort.ascending');
             case 'desc':
-                return t("common.table.sort.descending");
+                return t('common.table.sort.descending');
             default:
-                return t("common.table.sort.clickToSort");
+                return t('common.table.sort.clickToSort');
         }
     };
 
@@ -57,7 +59,7 @@ export function DataTableHeaderCell(props: DataTableHeaderCellProps) {
                 cursor: canSort ? 'pointer' : 'default',
             }}
             className={canSort ? 'cursor-pointer select-none' : ''}
-            title={getSortTitle()}
+            title={canSort ? getSortTitle() : title}
         >
             {label}{getSortIcon()}
         </th>

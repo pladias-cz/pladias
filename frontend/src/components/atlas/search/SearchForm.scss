@@ -1,0 +1,48 @@
+/**
+ * Layout vyhledávacího formuláře (sekce M: plain CSS → SCSS, selektory zkompilované 1:1).
+ * ID #searchForm zůstává záměrně – specificita (1-0-x) drží přednost před Bootstrap
+ * pravidly pro .table td. Mrtvá pravidla #sliderResultsCount / #recordIdForm
+ * (v markupu neexistují) byla odstraněna.
+ */
+#searchForm {
+    margin-top: 1rem;
+
+    table {
+        width: 100%;
+    }
+
+    td,
+    th {
+        padding: 0.35rem 0.5rem;
+        vertical-align: top;
+    }
+
+    td:first-child {
+        width: 38%;
+        white-space: nowrap;
+    }
+
+    td:nth-child(2) {
+        width: 62%;
+    }
+
+    input[type="text"],
+    select {
+        max-width: 100%;
+    }
+
+    .radio-inline {
+        margin-right: 1rem;
+    }
+}
+
+@media (max-width: 1199px) {
+    #searchForm {
+        td:first-child,
+        td:nth-child(2) {
+            display: block;
+            width: 100%;
+            white-space: normal;
+        }
+    }
+}

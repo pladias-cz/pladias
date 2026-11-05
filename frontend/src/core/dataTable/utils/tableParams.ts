@@ -5,10 +5,10 @@
 export interface TableParamsOptions {
     page?: number;
     pageSize?: number;
-    sorting?: Array<{id: string; desc: boolean}>;
-    columnFilters?: Array<{id: string; value: string}>;
+    sorting?: Array<{ id: string; desc: boolean }>;
+    columnFilters?: Array<{ id: string; value: string }>;
     /** Builds the filter params of endpoints that do not use the "<Column>Filter" convention */
-    buildFilterParams?: (columnFilters: Array<{id: string; value: string}>) => Record<string, string>;
+    buildFilterParams?: (columnFilters: Array<{ id: string; value: string }>) => Record<string, string>;
     additionalParams?: Record<string, string>;
 }
 
@@ -17,13 +17,13 @@ export interface TableParamsOptions {
  * rest of the state, which is what the XLSX export relies on.
  */
 export function buildTableParams({
-    page,
-    pageSize,
-    sorting,
-    columnFilters,
-    buildFilterParams,
-    additionalParams = {},
-}: TableParamsOptions): Record<string, string> {
+                                     page,
+                                     pageSize,
+                                     sorting,
+                                     columnFilters,
+                                     buildFilterParams,
+                                     additionalParams = {},
+                                 }: TableParamsOptions): Record<string, string> {
     const params: Record<string, string> = {};
 
     if (page !== undefined && pageSize !== undefined) {

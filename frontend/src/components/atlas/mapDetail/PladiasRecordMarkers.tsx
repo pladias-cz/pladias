@@ -1,12 +1,14 @@
-import { Circle, CircleMarker, Popup, Tooltip } from 'react-leaflet';
-import type { RecordPladias } from '@/models';
-import type { RecordPladiasMinimal } from '@/pages/atlas/MapDetail';
+import {Circle, CircleMarker, Popup, Tooltip} from 'react-leaflet';
+import type {RecordPladias} from '@/models';
+import type {RecordPladiasMinimal} from '@/models/AtlasRecords';
 import './RecordMarkers.scss';
 
 interface PladiasRecordMarkersProps {
     records: (RecordPladias | RecordPladiasMinimal)[];
     highlightedRecordId?: number | null;
     onRecordHover?: (recordId: number | null) => void;
+    /** Kód aktuálního kvadrantu – jen jeho záznamy mají popup a interakce, okolní se jen vykreslují. */
+    currentSquareCode: string;
 }
 
 const MARKER_CONFIG = {
@@ -15,7 +17,7 @@ const MARKER_CONFIG = {
     strokeColor: '#000000',
 };
 
-function PladiasRecordMarkers({ records, highlightedRecordId, onRecordHover }: PladiasRecordMarkersProps) {
+function PladiasRecordMarkers({records, highlightedRecordId, onRecordHover, currentSquareCode}: PladiasRecordMarkersProps) {
     const getValidationColor = (record: RecordPladias | RecordPladiasMinimal): string => {
         return record.validationStatusColor || '#808080';
     };
@@ -44,6 +46,8 @@ function PladiasRecordMarkers({ records, highlightedRecordId, onRecordHover }: P
                 const isHighlighted = highlightedRecordId === record.id;
                 const color = getValidationColor(record);
                 const label = formatRecordLabel(record);
+                // záznamy mimo aktuální kvadrant se na mapě jen vykreslují – bez popupu a interakcí
+                const isCurrentSquare = record.computedSquareCode === currentSquareCode;
                 const baseRadius = MARKER_CONFIG.baseRadius;
                 const radius = isHighlighted ? baseRadius + 4 : baseRadius;
 
@@ -56,14 +60,14 @@ function PladiasRecordMarkers({ records, highlightedRecordId, onRecordHover }: P
                 const commonPopup = (
                     <Popup>
                         <div>
-                            <strong>ID: {record.id}</strong><br />
-                            <span className="text-muted">PLADIAS</span><br />
-                            {record.year && <span>Rok: {record.year}<br /></span>}
+                            <strong>ID: {record.id}</strong><br/>
+                            <span className="text-muted">PLADIAS</span><br/>
+                            {record.year && <span>Rok: {record.year}<br/></span>}
                             {(() => {
                                 const recordedBy = 'recordedBy' in record ? record.recordedBy : record.recordAuthorsNames;
-                                return recordedBy && <span>Sběratel: {recordedBy}<br /></span>;
+                                return recordedBy && <span>Sběratel: {recordedBy}<br/></span>;
                             })()}
-                            <a href={`${import.meta.env.BASE_URL.replace(/\/$/, "")}/atlas/record/${record.id}`} target="_blank" rel="noopener noreferrer">
+                            <a href={`/atlas/record/${record.id}`}>
                                 Otevřít záznam
                             </a>
                         </div>
@@ -98,16 +102,23 @@ function PladiasRecordMarkers({ records, highlightedRecordId, onRecordHover }: P
                                 fillOpacity: isHighlighted ? 0.9 : 0.6,
                                 weight: 2
                             }}
-                            eventHandlers={commonEventHandlers}
+                            eventHandlers={isCurrentSquare ? commonEventHandlers : undefined}
                         >
                             {label && (
-                                <Tooltip permanent direction="top" offset={[0, -16]} className="record-label-transparent">
-                                    <span style={{ fontSize: '13px', whiteSpace: 'nowrap', color: '#000', fontWeight: 700, textShadow: '0 0 2px #fff, 0 0 2px #fff' }}>
+                                <Tooltip permanent direction="top" offset={[0, -16]}
+                                         className="record-label-transparent">
+                                    <span style={{
+                                        fontSize: '13px',
+                                        whiteSpace: 'nowrap',
+                                        color: '#000',
+                                        fontWeight: 700,
+                                        textShadow: '0 0 2px #fff, 0 0 2px #fff'
+                                    }}>
                                         {label}
                                     </span>
                                 </Tooltip>
                             )}
-                            {commonPopup}
+                            {isCurrentSquare && commonPopup}
                         </CircleMarker>
                     </>
                 );

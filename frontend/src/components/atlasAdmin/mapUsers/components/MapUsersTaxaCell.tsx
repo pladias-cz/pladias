@@ -18,28 +18,28 @@ export function MapUsersTaxaCell({row, onAddTaxon, onRemoveTaxon}: MapUsersTaxaC
     return (
         <div className="d-flex flex-wrap align-items-center gap-1">
             {row.supervisedTaxa?.map((taxon) => (
-                <Badge 
-                    key={taxon.id} 
-                    bg="secondary" 
+                <Badge
+                    key={taxon.id}
+                    bg="secondary"
                     className="d-inline-flex align-items-center gap-1"
                 >
                     <span>{taxon.nameLat}</span>
-                    <span 
+                    <span
                         style={{cursor: 'pointer'}}
                         onClick={() => onRemoveTaxon(row.id, taxon.id)}
-                        title={t("user.usersAdministration.removeTaxon")}
+                        title={t('user.usersAdministration.removeTaxon')}
                     >
                         &times;
                     </span>
                 </Badge>
             ))}
-            <Button 
-                variant="outline-secondary" 
+            <Button
+                variant="outline-secondary"
                 size="sm"
                 onClick={() => onAddTaxon(row.id)}
                 className="py-0 px-1 d-inline-flex align-items-center justify-content-center"
                 style={{lineHeight: 1, minHeight: '1.5em'}}
-                aria-label={t("user.usersAdministration.addTaxon")}
+                aria-label={t('user.usersAdministration.addTaxon')}
             >
                 +
             </Button>

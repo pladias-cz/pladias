@@ -1,51 +1,28 @@
-import {useState, type FormEvent} from "react";
-import {Alert, Col, Row} from "react-bootstrap";
-import {usePageTitle} from "@/hooks/usePageTitle";
-import {useTranslation} from "react-i18next";
-import type {Flash} from "@/models/Flash.ts";
-import ExportTraitList from "@/components/measurement/export/ExportTraitList.tsx";
-import ExportTaxaList from "@/components/measurement/export/ExportTaxaList.tsx";
-import ExportOptions from "@/components/measurement/export/ExportOptions.tsx";
+import {useState, type FormEvent} from 'react';
+import {Alert, Col, Row} from 'react-bootstrap';
+import {usePageTitle} from '@/hooks/usePageTitle';
+import {useTranslation} from 'react-i18next';
+import {notifyApiError} from '@/stores/notificationStore';
+import {ApiError} from '@/services/apiClient';
+import {exportTraits} from '@/services/traitApi';
+import {downloadBlob} from '@/core/dataTable/export';
+import ExportTraitList from '@/components/measurement/export/ExportTraitList';
+import ExportTaxaList from '@/components/measurement/export/ExportTaxaList';
+import ExportOptions from '@/components/measurement/export/ExportOptions';
 
-const EXPORT_URL = "/api/react/measurement/complexExport";
-const DOWNLOAD_CONTENT_TYPE = "application/x-download";
-
-/** Chybová odpověď ze serveru – JsonResult, neplatné taxony jsou zvlášť. */
-type ExportError = {
-    message?: string;
-    invalidTaxa?: string;
-};
-
-async function readError(res: Response): Promise<ExportError> {
-    if (res.headers.get("content-type")?.includes("application/json")) {
-        return ((await res.json().catch(() => null)) as ExportError | null) ?? {};
-    }
-    return {message: (await res.text().catch(() => "")).trim()};
-}
-
-function resolveFilename(contentDisposition: string | null): string {
-    const match = contentDisposition?.match(/filename="?([^";]+)"?/i);
-    return match?.[1] ?? "complexExport.csv";
-}
-
-function download(blob: Blob, filename: string) {
-    const url = window.URL.createObjectURL(blob);
-    const anchor = document.createElement("a");
-    anchor.href = url;
-    anchor.download = filename;
-    document.body.appendChild(anchor);
-    anchor.click();
-    anchor.remove();
-    window.URL.revokeObjectURL(url);
+/** Chybová odpověď complex exportu – neplatné taxony nese zvlášť `invalidTaxa`. */
+function readInvalidTaxa(err: unknown): string | null {
+    const payload = err instanceof ApiError ? err.payload : undefined;
+    const invalidTaxa = (payload as { invalidTaxa?: unknown } | undefined)?.invalidTaxa;
+    return typeof invalidTaxa === 'string' && invalidTaxa ? invalidTaxa : null;
 }
 
 export default function Export() {
     const {t} = useTranslation();
-    usePageTitle(t("trait.export.title"));
+    usePageTitle(t('trait.export.title'));
 
     const [submitting, setSubmitting] = useState(false);
-    const [flash, setFlash] = useState<Flash | null>(null);
-    // neplatné názvy taxonů od serveru – jeden na řádek, aby se dalily označit a opravit
+    // neplatné názvy taxonů od serveru – jeden na řádek, aby se daly označit a opravit
     const [invalidTaxa, setInvalidTaxa] = useState<string | null>(null);
 
     async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -53,29 +30,18 @@ export default function Export() {
         const form = event.currentTarget;
 
         setSubmitting(true);
-        setFlash(null);
         setInvalidTaxa(null);
 
         try {
             const body = new URLSearchParams();
-            // backend čte formulář jako urlencoded (traitIds[], ranks, entryTypes, …)
+            // backend čte formulář jako urlencoded (traitIds[], ranks[], entryTypes[], …)
             new FormData(form).forEach((value, key) => body.append(key, String(value)));
 
-            const res = await fetch(EXPORT_URL, {
-                method: "POST",
-                body
-            });
-
-            if (!res.ok || !res.headers.get("content-type")?.includes(DOWNLOAD_CONTENT_TYPE)) {
-                const error = await readError(res);
-                setFlash({type: "danger", message: error.message || t("trait.export.failed")});
-                setInvalidTaxa(error.invalidTaxa ?? null);
-                return;
-            }
-
-            download(await res.blob(), resolveFilename(res.headers.get("content-disposition")));
-        } catch {
-            setFlash({type: "danger", message: t("trait.export.failed")});
+            const file = await exportTraits(body);
+            downloadBlob(file.blob, file.filename);
+        } catch (e) {
+            setInvalidTaxa(readInvalidTaxa(e));
+            notifyApiError(e, t('trait.export.failed'));
         } finally {
             setSubmitting(false);
         }
@@ -83,11 +49,12 @@ export default function Export() {
 
     return (
         <form onSubmit={handleSubmit} className="form-horizontal">
-            <h3>{t("trait.export.title")}</h3>
-            {flash && (
-                <Alert variant={flash.type} dismissible onClose={() => setFlash(null)}>
-                    {flash.message}
-                    {invalidTaxa && <pre className="mb-0 mt-2">{invalidTaxa}</pre>}
+            <h3>{t('trait.export.title')}</h3>
+            {/* hláška o neúspěchu jde do globální notifikace; seznam neplatných
+                taxonů zůstává u formuláře – uživatel ho podle něj opravuje */}
+            {invalidTaxa && (
+                <Alert variant="danger" dismissible onClose={() => setInvalidTaxa(null)}>
+                    <pre className="mb-0">{invalidTaxa}</pre>
                 </Alert>
             )}
             <Row>

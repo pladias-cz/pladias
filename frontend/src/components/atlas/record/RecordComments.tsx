@@ -1,59 +1,46 @@
-import {Card, Table, Row, Col, Spinner, Button, Modal, Form} from "react-bootstrap";
-import {useTranslation} from "react-i18next";
-import {fetchRecordComments, createComment, resolveComment, deleteComment} from "./recordService";
-import type { RecordComment } from '@/models/RecordComment';
-import {useState, useEffect} from "react";
-import {useUser} from "@/context/UserContext";
+import {Card, Table, Row, Col, Spinner, Button, Modal, Form} from 'react-bootstrap';
+import {useTranslation} from 'react-i18next';
+import {getRecordComments, createComment, updateComment, resolveComment, deleteComment} from '@/services/recordApi';
+import {apiErrorMessage} from '@/services/apiClient';
+import type {RecordComment} from '@/models/RecordComment';
+import {useState} from 'react';
+import {useQuery, useQueryClient} from '@tanstack/react-query';
+import {useConfirm} from '@/hooks/useConfirm';
+import {useUser} from '@/context/UserContext';
 
 interface RecordCommentsProps {
     recordId: number;
-    recordTaxonId?: number; // For permission checks
+    canResolveComments: boolean; // Server-computed flag (backend: Record.isUserElligibleToEditEverything)
 }
 
-export default function RecordComments({recordId, recordTaxonId}: RecordCommentsProps) {
+export default function RecordComments({recordId, canResolveComments}: RecordCommentsProps) {
     const {t} = useTranslation();
     const user = useUser();
-    const [comments, setComments] = useState<RecordComment[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+    const {confirm, dialog} = useConfirm();
+    const queryClient = useQueryClient();
     const [showModal, setShowModal] = useState(false);
-    const [newComment, setNewComment] = useState("");
+    const [editingComment, setEditingComment] = useState<RecordComment | null>(null);
+    const [newComment, setNewComment] = useState('');
     const [submitting, setSubmitting] = useState(false);
     const [actionError, setActionError] = useState<string | null>(null);
 
-    useEffect(() => {
-        setLoading(true);
-        setError(null);
-        
-        fetchRecordComments(recordId)
-            .then(data => {
-                setComments(data);
-                setLoading(false);
-            })
-            .catch(err => {
-                setError(err.message);
-                setLoading(false);
-            });
-    }, [recordId]);
+    // komentáře záznamu – bez cache (sekce J), načtení při mountu; po mutacích
+    // se seznam obnoví invalidací stejného klíče
+    const {data: comments, isPending: loading, error} = useQuery({
+        queryKey: ['recordComments', recordId],
+        queryFn: () => getRecordComments(recordId),
+    });
+    const loadError = error ? apiErrorMessage(error, t('record.commentsLoadFailed')) : null;
 
-    const nonDeletedComments = comments.filter(c => !c.deleted);
+    const nonDeletedComments = (comments ?? []).filter(c => !c.deleted);
 
     // Permission checks (matching backend logic)
     const canEditComments = !!user;
-    
-    const canResolveComment = (comment: RecordComment): boolean => {
-        if (!user) return false;
-        if (comment.resolved) return false;
-        if (!recordTaxonId) return false;
-        
-        // Match backend: isUserElligibleToEditEverything
-        // 1. MapAdmin can resolve anything
-        if (user.isMapAdmin) return true;
-        
-        // 2. User must be a supervisor of THIS specific taxon (not just any TaxonAdmin)
-        // Note: isTaxonAdmin alone is NOT enough - they must supervise this taxon
-        return user.supervisedTaxonIds.includes(recordTaxonId);
-    };
+
+    // Updating a comment's text requires the same permission as resolving it
+    // (backend RecordCommentController.updateComment checks record.isUserElligibleToEditEverything,
+    // i.e. mapAdmin / taxon supervisor incl. parent taxa / project manager - NOT the comment author)
+    const canUpdateComment = canResolveComments;
 
     const canDeleteComment = (comment: RecordComment): boolean => {
         if (!user) return false;
@@ -76,47 +63,64 @@ export default function RecordComments({recordId, recordTaxonId}: RecordComments
 
     const handleSubmitComment = async () => {
         if (!newComment.trim()) return;
-        
+
         setSubmitting(true);
         setActionError(null);
-        
+
         try {
-            await createComment(recordId, newComment.trim());
-            setNewComment("");
+            if (editingComment) {
+                await updateComment(editingComment.id, newComment.trim());
+            } else {
+                await createComment(recordId, newComment.trim());
+            }
+            setNewComment('');
+            setEditingComment(null);
             setShowModal(false);
-            // Refresh comments
-            const data = await fetchRecordComments(recordId);
-            setComments(data);
+            // Refresh comments – invalidace spustí refetch query
+            await queryClient.invalidateQueries({queryKey: ['recordComments', recordId]});
         } catch (err) {
-            setActionError(err instanceof Error ? err.message : String(err));
+            setActionError(apiErrorMessage(err, t('record.commentActionFailed')));
         } finally {
             setSubmitting(false);
         }
     };
 
+    const handleEditComment = (comment: RecordComment) => {
+        setEditingComment(comment);
+        setNewComment(comment.message ?? '');
+        setActionError(null);
+        setShowModal(true);
+    };
+
+    const handleCloseModal = () => {
+        setShowModal(false);
+        setEditingComment(null);
+    };
+
     const handleResolveComment = async (commentId: number) => {
         try {
             await resolveComment(commentId);
-            // Refresh comments
-            const data = await fetchRecordComments(recordId);
-            setComments(data);
+            // Refresh comments – invalidace spustí refetch query
+            await queryClient.invalidateQueries({queryKey: ['recordComments', recordId]});
         } catch (err) {
-            setActionError(err instanceof Error ? err.message : String(err));
+            setActionError(apiErrorMessage(err, t('record.commentActionFailed')));
         }
     };
 
     const handleDeleteComment = async (commentId: number) => {
-        if (!window.confirm(t("record.confirmDeleteComment") || "Are you sure?")) {
+        if (!(await confirm({
+            message: t('record.confirmDeleteComment'),
+            confirmLabel: t('common.delete'),
+        }))) {
             return;
         }
-        
+
         try {
             await deleteComment(commentId);
-            // Refresh comments
-            const data = await fetchRecordComments(recordId);
-            setComments(data);
+            // Refresh comments – invalidace spustí refetch query
+            await queryClient.invalidateQueries({queryKey: ['recordComments', recordId]});
         } catch (err) {
-            setActionError(err instanceof Error ? err.message : String(err));
+            setActionError(apiErrorMessage(err, t('record.commentActionFailed')));
         }
     };
 
@@ -136,13 +140,13 @@ export default function RecordComments({recordId, recordTaxonId}: RecordComments
         );
     }
 
-    if (error) {
+    if (loadError) {
         return (
             <Row className="mb-3">
                 <Col>
                     <Card border="danger">
                         <Card.Body className="text-center py-4">
-                            <span className="text-danger">{t("common.error")}: {error}</span>
+                            <span className="text-danger">{t('common.error')}: {loadError}</span>
                         </Card.Body>
                     </Card>
                 </Col>
@@ -156,111 +160,126 @@ export default function RecordComments({recordId, recordTaxonId}: RecordComments
                 <Card>
                     <Card.Header className="d-flex justify-content-between align-items-center">
                         <strong>
-                            {t("record.comments")}{' '}
-                            ({comments.filter(c => !c.deleted && c.resolved === false).length} {t("record.unresolved")})
+                            {t('record.comments')}{' '}
+                            ({nonDeletedComments.filter(c => c.resolved === false).length} {t('record.unresolved')})
                         </strong>
                         {canEditComments && (
-                            <Button 
-                                variant="primary" 
+                            <Button
+                                variant="primary"
                                 size="sm"
-                                onClick={() => setShowModal(true)}
+                                onClick={() => {
+                                    setEditingComment(null);
+                                    setNewComment('');
+                                    setShowModal(true);
+                                }}
                             >
-                                {t("record.addComment")}
+                                {t('record.addComment')}
                             </Button>
                         )}
                     </Card.Header>
                     <Card.Body>
                         <Table striped bordered hover size="sm">
                             <thead>
-                                <tr>
-                                    <th>{t("record.commentAuthor")}</th>
-                                    <th>{t("record.commentMessage")}</th>
-                                    <th>{t("record.commentDate")}</th>
-                                    <th>{t("record.commentResolved")}</th>
-                                    <th>{t("record.resolvedBy")}</th>
-                                    <th>{t("record.resolvedWhen")}</th>
-                                    {canEditComments && <th>{t("common.actions")}</th>}
-                                </tr>
+                            <tr>
+                                <th>{t('record.commentAuthor')}</th>
+                                <th>{t('record.commentMessage')}</th>
+                                <th>{t('record.commentDate')}</th>
+                                <th>{t('record.commentResolved')}</th>
+                                <th>{t('record.resolvedBy')}</th>
+                                <th>{t('record.resolvedWhen')}</th>
+                                {canEditComments && <th>{t('common.actions')}</th>}
+                            </tr>
                             </thead>
                             <tbody>
-                                {nonDeletedComments.length === 0 ? (
-                                    <tr>
-                                        <td colSpan={canEditComments ? 7 : 6} className="text-center text-muted">
-                                            {t("common.noData")}
+                            {nonDeletedComments.length === 0 ? (
+                                <tr>
+                                    <td colSpan={canEditComments ? 7 : 6} className="text-center text-muted">
+                                        {t('common.noData')}
+                                    </td>
+                                </tr>
+                            ) : (
+                                nonDeletedComments.map((comment) => (
+                                    <tr key={comment.id}>
+                                        <td>{comment.authorName ?? '-'}</td>
+                                        <td>{comment.message ?? '-'}</td>
+                                        <td>
+                                            {comment.createTimestamp
+                                                ? new Date(comment.createTimestamp).toLocaleDateString()
+                                                : '-'}
                                         </td>
+                                        <td>
+                                            {comment.resolved
+                                                ? t('common.yes')
+                                                : t('common.no')}
+                                        </td>
+                                        <td>
+                                            {comment.resolvedByName ?? '-'}
+                                        </td>
+                                        <td>
+                                            {comment.resolved && comment.resolvedTimestamp
+                                                ? formatDateTime(comment.resolvedTimestamp)
+                                                : '-'}
+                                        </td>
+                                        {canEditComments && (
+                                            <td>
+                                                {/* Edit button: same permission as resolve (mapAdmin / supervisor incl. parent taxa / project manager), NOT the comment author */}
+                                                {canUpdateComment && (
+                                                    <Button
+                                                        variant="outline-primary"
+                                                        size="sm"
+                                                        className="me-1"
+                                                        onClick={() => handleEditComment(comment)}
+                                                    >
+                                                        {t('common.edit')}
+                                                    </Button>
+                                                )}
+                                                {/* Resolve button: server-computed permission (mapAdmin / supervisor incl. parent taxa / project manager) */}
+                                                {!comment.resolved && canResolveComments && (
+                                                    <Button
+                                                        variant="success"
+                                                        size="sm"
+                                                        className="me-1"
+                                                        onClick={() => handleResolveComment(comment.id)}
+                                                    >
+                                                        {t('record.resolve')}
+                                                    </Button>
+                                                )}
+                                                {/* Delete button: for comment author OR MapAdmin */}
+                                                {canDeleteComment(comment) && (
+                                                    <Button
+                                                        variant="danger"
+                                                        size="sm"
+                                                        onClick={() => handleDeleteComment(comment.id)}
+                                                    >
+                                                        {t('common.delete')}
+                                                    </Button>
+                                                )}
+                                            </td>
+                                        )}
                                     </tr>
-                                ) : (
-                                    nonDeletedComments.map((comment) => (
-                                        <tr key={comment.id}>
-                                            <td>{comment.authorName ?? '-'}</td>
-                                            <td>{comment.message ?? '-'}</td>
-                                            <td>
-                                                {comment.createTimestamp
-                                                    ? new Date(comment.createTimestamp).toLocaleDateString()
-                                                    : '-'}
-                                            </td>
-                                            <td>
-                                                {comment.resolved
-                                                    ? t("common.yes")
-                                                    : t("common.no")}
-                                            </td>
-                                            <td>
-                                                {comment.resolvedByName ?? '-'}
-                                            </td>
-                                            <td>
-                                                {comment.resolved && comment.resolvedTimestamp
-                                                    ? formatDateTime(comment.resolvedTimestamp)
-                                                    : '-'}
-                                            </td>
-                                            {canEditComments && (
-                                                <td>
-                                                    {/* Resolve button: only for users with elevated permissions (MapAdmin/TaxonAdmin/supervisor) */}
-                                                    {!comment.resolved && canResolveComment(comment) && (
-                                                        <Button
-                                                            variant="success"
-                                                            size="sm"
-                                                            className="me-1"
-                                                            onClick={() => handleResolveComment(comment.id)}
-                                                        >
-                                                            {t("common.resolve")}
-                                                        </Button>
-                                                    )}
-                                                    {/* Delete button: for comment author OR MapAdmin */}
-                                                    {canDeleteComment(comment) && (
-                                                        <Button
-                                                            variant="danger"
-                                                            size="sm"
-                                                            onClick={() => handleDeleteComment(comment.id)}
-                                                        >
-                                                            {t("common.delete")}
-                                                        </Button>
-                                                    )}
-                                                </td>
-                                            )}
-                                        </tr>
-                                    ))
-                                )}
+                                ))
+                            )}
                             </tbody>
                         </Table>
                     </Card.Body>
                 </Card>
             </Col>
 
-            {/* Add Comment Modal */}
-            <Modal show={showModal} onHide={() => setShowModal(false)}>
+            {/* Add / Edit Comment Modal */}
+            <Modal show={showModal} onHide={handleCloseModal}>
                 <Modal.Header closeButton>
-                    <Modal.Title>{t("record.addComment")}</Modal.Title>
+                    <Modal.Title>{editingComment ? t('record.editComment') : t('record.addComment')}</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     <Form>
                         <Form.Group controlId="newComment">
-                            <Form.Label>{t("record.commentMessage")}</Form.Label>
+                            <Form.Label>{t('record.commentMessage')}</Form.Label>
                             <Form.Control
                                 as="textarea"
                                 rows={4}
                                 value={newComment}
                                 onChange={(e) => setNewComment(e.target.value)}
-                                placeholder={t("record.commentPlaceholder") || ""}
+                                placeholder={t('record.commentPlaceholder') || ''}
                             />
                         </Form.Group>
                         {actionError && (
@@ -269,18 +288,19 @@ export default function RecordComments({recordId, recordTaxonId}: RecordComments
                     </Form>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button variant="secondary" onClick={() => setShowModal(false)}>
-                        {t("common.cancel")}
+                    <Button variant="secondary" onClick={handleCloseModal}>
+                        {t('common.cancel')}
                     </Button>
-                    <Button 
-                        variant="primary" 
+                    <Button
+                        variant="primary"
                         onClick={handleSubmitComment}
                         disabled={!newComment.trim() || submitting}
                     >
-                        {submitting ? t("common.saving") : t("common.save")}
+                        {submitting ? t('common.saving') : t('common.save')}
                     </Button>
                 </Modal.Footer>
             </Modal>
+            {dialog}
         </Row>
     );
 }

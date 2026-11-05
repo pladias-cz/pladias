@@ -5,13 +5,13 @@
 
 import {Form} from 'react-bootstrap';
 import {useTranslation} from 'react-i18next';
-import type {DataTableColumnDef} from '../types.ts';
+import type {DataTableColumnDef} from '../types';
 import {canFilter, getFilterPlaceholder} from '../utils';
-import {DateRangeFilter} from './DateRangeFilter.tsx';
+import {DateRangeFilter} from './DateRangeFilter';
 
 interface DataTableFilterRowProps<T> {
     columns: DataTableColumnDef<T>[];
-    filters: Array<{id: string; value: string}>;
+    filters: Array<{ id: string; value: string }>;
     onFilterChange: (columnId: string, value: string) => void;
 }
 
@@ -47,14 +47,13 @@ export function DataTableFilterRow<T>(props: DataTableFilterRowProps<T>) {
     return (
         <tr>
             {columns.map((column) => (
-                <th 
-                    key={`filter-${String(column.id)}`} 
+                <th
+                    key={`filter-${String(column.id)}`}
                     style={{
                         width: column.width,
                         minWidth: column.minWidth,
                         maxWidth: column.width,
                     }}
-                    className="table-nowrap"
                 >
                     {canFilter(column) ? (
                         column.type === 'boolean' || column.type === 'checkbox' ? (
@@ -64,9 +63,9 @@ export function DataTableFilterRow<T>(props: DataTableFilterRowProps<T>) {
                                 onChange={(e) => onFilterChange(String(column.id), e.target.value)}
                                 style={{width: '100%'}}
                             >
-                                <option value="">{t("common.table.filter.all")}</option>
-                                <option value="true">{t("common.table.filter.yes")}</option>
-                                <option value="false">{t("common.table.filter.no")}</option>
+                                <option value="">{t('common.table.filter.all')}</option>
+                                <option value="true">{t('common.table.filter.yes')}</option>
+                                <option value="false">{t('common.table.filter.no')}</option>
                             </Form.Select>
                         ) : column.type === 'text' && column.filterOptions ? (
                             <Form.Select
@@ -75,7 +74,7 @@ export function DataTableFilterRow<T>(props: DataTableFilterRowProps<T>) {
                                 onChange={(e) => onFilterChange(String(column.id), e.target.value)}
                                 style={{width: '100%'}}
                             >
-                                <option value="">{t("common.table.filter.all")}</option>
+                                <option value="">{t('common.table.filter.all')}</option>
                                 {column.filterOptions.map(option => (
                                     <option key={option.value} value={option.value}>{option.label}</option>
                                 ))}
@@ -89,7 +88,7 @@ export function DataTableFilterRow<T>(props: DataTableFilterRowProps<T>) {
                                 onChange={(e) => onFilterChange(String(column.id), e.target.value)}
                                 style={{width: '100%', boxSizing: 'border-box'}}
                             />
-                        ) : column.type === 'timestamp' && (column as any).enableRangeFilter !== false ? (
+                        ) : column.type === 'timestamp' && column.enableRangeFilter !== false ? (
                             <DateRangeFilter
                                 fromDate={getFromDateValue(String(column.id))}
                                 toDate={getToDateValue(String(column.id))}

@@ -1,25 +1,27 @@
-import { useState } from 'react';
-import { OriginalityStatusId, OriginalityStatusMeta } from '@/core/originalityStatus';
-import type { RecordPladias } from '@/models';
-import { useRecordQuickUpdates } from './hooks/useRecordQuickUpdates.ts';
+import {useState} from 'react';
+import {useTranslation} from 'react-i18next';
+import {OriginalityStatusId, OriginalityStatusMeta} from '@/core/originalityStatus';
+import type {RecordPladias} from '@/models';
+import {useRecordQuickUpdates} from './hooks/useRecordQuickUpdates';
 
 interface OriginalityStatusIconsProps {
     record: RecordPladias;
     onRecordUpdated?: (record: RecordPladias) => void;
 }
 
-export function OriginalityStatusIcons({ record, onRecordUpdated }: OriginalityStatusIconsProps) {
-    const { updateOriginalityStatus } = useRecordQuickUpdates();
+export function OriginalityStatusIcons({record, onRecordUpdated}: OriginalityStatusIconsProps) {
+    const {t} = useTranslation();
+    const {updateOriginalityStatus} = useRecordQuickUpdates();
     const [optimisticStatus, setOptimisticStatus] = useState<OriginalityStatusId | null>(null);
 
     const handleStatusChange = async (newStatus: OriginalityStatusId) => {
-        if (record.originalityStatusId !== newStatus && record.canEdit) {
+        if (record.originalityStatusId !== newStatus && record.canEditValidationFields) {
             // Optimistic update - show change immediately
             setOptimisticStatus(newStatus);
 
             try {
                 const result = await updateOriginalityStatus(
-                    record, 
+                    record,
                     newStatus,
                     (updatedRecord) => {
                         // Propagate updated record with new timestamp to parent
@@ -66,14 +68,14 @@ export function OriginalityStatusIcons({ record, onRecordUpdated }: OriginalityS
                         key={id}
                         type="button"
                         onClick={() => handleStatusChange(id)}
-                        disabled={!record.canEdit}
-                        title={meta.i18nKey}
+                        disabled={!record.canEditValidationFields}
+                        title={t(meta.i18nKey)}
                         style={{
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            cursor: record.canEdit ? 'pointer' : 'default',
-                            opacity: record.canEdit ? 1 : 0.6,
+                            cursor: record.canEditValidationFields ? 'pointer' : 'default',
+                            opacity: record.canEditValidationFields ? 1 : 0.6,
                             padding: 0,
                             outline: 'none',
                             background: 'none',

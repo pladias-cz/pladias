@@ -5,61 +5,57 @@
  * to efficiently load taxa and their map settings.
  */
 
-import {useState, useCallback, useMemo, useEffect} from 'react';
+import {useState, useCallback, useMemo, useRef} from 'react';
 import {useTranslation} from 'react-i18next';
-import {DataTable, type DataTableColumnDef, createActionColumn, createCheckboxColumn, createTextColumn, createNumberColumn} from '@/core/dataTable';
 import {
-    useTaxaData,
-    useTaxonUpdates,
-    extractTaxaFilters,
-} from './taxaList/hooks';
+    DataTable,
+    type TableDataUpdater,
+} from '@/core/dataTable';
+import {createTaxaColumns, type EditableTaxaCells} from '@/components/taxaList/columns';
+import {useTaxonUpdates} from '@/hooks/useTaxonUpdates';
+import {useTaxaData} from '@/hooks/useTaxaData';
 import {
     StatusSelect,
     PresliaInlineField,
     ArchiveCsvCell,
     MappedCell,
 } from './taxaList/components';
-import type {TaxonMapSettings, StatusOption, TaxonOption} from './taxaList/types';
-import {Link} from "react-router-dom";
+import type {TaxonMapSettings} from '@/models/TaxonMapSettings';
+import type {TaxonId} from '@/models/TaxonId';
+import {getPublicationStatuses, getRevisionStatuses, extractTaxaFilters} from '@/services/mapAdminApi';
+import {notifyApiError} from '@/stores/notificationStore';
+import {useCatalogQuery} from '@/query/useCatalogQuery';
+import {Link} from 'react-router-dom';
 
 export default function TaxaList() {
     const {t} = useTranslation();
 
-    const [error, setError] = useState<string | null>(null);
-    const [revisionStatusOptions, setRevisionStatusOptions] = useState<StatusOption[]>([]);
-    const [publicationStatusOptions, setPublicationStatusOptions] = useState<StatusOption[]>([]);
-    const [localDataUpdater, _setLocalDataUpdater] = useState<((updater: (prev: TaxonMapSettings[]) => TaxonMapSettings[]) => void) | null>(null);
+    // Optimistický updater řádků tabulky – zaregistruje ho DataTable po mountu
+    // (onDataUpdater); vlastní cellRenderery (status selecty, mapování, Preslia,
+    // PNG…) s ním projeví změny okamžitě bez refetche (vrstva žije do nejbližší
+    // odpovědi serveru).
+    //
+    // Pozor: updater se drží v refu, NE ve state. React považuje funkční
+    // argument setState za funkční updater – `setState(setData)` by zavolal
+    // `setData(null)` a uložil jeho návratovou hodnotu (undefined) místo
+    // funkce samotné; registrace by se tiše ztratila a optimistická vrstva
+    // by nikdy nefungovala (viz docs/gotchas.md).
+    const localDataUpdaterRef = useRef<TableDataUpdater<TaxonMapSettings> | null>(null);
 
-    useEffect(() => {
-        const fetchStatusOptions = async () => {
-            try {
-                const [revisionRes, publicationRes] = await Promise.all([
-                    fetch('/api/react/atlasadmin/revision-statuses'),
-                    fetch('/api/react/atlasadmin/publication-statuses')
-                ]);
-
-                const revisionData = await revisionRes.json();
-                const publicationData = await publicationRes.json();
-
-                if (revisionData.success) {
-                    setRevisionStatusOptions(revisionData.data || []);
-                }
-                if (publicationData.success) {
-                    setPublicationStatusOptions(publicationData.data || []);
-                }
-            } catch (error) {
-                console.error('Error fetching status options:', error);
-            }
-        };
-
-        fetchStatusOptions();
+    const handleDataUpdater = useCallback((updater: TableDataUpdater<TaxonMapSettings> | null) => {
+        localDataUpdaterRef.current = updater;
     }, []);
 
-    const {fetchTaxa} = useTaxaData({
-        onSuccess: () => {
-            // Optional: handle successful data fetch
-        }
-    });
+    // Vynucení refetche dat tabulky po mutacích mimo DataTable (uložení
+    // Preslia apod.) – viz refreshKey v DataTable.
+    const [tableRefreshKey, setTableRefreshKey] = useState(0);
+
+    // číselníky statusů – cachované (viz CACHED_CATALOGS v queryClient.ts);
+    // při selhání zůstane filtr prázdný (stejně jako dřív – chybu jen logoval)
+    const revisionStatusOptions = useCatalogQuery(['revisionStatuses'], getRevisionStatuses);
+    const publicationStatusOptions = useCatalogQuery(['publicationStatuses'], getPublicationStatuses);
+
+    const {fetchTaxa} = useTaxaData({endpoint: '/api/react/atlasadmin/taxa'});
 
     const {
         updatingTaxonId,
@@ -72,16 +68,21 @@ export default function TaxaList() {
         updatePublicationStatus,
     } = useTaxonUpdates();
 
-    const showError = useCallback((message: string) => {
-        setError(message);
-        setTimeout(() => setError(null), 5000);
+    // Chyby mutací reportuje globální notifikační store (toast): hláška
+    // backendu (concurrency, neplatný přechod statusu…) z ApiError.payload,
+    // lokalizovaný fallback jinak; chyby už centrálně oznámené (403, síť)
+    // notifyApiError přeskakuje.
+    const handleError = useCallback((error: unknown) => {
+        notifyApiError(error, t('atlas.admin.taxaList.updateFailed'));
+    }, [t]);
+
+    const refreshTable = useCallback(() => {
+        setTableRefreshKey(key => key + 1);
     }, []);
 
     const updateLocalData = useCallback((updater: (prev: TaxonMapSettings[]) => TaxonMapSettings[]) => {
-        if (localDataUpdater) {
-            localDataUpdater(updater);
-        }
-    }, [localDataUpdater]);
+        localDataUpdaterRef.current?.(updater);
+    }, []);
 
     const handlePngUploadComplete = useCallback((taxonId: number, hasPng: boolean) => {
         updateLocalData(prev =>
@@ -92,144 +93,117 @@ export default function TaxaList() {
     }, [updateLocalData]);
 
     const handleIsMappedChange = useCallback(async (row: TaxonMapSettings) => {
-        await updateIsMapped(row, updateLocalData, showError);
-    }, [updateIsMapped, updateLocalData, showError]);
+        await updateIsMapped(row, updateLocalData, handleError);
+    }, [updateIsMapped, updateLocalData, handleError]);
 
-    const handleParentMapChange = useCallback(async (row: TaxonMapSettings, selected: TaxonOption | null) => {
+    const handleParentMapChange = useCallback(async (row: TaxonMapSettings, selected: TaxonId | null) => {
         await updateParentMap(
             row,
             selected ? selected.id : null,
             selected ? selected.nameLat : null,
             updateLocalData,
-            showError
+            handleError
         );
-    }, [updateParentMap, updateLocalData, showError]);
+    }, [updateParentMap, updateLocalData, handleError]);
 
     const handleCommonThresholdChange = useCallback(async (row: TaxonMapSettings, newValue: number) => {
-        await updateCommonThreshold(row, newValue, updateLocalData, showError);
-    }, [updateCommonThreshold, updateLocalData, showError]);
+        await updateCommonThreshold(row, newValue, updateLocalData, handleError);
+    }, [updateCommonThreshold, updateLocalData, handleError]);
 
     const handleIsProtectedChange = useCallback(async (row: TaxonMapSettings) => {
-        await updateIsProtected(row, updateLocalData, showError);
-    }, [updateIsProtected, updateLocalData, showError]);
+        try {
+            await updateIsProtected(row, updateLocalData, handleError);
+        } finally {
+            // jako u Preslia: refetch po úspěchu (nová hodnota + čerstvý
+            // lastEditTimestamp, další editace téhož řádku nespadne na
+            // concurrency kontrole) i selhání (resynchronizace řádku s DB –
+            // optimisticky přepnutý checkbox se vrátí na pravdu serveru)
+            refreshTable();
+        }
+    }, [updateIsProtected, updateLocalData, handleError, refreshTable]);
 
     const handlePresliaChange = useCallback(async (row: TaxonMapSettings, newValue: string) => {
-        await updatePreslia(row, newValue, updateLocalData, showError);
-    }, [updatePreslia, updateLocalData, showError]);
+        try {
+            await updatePreslia(row, newValue, updateLocalData, handleError);
+        } finally {
+            // Refetch po úspěchu i selhání: po úspěchu se v tabulce projeví nová
+            // hodnota i čerstvý lastEditTimestamp (další editace téhož řádku
+            // nespadne na concurrency kontrole); po selhání se řádek
+            // resynchronizuje s DB a další pokus použije platný timestamp.
+            refreshTable();
+        }
+    }, [updatePreslia, updateLocalData, handleError, refreshTable]);
 
     const handleRevisionStatusChange = useCallback(async (row: TaxonMapSettings, newValue: number) => {
-        await updateRevisionStatus(row, newValue, updateLocalData, showError);
-    }, [updateRevisionStatus, updateLocalData, showError]);
+        await updateRevisionStatus(row, newValue, updateLocalData, handleError);
+    }, [updateRevisionStatus, updateLocalData, handleError]);
 
     const handlePublicationStatusChange = useCallback(async (row: TaxonMapSettings, newValue: number) => {
-        await updatePublicationStatus(row, newValue, updateLocalData, showError);
-    }, [updatePublicationStatus, updateLocalData, showError]);
+        await updatePublicationStatus(row, newValue, updateLocalData, handleError);
+    }, [updatePublicationStatus, updateLocalData, handleError]);
 
-    const columns = useMemo<DataTableColumnDef<TaxonMapSettings>[]>(() => [
-        createTextColumn<TaxonMapSettings>('taxonNameLat', t("atlas.admin.taxaList.latinName"), {
-            enableSorting: true,
-            enableFiltering: true,
-            filterPlaceholder: t("atlas.admin.taxaList.filterLatinName"),
-            cellRenderer: (_value, row) => (
-                <>
-                    <i>
-                        <Link to={`/atlas/mapMain/${row.taxonId}`} target="_blank" rel="noopener noreferrer">{row.taxonNameLat}</Link>
-                    </i>
-                    {row.taxonRankCz && (
-                        <small className="text-muted"> ({row.taxonRankCz})</small>
-                    )}
-                </>
-            ),
-        }),
-        createActionColumn<TaxonMapSettings>('isMapped', t("atlas.admin.taxaList.mapped"), (row) => (
+    // Editovatelné buňky pro sdílenou column factory (improvements 2.4) –
+    // komponenty admin feature (MappedCell, StatusSelect, PresliaInlineField…)
+    // injikované jako renderery, aby sdílený modul taxaList/columns
+    // neimportoval vnitřnosti admin feature.
+    const editableCells = useMemo<EditableTaxaCells>(() => ({
+        renderTaxonLink: (row) => (
+            <Link to={`/atlas/mapMain/${row.taxonId}`} target="_blank"
+                  rel="noopener noreferrer">{row.taxonNameLat}</Link>
+        ),
+        renderIsMapped: (row) => (
             <MappedCell
                 row={row}
                 updatingTaxonId={updatingTaxonId}
                 onIsMappedChange={handleIsMappedChange}
                 onParentMapChange={handleParentMapChange}
             />
-        ), {
-            minWidth: '250px',
-        }),
-        createNumberColumn<TaxonMapSettings>('commonThreshold', t("atlas.admin.taxaList.commonThreshold"), {
-            enableSorting: true,
-            enableFiltering: true,
-            cellRenderer: (_value, row) => (
-                <input
-                    type="number"
-                    min={0}
-                    max={3}
-                    value={row.commonThreshold}
-                    onChange={(e) => handleCommonThresholdChange(row, parseInt(e.target.value) || 0)}
-                    disabled={updatingTaxonId === row.taxonId}
-                    className="form-control form-control-sm"
-                    style={{width: '60px'}}
-                />
-            ),
-        }),
-        createCheckboxColumn<TaxonMapSettings>('isProtected', t("atlas.admin.taxaList.protected"), async (_row, _checked) => {
-            await handleIsProtectedChange(_row);
-        }, {
-            enableSorting: true,
-            enableFiltering: true,
-        }),
-        createTextColumn<TaxonMapSettings>('preslia', t("atlas.admin.taxaList.preslia"), {
-            enableSorting: true,
-            enableFiltering: true,
-            filterPlaceholder: t("atlas.admin.taxaList.filterPreslia"),
-            cellRenderer: (_value, row) => (
-                <PresliaInlineField
-                    taxonId={row.taxonId}
-                    value={row.preslia}
-                    onSave={(newValue) => handlePresliaChange(row, newValue)}
-                    disabled={updatingTaxonId === row.taxonId}
-                />
-            ),
-        }),
-        createTextColumn<TaxonMapSettings>('revisors', t("atlas.admin.taxaList.revisors"), {
-            enableSorting: true,
-            enableFiltering: false,
-            filterPlaceholder: t("atlas.admin.taxaList.filterRevisors"),
-            cellRenderer: (value) => value || '-',
-        }),
-        createTextColumn<TaxonMapSettings>('revisionStatusId', t("atlas.admin.taxaList.revisionStatus"), {
-            enableSorting: true,
-            enableFiltering: true,
-            filterOptions: revisionStatusOptions.map(o => ({value: String(o.id), label: `${o.description} [${o.id}]`})),
-            cellRenderer: (_value, row) => (
-                <StatusSelect
-                    value={row.revisionStatusId}
-                    options={revisionStatusOptions}
-                    onChange={(newValue) => handleRevisionStatusChange(row, newValue)}
-                    disabled={updatingTaxonId === row.taxonId}
-                />
-            ),
-        }),
-        createTextColumn<TaxonMapSettings>('publicationStatusId', t("atlas.admin.taxaList.publicationStatus"), {
-            enableSorting: true,
-            enableFiltering: true,
-            filterOptions: publicationStatusOptions.map(o => ({value: String(o.id), label: `${o.description} [${o.id}]`})),
-            cellRenderer: (_value, row) => (
-                <StatusSelect
-                    value={row.publicationStatusId}
-                    options={publicationStatusOptions}
-                    onChange={(newValue) => handlePublicationStatusChange(row, newValue)}
-                    disabled={updatingTaxonId === row.taxonId}
-                />
-            ),
-        }),
-        createActionColumn<TaxonMapSettings>('archiveCSV', t("atlas.admin.taxaList.archiveCSV"), (row) => (
+        ),
+        renderCommonThreshold: (row) => (
+            <input
+                type="number"
+                min={0}
+                max={3}
+                value={row.commonThreshold}
+                onChange={(e) => handleCommonThresholdChange(row, parseInt(e.target.value) || 0)}
+                disabled={updatingTaxonId === row.taxonId}
+                className="form-control form-control-sm"
+                style={{width: '60px'}}
+            />
+        ),
+        onIsProtectedToggle: handleIsProtectedChange,
+        isProtectedDisabled: (row) => updatingTaxonId === row.taxonId,
+        renderPreslia: (row) => (
+            <PresliaInlineField
+                taxonId={row.taxonId}
+                value={row.preslia}
+                onSave={(newValue) => handlePresliaChange(row, newValue)}
+                disabled={updatingTaxonId === row.taxonId}
+            />
+        ),
+        renderRevisionStatus: (row) => (
+            <StatusSelect
+                value={row.revisionStatusId}
+                options={revisionStatusOptions}
+                onChange={(newValue) => handleRevisionStatusChange(row, newValue)}
+                disabled={updatingTaxonId === row.taxonId}
+            />
+        ),
+        renderPublicationStatus: (row) => (
+            <StatusSelect
+                value={row.publicationStatusId}
+                options={publicationStatusOptions}
+                onChange={(newValue) => handlePublicationStatusChange(row, newValue)}
+                disabled={updatingTaxonId === row.taxonId}
+            />
+        ),
+        renderArchiveCsv: (row) => (
             <ArchiveCsvCell
                 row={row}
                 onPngUploadComplete={handlePngUploadComplete}
             />
-        ), {
-            minWidth: '200px',
-        }),
-    ], [
-        t,
-        revisionStatusOptions,
-        publicationStatusOptions,
+        ),
+    }), [
         updatingTaxonId,
         handleIsMappedChange,
         handleParentMapChange,
@@ -239,17 +213,19 @@ export default function TaxaList() {
         handleRevisionStatusChange,
         handlePublicationStatusChange,
         handlePngUploadComplete,
+        revisionStatusOptions,
+        publicationStatusOptions,
     ]);
+
+    // sdílená column factory (improvements 2.4) – editovatelná varianta
+    const columns = useMemo(
+        () => createTaxaColumns({t, revisionStatusOptions, publicationStatusOptions, editableCells}),
+        [t, revisionStatusOptions, publicationStatusOptions, editableCells]
+    );
+
 
     return (
         <div className="container-fluid">
-            {error && (
-                <div className="alert alert-danger alert-dismissible fade show" role="alert">
-                    {error}
-                    <button type="button" className="btn-close" onClick={() => setError(null)}></button>
-                </div>
-            )}
-
             <DataTable<TaxonMapSettings>
                 endpoint="/api/react/atlasadmin/taxa"
                 columns={columns}
@@ -258,6 +234,8 @@ export default function TaxaList() {
                 pageSizeOptions={[10, 20, 50, 100]}
                 hasExcelExport
                 buildExportFilterParams={extractTaxaFilters}
+                refreshKey={tableRefreshKey}
+                onDataUpdater={handleDataUpdater}
             />
         </div>
     );

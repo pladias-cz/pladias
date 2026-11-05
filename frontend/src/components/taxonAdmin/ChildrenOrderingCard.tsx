@@ -1,30 +1,35 @@
-import { useEffect, useState } from "react";
-import { Card, Spinner } from "react-bootstrap";
-import { type Taxon } from "@/models/Taxon";
-import { useTranslation } from "react-i18next";
-import {Link} from "react-router-dom";
+import {useState} from 'react';
+import {Card, Spinner} from 'react-bootstrap';
+import {useQuery, useQueryClient} from '@tanstack/react-query';
+import {type Taxon} from '@/models/Taxon';
+import {useTranslation} from 'react-i18next';
+import {Link} from 'react-router-dom';
+import {getTaxonFirstChildren, moveTaxonBeforeSibling} from '@/services/taxonApi';
+import {notifyApiError} from '@/stores/notificationStore';
+import {useQueryErrorNotify} from '@/query/useQueryErrorNotify';
 
 interface Props {
     taxon: Taxon;
 }
 
-export default function ChildrenOrderingCard({ taxon }: Props) {
+export default function ChildrenOrderingCard({taxon}: Props) {
     const {t} = useTranslation();
-    const [children, setChildren] = useState<Taxon[]>([]);
+    const queryClient = useQueryClient();
+
+    // přímí potomci – bez cache (sekce J), při mountu znovu
+    const {data: children = [], error} = useQuery({
+        queryKey: ['taxonChildren', taxon.id],
+        queryFn: () => getTaxonFirstChildren(taxon.id),
+    });
+    useQueryErrorNotify(error, t('taxon.ordering.loadFailed'));
+
     const [draggedId, setDraggedId] = useState<number | null>(null);
     const [hoveredId, setHoveredId] = useState<number | null>(null);
     const [isUpdating, setIsUpdating] = useState(false);
-    const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
-        fetch(`/api/react/taxon/${taxon.id}/firstChildren`)
-            .then(r => r.json())
-            .then(json => {
-                if (json.success) {
-                    setChildren(json.data);
-                }
-            });
-    }, [taxon.id]);
+    /** optimistický zápis pořadí potomků přímo do query cache */
+    const setChildren = (next: Taxon[]) =>
+        queryClient.setQueryData<Taxon[]>(['taxonChildren', taxon.id], next);
 
     function handleDragStart(id: number) {
         if (isUpdating) return;
@@ -33,8 +38,6 @@ export default function ChildrenOrderingCard({ taxon }: Props) {
 
     async function handleDrop(targetId: number) {
         if (draggedId == null || draggedId === targetId || isUpdating) return;
-
-        const original = [...children];
 
         // optimistický reorder v UI
         const dragged = children.find(c => c.id === draggedId)!;
@@ -45,23 +48,12 @@ export default function ChildrenOrderingCard({ taxon }: Props) {
         setChildren(filtered);
         setHoveredId(null);
         setIsUpdating(true);
-        setError(null);
 
         try {
-            const res = await fetch("/api/react/taxon/moveBeforeSibling", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ taxonId: draggedId, siblingId: targetId }),
-            });
-
-            if (!res.ok) throw new Error(t("taxon.ordering.reorderFailed"));
-
-            const json = await res.json();
-            if (!json.success) throw new Error(json.message ?? t("taxon.ordering.reorderFailed"));
-
+            await moveTaxonBeforeSibling(draggedId, targetId);
         } catch (e) {
-            setChildren(original); // rollback
-            setError((e as Error).message);
+            setChildren(children); // rollback
+            notifyApiError(e, t('taxon.ordering.reorderFailed'));
         } finally {
             setIsUpdating(false);
             setDraggedId(null);
@@ -71,23 +63,23 @@ export default function ChildrenOrderingCard({ taxon }: Props) {
     return (
         <Card>
             <Card.Header>
-                {t("taxon.ordering.title")}
-                {isUpdating && <Spinner size="sm" className="ms-2" animation="border" />}
+                {t('taxon.ordering.title')}
+                {isUpdating && <Spinner size="sm" className="ms-2" animation="border"/>}
             </Card.Header>
 
             <Card.Body>
                 {children.map((c) => (
-                    <div key={c.id} style={{ position: "relative" }}>
+                    <div key={c.id} style={{position: 'relative'}}>
                         {/* indikátor kam padne */}
                         {hoveredId === c.id && (
                             <div
                                 style={{
-                                    position: "absolute",
+                                    position: 'absolute',
                                     top: 0,
                                     left: 0,
                                     right: 0,
                                     height: 4,
-                                    backgroundColor: "blue",
+                                    backgroundColor: 'blue',
                                     zIndex: 10,
                                 }}
                             />
@@ -103,9 +95,9 @@ export default function ChildrenOrderingCard({ taxon }: Props) {
                             onDragLeave={() => setHoveredId(null)}
                             onDrop={() => handleDrop(c.id)}
                             className={`p-2 mb-1 border rounded d-flex align-items-center gap-2 ${
-                                draggedId === c.id ? "bg-light" : ""
+                                draggedId === c.id ? 'bg-light' : ''
                             }`}
-                            style={{ cursor: isUpdating ? "not-allowed" : "move" }}
+                            style={{cursor: isUpdating ? 'not-allowed' : 'move'}}
                         >
                             {/* odkaz na detail */}
                             <Link
@@ -120,8 +112,6 @@ export default function ChildrenOrderingCard({ taxon }: Props) {
 
                     </div>
                 ))}
-
-                {error && <div className="text-danger mt-2">{error}</div>}
             </Card.Body>
         </Card>
     );

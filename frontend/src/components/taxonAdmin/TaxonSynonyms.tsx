@@ -1,68 +1,84 @@
-import {useEffect, useMemo, useState} from 'react';
-import {Card, Spinner, Button, Form, Alert, Table} from 'react-bootstrap';
+import {useCallback, useMemo, useState} from 'react';
+import {Card, Spinner, Button, Form, Table} from 'react-bootstrap';
 import {
     flexRender,
-    getCoreRowModel,
-    useReactTable,
+    tableFeatures,
+    useTable,
 } from '@tanstack/react-table';
-import { type ColumnDef} from '@tanstack/react-table';
+import {type ColumnDef} from '@tanstack/react-table';
+import {useQuery, useQueryClient} from '@tanstack/react-query';
 
 import {type Taxon} from '@/models/Taxon';
-import type {TaxonSynonym} from "@/models/TaxonSynonym";
-import type {TaxonPublication} from "@/models/TaxonPublication";
+import type {TaxonSynonym} from '@/models/TaxonSynonym';
 import {useTranslation} from 'react-i18next';
+import {useConfirm} from '@/hooks/useConfirm';
+import {
+    deleteTaxonSynonym,
+    getTaxonPublications,
+    getTaxonSynonyms,
+    saveTaxonSynonym,
+} from '@/services/taxonApi';
+import {notifyApiError, useNotifications} from '@/stores/notificationStore';
+import {useCatalogQuery} from '@/query/useCatalogQuery';
+import {useQueryErrorNotify} from '@/query/useQueryErrorNotify';
 
 interface Props {
     taxon: Taxon;
     cacheKey: number;
 }
 
+// v9: features se deklarují explicitně; tato tabulka žádné extra nepotřebuje
+// (sort/filtr/paginaci řeší editační formuláře přímo, core row model je vždy k dispozici)
+const features = tableFeatures({});
+
 export default function TaxonSynonyms({taxon, cacheKey}: Props) {
     const {t} = useTranslation();
+    const {confirm, dialog} = useConfirm();
+    const {push} = useNotifications();
+    const queryClient = useQueryClient();
 
-    const [synonyms, setSynonyms] = useState<TaxonSynonym[]>([]);
-    const [publications, setPublications] = useState<TaxonPublication[]>([]);
-    const [loading, setLoading] = useState(false);
     const [savingId, setSavingId] = useState<number | null>(null);
-    const [error, setError] = useState<string | null>(null);
     const [successId, setSuccessId] = useState<number | null>(null);
 
     /* =========================
        LOAD DATA
     ========================= */
 
-    useEffect(() => {
-        setSynonyms([]);
-    }, [cacheKey]);
+    // synonyma – bez cache (sekce J); cacheKey (verze taxonu) v klíči zajistí
+    // čerstvá data po mutacích taxonu
+    const synonymsQueryKey = useMemo(
+        () => ['taxonSynonyms', taxon.id, cacheKey],
+        [taxon.id, cacheKey],
+    );
+    const {data: synonyms = [], isPending: loading, error} = useQuery({
+        queryKey: synonymsQueryKey,
+        queryFn: () => getTaxonSynonyms(taxon.id),
+    });
+    useQueryErrorNotify(error, t('taxon.synonyms.loadFailed'));
 
-    useEffect(() => {
-        async function load() {
-            setLoading(true);
-            try {
-                const res = await fetch(`/api/react/taxon/${taxon.id}/synonyms`);
-                const json = await res.json();
-                setSynonyms(json.data);
+    // publikace – číselník bez cache (sekce J)
+    const publications = useCatalogQuery(['taxonPublications'], getTaxonPublications);
 
-                const pubRes = await fetch(`/api/react/taxaPublications`);
-                const pubJson = await pubRes.json();
-                setPublications(pubJson.data);
-            } finally {
-                setLoading(false);
-            }
-        }
-
-        if (taxon?.id) load();
-    }, [taxon]);
+    /** editační zápisy jdou přímo do query cache (optimistická vrstva) */
+    const setSynonyms = useCallback(
+        (updater: (prev: TaxonSynonym[]) => TaxonSynonym[]) => {
+            queryClient.setQueryData<TaxonSynonym[]>(
+                synonymsQueryKey,
+                prev => updater(prev ?? []),
+            );
+        },
+        [queryClient, synonymsQueryKey],
+    );
 
     /* =========================
        HANDLERS
     ========================= */
 
-    const updateField = (id: number, field: keyof TaxonSynonym, value: any) => {
+    const updateField = useCallback((id: number, field: keyof TaxonSynonym, value: string | boolean | number | null) => {
         setSynonyms(prev =>
             prev.map(s => s.id === id ? {...s, [field]: value} : s)
         );
-    };
+    }, [setSynonyms]);
 
     const addRow = () => {
         setSynonyms(prev => [
@@ -79,100 +95,48 @@ export default function TaxonSynonyms({taxon, cacheKey}: Props) {
         ]);
     };
 
-    const saveRow = async (syn: TaxonSynonym) => {
+    const saveRow = useCallback(async (syn: TaxonSynonym) => {
         setSavingId(syn.id);
-        setError(null);
         setSuccessId(null);
 
         try {
-            const method = syn.id < 0 ? 'POST' : 'PUT';
-            const url = syn.id < 0
-                ? `/api/react/synonyms/${taxon.id}`
-                : `/api/react/synonyms/${syn.id}`;
+            await saveTaxonSynonym(syn);
 
-            const res = await fetch(url, {
-                method,
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(syn)
-            });
+            push({type: 'success', message: t('taxon.synonyms.saved')});
 
-            if (!res.ok) {
-                const json = await res.json().catch(() => null);
-                throw new Error(json?.message ?? t("taxon.synonyms.saveFailed", { status: res.status }));
-            }
-
-            const json = await res.json();
-
-            // když backend vrací nový objekt (typicky při POST)
-            if (syn.id < 0 && json.data?.id) {
-                setSynonyms(prev =>
-                    prev.map(s =>
-                        s.id === syn.id ? {...json.data} : s
-                    )
-                );
-            }
-
+            // highlight uloženého řádku – po 2s schovej
             setSuccessId(syn.id);
-
-            // po 2s schovej success
             setTimeout(() => setSuccessId(null), 2000);
 
-        } catch (e: any) {
-            setError(e.message || t("taxon.synonyms.saveError"));
+        } catch (e) {
+            notifyApiError(e, t('taxon.synonyms.saveError'));
         } finally {
             setSavingId(null);
         }
-    };
+    }, [t, push]);
 
-    const renderAlert = () => {
-        if (error) {
-            return (
-                <Alert variant="danger" dismissible onClose={() => setError(null)}>
-                    {error}
-                </Alert>
-            );
-        }
-
-        if (successId) {
-            return (
-                <Alert variant="success">
-                    {t("taxon.synonyms.saved")}
-                </Alert>
-            );
-        }
-
-        return null;
-    };
-
-    const deleteRow = async (id: number) => {
-        if (!confirm(t("taxon.synonyms.deleteConfirm"))) return;
-
-        setError(null);
+    const deleteRow = useCallback(async (id: number) => {
+        if (!(await confirm({
+            message: t('taxon.synonyms.deleteConfirm'),
+            confirmLabel: t('common.delete'),
+        }))) return;
 
         try {
-            const res = await fetch(`/api/react/synonyms/${id}`, {
-                method: 'DELETE'
-            });
-
-            if (!res.ok) {
-                const json = await res.json().catch(() => null);
-                throw new Error(json?.message ?? t("taxon.synonyms.deleteFailed", { status: res.status }));
-            }
-
+            await deleteTaxonSynonym(id);
             setSynonyms(prev => prev.filter(s => s.id !== id));
 
-        } catch (e: any) {
-            setError(e.message || t("taxon.synonyms.deleteError"));
+        } catch (e) {
+            notifyApiError(e, t('taxon.synonyms.deleteError'));
         }
-    };
+    }, [confirm, setSynonyms, t]);
 
     /* =========================
        COLUMNS
     ========================= */
 
-    const columns = useMemo<ColumnDef<TaxonSynonym>[]>(() => [
+    const columns = useMemo<ColumnDef<typeof features, TaxonSynonym>[]>(() => [
         {
-            header: t("taxon.synonyms.nameLatin"),
+            header: t('taxon.synonyms.nameLatin'),
             accessorKey: 'name',
             cell: ({row}) => (
                 <Form.Control
@@ -182,7 +146,7 @@ export default function TaxonSynonyms({taxon, cacheKey}: Props) {
             )
         },
         {
-            header: t("taxon.synonyms.nameHtml"),
+            header: t('taxon.synonyms.nameHtml'),
             accessorKey: 'nameHtml',
             cell: ({row}) => (
                 <Form.Control
@@ -192,7 +156,7 @@ export default function TaxonSynonyms({taxon, cacheKey}: Props) {
             )
         },
         {
-            header: t("taxon.synonyms.suffix"),
+            header: t('taxon.synonyms.suffix'),
             accessorKey: 'suffix',
             cell: ({row}) => (
                 <Form.Control
@@ -202,7 +166,7 @@ export default function TaxonSynonyms({taxon, cacheKey}: Props) {
             )
         },
         {
-            header: t("taxon.synonyms.publication"),
+            header: t('taxon.synonyms.publication'),
             accessorKey: 'publication',
             cell: ({row}) => (
                 <Form.Select
@@ -216,7 +180,7 @@ export default function TaxonSynonyms({taxon, cacheKey}: Props) {
             )
         },
         {
-            header: t("taxon.synonyms.autocomplete"),
+            header: t('taxon.synonyms.autocomplete'),
             accessorKey: 'autocomplete',
             cell: ({row}) => (
                 <Form.Check
@@ -227,7 +191,7 @@ export default function TaxonSynonyms({taxon, cacheKey}: Props) {
             )
         },
         {
-            header: t("taxon.synonyms.actions"),
+            header: t('taxon.synonyms.actions'),
             cell: ({row}) => (
                 <div className="d-flex gap-2">
                     <Button
@@ -247,12 +211,12 @@ export default function TaxonSynonyms({taxon, cacheKey}: Props) {
                 </div>
             )
         }
-    ], [publications, savingId]);
+    ], [publications, savingId, updateField, deleteRow, saveRow, t]);
 
-    const table = useReactTable({
+    const table = useTable({
         data: synonyms,
         columns,
-        getCoreRowModel: getCoreRowModel(),
+        features,
     });
 
     /* =========================
@@ -262,14 +226,13 @@ export default function TaxonSynonyms({taxon, cacheKey}: Props) {
     return (
         <Card className="mt-3">
             <Card.Body>
-
+                {dialog}
                 <div className="d-flex justify-content-between mb-2">
-                    <h5>{t("taxon.synonyms.title")}</h5>
-                    <Button size="sm" onClick={addRow}>{t("taxon.synonyms.addButton")}</Button>
+                    <h5>{t('taxon.synonyms.title')}</h5>
+                    <Button size="sm" onClick={addRow}>{t('taxon.synonyms.addButton')}</Button>
                 </div>
 
-                {renderAlert()}
-                {loading && <Spinner animation="border" />}
+                {loading && <Spinner animation="border"/>}
 
                 {!loading && (
                     <Table striped bordered hover size="sm">
@@ -288,7 +251,7 @@ export default function TaxonSynonyms({taxon, cacheKey}: Props) {
                         {table.getRowModel().rows.map(row => (
                             <tr key={row.id} className={row.original.id === successId ? 'table-success' : ''}>
 
-                                {row.getVisibleCells().map(cell => (
+                                {row.getAllCells().map(cell => (
                                     <td key={cell.id}>
                                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
                                     </td>

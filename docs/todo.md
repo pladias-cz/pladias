@@ -1,21 +1,18 @@
+# TODOs - NOT for agents!
+
+This document serve to humans, do not use for agents.
+---
+
 ## now:
 
 **V:**
-- mapový náhled výsledků vyhledávání, bulkEdit
+- mapový náhled výsledků vyhledávání, bulkEdit (byl refactorován tak prosím checkni)
 
 **P:**
-- pomalost databáze v CERIT
-- optimalizace detailMap
+- dotáhnout refactoring frontendu
 
 ## next:
 **V:**
-- CSV pro mapu - jeslti se nepletu tak chtěli aby se tam CSV "hromadila" - ale teď se mi zdá že je to 1:1, že se drží jen poslední..:
-```sql SELECT taxon_id, COUNT(*) AS cnt
-    FROM atlas.csv_map_details
-    GROUP BY taxon_id
-    HAVING COUNT(*) > 1;
-```
+
 
 **P:**
-- floraveg/cevs do ceritu jako text
-- mykoTest v cerit

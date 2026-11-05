@@ -1,17 +1,19 @@
-import {Card, Col, Row} from "react-bootstrap";
-import {useEffect, useMemo, useState} from "react";
-import {useTranslation} from "react-i18next";
+import {Card, Col, Row} from 'react-bootstrap';
+import {useCallback, useMemo} from 'react';
+import {useTranslation} from 'react-i18next';
 import type {RecordPladiasFull} from '@/models/RecordPladiasFull';
-import RecordInlineField from "./RecordInlineField";
-import {useRecordPermissions} from ".";
-import RecordReadonlyField from "@/components/atlas/record/RecordReadonlyField.tsx";
-import MultiSelectEdit from "@/components/atlas/record/MultiSelectEdit.tsx";
-import SingleSelectEdit from "@/components/atlas/record/SingleSelectEdit.tsx";
-import type {MultiValueOption} from "@/models/MultiValueOption.ts";
-import {useInstanceConfig} from "@/context/InstanceConfigContext";
+import RecordInlineField from './RecordInlineField';
+import RichTextMessage from '@/components/RichTextMessage';
+import {useOptimisticRecord, useRecordPermissions} from '.';
+import RecordReadonlyField from '@/components/atlas/record/RecordReadonlyField';
+import MultiSelectEdit from '@/components/atlas/record/MultiSelectEdit';
+import SingleSelectEdit from '@/components/atlas/record/SingleSelectEdit';
+import type {MultiValueOption} from '@/models/MultiValueOption';
+import {getImportableTaxaForRecord, getPhytochorionOptions, getUnassignedAuthors} from '@/services/recordApi';
+import {useInstanceConfig} from '@/context/InstanceConfigContext';
 
 // Date format validation: YYYY, YYYY-MM, YYYY-MM-DD, or "s. d." (sine data - without date)
-const validateDateFormat = (value: any): string | null => {
+const validateDateFormat = (value: string): string | null => {
     const strValue = String(value ?? '').trim();
 
     // Allow empty values (will be handled by backend)
@@ -57,35 +59,24 @@ interface RecordFloristicProps {
 export default function RecordFloristic({record, onFieldUpdated}: RecordFloristicProps) {
     const {t} = useTranslation();
 
-    // Local state to track record updates
-    const [localRecord, setLocalRecord] = useState<RecordPladiasFull>(record);
+    // Lokální (optimistická) kopie záznamu pro inline editace
+    const {localRecord, setLocalRecord} = useOptimisticRecord(record);
 
     const config = useInstanceConfig() as { isVascular?: boolean };
     const isVascular = Boolean(config.isVascular);
 
-    // Sync localRecord with record prop when ID changes OR when timestamp changes from external source
-    // This ensures all components see the latest timestamp for conflict detection
-    // But we preserve optimistic updates by only syncing fields that came from backend
-    useEffect(() => {
-        if (record.id !== localRecord.id) {
-            // Record changed completely - full sync
-            setLocalRecord(record);
-        } else if (record.lastEditTimestampNum !== localRecord.lastEditTimestampNum) {
-            // Timestamp changed externally (from another component) - sync timestamp only
-            setLocalRecord((prev) => ({
-                ...prev,
-                lastEditTimestampNum: record.lastEditTimestampNum
-            }));
-        }
-    }, [record.id, record.lastEditTimestampNum]);
+    const {canEditCommonFields: canEdit} = useRecordPermissions(localRecord);
 
-    const {canEdit} = useRecordPermissions(localRecord);
+    // Načítání voleb pro select editory (memoizované kvůli deps efektu v komponentách)
+    const loadTaxonOptions = useCallback(() => getImportableTaxaForRecord(localRecord.id), [localRecord.id]);
+    const loadPhytochorionOptions = useCallback(() => getPhytochorionOptions(), []);
+    const loadAuthorOptions = useCallback(() => getUnassignedAuthors(localRecord.id), [localRecord.id]);
 
     // Memoize currentValue to prevent unnecessary re-renders in MultiValueEdit
     const authorsOptions = useMemo(() => localRecord.recordAuthors.map((a): MultiValueOption => ({
         id: a.authorId,
         name: a.authorFullName,
-        label: ""
+        label: ''
     })), [localRecord.recordAuthors]);
 
     // Taxon as single select option
@@ -93,8 +84,8 @@ export default function RecordFloristic({record, onFieldUpdated}: RecordFloristi
         if (!localRecord.taxonId) return null;
         return {
             id: localRecord.taxonId,
-            name: localRecord.taxonNameLat ?? "",
-            label: localRecord.taxonNameHtml ?? localRecord.taxonNameLat ?? ""
+            name: localRecord.taxonNameLat ?? '',
+            label: localRecord.taxonNameHtml ?? localRecord.taxonNameLat ?? ''
         };
     }, [localRecord.taxonId, localRecord.taxonNameLat, localRecord.taxonNameHtml]);
 
@@ -103,14 +94,14 @@ export default function RecordFloristic({record, onFieldUpdated}: RecordFloristi
         if (!localRecord.phytochorionRelationId) return null;
         return {
             id: parseInt(localRecord.phytochorionRelationId, 10),
-            name: localRecord.phytochorionRelationName ?? "",
-            label: localRecord.phytochorionRelationName ?? ""
+            name: localRecord.phytochorionRelationName ?? '',
+            label: localRecord.phytochorionRelationName ?? ''
         };
     }, [localRecord.phytochorionRelationId, localRecord.phytochorionRelationName]);
 
     // Handler for field updates - only updates local state, no API call
     // RecordInlineField already handles the API call
-    const handleSave = (field: string, data: { updatedValue: any, newTimestamp: number }) => {
+    const handleSave = (field: string, data: { updatedValue: string | null, newTimestamp: number }) => {
         const fieldMapping: { [key: string]: keyof RecordPladiasFull } = {
             'LOCALITY': 'locality',
             'ORIGINALNAME': 'taxonOriginal',
@@ -123,7 +114,7 @@ export default function RecordFloristic({record, onFieldUpdated}: RecordFloristi
 
         const mappedField = fieldMapping[field];
         if (mappedField) {
-            let updatedValue = data.updatedValue;
+            let updatedValue: string | number | null = data.updatedValue;
             // Convert numeric values for altitude fields - handle empty string as null
             if (field === 'ALTITUDEMIN' || field === 'ALTITUDEMAX') {
                 const strValue = String(data.updatedValue).trim();
@@ -145,18 +136,18 @@ export default function RecordFloristic({record, onFieldUpdated}: RecordFloristi
             <Col>
                 <Card>
                     <Card.Header>
-                        <strong>{t("record.titles.floristic")}</strong>
+                        <strong>{t('record.titles.floristic')}</strong>
                     </Card.Header>
                     <Card.Body>
                         {canEdit && <>
                             <SingleSelectEdit
-                                label={t("record.taxon")}
+                                label={t('record.taxon')}
                                 recordId={localRecord.id}
                                 currentValue={taxonOption}
-                                endpoint={`/api/react/taxa/importable/record/${localRecord.id}`}
+                                loadOptions={loadTaxonOptions}
                                 field="TAXON"
                                 renderDisplay={(option) => (
-                                    <span dangerouslySetInnerHTML={{__html: option.label || option.name}}/>
+                                    <RichTextMessage html={option.label || option.name}/>
                                 )}
                                 onUpdated={(data) => {
                                     if (data.updatedValue) {
@@ -183,10 +174,10 @@ export default function RecordFloristic({record, onFieldUpdated}: RecordFloristi
                             />
                             {isVascular && (
                                 <SingleSelectEdit
-                                    label={t("record.phytochorion")}
+                                    label={t('record.phytochorion')}
                                     recordId={localRecord.id}
                                     currentValue={phytochorionOption}
-                                    endpoint="/api/react/selectOptions/phytochorions"
+                                    loadOptions={loadPhytochorionOptions}
                                     field="PHYTOCHORION"
                                     onUpdated={(data) => {
                                         if (data.updatedValue) {
@@ -213,18 +204,18 @@ export default function RecordFloristic({record, onFieldUpdated}: RecordFloristi
 
                             {(!isVascular && (
                                     <>
-                                        <RecordReadonlyField label={t("record.substrateText")}
+                                        <RecordReadonlyField label={t('record.substrateText')}
                                                              content={localRecord.substrate}/>
-                                        <RecordReadonlyField label={t("record.chemical")}
+                                        <RecordReadonlyField label={t('record.chemical')}
                                                              content={localRecord.chemical}/>
-                                        <RecordReadonlyField label={t("record.substrate1")}
+                                        <RecordReadonlyField label={t('record.substrate1')}
                                                              content={localRecord.substrate}/>
-                                        <RecordReadonlyField label={t("record.substrate2")}
+                                        <RecordReadonlyField label={t('record.substrate2')}
                                                              content={localRecord.substrate}/>
                                     </>)
                             )}
                             <RecordInlineField
-                                label={t("record.nameOriginal")}
+                                label={t('record.nameOriginal')}
                                 recordId={localRecord.id}
                                 field="ORIGINALNAME"
                                 value={localRecord.taxonOriginal}
@@ -232,7 +223,7 @@ export default function RecordFloristic({record, onFieldUpdated}: RecordFloristi
                                 lastEditTimestampNum={localRecord.lastEditTimestampNum || 0}
                             />
                             {isVascular && (<RecordInlineField
-                                    label={t("record.nearestTown")}
+                                    label={t('record.nearestTown')}
                                     recordId={localRecord.id}
                                     field="NEARESTTOWNNAME"
                                     value={localRecord.nearestTownText}
@@ -241,7 +232,7 @@ export default function RecordFloristic({record, onFieldUpdated}: RecordFloristi
                                 />
                             )}
                             <RecordInlineField
-                                label={t("record.locality")}
+                                label={t('record.locality')}
                                 recordId={localRecord.id}
                                 field="LOCALITY"
                                 value={localRecord.locality}
@@ -250,7 +241,7 @@ export default function RecordFloristic({record, onFieldUpdated}: RecordFloristi
                             />
                             {!isVascular && (
                                 <RecordInlineField
-                                    label={t("record.localityExtra")}
+                                    label={t('record.localityExtra')}
                                     recordId={localRecord.id}
                                     field="LOCALITYEXTRA"
                                     value={localRecord.localityExtra}
@@ -259,7 +250,7 @@ export default function RecordFloristic({record, onFieldUpdated}: RecordFloristi
                                 />
                             )}
                             <RecordInlineField
-                                label={t("record.comment")}
+                                label={t('record.comment')}
                                 recordId={localRecord.id}
                                 field="IMPORTCOMMENT"
                                 value={localRecord.comment}
@@ -267,7 +258,7 @@ export default function RecordFloristic({record, onFieldUpdated}: RecordFloristi
                                 lastEditTimestampNum={localRecord.lastEditTimestampNum || 0}
                             />
                             <RecordInlineField
-                                label={t("record.altitudeMin")}
+                                label={t('record.altitudeMin')}
                                 recordId={localRecord.id}
                                 field="ALTITUDEMIN"
                                 value={localRecord?.altitudeMin?.toString() ?? ''}
@@ -275,7 +266,7 @@ export default function RecordFloristic({record, onFieldUpdated}: RecordFloristi
                                 lastEditTimestampNum={localRecord.lastEditTimestampNum || 0}
                             />
                             <RecordInlineField
-                                label={t("record.altitudeMax")}
+                                label={t('record.altitudeMax')}
                                 recordId={localRecord.id}
                                 field="ALTITUDEMAX"
                                 value={localRecord?.altitudeMax?.toString() ?? ''}
@@ -283,7 +274,7 @@ export default function RecordFloristic({record, onFieldUpdated}: RecordFloristi
                                 lastEditTimestampNum={localRecord.lastEditTimestampNum || 0}
                             />
                             <RecordInlineField
-                                label={t("record.date")}
+                                label={t('record.date')}
                                 recordId={localRecord.id}
                                 field="DATE"
                                 value={localRecord.dateIso}
@@ -292,17 +283,22 @@ export default function RecordFloristic({record, onFieldUpdated}: RecordFloristi
                                 validate={validateDateFormat}
                             />
                             <MultiSelectEdit
-                                label={t("record.authors")}
+                                label={t('record.authors')}
                                 recordId={localRecord.id}
                                 currentValue={authorsOptions}
-                                endpoint={`/api/react/atlas/record/${localRecord.id}/unassignedAuthors`}
+                                loadOptions={loadAuthorOptions}
                                 addKey="ADDFINDER"
                                 deleteKey="DELETEFINDER"
                                 onUpdated={(data) => {
                                     setLocalRecord((prev: RecordPladiasFull) => {
-                                        const newRecordAuthors = data.updatedValue.map((opt): any => ({
+                                        // pole bez známých hodnot doplní backend při dalším načtení
+                                        const newRecordAuthors: RecordPladiasFull['recordAuthors'] = data.updatedValue.map((opt) => ({
+                                            recordId: null,
                                             authorId: opt.id,
+                                            authorName: null,
+                                            authorSurname: '',
                                             authorFullName: opt.name,
+                                            succession: null,
                                         }));
                                         return {
                                             ...prev,
@@ -317,44 +313,44 @@ export default function RecordFloristic({record, onFieldUpdated}: RecordFloristi
 
                         </>}
                         {!canEdit && <>
-                            <RecordReadonlyField label={t("record.taxon")} content={localRecord.taxon.nameLat}/>
-                            {isVascular ? (<RecordReadonlyField label={t("record.phytochorion")}
+                            <RecordReadonlyField label={t('record.taxon')} content={localRecord.taxon.nameLat}/>
+                            {isVascular ? (<RecordReadonlyField label={t('record.phytochorion')}
                                                                 content={localRecord.phytochorionRelationName}/>
                             ) : (
                                 <>
-                                    <RecordReadonlyField label={t("record.substrateText")}
+                                    <RecordReadonlyField label={t('record.substrateText')}
                                                          content={localRecord.substrate}/>
-                                    <RecordReadonlyField label={t("record.chemical")}
+                                    <RecordReadonlyField label={t('record.chemical')}
                                                          content={localRecord.chemical}/>
-                                    <RecordReadonlyField label={t("record.substrate1")}
+                                    <RecordReadonlyField label={t('record.substrate1')}
                                                          content={localRecord.substrate}/>
-                                    <RecordReadonlyField label={t("record.substrate2")}
+                                    <RecordReadonlyField label={t('record.substrate2')}
                                                          content={localRecord.substrate}/>
                                 </>
                             )}
-                            <RecordReadonlyField label={t("record.nameOriginal")} content={localRecord.taxonOriginal}/>
-                            {isVascular && (<RecordReadonlyField label={t("record.nearestTown")}
+                            <RecordReadonlyField label={t('record.nameOriginal')} content={localRecord.taxonOriginal}/>
+                            {isVascular && (<RecordReadonlyField label={t('record.nearestTown')}
                                                                  content={localRecord.nearestTownText}/>
                             )}
-                            <RecordReadonlyField label={t("record.locality")} content={localRecord.locality}/>
+                            <RecordReadonlyField label={t('record.locality')} content={localRecord.locality}/>
                             {!isVascular && (
-                                <RecordReadonlyField label={t("record.localityExtra")}
+                                <RecordReadonlyField label={t('record.localityExtra')}
                                                      content={localRecord.localityExtra}/>
                             )}
-                            <RecordReadonlyField label={t("record.comment")} content={localRecord.comment}/>
-                            <RecordReadonlyField label={t("record.altitudeMin")}
+                            <RecordReadonlyField label={t('record.comment')} content={localRecord.comment}/>
+                            <RecordReadonlyField label={t('record.altitudeMin')}
                                                  content={localRecord?.altitudeMin?.toString() ?? ''}/>
-                            <RecordReadonlyField label={t("record.altitudeMax")}
+                            <RecordReadonlyField label={t('record.altitudeMax')}
                                                  content={localRecord?.altitudeMax?.toString() ?? ''}/>
-                            <RecordReadonlyField label={t("record.date")} content={localRecord.dateIso}/>
-                            <RecordReadonlyField label={t("record.collector")}
-                                                 content={localRecord.recordAuthors.map(s => s.authorFullName ?? '').join("; ")}/>
+                            <RecordReadonlyField label={t('record.date')} content={localRecord.dateIso}/>
+                            <RecordReadonlyField label={t('record.collectors')}
+                                                 content={localRecord.recordAuthors.map(s => s.authorFullName ?? '').join('; ')}/>
                             <div className="d-flex flex-wrap gap-1">
                                 {localRecord.recordAuthors.length === 0 ? (
-                                    <span className="text-muted">{t("common.multiValueEdit.none")}</span>
+                                    <span className="text-muted">{t('common.multiValueEdit.none')}</span>
                                 ) : (
-                                    localRecord.recordAuthors.map((author: any) => (
-                                        <span key={author.id} className="badge bg-secondary">
+                                    localRecord.recordAuthors.map((author) => (
+                                        <span key={author.authorId} className="badge bg-secondary">
                                             {author.authorFullName}
                                         </span>
                                     ))

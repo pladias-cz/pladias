@@ -1,44 +1,41 @@
-import { Button, Card, Form, Spinner } from "react-bootstrap";
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { type Taxon } from "@/models/Taxon";
-import { type Option } from "@/models/Option.ts";
-import { type TaxonRankId } from "@/models/TaxonRankId";
-import { useTranslation } from "react-i18next";
+import {Button, Card, Form, Spinner} from 'react-bootstrap';
+import {useMemo, useState} from 'react';
+import {useNavigate} from 'react-router-dom';
+import {type Taxon} from '@/models/Taxon';
+import {type Option} from '@/models/Option';
+import {useTranslation} from 'react-i18next';
+import {createTaxon, getTaxonRanks} from '@/services/taxonApi';
+import {useCatalogQuery} from '@/query/useCatalogQuery';
+import {notifyApiError} from '@/stores/notificationStore';
 
 interface Props {
     taxon: Taxon;
 }
-export default function NewTaxonCard({ taxon }: Props) {
-    const { t } = useTranslation();
+
+export default function NewTaxonCard({taxon}: Props) {
+    const {t} = useTranslation();
     const navigate = useNavigate();
 
-    const [nameLat, setNameLat] = useState("");
+    const [nameLat, setNameLat] = useState('');
     const [rankId, setRankId] = useState<number>(28);
-    const [rankOptions, setRankOptions] = useState<Option[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-
-    useEffect(() => {
-        fetch("/api/react/taxonrank/queryAll")
-            .then(r => r.json())
-            .then(res => res.data as TaxonRankId[])
-            .then(ranks =>
-                ranks.map(r => ({
-                    value: r.id,
-                    label: `${r.nameEng} – ${r.nameCz}`,
-                }))
-            )
-            .then(setRankOptions)
-            .catch(() =>
-                setError(t("components.newTaxonCard.loadRanksError"))
-            );
-    }, []);
+    // číselník ranků – cachovaný (viz CACHED_CATALOGS v queryClient.ts); při
+    // selhání zůstane select prázdný (403 a síťové chyby hlásí centrálně
+    // apiClient)
+    const ranks = useCatalogQuery(['taxonRanks'], getTaxonRanks);
+    const rankOptions = useMemo<Option[]>(
+        () => ranks.map(r => ({
+            value: r.id,
+            label: `${r.nameEng} – ${r.nameCz}`,
+        })),
+        [ranks]
+    );
 
     const handleAdd = async () => {
         if (!nameLat.trim()) {
-            setError(t("components.newTaxonCard.latinNameRequired"));
+            setError(t('taxon.create.latinNameRequired'));
             return;
         }
 
@@ -46,28 +43,15 @@ export default function NewTaxonCard({ taxon }: Props) {
         setError(null);
 
         try {
-            const res = await fetch("/api/react/taxon", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    nameLat,
-                    rankId,
-                    parentId: taxon.id,
-                }),
+            const addedTaxon = await createTaxon({
+                nameLat,
+                rankId,
+                parentId: taxon.id,
             });
 
-            if (!res.ok) {
-                throw new Error(t("components.newTaxonCard.createError"));
-            }
-
-            const json = await res.json();
-            const addedTaxon: Taxon = json.data;
-
             navigate(`/user/taxaAdministration/${addedTaxon.id}`);
-        } catch (e: any) {
-            setError(e.message ?? t("components.newTaxonCard.unexpectedError"));
+        } catch (e) {
+            notifyApiError(e, t('taxon.create.createError'));
         } finally {
             setLoading(false);
         }
@@ -76,22 +60,22 @@ export default function NewTaxonCard({ taxon }: Props) {
     return (
         <Card>
             <Card.Header>
-                {t("taxon.create.title", { name: taxon.nameLat })}
+                {t('taxon.create.title', {name: taxon.nameLat})}
             </Card.Header>
 
             <Card.Body>
                 <Form>
                     <Form.Group className="mb-3">
-                        <Form.Label>{t("taxon.create.latinName")}</Form.Label>
+                        <Form.Label>{t('taxon.create.latinName')}</Form.Label>
                         <Form.Control
                             value={nameLat}
                             onChange={e => setNameLat(e.target.value)}
-                            placeholder={t("taxon.create.latinNamePlaceholder")}
+                            placeholder={t('taxon.create.latinNamePlaceholder')}
                         />
                     </Form.Group>
 
                     <Form.Group className="mb-3">
-                        <Form.Label>{t("taxon.create.rank")}</Form.Label>
+                        <Form.Label>{t('taxon.create.rank')}</Form.Label>
                         <Form.Select
                             value={rankId}
                             onChange={e => setRankId(Number(e.target.value))}
@@ -122,7 +106,7 @@ export default function NewTaxonCard({ taxon }: Props) {
                                 animation="border"
                             />
                         )}
-                        {t("taxon.create.createButton")}
+                        {t('taxon.create.createButton')}
                     </Button>
                 </Form>
             </Card.Body>

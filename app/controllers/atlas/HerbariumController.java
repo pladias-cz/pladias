@@ -3,6 +3,7 @@ package controllers.atlas;
 import controllers.ControllerBase;
 import controllers.security.Authorized;
 import dto.selectItems.HerbariumOptionDto;
+import helpers.http.ContentDisposition;
 import models.Herbarium;
 import models.Record;
 import play.i18n.Messages;
@@ -22,8 +23,7 @@ public class HerbariumController extends ControllerBase {
         Messages messages = getMessages(request);
         try {
             byte[] data = HerbariumSerializationService.serialize(herbariums);
-            String filename = String.format("attachment; filename=%s", "herbariumList.xlsx");
-            return ok(data).withHeader("Content-disposition", filename).as("application/x-download");
+            return ok(data).withHeader("Content-disposition", ContentDisposition.attachment("herbariumList.xlsx")).as("application/x-download");
         } catch (Exception e) {
             return ok(messages.at("HerbariumController.herbariumDetailsFailed"));
         }

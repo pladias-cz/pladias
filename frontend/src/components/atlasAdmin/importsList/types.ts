@@ -18,7 +18,3 @@ export interface ImportRecord {
     hasDeletionCode: boolean;
 }
 
-export interface FlashMessage {
-    type: 'success' | 'danger';
-    message: string;
-}

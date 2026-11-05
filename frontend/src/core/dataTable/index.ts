@@ -2,13 +2,14 @@
  * Enterprise DataTable - Main entry point
  */
 
-export { DataTable } from './DataTable.tsx';
-export type { default as DefaultDataTable } from './DataTable.tsx';
+export {DataTable} from './DataTable';
+export type {default as DefaultDataTable} from './DataTable';
 
 // Type exports
 export type {
     DataTableConfig,
     DataTableColumnDef,
+    TableDataUpdater,
     TextColumnDef,
     BooleanColumnDef,
     CheckboxColumnDef,
@@ -21,7 +22,7 @@ export type {
     BaseColumnDef,
     PaginationState,
     TableState,
-} from './types.ts';
+} from './types';
 
 // Hook exports
 export {
@@ -42,8 +43,8 @@ export {
 
 // XLSX export exports
 export {ExcelExportButtons, XlsxAcceptHeader} from './export';
-export {buildTableParams} from './utils/tableParams.ts';
-export type {TableParamsOptions} from './utils/tableParams.ts';
+export {buildTableParams} from './utils/tableParams';
+export type {TableParamsOptions} from './utils/tableParams';
 
 // Column factory exports
 export {

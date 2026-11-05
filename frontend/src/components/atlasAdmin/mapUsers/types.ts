@@ -24,17 +24,7 @@ export interface MapUserTableRow {
     name: string;
     surname: string;
     email: string;
-    mapAdmin: boolean;
-    traitAdmin: boolean;
-    sysAdmin: boolean;
-    biblioAdmin: boolean;
-    taxonAdmin: boolean;
-    deleted: boolean;
     contributionProjects: Project[];
     supervisedTaxa: SupervisedTaxon[];
 }
 
-export interface FlashMessage {
-    type: 'success' | 'danger';
-    message: string;
-}

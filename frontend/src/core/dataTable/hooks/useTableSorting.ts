@@ -23,7 +23,7 @@ export function useTableSorting() {
     const handleSort = useCallback((columnId: string) => {
         setSorting(prev => {
             const currentSort = prev.find(s => s.id === columnId);
-            
+
             if (!currentSort) {
                 // First time sorting this column - ascending
                 return [{id: columnId, desc: false}];

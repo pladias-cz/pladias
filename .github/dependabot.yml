@@ -14,3 +14,18 @@ updates:
       GitHubActions-dependencies:
         patterns:
           - "*"
+  - package-ecosystem: "npm"
+    directory: "/frontend"
+    target-branch: "develop"
+    schedule:
+      interval: "weekly"
+    groups:
+      npm-minor-patch:
+        update-types:
+          - "minor"
+          - "patch"
+    ignore:
+      # Major verze řešíme ručně – automatika jen skupinový minor/patch update.
+      - dependency-name: "*"
+        update-types:
+          - "version-update:semver-major"

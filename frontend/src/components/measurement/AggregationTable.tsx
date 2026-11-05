@@ -1,51 +1,25 @@
-import { useEffect, useState } from "react";
-import { Table, Spinner, Alert } from "react-bootstrap";
-import { useTranslation } from "react-i18next";
-import type { TraitAggregationType } from "@/models/TraitAggregationType.ts";
+import {Table, Spinner} from 'react-bootstrap';
+import {useTranslation} from 'react-i18next';
+import {useQuery} from '@tanstack/react-query';
+import {getTraitAggregationTypes} from '@/services/traitApi';
+import RichTextMessage from '@/components/RichTextMessage';
+import {useQueryErrorNotify} from '@/query/useQueryErrorNotify';
 
 export default function AggregationTable() {
-    const { t } = useTranslation();
+    const {t} = useTranslation();
 
-    const [types, setTypes] = useState<TraitAggregationType[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-
-    useEffect(() => {
-        const load = async () => {
-            try {
-                const res = await fetch("/api/react/measurement/aggregation-types");
-
-                if (!res.ok) {
-                    throw new Error(`HTTP ${res.status}`);
-                }
-
-                const result = await res.json();
-                const data: TraitAggregationType[] = result.data;
-
-                setTypes(data);
-            } catch (e) {
-                setError(e instanceof Error ? e.message : "Unknown error");
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        load();
-    }, []);
+    // typy agregací – bez cache (sekce J), při mountu znovu; chyba jde do toastu
+    const {data: types = [], isPending: loading, error} = useQuery({
+        queryKey: ['traitAggregationTypes'],
+        queryFn: getTraitAggregationTypes,
+    });
+    useQueryErrorNotify(error, t('common.loadFailed'));
 
     if (loading) {
         return (
             <div className="text-center my-4">
-                <Spinner animation="border" />
+                <Spinner animation="border"/>
             </div>
-        );
-    }
-
-    if (error) {
-        return (
-            <Alert variant="danger" className="my-3">
-                {t("traitAggregation.error")}: {error}
-            </Alert>
         );
     }
 
@@ -53,8 +27,8 @@ export default function AggregationTable() {
         <Table striped bordered hover responsive>
             <thead>
             <tr>
-                <th>{t("trait.aggregationTypes.key")}</th>
-                <th>{t("trait.aggregationTypes.description")}</th>
+                <th>{t('trait.aggregationTypes.key')}</th>
+                <th>{t('trait.aggregationTypes.description')}</th>
             </tr>
             </thead>
             <tbody>
@@ -64,7 +38,7 @@ export default function AggregationTable() {
                         <code>{tpe.key}</code>
                     </td>
 
-                    <td dangerouslySetInnerHTML={{__html: tpe.description ?? ""}}></td>
+                    <td><RichTextMessage html={tpe.description}/></td>
                 </tr>
             ))}
             </tbody>

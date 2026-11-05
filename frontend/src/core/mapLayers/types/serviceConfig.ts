@@ -1,11 +1,11 @@
 /**
  * Service Configuration Types
- * 
+ *
  * These types define how to build requests for different service types.
  * This enables a configuration-driven approach instead of hard-coded adapters.
  */
 
-import type { LayerParams } from './layerDefinition';
+import type {LayerParams} from './layerDefinition';
 
 /**
  * Base interface for all service configurations
@@ -89,12 +89,12 @@ export type ServiceConfig = GeoServerConfig | TileConfig | ApiConfig | StaticCon
 /**
  * Helper type to extract config type based on service type
  */
-export type ServiceConfigType<T extends ServiceConfig['type']> = 
+export type ServiceConfigType<T extends ServiceConfig['type']> =
     T extends 'geoserver' ? GeoServerConfig :
-    T extends 'tile' ? TileConfig :
-    T extends 'api' ? ApiConfig :
-    T extends 'static' ? StaticConfig :
-    never;
+        T extends 'tile' ? TileConfig :
+            T extends 'api' ? ApiConfig :
+                T extends 'static' ? StaticConfig :
+                    never;
 
 /**
  * Parameter interpolation function type

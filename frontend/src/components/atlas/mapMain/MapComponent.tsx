@@ -1,11 +1,8 @@
-import { useMemo, useCallback } from 'react';
-import { MapContainer } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css';
-import type { LatLngExpression } from 'leaflet';
-import { useNavigate } from 'react-router-dom';
+import {useMemo, useCallback} from 'react';
+import {useNavigate} from 'react-router-dom';
 
-import { useLayerManager, useLayerState, Layer, ProjectLayers, useProjectLayers } from '@/core/mapLayers';
-import { LayerSwitcher } from '@/core/mapLayers/components/LayerSwitcher';
+import {useLayerManager, useProjectLayers, MapCanvas, MapLayer, ProjectLayers} from '@/core/mapLayers';
+import {LayerSwitcher} from '@/core/mapLayers/components/LayerSwitcher';
 import './MapComponent.scss';
 
 interface MapComponentProps {
@@ -24,50 +21,31 @@ const MAP_MAIN_LAYERS = [
     'technical_phytochorion',
     'interactive_squares',
     'gbif_quadrants_inaturalist',
+    'inat_cbs_quadrants',
     'validation_semafor',
     'validation_common_3',
     'validation_common_2',
     'validation_common_1',
     'gbif_quadrants_other'];
-const MAP_MAIN_DEFAULTS: Record<string, boolean> = { osm: true, opentopo: false, technical_quadrants: true, interactive_squares: true, gbif_quadrants_inaturalist: false, gbif_quadrants_other: false };
-
-/**
- * Individual layer component that subscribes to visibility state
- */
-function MapLayer({
-    layerId,
-    mapName,
-    params,
-    onSquareDoubleClick,
-}: {
-    layerId: string;
-    mapName: string;
-    params?: Record<string, any>;
-    onSquareDoubleClick?: (squareId: string) => void;
-}) {
-    const layerState = useLayerState(mapName, layerId);
-    const visible = layerState?.visible ?? false;
-
-    return (
-        <Layer
-            layerId={layerId}
-            params={params}
-            visible={visible}
-            onSquareDoubleClick={onSquareDoubleClick}
-        />
-    );
-}
+const MAP_MAIN_DEFAULTS: Record<string, boolean> = {
+    osm: true,
+    opentopo: false,
+    technical_quadrants: true,
+    interactive_squares: true,
+    gbif_quadrants_inaturalist: false,
+    gbif_quadrants_other: false
+};
 
 export function MapComponent({
-    mapName = 'mapMain',
-    center = [49.5, 15.7],
-    initialZoom = 8,
-    taxonId,
-}: MapComponentProps) {
+                                 mapName = 'mapMain',
+                                 center = [49.5, 15.7],
+                                 initialZoom = 8,
+                                 taxonId,
+                             }: MapComponentProps) {
     const navigate = useNavigate();
 
     // Get project layers (dynamically loaded based on taxon)
-    const { projectLayerIds } = useProjectLayers(mapName, taxonId);
+    const {projectLayerIds} = useProjectLayers(mapName, taxonId);
 
     // Combine static and dynamic layer IDs for the layer switcher
     const allLayerIds = useMemo(() => {
@@ -85,16 +63,14 @@ export function MapComponent({
     }, [taxonId, navigate]);
 
     // No need for useMapLayers - we render Layer components directly
-    const mapContext = useMemo(() => (taxonId ? { taxonId } : {}), [taxonId]);
+    const mapContext = useMemo(() => (taxonId ? {taxonId} : {}), [taxonId]);
 
     return (
-        <div className="h-100 w-100">
-            <MapContainer
-                center={center as LatLngExpression}
+        <div className="h-100 w-100 position-relative">
+            <MapCanvas
+                center={center}
                 zoom={initialZoom}
-                scrollWheelZoom={true}
-                style={{ height: '100%', width: '100%' }}
-                key={mapName}
+                mapKey={mapName}
             >
                 {/* Render static layers from registry with visibility subscription */}
                 {MAP_MAIN_LAYERS.map(layerId => (
@@ -106,11 +82,11 @@ export function MapComponent({
                         onSquareDoubleClick={layerId === 'interactive_squares' ? handleSquareDoubleClick : undefined}
                     />
                 ))}
-                
+
                 {/* Dynamic project layers - rendered when taxonId is provided */}
-                {taxonId && <ProjectLayers taxonId={taxonId} mapName={mapName} />}
-            </MapContainer>
-            
+                {taxonId && <ProjectLayers taxonId={taxonId} mapName={mapName}/>}
+            </MapCanvas>
+
             {/* Layer Switcher - Shows all layer groups including dynamic project layers */}
             <LayerSwitcher
                 mapName={mapName}

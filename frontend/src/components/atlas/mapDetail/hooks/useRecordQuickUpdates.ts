@@ -4,9 +4,13 @@
  */
 
 import {useState, useCallback} from 'react';
-import axios from 'axios';
-import type { RecordPladias } from '@/models';
+import {apiPatch} from '@/services/apiClient';
+import {getRecordMapFields, type RecordMapFields} from '@/services/recordApi';
+import type {ApiResult} from '@/models/ApiResponse';
+import type {RecordPladias} from '@/models';
 import {ValidationStatusId, ValidationStatusMeta} from '@/core/validationStatus';
+import {notifyApiError, pushNotification} from '@/stores/notificationStore';
+import i18n from '@/i18n/i18n';
 
 interface UpdateResult {
     success: boolean;
@@ -15,15 +19,18 @@ interface UpdateResult {
     error?: string;
 }
 
-interface RecordMapFields {
-    id: number;
-    validationStatusId: number;
-    originalityStatusId: number;
-    herbariumQuality: boolean;
-    includedInMap: boolean;
-    lastEditTimestampNum: number;
-    canEdit: boolean;
-}
+/**
+ * Hook pro rychlé uživatelsky spouštěné úpravy záznamů v mapě (sekce J.2):
+ * mutace zůstávají imperativní přes service vrstvu; GET /mapFields se také
+ * volá imperativně po mutaci (obnova kaskádových polí), proto vede přes
+ * `recordApi.getRecordMapFields` a ne přes useQuery.
+ */
+
+/**
+ * Odpověď PATCH /atlas/record/:recordId – data přichází v obálce (`data`),
+ * ale kód toleruje i odpověď bez obálky (proto průnik s Partial dat).
+ */
+type RecordUpdatePayload = ApiResult<{ lastEditTimestampNum?: number }> & { lastEditTimestampNum?: number };
 
 export function useRecordQuickUpdates() {
     const [updatingRecordId, setUpdatingRecordId] = useState<number | null>(null);
@@ -36,19 +43,18 @@ export function useRecordQuickUpdates() {
         originalRecord?: RecordPladias
     ): Promise<UpdateResult> => {
         try {
-            const response = await axios.patch(`/api/react/atlas/record/${recordId}`, {
+            const payload = await apiPatch<RecordUpdatePayload>(`/api/react/atlas/record/${recordId}`, {
                 key: field,
                 value: value.toString(),
                 lastEditTimestampNum: timestamp,
             });
 
             // Backend returns {data: {validation_status: "2", timestamp: number}} structure
-            const responseData = response.data?.data || response.data;
-            const newTimestamp = responseData?.lastEditTimestampNum;
-            
+            const newTimestamp = payload?.data?.lastEditTimestampNum ?? payload?.lastEditTimestampNum;
+
             if (newTimestamp !== undefined) {
                 // Merge new timestamp with original record to propagate to parent
-                const updatedRecord = originalRecord 
+                const updatedRecord = originalRecord
                     ? {...originalRecord, lastEditTimestampNum: newTimestamp}
                     : {id: recordId, lastEditTimestampNum: newTimestamp} as unknown as RecordPladias;
                 return {
@@ -56,14 +62,16 @@ export function useRecordQuickUpdates() {
                     timestamp: newTimestamp,
                     record: updatedRecord,
                 };
-            } else if (response.data?.error) {
-                return {success: false, error: response.data.error};
+            } else if (payload?.error) {
+                pushNotification({type: 'danger', message: payload.error});
+                return {success: false, error: payload.error};
             } else {
+                pushNotification({type: 'danger', message: i18n.t('common.table.updateFailed')});
                 return {success: false, error: 'Unknown error'};
             }
-        } catch (error: any) {
-            console.error(`Error updating ${field}:`, error);
-            const errorMsg = error.response?.data?.error || error.message || 'Network error';
+        } catch (error) {
+            notifyApiError(error, i18n.t('common.table.updateFailed'));
+            const errorMsg = error instanceof Error ? error.message : 'Network error';
             return {success: false, error: errorMsg};
         }
     }, []);
@@ -73,10 +81,10 @@ export function useRecordQuickUpdates() {
      */
     const fetchRecordMapFields = useCallback(async (recordId: number): Promise<RecordMapFields | null> => {
         try {
-            const response = await axios.get(`/api/react/atlas/record/${recordId}/mapFields`);
-            return response.data;
-        } catch (error: any) {
-            console.error(`Error fetching map fields for record ${recordId}:`, error);
+            return await getRecordMapFields(recordId);
+        } catch (error) {
+            // obnova kaskádových polí po mutaci – selhání jen oznámíme, uložené zůstává
+            notifyApiError(error, i18n.t('record.loadFailed'));
             return null;
         }
     }, []);
@@ -88,7 +96,7 @@ export function useRecordQuickUpdates() {
     ): Promise<UpdateResult> => {
         setUpdatingRecordId(record.id);
         const result = await updateField(record.id, 'VALIDATION_STATUS', newStatus, record.lastEditTimestampNum || 0, record);
-        
+
         if (result.success && result.record) {
             if (refreshAfterUpdate) {
                 // Fetch fresh data to get cascading changes (includedInMap, originalityStatus, etc.)
@@ -106,7 +114,7 @@ export function useRecordQuickUpdates() {
                     return {success: true, timestamp: freshFields.lastEditTimestampNum, record: updatedRecord};
                 }
             }
-            
+
             // Fallback to old behavior if refresh not requested or failed
             const color = ValidationStatusMeta[newStatus as ValidationStatusId]?.color || '#808080';
             const updatedRecordWithColor = {
@@ -118,7 +126,7 @@ export function useRecordQuickUpdates() {
         } else {
             onError?.(result.error || 'Failed to update validation status');
         }
-        
+
         setUpdatingRecordId(null);
         return result;
     }, [updateField, fetchRecordMapFields]);
@@ -130,7 +138,7 @@ export function useRecordQuickUpdates() {
     ): Promise<UpdateResult> => {
         setUpdatingRecordId(record.id);
         const result = await updateField(record.id, 'ORIGINALITY_STATUS', newOriginality, record.lastEditTimestampNum || 0, record);
-        
+
         if (result.success && result.record) {
             if (refreshAfterUpdate) {
                 // Fetch fresh data to get cascading changes (includedInMap, etc.)
@@ -146,13 +154,13 @@ export function useRecordQuickUpdates() {
                     return {success: true, timestamp: freshFields.lastEditTimestampNum, record: updatedRecord};
                 }
             }
-            
+
             // Fallback to old behavior if refresh not requested or failed
             onSuccess?.(result.record!);
         } else {
             onError?.(result.error || 'Failed to update originality status');
         }
-        
+
         setUpdatingRecordId(null);
         return result;
     }, [updateField, fetchRecordMapFields]);
@@ -163,7 +171,11 @@ export function useRecordQuickUpdates() {
     ): Promise<UpdateResult> => {
         setUpdatingRecordId(record.id);
         const result = await updateField(record.id, 'HERBARIUM_QUALITY', newValue, record.lastEditTimestampNum || 0, record);
-        result.success ? onSuccess?.(result.record!) : onError?.(result.error || 'Failed to update herbarium quality');
+        if (result.success) {
+            onSuccess?.(result.record!);
+        } else {
+            onError?.(result.error || 'Failed to update herbarium quality');
+        }
         setUpdatingRecordId(null);
         return result;
     }, [updateField]);
@@ -174,7 +186,11 @@ export function useRecordQuickUpdates() {
     ): Promise<UpdateResult> => {
         setUpdatingRecordId(record.id);
         const result = await updateField(record.id, 'INCLUDED_IN_MAP', newValue, record.lastEditTimestampNum || 0, record);
-        result.success ? onSuccess?.(result.record!) : onError?.(result.error || 'Failed to update include in map');
+        if (result.success) {
+            onSuccess?.(result.record!);
+        } else {
+            onError?.(result.error || 'Failed to update include in map');
+        }
         setUpdatingRecordId(null);
         return result;
     }, [updateField]);

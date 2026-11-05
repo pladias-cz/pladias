@@ -50,10 +50,6 @@ public abstract class AuthenticatorBase extends Security.Authenticator {
         if (GET.equals(ctx.method()) && StringUtils.isNotBlank(ctx.uri())) {
             result = result.addingToSession(ctx, SessionUtils.TargetUrlKey, ctx.uri());
         }
-        try {
-            Thread.sleep(5000);//slow down possible attacker
-        } catch (Exception e) {
-        }
         return result;
     }
 

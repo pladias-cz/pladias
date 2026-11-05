@@ -1,63 +1,80 @@
-import {Button, Form, Table} from "react-bootstrap";
-import {useTranslation} from "react-i18next";
+import {Button, Form, Table} from 'react-bootstrap';
+import {useTranslation} from 'react-i18next';
+import type {UserSettingsState} from './types';
+import RichTextMessage from '@/components/RichTextMessage';
 
 interface LanguageSettingsProps {
-    userSettings: Record<string, string>;
+    userSettings: UserSettingsState;
     handleInputChange: (key: string, value: string) => void;
     handleSaveSetting: (key: string, value: string) => void;
     loading: boolean;
 }
 
-export default function LanguageSettings({userSettings, handleInputChange, handleSaveSetting, loading}: LanguageSettingsProps) {
+export default function LanguageSettings({
+                                             userSettings,
+                                             handleInputChange,
+                                             handleSaveSetting,
+                                             loading
+                                         }: LanguageSettingsProps) {
     const {t, i18n} = useTranslation();
 
     const handleLanguageChange = (language: string) => {
-        handleInputChange("applicationLanguage", language);
+        handleInputChange('applicationLanguage', language);
     };
 
     const handleSaveLanguage = () => {
-        handleSaveSetting("application_language", userSettings.applicationLanguage);
+        handleSaveSetting('application_language', userSettings.applicationLanguage);
         // Update the i18n language immediately
         i18n.changeLanguage(userSettings.applicationLanguage);
     };
 
     return (
         <div className="mb-4">
-            <h4>{t("user.settings.applicationLanguage")}</h4>
-            <p dangerouslySetInnerHTML={{__html: t("user.settings.languageDescription")}}/>
+            <h4>{t('user.settings.applicationLanguage')}</h4>
+            <RichTextMessage as="p" html={t('user.settings.languageDescription')}/>
 
             <Table hover responsive className="align-middle">
                 <tbody>
                 <tr>
-                    <td>{t("user.settings.applicationLanguage")}</td>
+                    <td>{t('user.settings.applicationLanguage')}</td>
                     <td>
                         <Form.Check
                             type="radio"
                             id="optionsRadiosApplicationCz"
-                            label={t("user.settings.languageCzech")}
+                            label={t('user.settings.languageCzech')}
                             name="applicationLanguage"
-                            checked={userSettings.applicationLanguage === "cs"}
-                            onChange={() => handleLanguageChange("cs")}
+                            checked={userSettings.applicationLanguage === 'cs'}
+                            onChange={() => handleLanguageChange('cs')}
                             inline
                             className="me-3"
                         />
                         <Form.Check
                             type="radio"
                             id="optionsRadiosApplicationEn"
-                            label={t("user.settings.languageEnglish")}
+                            label={t('user.settings.languageEnglish')}
                             name="applicationLanguage"
-                            checked={userSettings.applicationLanguage === "en"}
-                            onChange={() => handleLanguageChange("en")}
+                            checked={userSettings.applicationLanguage === 'en'}
+                            onChange={() => handleLanguageChange('en')}
                             inline
                             className="me-3"
                         />
                         <Form.Check
                             type="radio"
                             id="optionsRadiosApplicationPl"
-                            label={t("user.settings.languagePolish")}
+                            label={t('user.settings.languagePolish')}
                             name="applicationLanguage"
-                            checked={userSettings.applicationLanguage === "pl"}
-                            onChange={() => handleLanguageChange("pl")}
+                            checked={userSettings.applicationLanguage === 'pl'}
+                            onChange={() => handleLanguageChange('pl')}
+                            inline
+                            className="me-3"
+                        />
+                        <Form.Check
+                            type="radio"
+                            id="optionsRadiosApplicationDe"
+                            label={t('user.settings.languageGerman')}
+                            name="applicationLanguage"
+                            checked={userSettings.applicationLanguage === 'de'}
+                            onChange={() => handleLanguageChange('de')}
                             inline
                             className="me-3"
                         />
@@ -66,7 +83,7 @@ export default function LanguageSettings({userSettings, handleInputChange, handl
                             onClick={handleSaveLanguage}
                             disabled={loading}
                         >
-                            {t("user.settings.setButton")}
+                            {t('user.settings.setButton')}
                         </Button>
                     </td>
                 </tr>

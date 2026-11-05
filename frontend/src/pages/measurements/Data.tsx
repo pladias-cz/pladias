@@ -1,60 +1,63 @@
-import {useEffect, useState} from "react";
-import {Accordion, Row, Spinner, Table} from "react-bootstrap";
-import {useTranslation} from "react-i18next";
-import {useNavigate} from "react-router-dom";
-import {usePageTitle} from "@/hooks/usePageTitle";
-import type {FeatureGroup} from "@/models/FeatureGroup.ts";
-import type {Feature} from "@/models/Feature.ts";
-import type {TraitDatatype} from "@/models/TraitDatatype.ts";
+import {useEffect, useMemo, useState} from 'react';
+import {Accordion, Row, Spinner, Table} from 'react-bootstrap';
+import {useTranslation} from 'react-i18next';
+import {useNavigate} from 'react-router-dom';
+import {useQuery} from '@tanstack/react-query';
+import {usePageTitle} from '@/hooks/usePageTitle';
+import type {Feature} from '@/models/Feature';
+import type {TraitDatatype} from '@/models/TraitDatatype';
+import {getFeatureGroups, getFeaturesOfGroup, getTraitDatatypes} from '@/services/traitApi';
+import {notifyApiError} from '@/stores/notificationStore';
 
 
 export default function Data() {
-    const { t } = useTranslation();
+    const {t} = useTranslation();
     const navigate = useNavigate();
-    usePageTitle(t("trait.data.title"));
+    usePageTitle(t('trait.data.title'));
 
-    const [groups, setGroups] = useState<FeatureGroup[]>([]);
     const [featuresByGroup, setFeaturesByGroup] =
         useState<Record<number, Feature[]>>({});
-    const [datatypes, setDatatypes] =
-        useState<Record<number, TraitDatatype>>({});
     const [loadingGroup, setLoadingGroup] = useState<number | null>(null);
     const [activeKey, setActiveKey] = useState<string | null>(null);
 
-
-    // skupiny
+    // skupiny vlastností (číselník) – bez cache (sekce J), při mountu znovu;
+    // chyba se zobrazí notifikací jako dřív
+    const groupsQuery = useQuery({queryKey: ['featureGroups'], queryFn: getFeatureGroups});
     useEffect(() => {
-        fetch("/api/react/measurement/feature-groups")
-            .then(r => r.json())
-            .then(r => r.data)
-            .then(setGroups);
-    }, []);
+        if (groupsQuery.error) {
+            notifyApiError(groupsQuery.error, t('trait.data.loadFailed'));
+        }
+    }, [groupsQuery.error, t]);
+    const groups = groupsQuery.data ?? [];
 
-    // číselník datatype (načte se jednou)
+    // číselník datatype – bez cache (sekce J), při mountu znovu
+    const datatypesQuery = useQuery({queryKey: ['traitDatatypes'], queryFn: getTraitDatatypes});
     useEffect(() => {
-        fetch("/api/react/measurement/datatypes")
-            .then(r => r.json())
-            .then(r => r.data)
-            .then((data: TraitDatatype[]) => {
-                const map: Record<number, TraitDatatype> = {};
-                data.forEach(d => (map[d.id] = d));
-                setDatatypes(map);
-            });
-    }, []);
+        if (datatypesQuery.error) {
+            notifyApiError(datatypesQuery.error, t('trait.data.loadFailed'));
+        }
+    }, [datatypesQuery.error, t]);
+    const datatypes = useMemo(() => {
+        const map: Record<number, TraitDatatype> = {};
+        (datatypesQuery.data ?? []).forEach(d => (map[d.id] = d));
+        return map;
+    }, [datatypesQuery.data]);
 
     const loadFeatures = async (groupId: number) => {
         if (featuresByGroup[groupId]) return;
 
         setLoadingGroup(groupId);
-        const res = await fetch(`/api/react/measurement/features-by-group/${groupId}`);
-        const result = await res.json();
-        const data = result.data;
-        setFeaturesByGroup(prev => ({
-            ...prev,
-            [groupId]: data
-        }));
-
-        setLoadingGroup(null);
+        try {
+            const data = await getFeaturesOfGroup(groupId);
+            setFeaturesByGroup(prev => ({
+                ...prev,
+                [groupId]: data
+            }));
+        } catch (e) {
+            notifyApiError(e, t('trait.data.loadFailed'));
+        } finally {
+            setLoadingGroup(null);
+        }
     };
 
     const goToDetail = (id: number) => {
@@ -71,7 +74,7 @@ export default function Data() {
 
     return (
         <Row>
-            <h3>{t("trait.data.title")}</h3>
+            <h3>{t('trait.data.title')}</h3>
 
             <Accordion activeKey={activeKey}>
                 {groups.map(group => {
@@ -85,12 +88,12 @@ export default function Data() {
                                     loadFeatures(group.id);
                                 }}
                             >
-                                {t("trait.data.section")} {group.name}
+                                {t('trait.data.section')} {group.name}
                             </Accordion.Header>
 
                             <Accordion.Body>
                                 {loadingGroup === group.id && (
-                                    <Spinner animation="border" size="sm" />
+                                    <Spinner animation="border" size="sm"/>
                                 )}
 
                                 {featuresByGroup[group.id] && (
@@ -98,9 +101,9 @@ export default function Data() {
                                         <thead>
                                         <tr>
                                             <th>ID</th>
-                                            <th>{t("trait.feature.name")}</th>
-                                            <th>{t("trait.feature.admin")}</th>
-                                            <th>{t("trait.datatypes.datatype")}</th>
+                                            <th>{t('trait.feature.name')}</th>
+                                            <th>{t('trait.feature.admin')}</th>
+                                            <th>{t('trait.datatypes.datatype')}</th>
                                         </tr>
                                         </thead>
                                         <tbody>
@@ -116,7 +119,7 @@ export default function Data() {
                                                     {f.administrator}
                                                     {f.email && (
                                                         <>
-                                                            {" "}
+                                                            {' '}
                                                             <a
                                                                 href={`mailto:${f.email}`}
                                                                 onClick={e => e.stopPropagation()}

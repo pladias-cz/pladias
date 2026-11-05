@@ -4,7 +4,6 @@
 
 export type {
     LayerType,
-    LayerSource,
     LayerParams,
     LayerDefinition,
     LayerGroup,
@@ -13,11 +12,11 @@ export type {
     WfsStyleOptions,
 } from './layerDefinition';
 
-export type { MapType, MapContext } from './mapContext';
-export { createMapContext } from './mapContext';
+export type {MapType, MapContext} from './mapContext';
+export {createMapContext} from './mapContext';
 
-export type { LayerInstance, LayerState } from './layerInstance';
-export { createLayerInstance, generateCacheKey } from './layerInstance';
+export type {LayerInstance, LayerState} from './layerInstance';
+export {createLayerInstance, generateCacheKey} from './layerInstance';
 
 export type {
     ServiceConfig,

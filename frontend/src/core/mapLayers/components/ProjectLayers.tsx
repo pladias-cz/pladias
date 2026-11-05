@@ -6,27 +6,13 @@
  * Integrates with the layer management system for visibility control.
  */
 
-import { useEffect, useState, useMemo } from 'react';
-import { WMSTileLayer } from 'react-leaflet';
-import type { WMSParams } from 'leaflet';
-import axios from 'axios';
-import { useLayerState } from '../store/layerStore';
-import { PROJECT_LAYER_TEMPLATE } from '../registry/groups/projectLayers';
-
-interface TaxonStatisticsResponse {
-    data: TaxonStatisticsDto;
-}
-
-interface TaxonStatisticsDto {
-    recordsByProject: ProjectRecordCountDto[];
-}
-
-interface ProjectRecordCountDto {
-    project: {
-        id: number;
-    };
-    recordCount: number;
-}
+import {useMemo, useState} from 'react';
+import {WMSTileLayer} from 'react-leaflet';
+import type {WMSParams} from 'leaflet';
+import {useQuery} from '@tanstack/react-query';
+import {getTaxonRecordsByProject} from '@/services/taxonApi';
+import {useLayerState} from '../store/layerStore';
+import {PROJECT_LAYER_TEMPLATE} from '../registry/groups/projectLayers';
 
 export interface ProjectLayersProps {
     taxonId?: number;
@@ -42,29 +28,16 @@ interface GeoServerWMSParams extends WMSParams {
  * Component that dynamically creates WMS layers for each project
  * and manages their visibility through the layer store
  */
-export function ProjectLayers({ taxonId, mapName }: ProjectLayersProps) {
-    const [projects, setProjects] = useState<ProjectRecordCountDto[]>([]);
-
-    // Fetch projects when taxonId changes
-    useEffect(() => {
-        if (!taxonId) {
-            setProjects([]);
-            return;
-        }
-
-        axios.get<TaxonStatisticsResponse>(`/api/react/taxonStatistics/${taxonId}`)
-            .then(response => {
-                if (response.data && response.data.data) {
-                    setProjects(response.data.data.recordsByProject || []);
-                } else {
-                    setProjects([]);
-                }
-            })
-            .catch(err => {
-                console.error('Failed to load taxon projects:', err);
-                setProjects([]);
-            });
-    }, [taxonId]);
+export function ProjectLayers({taxonId, mapName}: ProjectLayersProps) {
+    // projekty taxonu pro dynamické WMS vrstvy – bez cache (sekce J)
+    const {data} = useQuery({
+        queryKey: ['taxonRecordsByProject', taxonId],
+        queryFn: () => getTaxonRecordsByProject(taxonId!),
+        enabled: taxonId !== undefined,
+    });
+    // memoizace i pro prázdný fallback – jinak by identita pole měnila deps
+    // useMemo níže (eslint-plugin-react-hooks/exhaustive-deps) při každém renderu
+    const projects = useMemo(() => data ?? [], [data]);
 
     // Build WMS configs for each project - memoized to prevent re-renders
     const layerConfigs = useMemo(() => {
@@ -112,21 +85,38 @@ export function ProjectLayers({ taxonId, mapName }: ProjectLayersProps) {
 }
 
 /**
- * Individual project layer component that subscribes to visibility state
+ * Individual project layer component that subscribes to visibility state.
+ * Uses lazy mounting: the WMS layer is only created once it has been enabled,
+ * so disabled project layers never request tiles from GeoServer.
  */
 function ProjectLayer({
-    layerId,
-    url,
-    params,
-    mapName,
-}: {
+                          layerId,
+                          url,
+                          params,
+                          mapName,
+                      }: {
     layerId: string;
     url: string;
     params: GeoServerWMSParams;
     mapName: string;
 }) {
+    // Default to false while the layer has not been registered in the store yet
+    // (registration in useProjectLayers applies the saved visibility).
     const layerState = useLayerState(mapName, layerId);
-    const visible = layerState?.visible ?? true;
+    const visible = layerState?.visible ?? false;
+
+    // Lazy mount: create the layer only after it is enabled for the first time.
+    // Once mounted it stays mounted and is hidden via opacity, so toggling
+    // visibility does not cancel or re-issue tile requests. Render-phase update
+    // guarded by comparison (React docs: adjusting state when a prop changes).
+    const [mounted, setMounted] = useState(visible);
+    if (visible && !mounted) {
+        setMounted(true);
+    }
+
+    if (!mounted) {
+        return null;
+    }
 
     return (
         <WMSTileLayer

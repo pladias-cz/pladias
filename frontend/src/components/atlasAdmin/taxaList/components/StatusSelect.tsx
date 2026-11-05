@@ -1,9 +1,9 @@
 import {Form} from 'react-bootstrap';
-import type {StatusOption} from '../types';
+import type {TaxonStatusOption} from '@/services/mapAdminApi';
 
 interface StatusSelectProps {
     value: number;
-    options: StatusOption[];
+    options: TaxonStatusOption[];
     onChange: (newValue: number) => void;
     disabled: boolean;
 }

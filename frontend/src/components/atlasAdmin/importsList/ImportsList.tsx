@@ -1,106 +1,99 @@
 /**
  * ImportsList - Import Administration Component
- * 
+ *
  * Uses the enterprise DataTable component with custom data fetching
  * to efficiently load imports with pagination, sorting, and filtering.
  */
 
-import {useState, useMemo, useCallback} from "react";
-import {useTranslation} from "react-i18next";
+import {useMemo, useCallback} from 'react';
+import {useTranslation} from 'react-i18next';
 import {
     DataTable,
     type DataTableColumnDef,
     createTextColumn,
+    createNumberColumn,
     createTimestampColumn,
     createActionColumn,
-} from "@/core/dataTable";
+} from '@/core/dataTable';
 import {
     useImportsData,
     useImportsActions,
 } from './hooks';
 import {
-    ImportsListFlash,
     ImportsListDataCell,
     ImportsListFilenameCell,
     ImportsListDownloadCell,
     ImportsListDeleteCell,
 } from './components';
-import type {ImportRecord, FlashMessage} from './types';
+import type {ImportRecord} from './types';
+import {useNotifications} from '@/stores/notificationStore';
 
 export default function ImportsList() {
     const {t} = useTranslation();
-    
-    // Flash message state
-    const [flash, setFlash] = useState<FlashMessage | null>(null);
-    
-    // Flash message handler
+    const {push} = useNotifications();
+
+    // Flash message handler – globální notifikace (sekce F), danger drží, success mizí
     const showFlash = useCallback((type: 'success' | 'danger', message: string) => {
-        setFlash({type, message});
-        setTimeout(() => setFlash(null), 5000);
-    }, []);
-    
+        push({type, message});
+    }, [push]);
+
     // Data fetching hook
     const {fetchImports} = useImportsData({
         onSuccess: () => {
             // Optional: handle successful data fetch
         }
     });
-    
+
     // Actions hook
     const {
         deletingBatchId,
         handleDelete,
     } = useImportsActions(showFlash, t);
-    
+
     // Column definitions
     const columns = useMemo<DataTableColumnDef<ImportRecord>[]>(() => [
-        createTextColumn<ImportRecord>('committerName', t("atlas.admin.importsList.committer"), {
+        createTextColumn<ImportRecord>('committerName', t('atlas.admin.importsList.committer'), {
             enableSorting: true,
             enableFiltering: true,
         }),
-        createTimestampColumn<ImportRecord>('importTimestamp', t("atlas.admin.importsList.importedAt"), {
+        createTimestampColumn<ImportRecord>('importTimestamp', t('atlas.admin.importsList.importedAt'), {
             enableSorting: true,
             enableFiltering: true,
             enableRangeFilter: true,
             dateFormat: 'dd.MM.yyyy HH:mm',
         }),
-        createTextColumn<ImportRecord>('batchId', t("atlas.admin.importsList.batchId"), {
+        createNumberColumn<ImportRecord>('batchId', t('atlas.admin.importsList.batchId'), {
             enableSorting: true,
-            enableFiltering: false,
+            enableFiltering: true,
         }),
-        createActionColumn<ImportRecord>('data', t("atlas.admin.importsList.data"), (row) => (
-            <ImportsListDataCell row={row} />
+        createActionColumn<ImportRecord>('data', t('atlas.admin.importsList.data'), (row) => (
+            <ImportsListDataCell row={row}/>
         ), {
             minWidth: '200px',
         }),
-        createActionColumn<ImportRecord>('filename', t("atlas.admin.importsList.filename"), (row) => (
-            <ImportsListFilenameCell row={row} />
+        createActionColumn<ImportRecord>('filename', t('atlas.admin.importsList.filename'), (row) => (
+            <ImportsListFilenameCell row={row}/>
         ), {
             minWidth: '200px',
         }),
         createActionColumn<ImportRecord>('download', '', (row) => (
-            <ImportsListDownloadCell row={row} />
+            <ImportsListDownloadCell row={row}/>
         ), {
             minWidth: '150px',
         }),
         createActionColumn<ImportRecord>('delete', '', (row) => (
-            <ImportsListDeleteCell 
-                row={row} 
-                onDelete={handleDelete} 
+            <ImportsListDeleteCell
+                row={row}
+                onDelete={handleDelete}
                 deletingBatchId={deletingBatchId}
             />
         ), {
             minWidth: '150px',
         }),
     ], [t, deletingBatchId, handleDelete]);
-    
+
     return (
         <div className="container-fluid">
-            <ImportsListFlash 
-                flash={flash} 
-                onDismiss={() => setFlash(null)} 
-            />
-            
             <DataTable<ImportRecord>
                 endpoint="/api/react/atlasadmin/imports"
                 columns={columns}

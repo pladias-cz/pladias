@@ -1,4 +1,11 @@
-import type {TaxonMapSettings} from '../types';
+import {useTranslation} from 'react-i18next';
+import type {TaxonMapSettings} from '@/models/TaxonMapSettings';
+import FileDownloadLink from '@/components/FileDownloadLink';
+import {
+    downloadArchiveCsv,
+    downloadArchiveCsvMap,
+    downloadPngMap
+} from '@/services/mapAdminApi';
 import {PngUploadButton} from './PngUploadButton';
 
 interface ArchiveCsvCellProps {
@@ -9,6 +16,7 @@ interface ArchiveCsvCellProps {
 const PNG_UPLOAD_ELIGIBLE_STATUSES = [2, 3];
 
 export function ArchiveCsvCell({row, onPngUploadComplete}: ArchiveCsvCellProps) {
+    const {t} = useTranslation();
     const {
         csvMapDetailId,
         csvMapDetailTimestamp,
@@ -23,7 +31,7 @@ export function ArchiveCsvCell({row, onPngUploadComplete}: ArchiveCsvCellProps) 
     if (!csvMapDetailId) {
         return (
             <div className="d-flex flex-column gap-1">
-                <span className="text-muted">No CSV</span>
+                <span className="text-muted">{t('atlas.admin.taxaList.noCsv')}</span>
                 {canUploadPng && (
                     <PngUploadButton taxonId={taxonId} onUploadComplete={onPngUploadComplete}/>
                 )}
@@ -43,34 +51,34 @@ export function ArchiveCsvCell({row, onPngUploadComplete}: ArchiveCsvCellProps) 
             </small>
             <div className="d-flex flex-column gap-1">
                 <small>
-                    <a
-                        href={`/api/react/atlas/map-reports/download-csv/${csvMapDetailId}`}
-                        title="Download CSV"
-                        className="text-decoration-none"
+                    <FileDownloadLink
+                        fetchFile={() => downloadArchiveCsv(csvMapDetailId)}
+                        title={t('atlas.admin.taxaList.downloadCsv')}
+                        className="p-0 text-decoration-none"
                     >
                         <i className="bi bi-file-earmark-spreadsheet text-success me-1"></i>
                         CSV
-                    </a>
+                    </FileDownloadLink>
                     <br/>
-                    <a
-                        href={`/api/react/atlas/map-reports/download-csv-map/${csvMapDetailId}`}
-                        title="Download CSV Map Render"
-                        className="text-decoration-none"
+                    <FileDownloadLink
+                        fetchFile={() => downloadArchiveCsvMap(csvMapDetailId)}
+                        title={t('atlas.admin.taxaList.downloadCsvMap')}
+                        className="p-0 text-decoration-none"
                     >
                         <i className="bi bi-map text-primary me-1"></i>
                         CSV MAP
-                    </a>
+                    </FileDownloadLink>
                     {hasPng && (
                         <>
                             <hr className="my-1"/>
-                            <a
-                                href={`/api/react/atlas/pngMap/taxon/${taxonId}`}
-                                title="Download PNG Map"
-                                className="text-decoration-none"
+                            <FileDownloadLink
+                                fetchFile={() => downloadPngMap(taxonId)}
+                                title={t('atlas.admin.taxaList.downloadPngMap')}
+                                className="p-0 text-decoration-none"
                             >
                                 <i className="bi bi-image text-secondary me-1"></i>
                                 PNG
-                            </a>
+                            </FileDownloadLink>
                         </>
                     )}
                 </small>

@@ -12,6 +12,7 @@ import io.ebean.DB;
 import mail.MailMessageBuilder;
 import mail.MailService;
 import models.*;
+import play.Logger;
 import play.i18n.Messages;
 import play.libs.Json;
 import play.mvc.Http;
@@ -20,6 +21,7 @@ import play.mvc.Security;
 import service.accessrights.TokenAuthService;
 import service.config.IConfigService;
 import service.password.IHashService;
+import service.user.PasswordResetService;
 import utils.JsonResult;
 import utils.PasswordGenerator;
 import utils.SessionUtils;
@@ -45,8 +47,6 @@ public class UserController extends ControllerBase {
     private static final String MapAdminKey = "MapAdmin";
     private static final String TraitAdminKey = "TraitAdmin";
     private static final String SysAdminKey = "SysAdmin";
-    private static final String AddProjectKey = "AddProject";
-    private static final String RemoveProjectKey = "RemoveProject";
     private static final String BiblioAdminKey = "BiblioAdmin";
     private static final String TaxonAdminKey = "TaxonAdmin";
 
@@ -58,6 +58,9 @@ public class UserController extends ControllerBase {
 
     @Inject
     private IConfigService _configService;
+
+    @Inject
+    private PasswordResetService _passwordResetService;
 
     public Result changePassword(Http.Request request) {
         try {
@@ -160,9 +163,32 @@ public class UserController extends ControllerBase {
                 return badRequest(Json.toJson(Map.of("error", messages.at("UserController.passwordNotMatches"))));
             }
 
+            // Check that the new email is not already used by another account
+            boolean emailTaken = User.find().query().where()
+                .ieq("email", newEmail)
+                .ne("id", user.getId())
+                .findCount() > 0;
+            if (emailTaken) {
+                return status(409, Json.toJson(Map.of("error",
+                    messages.at("UserController.userWithEmailAlreadyExists", newEmail))));
+            }
+
+            String originalEmail = user.getEmail();
+
             // Update email
             user.setEmail(newEmail);
             DB.update(user);
+
+            // Notify the previous address so an unauthorized change cannot go unnoticed
+            try {
+                MailMessageBuilder builder = new MailMessageBuilder();
+                builder.setSubject(messages.at("UserController.emailChangedNotificationSubject"));
+                builder.setContents(messages.at("UserController.emailChangedNotificationContents", originalEmail, newEmail));
+                builder.addRecipient(originalEmail);
+                _mailService.sendMail(builder.build());
+            } catch (Exception mailEx) {
+                Logger.error(String.format("Failed to send email change notification to %s", originalEmail), mailEx);
+            }
 
             // Return success response
             Map<String, Object> response = new HashMap<>();
@@ -587,20 +613,13 @@ public class UserController extends ControllerBase {
     }
 
     /**
-     * /**
-     * Reset a user's password
+     * Reset a user's password – pošle uživateli e-mail s jednorázovým odkazem,
+     * na kterém si sám nastaví nové heslo. Heslo se negeneruje a v odpovědi
+     * se nevrací (zjištění M2, docs/security.md).
      */
     @Security.Authenticated(AuthorizedAsSysAdmin.class)
     public Result resetUserPassword(Http.Request request, Long id) {
         try {
-            // Check if current user is sysadmin
-            User currentUser = SessionUtils.getCurrentUser(request.session());
-            if (currentUser == null || !currentUser.isSysAdmin()) {
-                Map<String, Object> errorResponse = new HashMap<>();
-                errorResponse.put("error", "Unauthorized access");
-                return unauthorized(Json.toJson(errorResponse));
-            }
-
             // Find user by ID
             User user = User.find().byId(id);
             if (user == null) {
@@ -609,18 +628,11 @@ public class UserController extends ControllerBase {
                 return notFound(Json.toJson(errorResponse));
             }
 
-            // Generate a new random password
-            String newPassword = PasswordGenerator.Generate(User.MinPasswordLength);
+            _passwordResetService.requestPasswordReset(user, getMessages(user));
 
-            // Update user's password
-            user.setPlainPassword(newPassword, _hashService);
-            user.save();
-
-            // Return the new password in the response
             ObjectNode response = new ObjectMapper().createObjectNode();
             response.put("success", true);
-            response.put("message", "Password reset successfully");
-            response.put("newPassword", newPassword);
+            response.put("message", getMessages(request).at("PasswordReset.adminRequested", user.getEmail()));
 
             return ok(response);
         } catch (Exception e) {
@@ -839,29 +851,6 @@ public class UserController extends ControllerBase {
                 break;
             case SysAdminKey:
                 user.setSysAdmin(Boolean.parseBoolean(value));
-                break;
-            case AddProjectKey:
-                /**
-                 * TODO - when assigning project already assigned, should return error
-                 */
-                Project toAdd = Project.find().byId(Integer.parseInt(value));
-                if (toAdd != null) {
-                    // We need to handle the many-to-many relationship properly
-                    // For now, we'll just add to the collection
-                    if (user.getContributionProjects() == null) {
-                        user.setContributionProjects(new java.util.HashSet<>());
-                    }
-                    user.getContributionProjects().add(toAdd);
-                }
-                returnedValue = toAdd != null ? toAdd.getName() : "";
-                break;
-            case RemoveProjectKey:
-                Project toRemove = Project.find().byId(Integer.parseInt(value));
-                if (toRemove != null) {
-                    if (user.getContributionProjects() != null) {
-                        user.getContributionProjects().remove(toRemove);
-                    }
-                }
                 break;
             case TaxonAdminKey:
                 user.setTaxonAdmin(Boolean.parseBoolean(value));

@@ -20,31 +20,31 @@ interface MapUsersAddTaxonModalProps {
 }
 
 export function MapUsersAddTaxonModal({
-    show,
-    taxa,
-    taxaLoading,
-    submitting,
-    selectedTaxon,
-    taxonSearchTerm,
-    taxonInputRef,
-    onSearchChange,
-    onSelectTaxon,
-    onClose,
-}: MapUsersAddTaxonModalProps) {
+                                          show,
+                                          taxa,
+                                          taxaLoading,
+                                          submitting,
+                                          selectedTaxon,
+                                          taxonSearchTerm,
+                                          taxonInputRef,
+                                          onSearchChange,
+                                          onSelectTaxon,
+                                          onClose,
+                                      }: MapUsersAddTaxonModalProps) {
     const {t} = useTranslation();
 
     return (
         <Modal show={show} onHide={onClose}>
             <Modal.Header closeButton>
-                <Modal.Title>{t("user.usersAdministration.addTaxon")}</Modal.Title>
+                <Modal.Title>{t('user.usersAdministration.addTaxon')}</Modal.Title>
             </Modal.Header>
             <Modal.Body>
                 <Form.Group controlId="taxonSearch">
-                    <Form.Label>{t("user.usersAdministration.searchTaxon")}</Form.Label>
+                    <Form.Label>{t('user.usersAdministration.searchTaxon')}</Form.Label>
                     <Form.Control
                         ref={taxonInputRef as React.RefObject<HTMLInputElement>}
                         type="text"
-                        placeholder={t("user.usersAdministration.enterTaxonName")}
+                        placeholder={t('user.usersAdministration.enterTaxonName')}
                         value={taxonSearchTerm}
                         onChange={(e) => onSearchChange(e.target.value)}
                         disabled={taxaLoading || submitting || selectedTaxon !== null}
@@ -52,13 +52,18 @@ export function MapUsersAddTaxonModal({
                     />
                     {taxaLoading && (
                         <div className="mt-2">
-                            <Spinner animation="border" size="sm" /> {t("common.loading")}
+                            <Spinner animation="border" size="sm"/> {t('common.loading')}
                         </div>
                     )}
                     {taxa.length > 0 && !selectedTaxon && (
-                        <div 
-                            className="mt-2" 
-                            style={{maxHeight: '200px', overflowY: 'auto', border: '1px solid #dee2e6', borderRadius: '4px'}}
+                        <div
+                            className="mt-2"
+                            style={{
+                                maxHeight: '200px',
+                                overflowY: 'auto',
+                                border: '1px solid #dee2e6',
+                                borderRadius: '4px'
+                            }}
                         >
                             {taxa.map(taxon => (
                                 <div
@@ -77,23 +82,23 @@ export function MapUsersAddTaxonModal({
                     {selectedTaxon && (
                         <div className="mt-3">
                             <div className="d-flex align-items-center gap-2">
-                                <Spinner animation="border" size="sm" />
-                                <span>{t("user.usersAdministration.processingTaxon", {taxon: selectedTaxon.nameLat})}</span>
+                                <Spinner animation="border" size="sm"/>
+                                <span>{t('user.usersAdministration.processingTaxon', {taxon: selectedTaxon.nameLat})}</span>
                             </div>
                             <div className="mt-2 text-muted small">
-                                {t("user.usersAdministration.processingInfo")}
+                                {t('user.usersAdministration.processingInfo')}
                             </div>
                         </div>
                     )}
                 </Form.Group>
             </Modal.Body>
             <Modal.Footer>
-                <Button 
-                    variant="secondary" 
+                <Button
+                    variant="secondary"
                     onClick={onClose}
                     disabled={submitting}
                 >
-                    {submitting ? t("user.usersAdministration.waitToClose") : t("cancel")}
+                    {submitting ? t('user.usersAdministration.waitToClose') : t('common.cancel')}
                 </Button>
             </Modal.Footer>
         </Modal>

@@ -9,13 +9,10 @@
 
 </head>
 <body>
-<script>
-    window.__FLASH__ = {
-        success: "@request.flash.get("success")",
-        error: "@request.flash.get("error")"
-    };
-</script>
-<div id="react-app"></div>
+<!-- flash hlášky pro React FE – data atributy místo inline scriptu kvůli
+     Content-Security-Policy script-src 'self' (docs/security.md, pův. L2);
+     čte FeatureDetail.tsx -->
+<div id="react-app" data-flash-success="@request.flash.get("success")" data-flash-error="@request.flash.get("error")"></div>
 @for(css <- cssFiles) {
 <link href="@css" rel="stylesheet">
 }

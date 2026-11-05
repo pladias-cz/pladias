@@ -1,5 +1,6 @@
 import {useCallback} from 'react';
-import axios from 'axios';
+import {apiGet} from '@/services/apiClient';
+import type {ServerSideDataResponse} from '@/core/dataTable/types';
 import type {ImportControlRecord} from '../types';
 
 export interface UseImportControlsDataOptions {
@@ -10,17 +11,17 @@ export function useImportControlsData(options: UseImportControlsDataOptions = {}
     const {onSuccess} = options;
 
     const fetchControls = useCallback(async ({
-        page,
-        pageSize,
-        sorting,
-        columnFilters,
-        additionalParams = {},
-        signal
-    }: {
+                                                 page,
+                                                 pageSize,
+                                                 sorting,
+                                                 columnFilters,
+                                                 additionalParams = {},
+                                                 signal
+                                             }: {
         page: number;
         pageSize: number;
-        sorting: Array<{id: string; desc: boolean}>;
-        columnFilters: Array<{id: string; value: string}>;
+        sorting: Array<{ id: string; desc: boolean }>;
+        columnFilters: Array<{ id: string; value: string }>;
         additionalParams?: Record<string, string>;
         signal?: AbortSignal;
     }) => {
@@ -29,7 +30,7 @@ export function useImportControlsData(options: UseImportControlsDataOptions = {}
         if (sorting && sorting.length > 0) {
             const s = sorting[0];
             sortParams.sortBy = s.id;
-            sortParams.sortOrder = s.desc ? "desc" : "asc";
+            sortParams.sortOrder = s.desc ? 'desc' : 'asc';
         }
 
         // Extract filters - handle special cases for timestamp range
@@ -50,7 +51,7 @@ export function useImportControlsData(options: UseImportControlsDataOptions = {}
             }
         });
 
-        const response = await axios.get("/api/react/importResult/validated", {
+        const payload = await apiGet<ServerSideDataResponse<ImportControlRecord>>('/api/react/importResult/validated', {
             params: {
                 page: String(page),
                 pageSize: String(pageSize),
@@ -61,10 +62,9 @@ export function useImportControlsData(options: UseImportControlsDataOptions = {}
             signal,
         });
 
-        const responseData = response.data;
-        const data = responseData?.data || [];
-        const totalCount = responseData?.totalCount || 0;
-        const filteredCount = responseData?.filteredCount ?? totalCount;
+        const data = payload?.data || [];
+        const totalCount = payload?.totalCount || 0;
+        const filteredCount = payload?.filteredCount ?? totalCount;
 
         if (data.length === 0) {
             return {data: [], totalCount, filteredCount};

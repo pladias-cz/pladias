@@ -1,8 +1,19 @@
 import {Table} from 'react-bootstrap';
 import {useTranslation} from 'react-i18next';
 import {useRef, useEffect} from 'react';
-import type {RecordGbifMinimal} from '@/pages/atlas/MapDetail';
+import type {RecordGbifMinimal} from '@/models/AtlasRecords';
 import './RecordsTable.scss';
+
+/**
+ * URL detailu záznamu podle zdroje: ČBS záznamy nesou iNaturalist observation id
+ * (z tabulky gbif.geoserver_inat_cbs_main), záznamy GBIF/iNaturalist GBIF
+ * occurrence id (z tabulky gbif.records) – jen ČBS tedy odkazuje na iNaturalist.
+ */
+function externalRecordDetailUrl(record: Pick<RecordGbifMinimal, 'id' | 'project'>): string {
+    return record.project === 'cbs'
+        ? `https://www.inaturalist.org/observations/${record.id}`
+        : `https://www.gbif.org/occurrence/${record.id}`;
+}
 
 interface ExternalRecordsTableProps {
     records: RecordGbifMinimal[];
@@ -21,11 +32,9 @@ export function ExternalRecordsTable({
     const {t} = useTranslation();
     const rowRefs = useRef<{ [key: number]: HTMLTableRowElement | null }>({});
 
-    if (records.length === 0) {
-        return null;
-    }
-
-    // Register scroll function for map hover to use
+    // Register scroll function for map hover to use. Hooks must run before the
+    // early return below (rules-of-hooks); with empty records the registered
+    // scroll function simply finds no row – harmless no-op.
     useEffect(() => {
         if (registerScrollFn) {
             const scrollFn = (recordId: number) => {
@@ -40,16 +49,22 @@ export function ExternalRecordsTable({
         }
     }, [registerScrollFn]);
 
+    if (records.length === 0) {
+        return null;
+    }
+
     return (
         <Table striped bordered hover size="sm">
             <thead>
             <tr>
-                <th>{t("atlas.mapDetail.recordId")}</th>
-                <th>{t("atlas.mapDetail.source")}</th>
-                <th>{t("atlas.mapDetail.year")}</th>
-                <th>{t("atlas.mapDetail.latitude")}</th>
-                <th>{t("atlas.mapDetail.longitude")}</th>
-                <th>{t("atlas.mapDetail.collectors")}</th>
+                <th>{t('atlas.mapDetail.recordId')}</th>
+                {/* písmeno kvadrantu – dle něj jsou řádky seřazeny (stejný sloupec jako v tabulce PLADIAS) */}
+                <th title={t('atlas.mapDetail.quadrant')}>{t('atlas.mapDetail.squareAbbrev')}</th>
+                <th>{t('atlas.mapDetail.source')}</th>
+                <th>{t('atlas.mapDetail.year')}</th>
+                <th>{t('atlas.mapDetail.latitude')}</th>
+                <th>{t('atlas.mapDetail.longitude')}</th>
+                <th>{t('atlas.mapDetail.collectors')}</th>
             </tr>
             </thead>
             <tbody>
@@ -65,17 +80,20 @@ export function ExternalRecordsTable({
                         onMouseEnter={() => onRecordHover?.(record.id)}
                         onMouseLeave={() => onRecordHover?.(null)}
                     >
-                        <td style={{backgroundColor: record.validationStatusColor || '#808080'}}>
-                            <a href={`https://www.gbif.org/occurrence/search?entity=o_${record.id}`} target="_blank"
+                        <td>
+                            <a href={externalRecordDetailUrl(record)} target="_blank"
                                rel="noopener noreferrer">
                                 {record.id}
                             </a>
                         </td>
                         <td>
+                            {record.quadrantLetter || '-'}
+                        </td>
+                        <td>
                             <span className="text-uppercase fw-semibold">{record.project}</span>
                         </td>
                         <td>
-                            {record.year || t("atlas.mapDetail.unknownYear")}
+                            {record.year || t('atlas.mapDetail.unknownYear')}
                         </td>
                         <td className="text-nowrap">
                             {record.latitude.toFixed(4)}

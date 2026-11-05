@@ -1,113 +1,89 @@
-import {useState, useEffect} from "react";
-import {Button, Form, Spinner} from "react-bootstrap";
-import {useTranslation} from "react-i18next";
-import type {MultiValueOption} from "@/models/MultiValueOption";
+import {useState, useEffect} from 'react';
+import {Button, Form, Spinner} from 'react-bootstrap';
+import {useTranslation} from 'react-i18next';
+import {useConfirm} from '@/hooks/useConfirm';
+import type {MultiValueOption} from '@/models/MultiValueOption';
+import {patchRecordField} from '@/services/recordApi';
+import {ApiError, apiErrorMessage} from '@/services/apiClient';
 
 interface Props {
     label: string;
     recordId: number;
     currentValue: MultiValueOption[];
-    endpoint: string;
+    /** načte dostupné volby (endpoint bez aktuálně vybraných hodnot) */
+    loadOptions: () => Promise<MultiValueOption[]>;
     addKey: string;      // API key for adding (e.g., "ADDHERBARIUM")
     deleteKey: string;   // API key for deleting (e.g., "DELETEHERBARIUM")
-    onUpdated?: (data: {updatedValue: MultiValueOption[], newTimestamp: number}) => void;
+    onUpdated?: (data: { updatedValue: MultiValueOption[], newTimestamp: number }) => void;
     lastEditTimestampNum?: number;
 }
 
 export default function MultiSelectEdit({
-    label,
-    recordId,
-    currentValue,
-    endpoint,
-    addKey,
-    deleteKey,
-    onUpdated,
-    lastEditTimestampNum
-}: Props) {
+                                            label,
+                                            recordId,
+                                            currentValue,
+                                            loadOptions,
+                                            addKey,
+                                            deleteKey,
+                                            onUpdated,
+                                            lastEditTimestampNum
+                                        }: Props) {
     const {t} = useTranslation();
+    const {confirm, dialog} = useConfirm();
     const [options, setOptions] = useState<MultiValueOption[]>([]);
     const [selected, setSelected] = useState<MultiValueOption[]>(currentValue);
     const [pendingAdd, setPendingAdd] = useState<MultiValueOption | null>(null);
-    const [availableOptions, setAvailableOptions] = useState<MultiValueOption[]>([]);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [editing, setEditing] = useState(false);
     const [lastTimestamp, setLastTimestamp] = useState(lastEditTimestampNum ?? 0);
 
-    // Sync selected with currentValue prop
-    useEffect(() => {
+    // Sync selected with currentValue prop – render-phase update guarded by
+    // comparison (React docs: adjusting state when a prop changes, without an effect)
+    const [prevCurrentValue, setPrevCurrentValue] = useState(currentValue);
+    if (currentValue !== prevCurrentValue) {
+        setPrevCurrentValue(currentValue);
         setSelected(currentValue);
-    }, [currentValue]);
+    }
 
-    // Sync internal timestamp with prop
-    useEffect(() => {
-        if (lastEditTimestampNum !== undefined && lastEditTimestampNum !== lastTimestamp) {
-            setLastTimestamp(lastEditTimestampNum);
-        }
-    }, [lastEditTimestampNum]);
+    // Sync internal timestamp with prop (e.g., after another field was edited)
+    if (lastEditTimestampNum !== undefined && lastEditTimestampNum !== lastTimestamp) {
+        setLastTimestamp(lastEditTimestampNum);
+    }
 
     // Fetch available options when editing starts
     useEffect(() => {
         if (editing) {
-            fetch(endpoint)
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success && data.data) {
-                        const fetchedOptions: MultiValueOption[] = data.data.map((item: any) => ({
-                            id: item.id,
-                            name: item.name,
-                            label: item.label
-                        }));
-                        setOptions(fetchedOptions);
-                        updateAvailableOptions(fetchedOptions, selected);
-                    }
+            loadOptions()
+                .then(fetchedOptions => {
+                    setOptions(fetchedOptions);
                 })
                 .catch(err => {
-                    setError(err.message || t("common.multiValueEdit.loadFailed"));
+                    setError(apiErrorMessage(err, t('common.multiValueEdit.loadFailed')));
                 });
         }
-    }, [editing]);
+    }, [editing, loadOptions, t]);
 
-    // Update available options when options or selected change
-    useEffect(() => {
-        if (options.length > 0) {
-            updateAvailableOptions(options, selected);
-        }
-    }, [options, selected]);
+    // Available options are a pure derivation of the loaded options minus the
+    // selected ones (no effect/state needed – React docs: you might not need an effect)
+    const selectedIds = new Set(selected.map(o => o.id));
+    const availableOptions = options.filter(o => !selectedIds.has(o.id));
 
     // No auto-clear of pendingAdd - it stays until submit or cancel
 
-    function updateAvailableOptions(allOptions: MultiValueOption[], selectedOptions: MultiValueOption[]) {
-        const selectedIds = new Set(selectedOptions.map(o => o.id));
-        const available = allOptions.filter(o => !selectedIds.has(o.id));
-        setAvailableOptions(available);
-    }
-
     async function sendApiRequest(key: string, value: number) {
         try {
-            const response = await fetch(`/api/react/atlas/record/${recordId}`, {
-                method: "PATCH",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({
-                    key: key,
-                    value: value.toString(),
-                    lastEditTimestampNum: lastTimestamp
-                }),
-            });
-
-            if (!response.ok) {
-                const msg = await response.text();
-                throw new Error(msg || t("common.multiValueEdit.saveFailed"));
-            }
-
-            const responseData = await response.json();
-            const newTimestamp = responseData.data?.lastEditTimestampNum;
+            const result = await patchRecordField(recordId, key, value.toString(), lastTimestamp);
+            const newTimestamp = result.lastEditTimestampNum;
             if (newTimestamp) {
                 setLastTimestamp(newTimestamp);
             }
-            return responseData;
-        } catch (e: any) {
-            setError(e.message || t("common.multiValueEdit.saveFailed"));
+            return result;
+        } catch (e) {
+            // 403 apod. notifikuje centrálně apiClient – zde jen propagujeme
+            if (!(e instanceof ApiError && e.notified)) {
+                setError(apiErrorMessage(e, t('common.multiValueEdit.saveFailed')));
+            }
             throw e;
         }
     }
@@ -128,31 +104,36 @@ export default function MultiSelectEdit({
             onUpdated?.({updatedValue: newSelected, newTimestamp: lastTimestamp});
             setPendingAdd(null);
             setSaving(false);
-        } catch (e) {
+        } catch {
             setSaving(false);
         }
     }
 
     async function handleRemove(option: MultiValueOption) {
-        if (window.confirm(t("common.multiValueEdit.confirmDeleteMessage", {name: option.name}))) {
-            // Optimistic update - remove immediately from UI
-            const newSelected = selected.filter(o => o.id !== option.id);
-            setSelected(newSelected);
-            onUpdated?.({
-                updatedValue: newSelected,
-                newTimestamp: lastTimestamp
-            });
+        if (!(await confirm({
+            message: t('common.multiValueEdit.confirmDeleteMessage', {name: option.name}),
+            confirmLabel: t('common.multiValueEdit.remove'),
+        }))) {
+            return;
+        }
 
-            setSaving(true);
-            setError(null);
-            try {
-                await sendApiRequest(deleteKey, option.id);
-            } catch (e) {
-                // On error, restore the removed item
-                setSelected(selected);
-            } finally {
-                setSaving(false);
-            }
+        // Optimistic update - remove immediately from UI
+        const newSelected = selected.filter(o => o.id !== option.id);
+        setSelected(newSelected);
+        onUpdated?.({
+            updatedValue: newSelected,
+            newTimestamp: lastTimestamp
+        });
+
+        setSaving(true);
+        setError(null);
+        try {
+            await sendApiRequest(deleteKey, option.id);
+        } catch {
+            // On error, restore the removed item
+            setSelected(selected);
+        } finally {
+            setSaving(false);
         }
     }
 
@@ -167,7 +148,7 @@ export default function MultiSelectEdit({
         content = (
             <div className="d-flex flex-wrap gap-1">
                 {selected.length === 0 ? (
-                    <span className="text-muted">{t("common.multiValueEdit.none")}</span>
+                    <span className="text-muted">{t('common.multiValueEdit.none')}</span>
                 ) : (
                     selected.map(option => (
                         <span key={option.id} className="badge bg-secondary" title={option.label}>
@@ -184,7 +165,7 @@ export default function MultiSelectEdit({
                     {/*<strong className="d-block mb-2">{t("common.multiValueEdit.current")}</strong>*/}
                     <div className="d-flex flex-wrap gap-1 mb-3">
                         {selected.length === 0 ? (
-                            <span className="text-muted small">{t("common.multiValueEdit.none")}</span>
+                            <span className="text-muted small">{t('common.multiValueEdit.none')}</span>
                         ) : (
                             selected.map(option => (
                                 <span key={option.id} className="badge bg-primary fs-6" title={option.label}>
@@ -195,18 +176,18 @@ export default function MultiSelectEdit({
                                         style={{fontSize: '0.7em', verticalAlign: 'middle'}}
                                         onClick={() => handleRemove(option)}
                                         disabled={saving}
-                                        title={t("common.multiValueEdit.remove")}
+                                        title={t('common.multiValueEdit.remove')}
                                     />
                                 </span>
                             ))
                         )}
                     </div>
 
-                    <strong className="d-block mb-2">{t("common.multiValueEdit.available")}</strong>
+                    <strong className="d-block mb-2">{t('common.multiValueEdit.available')}</strong>
                     <div className="d-flex gap-2 mb-2">
                         <Form.Select
                             size="sm"
-                            value={pendingAdd?.id.toString() || ""}
+                            value={pendingAdd?.id.toString() || ''}
                             onChange={e => {
                                 const option = availableOptions.find(o => o.id === Number(e.target.value));
                                 if (option) {
@@ -216,7 +197,7 @@ export default function MultiSelectEdit({
                             disabled={saving || availableOptions.length === 0}
                             className="flex-grow-1"
                         >
-                            <option value="">-- {t("common.select")} --</option>
+                            <option value="">-- {t('common.select')} --</option>
                             {availableOptions.map(option => (
                                 <option key={option.id} value={option.id} title={option.label}>
                                     {option.name}
@@ -230,13 +211,13 @@ export default function MultiSelectEdit({
                                 onClick={handleSubmit}
                                 disabled={saving}
                             >
-                                {t("common.inlineField.add")}
+                                {t('common.inlineField.add')}
                             </Button>
                         )}
                     </div>
 
                     {availableOptions.length === 0 && (
-                        <small className="text-muted">{t("common.multiValueEdit.noMoreAvailable")}</small>
+                        <small className="text-muted">{t('common.multiValueEdit.noMoreAvailable')}</small>
                     )}
                 </div>
 
@@ -266,6 +247,7 @@ export default function MultiSelectEdit({
 
     return (
         <>
+            {dialog}
             <div className="row align-items-center mb-1">
                 <div className="col-sm-3 text-muted small">
                     {label}
@@ -275,16 +257,16 @@ export default function MultiSelectEdit({
                         <i
                             className="bi bi-pencil me-2"
                             aria-hidden="true"
-                            style={{cursor: "pointer"}}
+                            style={{cursor: 'pointer'}}
                             onClick={() => setEditing(true)}
-                            title={t("common.inlineField.edit")}
+                            title={t('common.inlineField.edit')}
                         />
                     )}
                     <span
                         className="editable-value"
-                        style={{cursor: "pointer"}}
+                        style={{cursor: 'pointer'}}
                         onClick={() => !editing && setEditing(true)}
-                        title={t("common.inlineField.edit")}
+                        title={t('common.inlineField.edit')}
                     >
                         {!editing && content}
                     </span>

@@ -1,0 +1,180 @@
+/**
+ * Pokročilé vyhledávání – styly chip řádky a popoverů filtrů.
+ * Layout řádky drží bootstrap utility třídy; tady jen chip-specifika.
+ */
+
+// Paleta kategorií filtrů (zeleno-hnědé tóny, zvýšený kontrast – všechny barvy
+// ≥ ~5:1 na bílé) – společná pro chipy (stroke) i hlavičky kategorií v „+"
+// popoveru; resolvuje se přes --filter-category-color.
+.filter-chip--taxon,
+.filter-add__category--taxon {
+    --filter-category-color: #356636;
+}
+
+.filter-chip--locality,
+.filter-add__category--locality {
+    --filter-category-color: #5d6b2f;
+}
+
+.filter-chip--origin,
+.filter-add__category--origin {
+    --filter-category-color: #7a5a2e;
+}
+
+.filter-chip--remarks,
+.filter-add__category--remarks {
+    --filter-category-color: #5c4a33;
+}
+
+.filter-chip {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+
+    // Potomci záměrně jako descendant selektory (.filter-chip .filter-chip__button),
+    // ne BEM konkatenace (&__button) – ta dává plochou třídu (0,1,0), se kterou by
+    // podle pořadí CSS chunků vyhrál bootstrap .btn-*; descendant má (0,2,0)+.
+    .filter-chip__button {
+        max-width: 280px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+
+        // stroke chipu v barvě kategorie (base je btn-outline-secondary)
+        border-color: var(--filter-category-color);
+
+        &:hover,
+        &:focus-visible,
+        &:active {
+            border-color: var(--filter-category-color);
+            background-color: color-mix(in srgb, var(--filter-category-color) 12%, white);
+            color: var(--filter-category-color);
+        }
+
+        // vyplněný chip – světlý nádech barvy kategorie + plný stroke
+        &--filled {
+            padding-right: 1.7rem; // místo pro křížek
+            border-color: var(--filter-category-color);
+            background-color: color-mix(in srgb, var(--filter-category-color) 18%, white);
+            color: var(--filter-category-color);
+            font-weight: 600;
+
+            &:hover,
+            &:focus-visible,
+            &:active {
+                border-color: var(--filter-category-color);
+                background-color: color-mix(in srgb, var(--filter-category-color) 28%, white);
+                color: var(--filter-category-color);
+            }
+        }
+    }
+
+    // křížek pro vymazání hodnoty – překrytý přes pravý okraj vyplněného chipu
+    // (tmavý – pozadí vyplněného chipu je světlý nádech barvy kategorie)
+    .filter-chip__clear {
+        position: absolute;
+        top: 0.4rem;
+        right: 0.4rem;
+        width: 0.5rem;
+        height: 0.5rem;
+        background-size: 0.5rem 0.5rem;
+        opacity: 0.7;
+
+        &:hover {
+            opacity: 1;
+        }
+    }
+
+    // popover širší než bootstrap default (276px) – typeaheady a rozsahy
+    // potřebují místo; max-width přes bootstrap proměnnou se zvýšenou
+    // specificitou, jinak podle pořadí CSS chunků vyhraje bootstrap .popover
+    .filter-chip__popover {
+        min-width: 260px;
+
+        .rbt {
+            width: 100%;
+        }
+    }
+}
+
+// max-width chip popoveru – samostatné pravidlo se zvýšenou specificitou
+.popover.filter-chip__popover {
+    --bs-popover-max-width: 360px;
+}
+
+// širší popover pro mapový editor polygonu (kreslení potřebuje prostor) –
+// musí stát až po základním pravidle, jinak by podle pořadí CSS chunků
+// prohrálo se stejnou specificitou
+.popover.filter-chip__popover--wide {
+    --bs-popover-max-width: min(680px, 94vw);
+}
+
+// mapa editoru polygonu – pevná výška (MapCanvas se roztahuje na 100 %)
+.polygon-map-editor__map {
+    height: 320px;
+}
+
+// „+" popover pro zapnutí dalších filtrů – kategorie ve sloupcích (grid).
+// max-width přes bootstrap proměnnou se zvýšenou specificitou
+// (.popover.filter-add-popover) – samotná třída by podle pořadí CSS chunků
+// prohrála s bootstrap .popover { max-width: var(--bs-popover-max-width) }
+// a popover zůstal úzký (kategorie pod sebou).
+.popover.filter-add-popover {
+    --bs-popover-max-width: min(920px, 94vw);
+
+    .popover-body {
+        max-height: 70vh;
+        overflow-y: auto;
+    }
+}
+
+.filter-add__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 0.5rem 0.75rem;
+    align-items: start;
+}
+
+.filter-add__category-header {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--filter-category-color, var(--bs-secondary-color));
+    padding: 0.25rem 0.5rem;
+    border-bottom: 2px solid var(--filter-category-color, var(--bs-border-color));
+    margin-bottom: 0.25rem;
+    white-space: nowrap;
+}
+
+.filter-add__item {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    width: 100%;
+    text-align: left;
+    border: none;
+    background: none;
+    border-radius: 0.25rem;
+    padding: 0.25rem 0.5rem;
+    color: inherit;
+    font-size: 0.875rem;
+    white-space: nowrap;
+
+    &:hover {
+        background: var(--bs-tertiary-bg);
+    }
+
+    .bi {
+        visibility: hidden;
+        font-size: 0.8rem;
+    }
+
+    &--visible {
+        font-weight: 600;
+
+        .bi {
+            visibility: visible;
+        }
+    }
+}

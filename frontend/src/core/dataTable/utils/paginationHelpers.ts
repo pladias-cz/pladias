@@ -17,7 +17,7 @@ export function getVisiblePages(
     }
 
     const pages: Set<number> = new Set();
-    
+
     // Always show first two pages
     pages.add(1);
     pages.add(2);
@@ -55,7 +55,7 @@ export function getVisiblePages(
     for (let i = 0; i < sortedPages.length; i++) {
         const current = sortedPages[i];
         const prev = i > 0 ? sortedPages[i - 1] : null;
-        
+
         if (prev !== null && typeof prev === 'number' && current - prev > 1) {
             result.push('ellipsis');
         }

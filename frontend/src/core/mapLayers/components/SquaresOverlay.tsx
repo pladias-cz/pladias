@@ -1,10 +1,10 @@
 /**
  * Squares Overlay Component
- * 
+ *
  * Interactive WFS layer for square grid with hover/click support.
  * Displays polygons with light blue borders, highlights on hover (red),
  * and shows popup with square name and coordinates.
- * 
+ *
  * Features:
  * - Load GeoJSON from GeoServer WFS (common:squares)
  * - Zoom-dependent interactivity (active from zoom level 10+)
@@ -15,18 +15,30 @@
  * - Visibility control via opacity (layer stays mounted)
  */
 
-import { useMap } from 'react-leaflet';
+import {useMap} from 'react-leaflet';
 import * as L from 'leaflet';
-import { useEffect, useRef, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import type { LatLngExpression, Popup } from 'leaflet';
+import {useEffect, useRef, useCallback} from 'react';
+import {fetchWfsGeoJson} from '@/services/mapApi';
+import {logError} from '@/services/logger';
+import type {LayerParams} from '../types';
+import {useNavigate} from 'react-router-dom';
+import type {LatLngExpression, Popup} from 'leaflet';
 
 interface SquaresOverlayProps {
     visible: boolean;
-    params?: Record<string, any>;
+    params?: LayerParams;
     minZoom?: number;
     onSquareDoubleClick?: (squareId: string) => void;
 }
+
+/**
+ * GeoJSON path vrstva nese feature a cleanup funkci – leaflet typy `L.Path`
+ * tyto properties nemodelují (přidávají je GeoJSON event handlery).
+ */
+type FeaturePath = L.Path & {
+    feature: SquareFeature;
+    _squaresCleanup?: () => void;
+};
 
 interface SquareFeature {
     type: 'Feature';
@@ -82,14 +94,14 @@ function getPolygonCentroid(coordinates: number[][][]): LatLngExpression {
     return [latSum / count, lngSum / count];
 }
 
-export function SquaresOverlay({ visible, minZoom = 8, params, onSquareDoubleClick }: SquaresOverlayProps) {
+export function SquaresOverlay({visible, minZoom = 8, params, onSquareDoubleClick}: SquaresOverlayProps) {
     const map = useMap();
     const navigate = useNavigate();
     const geoJsonLayerRef = useRef<L.GeoJSON | null>(null);
     const currentPopupRef = useRef<Popup | null>(null);
     const currentLabelRef = useRef<L.Marker | null>(null);
     const visibleRef = useRef(visible);
-    const clickTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const clickTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     useEffect(() => {
         visibleRef.current = visible;
@@ -121,7 +133,7 @@ export function SquaresOverlay({ visible, minZoom = 8, params, onSquareDoubleCli
      */
     const createPopupContent = useCallback((latlng: LatLngExpression) => {
         const [lat, lng] = Array.isArray(latlng) ? latlng : [latlng.lat, latlng.lng];
-        
+
         return `
             <div style="font-size: 13px; padding: 5px;">
                 <span style="color: #666;">WGS: ${lat.toFixed(4)}° N, ${lng.toFixed(4)}° E</span><br/>
@@ -134,17 +146,17 @@ export function SquaresOverlay({ visible, minZoom = 8, params, onSquareDoubleCli
      * Handle double-click on a square feature - cancel pending click popup and navigate
      */
     const handleDoubleClick = useCallback((e: L.LeafletEvent) => {
-        const layer = e.target as L.Path;
-        const feature = (layer as any).feature as SquareFeature;
-        
+        const layer = e.target as FeaturePath;
+        const feature = layer.feature;
+
         // Cancel any pending click popup
         if (clickTimeoutRef.current) {
             clearTimeout(clickTimeoutRef.current);
             clickTimeoutRef.current = null;
         }
-        
+
         if (!feature || !onSquareDoubleClick) return;
-        
+
         // Get square ID from feature properties
         const squareId = feature.properties.name;
         if (squareId) {
@@ -160,8 +172,8 @@ export function SquaresOverlay({ visible, minZoom = 8, params, onSquareDoubleCli
         // Suppress the browser's native context menu
         (e as L.LeafletMouseEvent).originalEvent.preventDefault();
 
-        const layer = e.target as L.Path;
-        const feature = (layer as any).feature as SquareFeature;
+        const layer = e.target as FeaturePath;
+        const feature = layer.feature;
         if (!feature) return;
 
         const squareId = feature.properties.name;
@@ -184,7 +196,7 @@ export function SquaresOverlay({ visible, minZoom = 8, params, onSquareDoubleCli
 
         // Without a taxon there is no detail page to link to - show square name only
         if (!taxonId) {
-            currentPopupRef.current = L.popup({ closeOnClick: false })
+            currentPopupRef.current = L.popup({closeOnClick: false})
                 .setLatLng(latlng)
                 .setContent(`<div style="font-size: 13px; padding: 5px;"><b>${squareId}</b></div>`)
                 .openOn(map);
@@ -194,7 +206,7 @@ export function SquaresOverlay({ visible, minZoom = 8, params, onSquareDoubleCli
         const detailUrl = `/atlas/mapDetail/${taxonId}/${squareId}`;
 
         // Create and open popup with link at right-click location
-        const popup = L.popup({ closeOnClick: false })
+        const popup = L.popup({closeOnClick: false})
             .setLatLng(latlng)
             .setContent(`
                 <div style="font-size: 13px; padding: 5px;">
@@ -218,14 +230,14 @@ export function SquaresOverlay({ visible, minZoom = 8, params, onSquareDoubleCli
      * Handle mouseover on a square feature - highlight + show label (from zoom 10+)
      */
     const handleMouseOver = useCallback((e: L.LeafletEvent) => {
-        const layer = e.target as L.Path;
-        const feature = (layer as any).feature as SquareFeature;
-        
+        const layer = e.target as FeaturePath;
+        const feature = layer.feature;
+
         // Don't show anything if layer is not visible
         if (!visibleRef.current) {
             return;
         }
-        
+
         // Highlight: change to red border
         layer.setStyle({
             color: '#ff0000',
@@ -300,9 +312,9 @@ export function SquaresOverlay({ visible, minZoom = 8, params, onSquareDoubleCli
      * Uses the click coordinates for popup position, not the centroid
      */
     const handleFeatureClick = useCallback((e: L.LeafletEvent) => {
-        const layer = e.target as L.Path;
-        const feature = (layer as any).feature as SquareFeature;
-        
+        const layer = e.target as FeaturePath;
+        const feature = layer.feature;
+
         if (!feature) {
             return;
         }
@@ -324,7 +336,7 @@ export function SquaresOverlay({ visible, minZoom = 8, params, onSquareDoubleCli
             const clickLatLng = (e as L.LeafletMouseEvent).latlng;
 
             // Create and open popup at click location
-            const popup = L.popup({ closeOnClick: false })
+            const popup = L.popup({closeOnClick: false})
                 .setLatLng(clickLatLng)
                 .setContent(createPopupContent(clickLatLng))
                 .openOn(map);
@@ -348,7 +360,7 @@ export function SquaresOverlay({ visible, minZoom = 8, params, onSquareDoubleCli
         const clickLatLng = e.latlng;
 
         // Create and open popup at click location
-        const popup = L.popup({ closeOnClick: false })
+        const popup = L.popup({closeOnClick: false})
             .setLatLng(clickLatLng)
             .setContent(createPopupContent(clickLatLng))
             .openOn(map);
@@ -365,13 +377,7 @@ export function SquaresOverlay({ visible, minZoom = 8, params, onSquareDoubleCli
 
             try {
                 const wfsUrl = buildWfsUrl();
-                const response = await fetch(wfsUrl);
-
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                }
-
-                const data: WFSResponse = await response.json();
+                const data = await fetchWfsGeoJson<WFSResponse>(wfsUrl);
 
                 // Remove existing layer if any
                 if (geoJsonLayerRef.current) {
@@ -402,17 +408,17 @@ export function SquaresOverlay({ visible, minZoom = 8, params, onSquareDoubleCli
                         // Attach events to each path layer
                         pathLayers.forEach((pathLayer) => {
                             // Store feature reference on the layer for use in handlers
-                            (pathLayer as any).feature = feature;
+                            (pathLayer as FeaturePath).feature = feature;
 
                             // Attach event listeners
                             pathLayer.on('mouseover', handleMouseOver);
                             pathLayer.on('mouseout', handleMouseOut);
-                            pathLayer.on('click', handleFeatureClick, { bubblingMouseEvents: false });
-                            pathLayer.on('dblclick', handleDoubleClick, { bubblingMouseEvents: false });
-                            pathLayer.on('contextmenu', handleContextMenu, { bubblingMouseEvents: false });
+                            pathLayer.on('click', handleFeatureClick, {bubblingMouseEvents: false});
+                            pathLayer.on('dblclick', handleDoubleClick, {bubblingMouseEvents: false});
+                            pathLayer.on('contextmenu', handleContextMenu, {bubblingMouseEvents: false});
 
                             // Store cleanup function on the layer
-                            (pathLayer as any)._squaresCleanup = () => {
+                            (pathLayer as FeaturePath)._squaresCleanup = () => {
                                 pathLayer.off('mouseover', handleMouseOver);
                                 pathLayer.off('mouseout', handleMouseOut);
                                 pathLayer.off('click', handleFeatureClick);
@@ -430,7 +436,7 @@ export function SquaresOverlay({ visible, minZoom = 8, params, onSquareDoubleCli
 
                 // Apply visibility
                 if (!visibleRef.current) {
-                    geoJsonLayer.setStyle({ opacity: 0, fillOpacity: 0 });
+                    geoJsonLayer.setStyle({opacity: 0, fillOpacity: 0});
                 }
 
                 // Add to map
@@ -441,7 +447,7 @@ export function SquaresOverlay({ visible, minZoom = 8, params, onSquareDoubleCli
                 map.on('click', handleMapBackgroundClick);
 
             } catch (error) {
-                console.error('[SquaresOverlay] Failed to load WFS data:', error);
+                logError(error, {source: 'SquaresOverlay'});
             }
         };
 
@@ -451,25 +457,25 @@ export function SquaresOverlay({ visible, minZoom = 8, params, onSquareDoubleCli
         return () => {
             // Remove map click listener
             map.off('click', handleMapBackgroundClick);
-            
+
             // Clear any pending click timeout
             if (clickTimeoutRef.current) {
                 clearTimeout(clickTimeoutRef.current);
                 clickTimeoutRef.current = null;
             }
-            
+
             if (geoJsonLayerRef.current) {
                 // Clean up event listeners on all layers (including nested)
                 const cleanupLayer = (layer: L.Layer) => {
-                    const cleanup = (layer as any)._squaresCleanup;
+                    const cleanup = (layer as FeaturePath)._squaresCleanup;
                     if (cleanup) cleanup();
-                    
+
                     // If it's a group, clean up child layers too
                     if ('getLayers' in layer) {
                         (layer as L.LayerGroup).getLayers().forEach(cleanupLayer);
                     }
                 };
-                
+
                 geoJsonLayerRef.current.eachLayer((layer) => {
                     cleanupLayer(layer);
                 });
@@ -494,9 +500,9 @@ export function SquaresOverlay({ visible, minZoom = 8, params, onSquareDoubleCli
     useEffect(() => {
         if (geoJsonLayerRef.current) {
             if (visible) {
-                geoJsonLayerRef.current.setStyle({ opacity: 1, fillOpacity: 0.05 });
+                geoJsonLayerRef.current.setStyle({opacity: 1, fillOpacity: 0.05});
             } else {
-                geoJsonLayerRef.current.setStyle({ opacity: 0, fillOpacity: 0 });
+                geoJsonLayerRef.current.setStyle({opacity: 0, fillOpacity: 0});
                 // Remove label when layer is hidden
                 if (currentLabelRef.current) {
                     map.removeLayer(currentLabelRef.current);

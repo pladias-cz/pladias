@@ -1,19 +1,12 @@
-import { MapContainer } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css';
-import type { LatLngExpression } from 'leaflet';
-import type { MapPreviewType } from '@/pages/atlas/MapPreview';
-import { useLayerManager, Layer } from '@/core/mapLayers';
-import { useEffect, useState, useMemo } from 'react';
-import axios from 'axios';
-import type { TaxonMapSettings } from '@/components/atlas/taxaList/types';
+import type {MapPreviewType} from '@/pages/atlas/MapPreview';
+import {useLayerManager, Layer, MapCanvas} from '@/core/mapLayers';
+import {useMemo} from 'react';
+import {useQuery} from '@tanstack/react-query';
+import {getTaxonMapSettings} from '@/services/atlasApi';
 
 interface MapComponentProps {
     type?: MapPreviewType;
     taxonId?: number;
-}
-
-interface TaxonMapSettingsResponse {
-    data: TaxonMapSettings;
 }
 
 /**
@@ -114,30 +107,16 @@ function getVisibilityOverrides(
     return overrides;
 }
 
-export function MapComponent({ type = 1, taxonId }: MapComponentProps) {
-    const center: LatLngExpression = [49.8, 15.7];
+export function MapComponent({type = 1, taxonId}: MapComponentProps) {
+    const center: [number, number] = [49.8, 15.7];
     const initialZoom = 7.5;
 
-    const [mapSettings, setMapSettings] = useState<TaxonMapSettings | null>(null);
-
-    // Fetch taxon map settings when taxonId changes
-    useEffect(() => {
-        if (!taxonId) {
-            setMapSettings(null);
-            return;
-        }
-
-        axios.get<TaxonMapSettingsResponse>(`/api/react/atlas/taxonMapSettings/${taxonId}`)
-            .then(response => {
-                if (response.data?.data) {
-                    setMapSettings(response.data.data);
-                }
-            })
-            .catch(err => {
-                console.error('Failed to load taxon map settings:', err);
-                setMapSettings(null);
-            });
-    }, [taxonId]);
+    // nastavení mapy taxonu – bez cache (sekce J), read-only (commonThreshold)
+    const {data: mapSettings} = useQuery({
+        queryKey: ['taxonMapSettings', taxonId],
+        queryFn: () => getTaxonMapSettings(taxonId!),
+        enabled: taxonId !== undefined,
+    });
 
     // Get base layers for map type
     const baseLayers = useMemo(() => getLayersForType(type), [type]);
@@ -161,7 +140,7 @@ export function MapComponent({ type = 1, taxonId }: MapComponentProps) {
     // CRITICAL FIX: Memoize layerParams to prevent WFS layer re-renders
     // Without this, a new object reference triggers WFS layer cleanup/re-fetch
     const layerParams = useMemo(
-        () => taxonId !== undefined ? { taxonId } : undefined,
+        () => taxonId !== undefined ? {taxonId} : undefined,
         [taxonId]
     );
 
@@ -169,15 +148,12 @@ export function MapComponent({ type = 1, taxonId }: MapComponentProps) {
 
     return (
         <div className="h-100 w-100">
-            <MapContainer
-                center={center as LatLngExpression}
+            <MapCanvas
+                center={center}
                 zoom={initialZoom}
-                attributionControl={true}
                 minZoom={6}
                 maxZoom={11}
-                scrollWheelZoom={true}
-                style={{ height: '100%', width: '100%' }}
-                key={String(taxonId ?? 'no-taxon')}
+                mapKey={String(taxonId ?? 'no-taxon')}
             >
                 {/* Render layers from registry - encapsulation preserved */}
                 {baseLayers.map(layerId => (
@@ -188,7 +164,7 @@ export function MapComponent({ type = 1, taxonId }: MapComponentProps) {
                         visible={layerVisibility[layerId] ?? true}
                     />
                 ))}
-            </MapContainer>
+            </MapCanvas>
         </div>
     );
 }

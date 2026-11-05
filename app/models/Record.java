@@ -9,6 +9,7 @@ import io.ebean.SqlRow;
 import jakarta.persistence.*;
 import models.biblio.Bibliography;
 import models.nonvascular.NonVascularRecordExtension;
+import service.records.RecordEditPermissions;
 
 import java.sql.Timestamp;
 import java.util.*;
@@ -758,46 +759,25 @@ public class Record extends Model {
     }
 
     /**
-     * Uživatel smí se záznamem dělat vše
+     * Uživatel smí se záznamem dělat vše.
+     * Deleguje na {@link RecordEditPermissions} – jediné místo s pravidly editačních práv.
      */
     public boolean isUserElligibleToEditEverything(User user) {
         if (user == null)
             return false;
 
-        if (user.isMapAdmin())
-            return true;
-
-        for (User supervisor : taxon.getSupervisors()) {
-            if (user.equals(supervisor)) {
-                return true;
-            }
-        }
-
-        Taxon t = getTaxon();
-        Set<Taxon> supervisedTaxons = user.getSupervisedTaxons();
-        if (t.isDescendant(supervisedTaxons)) {
-            return true;
-        }
-
-        return project.isManagedByUser(user);
+        return RecordEditPermissions.forUser(user).isUserElligibleToEditEverything(RecordEditPermissions.of(this));
     }
 
     /**
-     * Uživatel smí záznam upravovat (nikoli semafor)
+     * Uživatel smí záznam upravovat (nikoli semafor).
+     * Deleguje na {@link RecordEditPermissions} – jediné místo s pravidly editačních práv.
      */
     public boolean isUserElligibleToEditCommonFields(User user) {
-        if (getBatch().getAuthor() == null) {
-            //we have seen that Batch was not always properly populated
-            getBatch().refresh();
-        }
+        if (user == null)
+            return false;
 
-        if ((this.getValidationStatusId() == RecordValidationStatus.Unprocessed) &&
-            (this.getBatch().getAuthor().equals(user) || this.getBatch().getCommitter().equals(user))
-        ) {
-            return true;
-        }
-
-        return isUserElligibleToEditEverything(user);
+        return RecordEditPermissions.forUser(user).isUserElligibleToEditCommonFields(RecordEditPermissions.of(this));
     }
 
     public boolean isEditationAllowed() {

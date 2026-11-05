@@ -1,5 +1,5 @@
-import {Col, Row} from "react-bootstrap";
-import type {ReactNode} from "react";
+import {Col, Row} from 'react-bootstrap';
+import type {ReactNode} from 'react';
 
 interface Props {
     label: string;

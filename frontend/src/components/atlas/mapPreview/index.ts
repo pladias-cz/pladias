@@ -1,2 +1,2 @@
-export { MapComponent } from './MapComponent';
-export { InfoPanel } from './InfoPanel';
+export {MapComponent} from './MapComponent';
+export {InfoPanel} from './InfoPanel';

@@ -6,11 +6,12 @@
  * Persists user visibility choices to the backend.
  */
 
-import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
-import { useLayerStore, getVisibilityStorageKey } from '../store/layerStore';
-import { useUserSettings } from '@/hooks/useUserSettings';
-import { getLayerGroup, layerGroups } from '../registry/layerRegistry';
-import type { LayerParams } from '../types';
+import {useState, useCallback, useEffect, useRef, useMemo} from 'react';
+import {useLayerStore, getVisibilityStorageKey} from '../store/layerStore';
+import {useUserSettings} from '@/hooks/useUserSettings';
+import {getUserSetting} from '@/services/settingsApi';
+import {getLayerGroup, getLayerDefinition, layerGroups} from '../registry/layerRegistry';
+import type {LayerParams} from '../types';
 
 export interface LayerManagerReturn {
     toggleLayer: (layerId: string) => void;
@@ -59,15 +60,16 @@ export function useLayerManager(
         getLayerState,
     } = useLayerStore();
 
-    const { saveSetting } = useUserSettings();
+    const {saveSetting} = useUserSettings();
     const [saving, setSaving] = useState(false);
     const initialized = useRef(false);
 
     // Stabilise the array reference so it doesn't trigger effects every render
+    const layerIdsKey = layerIds?.join(',');
     const managedLayers = useMemo(
         () => layerIds ?? ['osm', 'opentopo'],
         // eslint-disable-next-line react-hooks/exhaustive-deps
-        [layerIds?.join(',')],
+        [layerIdsKey],
     );
 
     // Initialise layers & load saved visibility once per map instance
@@ -77,49 +79,45 @@ export function useLayerManager(
 
         // 1. Register each layer with its per-component default visibility and initial params
         managedLayers.forEach(layerId => {
-            const visible = defaultVisibility?.[layerId];
-            addLayer(mapName, layerId, { 
-                visible: visible !== undefined ? visible : true, // Default to true if not specified
+            // Component override takes precedence, then the registry's defaultVisible,
+            // otherwise hidden.
+            const visible = defaultVisibility?.[layerId]
+                ?? getLayerDefinition(layerId)?.defaultVisible
+                ?? false;
+            addLayer(mapName, layerId, {
+                visible,
                 params: initialParams,
             });
         });
 
         // 2. Load saved visibility from backend (overrides defaults)
+        const applyComponentDefaults = () => {
+            managedLayers.forEach(layerId => {
+                const defaultVisible = defaultVisibility?.[layerId];
+                if (defaultVisible !== undefined) {
+                    setLayerVisibility(mapName, layerId, defaultVisible);
+                }
+            });
+        };
+
         const loadSavedVisibility = async () => {
             try {
-                const response = await fetch(
-                    `/api/react/user/settings/${getVisibilityStorageKey(mapName)}`,
-                );
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data.success && data.value) {
-                        const saved: string[] = JSON.parse(data.value);
-                        managedLayers.forEach(layerId => {
-                            setLayerVisibility(mapName, layerId, saved.includes(layerId));
-                        });
-                    } else {
-                        // No saved value - apply component defaults
-                        managedLayers.forEach(layerId => {
-                            const defaultVisible = defaultVisibility?.[layerId];
-                            if (defaultVisible !== undefined) {
-                                setLayerVisibility(mapName, layerId, defaultVisible);
-                            }
-                        });
-                    }
-                } else {
-                    // Request failed - apply component defaults
+                // `null` = uživatel nemá uloženou viditelnost → výchozí hodnoty komponenty
+                const value = await getUserSetting(getVisibilityStorageKey(mapName));
+                if (value) {
+                    const saved: string[] = JSON.parse(value);
                     managedLayers.forEach(layerId => {
-                        const defaultVisible = defaultVisibility?.[layerId];
-                        if (defaultVisible !== undefined) {
-                            setLayerVisibility(mapName, layerId, defaultVisible);
-                        }
+                        setLayerVisibility(mapName, layerId, saved.includes(layerId));
                     });
+                } else {
+                    applyComponentDefaults();
                 }
-                
+
                 // 3. Ensure mutually exclusive groups have exactly one layer visible
                 await ensureMutuallyExclusiveConstraints();
-            } catch (error) {
-                // Still ensure constraints even if loading failed
+            } catch {
+                // Request failed - apply component defaults and still ensure constraints
+                applyComponentDefaults();
                 await ensureMutuallyExclusiveConstraints();
             }
         };
@@ -129,7 +127,7 @@ export function useLayerManager(
             // Wait a tick for state to settle
             setTimeout(() => {
                 const groupsToCheck = new Set<string>();
-                
+
                 // Find all mutually exclusive groups among managed layers
                 managedLayers.forEach(layerId => {
                     const groupId = findLayerGroup(layerId);
@@ -148,7 +146,7 @@ export function useLayerManager(
                         .map(layer => layer.id)
                         .filter(id => managedLayers.includes(id));
 
-                    const visibleInGroup = layersInGroup.filter(layerId => 
+                    const visibleInGroup = layersInGroup.filter(layerId =>
                         getLayerState(mapName, layerId)?.visible
                     );
 
@@ -167,7 +165,7 @@ export function useLayerManager(
         };
 
         loadSavedVisibility();
-    }, [mapName, managedLayers, defaultVisibility, addLayer, setLayerVisibility, initialParams]);
+    }, [mapName, managedLayers, defaultVisibility, addLayer, setLayerVisibility, initialParams, getLayerState]);
 
     // Smart toggle that handles mutually exclusive groups
     const toggleLayer = useCallback((layerId: string) => {
@@ -176,24 +174,24 @@ export function useLayerManager(
 
         const groupId = findLayerGroup(layerId);
         const group = groupId ? getLayerGroup(groupId) : null;
-        
+
         if (group?.mutuallyExclusive) {
             const currentlyVisible = getLayerState(mapName, layerId)?.visible ?? false;
-            
+
             if (currentlyVisible) {
                 // Don't allow turning off the last visible layer in a mutually exclusive group
                 const layersInGroup = (group.children || [])
                     .map(layer => layer.id)
                     .filter(id => managedLayers.includes(id));
-                const visibleInGroup = layersInGroup.filter(id => 
+                const visibleInGroup = layersInGroup.filter(id =>
                     getLayerState(mapName, id)?.visible
                 );
-                
+
                 if (visibleInGroup.length <= 1) {
                     return;
                 }
             }
-            
+
             if (!currentlyVisible) {
                 // Turn off all other layers in the group first
                 const layersInGroup = (group.children || [])
@@ -204,7 +202,7 @@ export function useLayerManager(
                 });
             }
         }
-        
+
         toggleLayerVisibility(mapName, layerId);
     }, [mapName, managedLayers, toggleLayerVisibility, setLayerVisibility, getLayerState]);
 

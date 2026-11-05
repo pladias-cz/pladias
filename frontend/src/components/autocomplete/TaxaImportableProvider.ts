@@ -1,4 +1,5 @@
 import type {AutocompleteProvider} from './AutocompleteProvider';
+import {searchImportableTaxa} from '@/services/taxonApi';
 import type {TaxonId} from '@/models/TaxonId';
 
 export function createTaxaImportableProvider(placeholder: string): AutocompleteProvider<TaxonId> {
@@ -6,14 +7,8 @@ export function createTaxaImportableProvider(placeholder: string): AutocompleteP
         placeholder,
         minLength: 2,
 
-        async search(query: string): Promise<TaxonId[]> {
-            if (query.length < this.minLength!) {
-                return [];
-            }
-
-            const res = await fetch(`/api/react/taxa/importable?prefix=${encodeURIComponent(query)}`);
-            const result = await res.json();
-            return result.data || [];
+        async search(query, signal): Promise<TaxonId[]> {
+            return searchImportableTaxa(query, signal);
         },
 
         label(item: TaxonId): string {

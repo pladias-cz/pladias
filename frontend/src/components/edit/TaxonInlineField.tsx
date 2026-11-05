@@ -1,78 +1,69 @@
-import {useState} from "react";
-import {Col, Form, Row, Spinner} from "react-bootstrap";
-import {useTranslation} from "react-i18next";
+import {useState} from 'react';
+import {Col, Form, Row, Spinner} from 'react-bootstrap';
+import {useTranslation} from 'react-i18next';
+import type {Taxon} from '@/models/Taxon';
+import type {Option} from '@/models/Option';
+import {updateTaxonField, type TaxonEditorField} from '@/services/taxonApi';
+import {notifyApiError} from '@/stores/notificationStore';
 
-interface Option<T = any> {
-    value: T;
-    label: T;
-}
+/** Mapování backend konstant polí (PATCH) na vlastnosti modelu Taxon. */
+const FIELD_TO_PROPERTY: Record<TaxonEditorField, keyof Taxon> = {
+    LATNAME: 'nameLat',
+    NAMEHTML: 'nameHtml',
+    CZNAME: 'nameCz',
+    RANK: 'rank',
+    AUTHOR: 'author',
+    HYBRIDPARENTAGE: 'hybridParents',
+    SUPPRESSED: 'suppressed',
+    COMMENT: 'note',
+};
 
 interface Props {
     label: string;
     taxonId: number;
-    field: string;
-    value: any;
-    type?: "text" | "select" | "boolean";
+    field: TaxonEditorField;
+    value: string | boolean | number | null | undefined;
+    type?: 'text' | 'select' | 'boolean';
     options?: Option[];
-    render?: (v: any) => React.ReactNode;
-    onUpdated: (newValue: any) => void;
+    render?: (v: string | boolean | number | null) => React.ReactNode;
+    /** Volá se s celým aktualizovaným taxonem z backendu. */
+    onUpdated: (updated: Taxon) => void;
 }
+
 export default function InlineField({
                                         label,
                                         taxonId,
                                         field,
                                         value,
-                                        type = "text",
+                                        type = 'text',
                                         options,
                                         render,
                                         onUpdated
                                     }: Props) {
     const {t} = useTranslation();
-    const [draft, setDraft] = useState(value);
+    const [draft, setDraft] = useState<string | boolean | number | null>(value ?? null);
     const [saving, setSaving] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+    // Editing state - top-level hook (rules-of-hooks), used by the text/select branches
+    const [editing, setEditing] = useState(false);
 
 
-    async function save(newValue: any) {
+    async function save(newValue: string | boolean) {
         setSaving(true);
-        setError(null);
 
         try {
-            const res = await fetch(`/api/react/taxon/${taxonId}`, {
-                method: "PATCH",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({field, value: newValue}),
-            });
-
-            if (!res.ok) {
-                const msg = await res.text();
-                throw new Error(msg || t("common.inlineField.saveFailed"));
-            }
-
-            const updated = await res.json();
-            onUpdated(updated[field]);
-            setDraft(updated[field]);
-        } catch (e: any) {
-            setError(e.message || t("common.inlineField.saveFailed"));
+            const updated = await updateTaxonField(taxonId, field, newValue);
+            setDraft(updated[FIELD_TO_PROPERTY[field]] as string | boolean | number | null);
+            onUpdated(updated);
+        } catch (e) {
+            notifyApiError(e, t('common.inlineField.saveFailed'));
         } finally {
             setSaving(false);
         }
     }
 
-    const EditIcon = ({onClick}: { onClick: () => void }) => (
-        <i
-            className="bi bi-pencil ms-2"
-            aria-hidden="true"
-            style={{cursor: "pointer"}}
-            onClick={onClick}
-            title={t("common.inlineField.edit")}
-        />
-
-    );
-
     let content: React.ReactNode;
 
-    if (type === "boolean") {
+    if (type === 'boolean') {
         // checkbox je vždy viditelný
         content = (
             <Form.Check
@@ -84,31 +75,36 @@ export default function InlineField({
         );
     } else {
         // pro text a select zůstává edit-on-click
-        const [editing, setEditing] = useState(false);
-
         if (!editing) {
             content = (
                 <span className="d-inline-flex align-items-center">
-        <EditIcon onClick={() => setEditing(true)}/>
-          <span
-              className="editable-value ms-1"
-              style={{cursor: "pointer"}}
-              onClick={() => setEditing(true)}
-          >
-            {render ? render(value) : value || <span className="text-muted">{t("common.inlineField.add")}</span>}
-          </span>
-        </span>
+                    <i
+                        className="bi bi-pencil ms-2"
+                        aria-hidden="true"
+                        style={{cursor: 'pointer'}}
+                        onClick={() => setEditing(true)}
+                        title={t('common.inlineField.edit')}
+                    />
+                    <span
+                        className="editable-value ms-1"
+                        style={{cursor: 'pointer'}}
+                        onClick={() => setEditing(true)}
+                    >
+                        {render ? render(value ?? null) : value ||
+                            <span className="text-muted">{t('common.inlineField.add')}</span>}
+                    </span>
+                </span>
             );
-        } else if (type === "select") {
+        } else if (type === 'select') {
             content = (
                 <Form.Select
                     size="sm"
                     autoFocus
-                    value={draft ?? ""}
+                    value={(draft as string | number | undefined) ?? ''}
                     disabled={saving}
                     onChange={e => save(e.target.value)}
                     onBlur={() => setEditing(false)}
-                    style={{maxWidth: "250px"}}
+                    style={{maxWidth: '250px'}}
                 >
                     {options?.map(o => (
                         <option key={o.value} value={o.value}>
@@ -122,12 +118,12 @@ export default function InlineField({
                 <Form.Control
                     size="sm"
                     autoFocus
-                    value={draft || ""}
+                    value={(draft as string | null | undefined) || ''}
                     disabled={saving}
                     onChange={e => setDraft(e.target.value)}
-                    onBlur={() => save(draft)}
-                    onKeyDown={e => e.key === "Enter" && save(draft)}
-                    style={{maxWidth: "350px", display: "inline-block"}}
+                    onBlur={() => save(draft as string | boolean)}
+                    onKeyDown={e => e.key === 'Enter' && save(draft as string | boolean)}
+                    style={{maxWidth: '350px', display: 'inline-block'}}
                 />
             );
         }
@@ -141,7 +137,6 @@ export default function InlineField({
             <Col sm={9}>
                 {content}
                 {saving && <Spinner size="sm" className="ms-2"/>}
-                {error && <span className="text-danger ms-2">{error}</span>}
             </Col>
         </Row>
     );

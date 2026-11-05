@@ -1,6 +1,7 @@
 package controllers;
 
 import com.typesafe.config.Config;
+import controllers.security.Authorized;
 import models.UserActivity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,6 +10,7 @@ import play.libs.ws.WSRequest;
 import play.libs.ws.WSResponse;
 import play.mvc.Http;
 import play.mvc.Result;
+import play.mvc.Security;
 import service.user.ActivityDetails;
 import service.user.UserActivityService;
 
@@ -17,7 +19,7 @@ import java.util.Map;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;
 
-//@Security.Authenticated(Secured.class)
+@Security.Authenticated(Authorized.class)
 public class GeoServer extends ControllerBase
 {
 	private static String baseUrl = null;

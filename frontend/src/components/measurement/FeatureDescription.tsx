@@ -1,9 +1,13 @@
-import {useEffect, useState} from "react";
-import type {Feature} from "@/models/Feature";
-import type {TraitDatatype} from "@/models/TraitDatatype.ts";
-import type {TraitAggregationType} from "@/models/TraitAggregationType.ts";
-import type {EnumerateValue} from "@/models/EnumerateValue";
-import {DatatypeDescriptionPopover} from "@/components/measurement/DatatypeDescriptionPopover";
+import {useEffect, useState} from 'react';
+import type {Feature} from '@/models/Feature';
+import type {TraitDatatype} from '@/models/TraitDatatype';
+import type {TraitAggregationType} from '@/models/TraitAggregationType';
+import type {EnumerateValue} from '@/models/EnumerateValue';
+import {DatatypeDescriptionPopover} from '@/components/measurement/DatatypeDescriptionPopover';
+import RichTextMessage from '@/components/RichTextMessage';
+import {getEnumerateValues, getTraitAggregationTypes, getTraitDatatypes} from '@/services/traitApi';
+import {notifyApiError} from '@/stores/notificationStore';
+import {useTranslation} from 'react-i18next';
 
 function BoolIcon({value}: { value: boolean }) {
     return value ? (
@@ -18,6 +22,7 @@ interface Props {
 }
 
 export default function FeatureDatatypeFlags({feature}: Props) {
+    const {t} = useTranslation();
     const [datatype, setDatatype] = useState<TraitDatatype | null>(null);
     const [inheritance, setInheritance] = useState<TraitAggregationType | null>(null);
     const [enumerate, setEnumerate] = useState<EnumerateValue[] | null>(null);
@@ -30,41 +35,25 @@ export default function FeatureDatatypeFlags({feature}: Props) {
             try {
                 setLoading(true);
 
-                const requests: Promise<Response>[] = [
-                    fetch("/api/react/measurement/datatypes"),
-                    fetch("/api/react/measurement/aggregation-types")
-                ];
-
-                if (feature.enumerate) {
-                    requests.push(
-                        fetch(`/api/react/measurement/enumerate-values/${feature.enumerate}`)
-                    );
-                }
-
-                const responses = await Promise.all(requests);
-
-                const [datatypeRes, inheritanceRes, enumerateRes] = responses;
-
-                const datatypeJson = await datatypeRes.json();
-                const inheritanceJson = await inheritanceRes.json();
-
-                const enumerateJson = enumerateRes
-                    ? await enumerateRes.json()
-                    : null;
+                const [datatypes, inheritances, enumerates] = await Promise.all([
+                    getTraitDatatypes(),
+                    getTraitAggregationTypes(),
+                    feature.enumerate ? getEnumerateValues(feature.enumerate) : Promise.resolve(null),
+                ]);
 
                 if (!cancelled) {
                     setDatatype(
-                        datatypeJson.data.find((d: TraitDatatype) => d.id === feature.datatype) ?? null
+                        datatypes.find(d => d.id === feature.datatype) ?? null
                     );
 
                     setInheritance(
-                        inheritanceJson.data.find((i: TraitAggregationType) => i.id === feature.inheritance) ?? null
+                        inheritances.find(i => i.id === feature.inheritance) ?? null
                     );
 
-                    setEnumerate(enumerateJson?.data ?? null);
+                    setEnumerate(enumerates);
                 }
             } catch (e) {
-                console.error(e);
+                notifyApiError(e, t('common.loadFailed'));
             } finally {
                 if (!cancelled) setLoading(false);
             }
@@ -74,7 +63,7 @@ export default function FeatureDatatypeFlags({feature}: Props) {
         return () => {
             cancelled = true;
         };
-    }, [feature.id, feature.datatype, feature.inheritance, feature.enumerate]);
+    }, [feature.id, feature.datatype, feature.inheritance, feature.enumerate, t]);
 
     if (loading) {
         return <p className="ms-3 text-muted">loading…</p>;
@@ -104,11 +93,11 @@ export default function FeatureDatatypeFlags({feature}: Props) {
             </p>
 
             {feature.explanation && (
-                <p dangerouslySetInnerHTML={{__html: feature.explanation}}/>
+                <RichTextMessage as="p" html={feature.explanation}/>
             )}
 
             {feature.bibliography && (
-                <p dangerouslySetInnerHTML={{__html: feature.bibliography}}/>
+                <RichTextMessage as="p" html={feature.bibliography}/>
             )}
 
             {enumerate && enumerate.length > 0 && (
@@ -117,7 +106,7 @@ export default function FeatureDatatypeFlags({feature}: Props) {
                     <ul>
                         {enumerate.map(ev => (
                             <li key={ev.id}>
-                                 {ev.nameCz}
+                                {ev.nameCz}
                                 {ev.descriptionCz && ` – ${ev.descriptionCz}`}
                             </li>
                         ))}

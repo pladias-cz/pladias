@@ -1,21 +1,26 @@
-import {Card} from "react-bootstrap";
-import {useTranslation} from "react-i18next";
-import {useState, useCallback, useEffect} from "react";
+import {Card} from 'react-bootstrap';
+import {useTranslation} from 'react-i18next';
+import {useState, useCallback} from 'react';
 import {MapContainer, TileLayer, Marker, Popup, useMapEvents} from 'react-leaflet';
 import {Icon} from 'leaflet';
 import type {LatLngExpression} from 'leaflet';
-import 'leaflet/dist/leaflet.css';
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
-import type { RecordPladiasFull } from '@/models/RecordPladiasFull';
-import type { ReverseGeocodingResponse } from '@/models/ReverseGeocoding';
-import {useRecordPermissions} from "./";
+import markerIconRed from '@/assets/markers/marker-icon-red.png';
+import markerIcon2xRed from '@/assets/markers/marker-icon-2x-red.png';
+import type {RecordPladiasFull} from '@/models/RecordPladiasFull';
+import type {ReverseGeocodingResponse} from '@/models/ReverseGeocoding';
+import {reverseGeocode} from '@/services/recordApi';
+import {logError, logInfo} from '@/services/logger';
+import {useRecordPermissions} from './';
 
-// Create a red marker icon for proposed location
+// Red marker icon for the proposed location – images bundled locally (color
+// variants of the standard Leaflet markers, https://github.com/pointhi/leaflet-color-markers,
+// BSD-2-Clause); CSP img-src 'self' blocks loading images from external CDNs.
 const proposedLocationIcon = new Icon({
-    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
-    iconRetinaUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+    iconUrl: markerIconRed,
+    iconRetinaUrl: markerIcon2xRed,
     shadowUrl: markerShadow,
     iconSize: [25, 41],
     iconAnchor: [12, 41],
@@ -60,50 +65,42 @@ const defaultIcon = new Icon({
 
 export default function RecordMap({record, onLocationSelectWithGeocode, hasProposedLocation}: RecordMapProps) {
     const {t} = useTranslation();
-    const {canEdit} = useRecordPermissions(record);
+    const {canEditCommonFields: canEdit} = useRecordPermissions(record);
 
     const [selectedLocation, setSelectedLocation] = useState<[number, number] | null>(null);
     const [clickDetected, setClickDetected] = useState(false);
 
-    // Sync with external proposed location state
-    useEffect(() => {
+    // Sync with external proposed location state – render-phase update guarded
+    // by comparison (React docs: adjusting state when a prop changes, without an effect):
+    // cancelling the proposal clears the selection, (re)proposing keeps it.
+    const [prevHasProposedLocation, setPrevHasProposedLocation] = useState(hasProposedLocation);
+    if (hasProposedLocation !== prevHasProposedLocation) {
+        setPrevHasProposedLocation(hasProposedLocation);
         if (!hasProposedLocation) {
-            // Clear selection when proposal is cancelled
             setSelectedLocation(null);
             setClickDetected(false);
         }
-    }, [hasProposedLocation]);
+    }
 
     const center: [number, number] = selectedLocation ||
         (record.latitude && record.longitude ? [record.latitude, record.longitude] : [49.8, 15.5]);
 
     const fetchReverseGeocoding = useCallback(async (lat: number, lng: number) => {
         try {
-            const response = await fetch(`/api/react/query/reverseGeocoding/lon/${lng}/lat/${lat}`);
-            const data = await response.json();
-
-            // The backend returns an array of objects like:
-            // [{success: true}, {quadrant: {...}}, {district: {...}}, {townHierarchy: [...]}, {phytochorions: [...]}]
-            // We need to merge all non-success objects into a single object
-            const mergedData: ReverseGeocodingResponse = {};
-            if (Array.isArray(data)) {
-                for (const item of data) {
-                    if (item.success !== undefined) continue; // Skip success flag
-                    // Merge each object's properties into mergedData
-                    Object.assign(mergedData, item);
-                }
-            }
+            // backend vrací pole objektů ([{success}, {quadrant}, …]);
+            // recordApi je slučuje do jediné ReverseGeocodingResponse
+            const mergedData = await reverseGeocode(lat, lng);
 
             if (onLocationSelectWithGeocode) {
                 onLocationSelectWithGeocode(lat, lng, mergedData);
             }
         } catch (error) {
-            console.error('Failed to fetch reverse geocoding:', error);
+            logError(error, {source: 'RecordMap', action: 'reverseGeocoding'});
         }
     }, [onLocationSelectWithGeocode]);
 
     const handleLocationSelect = useCallback((lat: number, lng: number) => {
-        console.log('Location selected:', lat, lng);
+        logInfo('Location selected', {source: 'RecordMap', lat, lng});
         setClickDetected(true);
         setSelectedLocation([lat, lng]);
         fetchReverseGeocoding(lat, lng);
@@ -112,11 +109,11 @@ export default function RecordMap({record, onLocationSelectWithGeocode, hasPropo
     return (
         <Card className="mb-3">
             <Card.Header>
-                <strong>{t("record.map")}</strong>
-                <a href={`/atlas/mapDetail/${record.taxon.id}/${record.quadrantCodeComputed?.slice(0, 4) ?? ""}`} className="small ms-2 fs-5">
-                    zpět na mapu
+                <a href={`/atlas/mapDetail/${record.taxon.id}/${record.quadrantCodeComputed?.slice(0, 4) ?? ''}`}
+                   className="small ms-2 fs-5">
+                    {t('atlas.mapDetail.back2DetailMap')}
                 </a>
-                {canEdit && <span className="ms-2 text-muted">({t("record.clickOnMap")})</span>}
+                {canEdit && <span className="ms-2 text-muted">({t('record.clickOnMap')})</span>}
             </Card.Header>
             <Card.Body className="p-0">
                 <div style={{height: '500px', width: '100%'}}>
@@ -136,9 +133,10 @@ export default function RecordMap({record, onLocationSelectWithGeocode, hasPropo
                             indicatorPosition={selectedLocation || undefined}
                             canEdit={canEdit}
                         />
-                        {selectedLocation && canEdit && <Marker position={selectedLocation} icon={proposedLocationIcon} />}
+                        {selectedLocation && canEdit &&
+                            <Marker position={selectedLocation} icon={proposedLocationIcon}/>}
                         {!selectedLocation && record.latitude && record.longitude && (
-                            <Marker position={[record.latitude, record.longitude]} icon={defaultIcon} />
+                            <Marker position={[record.latitude, record.longitude]} icon={defaultIcon}/>
                         )}
                     </MapContainer>
                 </div>

@@ -23,7 +23,10 @@ public record RecordMapFieldsDto(
     // Timestamp for concurrency control
     Long lastEditTimestampNum,
     
-    // Edit permission for current user
-    Boolean canEdit
+    // Edit permissions for current user (computed by RecordEditPermissions, single source of truth)
+    Boolean canEditCommonFields,
+
+    // Validation (semaphore) fields edit permission for current user
+    Boolean canEditValidationFields
 ) {
 }

@@ -10,7 +10,7 @@ interface ImportControlsDeleteCellProps {
 
 export function ImportControlsDeleteCell({row, onDelete, isDeleting}: ImportControlsDeleteCellProps) {
     const {t} = useTranslation();
-    
+
     return (
         <Button
             variant="outline-danger"
@@ -20,11 +20,11 @@ export function ImportControlsDeleteCell({row, onDelete, isDeleting}: ImportCont
         >
             {isDeleting ? (
                 <>
-                    <Spinner animation="border" size="sm" className="me-1" />
-                    {t("common.loading")}
+                    <Spinner animation="border" size="sm" className="me-1"/>
+                    {t('common.loading')}
                 </>
             ) : (
-                t("atlas.admin.importsList.delete")
+                t('atlas.admin.importsList.delete')
             )}
         </Button>
     );

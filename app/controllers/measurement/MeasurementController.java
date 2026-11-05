@@ -72,12 +72,14 @@ public class MeasurementController extends ControllerBase {
         return ok(JsonResult.buildSuccess(lookupService.getFeatureGroups()));
     }
 
-    public Result getFeaturesOfGroup(Integer id) {
-        return ok(JsonResult.buildSuccess(lookupService.getFeaturesOfGroup(id)));
+    public Result getFeaturesOfGroup(Http.Request request, Integer id) {
+        User currentUser = SessionUtils.getCurrentUser(request.session());
+        return ok(JsonResult.buildSuccess(lookupService.getFeaturesOfGroup(currentUser, id)));
     }
 
-    public Result getFeature(Integer id) {
-        MeasurementFeatureDto feature = lookupService.getFeature(id);
+    public Result getFeature(Http.Request request, Integer id) {
+        User currentUser = SessionUtils.getCurrentUser(request.session());
+        MeasurementFeatureDto feature = lookupService.getFeature(currentUser, id);
         if (feature == null) {
             return badRequest(JsonResult.error("No feature"));
         }

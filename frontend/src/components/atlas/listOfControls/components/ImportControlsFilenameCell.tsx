@@ -1,3 +1,5 @@
+import FileDownloadLink from '@/components/FileDownloadLink';
+import {downloadDecoratedImport} from '@/services/importApi';
 import type {ImportControlRecord} from '../types';
 
 interface ImportControlsFilenameCellProps {
@@ -6,14 +8,10 @@ interface ImportControlsFilenameCellProps {
 
 export function ImportControlsFilenameCell({row}: ImportControlsFilenameCellProps) {
     if (!row.filename) return <span>-</span>;
-    
+
     return (
-        <a 
-            href={`/api/react/occurrence/imports/${row.id}`} 
-            target="_blank" 
-            rel="noopener noreferrer"
-        >
+        <FileDownloadLink fetchFile={() => downloadDecoratedImport(row.id)}>
             {row.filename}
-        </a>
+        </FileDownloadLink>
     );
 }

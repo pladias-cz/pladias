@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers.ControllerBase;
 import controllers.security.Authorized;
 import dto.ExcelBatchDto;
+import helpers.http.ContentDisposition;
 import models.Batch;
 import models.Excel;
 import models.User;
@@ -14,6 +15,7 @@ import play.mvc.Http;
 import play.mvc.Result;
 import play.mvc.Security;
 import service.export.table.TableExportWriter;
+import utils.JsonResult;
 import utils.SessionUtils;
 
 import java.sql.Timestamp;
@@ -31,16 +33,24 @@ public class ImportResultsController extends ControllerBase {
         if (user == null) {
             return redirect("/login"); //routes.Application.login();
         }
-        deleteExcel(id, user);
-        return ok();
-//         return redirect(routes.ExcelReports.validatedReportByUser());
+        try {
+            if (!deleteExcel(id, user)) {
+                return badRequest(JsonResult.error(
+                    getMessages(request).at("ImportResultsController.deleteFailed")));
+            }
+            return ok();
+//             return redirect(routes.ExcelReports.validatedReportByUser());
+        } catch (Exception e) {
+            return internalServerError(JsonResult.error(
+                getMessages(request).at("ImportResultsController.deleteFailed")));
+        }
     }
 
-    private void deleteExcel(long id, User currentUser) {
+    private boolean deleteExcel(long id, User currentUser) {
         Excel excel = Excel.find().byId(id);
 
         if (currentUser == null || excel == null)
-            return;
+            return false;
 
         Batch batch = excel.getBatch();
 
@@ -48,8 +58,10 @@ public class ImportResultsController extends ControllerBase {
             User author = batch.getAuthor();
             if (currentUser.equals(author)) {
                 excel.delete();
+                return true;
             }
         }
+        return false;
     }
 
 
@@ -228,6 +240,7 @@ public class ImportResultsController extends ControllerBase {
 
             // Get filter parameters
             String filenameFilter = request.getQueryString("filenameFilter");
+            String batchIdFilter = request.getQueryString("BatchIdFilter");
             String importTimestampFromFilter = request.getQueryString("ImportTimestamp:fromFilter");
             String importTimestampToFilter = request.getQueryString("ImportTimestamp:toFilter");
 
@@ -240,6 +253,13 @@ public class ImportResultsController extends ControllerBase {
             // Apply filters
             if (filenameFilter != null && !filenameFilter.isEmpty()) {
                 query.where().ilike("filename", "%" + filenameFilter + "%");
+            }
+            if (batchIdFilter != null && !batchIdFilter.isEmpty()) {
+                try {
+                    query.where().eq("batch.id", Long.parseLong(batchIdFilter.trim()));
+                } catch (NumberFormatException e) {
+                    // Ignore invalid batch id
+                }
             }
 
             if (importTimestampFromFilter != null && !importTimestampFromFilter.isEmpty()) {
@@ -266,6 +286,7 @@ public class ImportResultsController extends ControllerBase {
                 String sortExpr = switch (sortBy) {
                     case "importTimestamp" -> "batch.createTimestamp";
                     case "filename" -> "filename";
+                    case "batchId" -> "batch.id";
                     default -> sortBy;
                 };
                 if ("desc".equalsIgnoreCase(sortOrder)) {
@@ -288,9 +309,8 @@ public class ImportResultsController extends ControllerBase {
             if (TableExportWriter.acceptsXlsx(request)) {
                 byte[] workbook = TableExportWriter.write(
                     "imported", ExcelBatchDto.exportColumns(), entries, getMessages(request));
-                String filename = String.format("attachment; filename=%s",
-                    "imported_" + LocalDate.now() + ".xlsx");
-                return ok(workbook).withHeader("Content-disposition", filename).as("application/x-download");
+                return ok(workbook).withHeader("Content-disposition",
+                    ContentDisposition.attachment("imported_" + LocalDate.now() + ".xlsx")).as("application/x-download");
             }
 
             // Get filtered count
@@ -300,6 +320,13 @@ public class ImportResultsController extends ControllerBase {
 
             if (filenameFilter != null && !filenameFilter.isEmpty()) {
                 countQuery.where().ilike("filename", "%" + filenameFilter + "%");
+            }
+            if (batchIdFilter != null && !batchIdFilter.isEmpty()) {
+                try {
+                    countQuery.where().eq("batch.id", Long.parseLong(batchIdFilter.trim()));
+                } catch (NumberFormatException e) {
+                    // Ignore invalid batch id
+                }
             }
             if (importTimestampFromFilter != null && !importTimestampFromFilter.isEmpty()) {
                 try {

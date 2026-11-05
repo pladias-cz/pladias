@@ -11,7 +11,6 @@ public class SessionUtils {
 
     public final static String FailureReason = "failureReason";
     public static final String UserIdKey = "userId";
-    public static final String EmailKey = "email";
     public static final String TargetUrlKey = "targetUrl";
     final static Logger logger = LoggerFactory.getLogger(SessionUtils.class);
     public static long InvalidUserId = -1;

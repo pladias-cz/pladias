@@ -1,74 +1,71 @@
-import {useEffect, useState} from "react";
-import {useParams} from "react-router-dom";
-import {Col, Form, Row, Spinner} from "react-bootstrap";
-import {usePageTitle} from "@/hooks/usePageTitle";
-import {createTaxaAllProvider } from '@/components/autocomplete/TaxaAllProvider';
+import {useEffect, useState} from 'react';
+import {useParams} from 'react-router-dom';
+import {Col, Form, Row, Spinner} from 'react-bootstrap';
+import {useQuery} from '@tanstack/react-query';
+import {usePageTitle} from '@/hooks/usePageTitle';
+import {createTaxaAllProvider} from '@/components/autocomplete/TaxaAllProvider';
 import {Autocomplete} from '@/components/autocomplete/Autocomplete';
-import TaxonDetail from "@/components/taxonAdmin/TaxonDetail";
-import TaxonEditCard from "@/components/taxonAdmin/TaxonEditCard.tsx";
-import ChildrenOrderingCard from "@/components/taxonAdmin/ChildrenOrderingCard";
-import MoveTaxonCard from "@/components/taxonAdmin/MoveTaxonCard";
-import NewTaxonCard from "@/components/taxonAdmin/NewTaxonCard";
+import TaxonDetail from '@/components/taxonAdmin/TaxonDetail';
+import TaxonEditCard from '@/components/taxonAdmin/TaxonEditCard';
+import ChildrenOrderingCard from '@/components/taxonAdmin/ChildrenOrderingCard';
+import MoveTaxonCard from '@/components/taxonAdmin/MoveTaxonCard';
+import NewTaxonCard from '@/components/taxonAdmin/NewTaxonCard';
 import {type Taxon} from '@/models/Taxon';
 import {type TaxonId} from '@/models/TaxonId';
-import TaxonSynonyms from "@/components/taxonAdmin/TaxonSynonyms.tsx";
-import { useTranslation } from 'react-i18next';
+import TaxonSynonyms from '@/components/taxonAdmin/TaxonSynonyms';
+import {getTaxon} from '@/services/taxonApi';
+import {notifyApiError} from '@/stores/notificationStore';
+import {useTranslation} from 'react-i18next';
 
 export default function TaxaAdministration() {
-    const { t } = useTranslation();
-    usePageTitle(t("taxon.administration.pageTitle"));
+    const {t} = useTranslation();
+    usePageTitle(t('taxon.administration.pageTitle'));
 
     const {taxonId} = useParams<{ taxonId: string }>(); // ← parametr z URL
-    const [selectedTaxon, setSelectedTaxon] = useState<Taxon | null>(null);
-    const [loading, setLoading] = useState(false);
+    // taxon z URL rovnou při mountu; další změny parametru řeší render-phase sync níže
+    const [selectedTaxonId, setSelectedTaxonId] = useState<number | null>(() => {
+        const id = parseInt(taxonId ?? '', 10);
+        return isNaN(id) ? null : id;
+    });
     const [taxonVersion, setTaxonVersion] = useState(0);
-
-
-    // --- načtení plného taxonu podle id ---
-    async function loadTaxon(id: number) {
-        setLoading(true);
-        try {
-            const res = await fetch(`/api/react/taxon/${id}`);
-            if (!res.ok) throw new Error(t("taxon.administration.loadTaxonError"));
-
-            const json = await res.json();
-            if (!json.success) throw new Error(t("taxon.administration.apiError"));
-
-            const fullTaxon: Taxon = json.data;
-            setSelectedTaxon(fullTaxon);
-
-        } catch (e: any) {
-            console.error(e);
-            setSelectedTaxon(null);
-        } finally {
-            setLoading(false);
-        }
-    }
-
 
     // --- handler pro autocomplete ---
     function handleAutocompleteSelect(reduced: TaxonId | null) {
-        if (reduced) {
-            loadTaxon(reduced.id); // načteme plný Taxon
-        } else {
-            setSelectedTaxon(null);
-        }
+        setSelectedTaxonId(reduced?.id ?? null);
     }
 
     // --- callback pro pesimistický reload ---
     function refreshSelectedTaxon(updated: Taxon) {
-        setSelectedTaxon(updated);           // aktualizujeme stav
-        setTaxonVersion(v => v + 1);   // <<< invalidace cache
-        loadTaxon(updated.id);               // znovu načteme z backendu
+        // verze invaliduje autocomplete, karty dětí i query samotného taxonu
+        setSelectedTaxonId(updated.id);
+        setTaxonVersion(v => v + 1);
     }
 
-    // --- efekt pro načtení taxonu z URL při mountu ---
-    useEffect(() => {
-        if (taxonId) {
-            const id = parseInt(taxonId, 10);
-            if (!isNaN(id)) loadTaxon(id);
+    // --- načtení taxonu z URL při změně parametru – render-phase update
+    // guarded by comparison (React docs: adjusting state when a prop changes) ---
+    const [prevTaxonIdParam, setPrevTaxonIdParam] = useState(taxonId);
+    if (taxonId !== prevTaxonIdParam) {
+        setPrevTaxonIdParam(taxonId);
+        const id = parseInt(taxonId ?? '', 10);
+        if (!isNaN(id)) {
+            setSelectedTaxonId(id);
         }
-    }, [taxonId]);
+    }
+
+    // --- plný taxon podle id (bez cache, sekce J) ---
+    const {data: selectedTaxon, isPending, error} = useQuery({
+        queryKey: ['taxonAdminTaxon', selectedTaxonId, taxonVersion],
+        queryFn: () => getTaxon(selectedTaxonId!),
+        enabled: selectedTaxonId !== null,
+    });
+    const loading = selectedTaxonId !== null && isPending;
+
+    // chyba načtení taxonu – globální notifikace (jako InfoPanel/MapDetail)
+    useEffect(() => {
+        if (error) {
+            notifyApiError(error, t('taxon.administration.loadTaxonError'));
+        }
+    }, [error, t]);
 
     return (
         <>
@@ -77,11 +74,11 @@ export default function TaxaAdministration() {
                     <Form>
                         <Form.Group as={Row} className="mb-3" controlId="formSelectTaxon">
                             <Form.Label column sm={5}>
-                                {t("taxon.administration.selectTaxonLabel")}
+                                {t('taxon.administration.selectTaxonLabel')}
                             </Form.Label>
                             <Col sm={7}>
                                 <Autocomplete<TaxonId>
-                                    provider={createTaxaAllProvider(t("common.autocomplete.allTaxaPlaceholder"))}
+                                    provider={createTaxaAllProvider(t('common.autocomplete.allTaxaPlaceholder'))}
                                     cacheKey={taxonVersion}
                                     onSelect={handleAutocompleteSelect}
                                     autoFocus={true}
@@ -107,33 +104,32 @@ export default function TaxaAdministration() {
             {/* --- Editace / podkomponenty --- */}
             {selectedTaxon && !loading && (
                 <>
-                <Row className="mt-3">
-                    <Col md={4}>
-                        <TaxonEditCard
-                            cacheKey={taxonVersion}
-                            taxon={selectedTaxon}
-                            onTaxonChange={refreshSelectedTaxon} // reload po úpravě
-                        />
-                    </Col>
+                    <Row className="mt-3">
+                        <Col md={4}>
+                            <TaxonEditCard
+                                taxon={selectedTaxon}
+                                onTaxonChange={refreshSelectedTaxon} // reload po úpravě
+                            />
+                        </Col>
 
-                    <Col md={4}>
-                        <div className="mb-3">
-                        <MoveTaxonCard
-                            taxon={selectedTaxon}
-                            onMoved={refreshSelectedTaxon}
-                        />
-                        </div>
-                        <NewTaxonCard
-                            taxon={selectedTaxon}
-                        />
-                    </Col>
+                        <Col md={4}>
+                            <div className="mb-3">
+                                <MoveTaxonCard
+                                    taxon={selectedTaxon}
+                                    onMoved={refreshSelectedTaxon}
+                                />
+                            </div>
+                            <NewTaxonCard
+                                taxon={selectedTaxon}
+                            />
+                        </Col>
 
-                    <Col md={4}>
-                        <ChildrenOrderingCard
-                            taxon={selectedTaxon}
-                        />
-                    </Col>
-                </Row>
+                        <Col md={4}>
+                            <ChildrenOrderingCard
+                                taxon={selectedTaxon}
+                            />
+                        </Col>
+                    </Row>
                     <Row className="mt-3">
                         <TaxonSynonyms
                             cacheKey={taxonVersion}

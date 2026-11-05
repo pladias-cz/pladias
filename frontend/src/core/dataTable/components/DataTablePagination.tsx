@@ -2,6 +2,7 @@
  * Pagination controls component for DataTable
  */
 
+import type {ReactNode} from 'react';
 import {Form, Pagination} from 'react-bootstrap';
 import {useTranslation} from 'react-i18next';
 import {getVisiblePages} from '../utils';
@@ -16,6 +17,10 @@ interface DataTablePaginationProps {
     pageSizeOptions: number[];
     onPageChange: (page: number) => void;
     onPageSizeChange: (size: number) => void;
+    /** Doplněk levé skupiny za volbou počtu řádků (např. DataRowCount ve vyhledávání). */
+    leftSlot?: ReactNode;
+    /** Doplněk pravé skupiny před vlastní paginací (např. „Rozbalit vše“ ve vyhledávání). */
+    rightSlot?: ReactNode;
 }
 
 export function DataTablePagination(props: DataTablePaginationProps) {
@@ -26,6 +31,8 @@ export function DataTablePagination(props: DataTablePaginationProps) {
         pageSizeOptions,
         onPageChange,
         onPageSizeChange,
+        leftSlot,
+        rightSlot,
     } = props;
 
     const {t} = useTranslation();
@@ -43,7 +50,7 @@ export function DataTablePagination(props: DataTablePaginationProps) {
     const renderPageItems = () => {
         return visiblePages.map((p, index) => {
             if (p === 'ellipsis') {
-                return <Pagination.Ellipsis key={`ellipsis-${index}`} />;
+                return <Pagination.Ellipsis key={`ellipsis-${index}`}/>;
             }
             return (
                 <Pagination.Item
@@ -58,10 +65,10 @@ export function DataTablePagination(props: DataTablePaginationProps) {
     };
 
     return (
-        <div className="d-flex justify-content-between align-items-center">
-            <div>
-                <Form.Group controlId="pageSize" className="d-inline-block me-3">
-                    <Form.Label className="me-2">{t("common.table.rowsPerPage")}:</Form.Label>
+        <div className="d-flex justify-content-between align-items-center gap-2 flex-wrap">
+            <div className="d-flex align-items-center gap-3 flex-wrap">
+                <Form.Group controlId="pageSize" className="d-inline-block">
+                    <Form.Label className="me-2">{t('common.table.rowsPerPage')}:</Form.Label>
                     <Form.Select
                         value={pageSize}
                         onChange={(e) => onPageSizeChange(Number(e.target.value))}
@@ -72,29 +79,33 @@ export function DataTablePagination(props: DataTablePaginationProps) {
                         ))}
                     </Form.Select>
                 </Form.Group>
+                {leftSlot}
             </div>
 
-            <Pagination>
-                <Pagination.First
-                    onClick={handleFirstPage}
-                    disabled={page === 1}
-                />
-                <Pagination.Prev
-                    onClick={handlePrevPage}
-                    disabled={page === 1}
-                />
+            <div className="d-flex align-items-center gap-2 flex-wrap">
+                {rightSlot}
+                <Pagination>
+                    <Pagination.First
+                        onClick={handleFirstPage}
+                        disabled={page === 1}
+                    />
+                    <Pagination.Prev
+                        onClick={handlePrevPage}
+                        disabled={page === 1}
+                    />
 
-                {renderPageItems()}
+                    {renderPageItems()}
 
-                <Pagination.Next
-                    onClick={handleNextPage}
-                    disabled={page === totalPages}
-                />
-                <Pagination.Last
-                    onClick={handleLastPage}
-                    disabled={page === totalPages}
-                />
-            </Pagination>
+                    <Pagination.Next
+                        onClick={handleNextPage}
+                        disabled={page === totalPages}
+                    />
+                    <Pagination.Last
+                        onClick={handleLastPage}
+                        disabled={page === totalPages}
+                    />
+                </Pagination>
+            </div>
         </div>
     );
 }

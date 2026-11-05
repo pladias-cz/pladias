@@ -2,20 +2,33 @@ import {useRef} from 'react';
 import {Outlet} from 'react-router-dom';
 import {Container, Row} from 'react-bootstrap';
 import MainMenu from './core/MainMenu';
-import FlashMessages from './core/FlashMessages.jsx';
-import {useNavOffset} from './hooks/useNavOffset.jsx';
+import FlashMessages from './core/FlashMessages';
+import ErrorBoundary from './components/ErrorBoundary';
+import Toasts from './components/Toasts';
+import {useInstanceMessages} from './hooks/useInstanceMessages';
+import {useNavOffset} from './hooks/useNavOffset';
 
 export default function Layout() {
     const navRef = useRef<HTMLDivElement>(null);
     const navHeight = useNavOffset(navRef) + 5;
+    const {messages, unavailable} = useInstanceMessages();
 
     return (
         <>
             <MainMenu ref={navRef}/>
             <Container fluid style={{paddingTop: navHeight}}>
-                <Row><FlashMessages/></Row>
-                <Row><Outlet/></Row>
+                {/* Zprávy instance (sekce A) jdou do Toastů – komponenta nic nevykresluje. */}
+                <FlashMessages messages={messages} unavailable={unavailable}/>
+                {/* Chyby renderu stránek zachytí boundary – menu a globální zprávy zůstávají. */}
+                <Row>
+                    <ErrorBoundary>
+                        <Outlet/>
+                    </ErrorBoundary>
+                </Row>
             </Container>
+            {/* Globální notifikace (sekce F) – mimo ErrorBoundary (přežijí pád
+                stránky) a mimo obsah route (přežijí navigaci). */}
+            <Toasts/>
         </>
     );
 }

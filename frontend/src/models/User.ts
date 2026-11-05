@@ -1,19 +1,9 @@
-export type UserRole =
-    | "mapAdmin"
-    | "bulkEditor"
-    | "traitAdmin"
-    | "sysAdmin"
-    | "taxonAdmin"
-    | "asyncImporter";
+import type {UserRole} from './UserRole';
 
 export interface UserData {
     id: number;
-    isMapAdmin?: boolean;
-    isBulkEditor?: boolean;
-    isTraitAdmin?: boolean;
-    isSysAdmin?: boolean;
-    isTaxonAdmin?: boolean;
-    isAsyncImporter?: boolean;
+    /** Role přiřazené backendem (`/api/react/config`, zdroj `UserRole.keysOf`) – viz `models/UserRole.ts`. */
+    roles?: UserRole[];
     userEmail?: string;
     language?: string;
     supervisedTaxonIds?: number[];
@@ -21,39 +11,51 @@ export interface UserData {
 
 export default class User {
     readonly id: number;
-    readonly isMapAdmin: boolean;
-    readonly isBulkEditor: boolean;
-    readonly isTraitAdmin: boolean;
-    readonly isSysAdmin: boolean;
-    readonly isTaxonAdmin: boolean;
-    readonly isAsyncImporter: boolean;
+    readonly roles: UserRole[];
     readonly userEmail: string;
     readonly language: string;
     readonly supervisedTaxonIds: number[];
 
     constructor(data: UserData) {
         this.id = data.id;
-        this.isMapAdmin = data.isMapAdmin ?? false;
-        this.isBulkEditor = data.isBulkEditor ?? false;
-        this.isTraitAdmin = data.isTraitAdmin ?? false;
-        this.isSysAdmin = data.isSysAdmin ?? false;
-        this.isTaxonAdmin = data.isTaxonAdmin ?? false;
-        this.isAsyncImporter = data.isAsyncImporter ?? false;
-        this.userEmail = data.userEmail ?? "";
-        this.language = data.language ?? "cs";
+        this.roles = data.roles ?? [];
+        this.userEmail = data.userEmail ?? '';
+        this.language = data.language ?? 'cs';
         this.supervisedTaxonIds = data.supervisedTaxonIds ?? [];
     }
 
     hasRole(role: UserRole): boolean {
-        switch (role) {
-            case "mapAdmin": return this.isMapAdmin;
-            case "bulkEditor": return this.isBulkEditor;
-            case "traitAdmin": return this.isTraitAdmin;
-            case "sysAdmin": return this.isSysAdmin;
-            case "taxonAdmin": return this.isTaxonAdmin;
-            case "asyncImporter": return this.isAsyncImporter;
-            default: return false;
-        }
+        return this.roles.includes(role);
+    }
+
+    // Derived role flags (kept for readability at call sites; mapAdmin implies bulkEditor, see backend UserRole.keysOf)
+
+    get isMapAdmin(): boolean {
+        return this.hasRole('mapAdmin');
+    }
+
+    get isBulkEditor(): boolean {
+        return this.hasRole('bulkEditor');
+    }
+
+    get isTraitAdmin(): boolean {
+        return this.hasRole('traitAdmin');
+    }
+
+    get isSysAdmin(): boolean {
+        return this.hasRole('sysAdmin');
+    }
+
+    get isTaxonAdmin(): boolean {
+        return this.hasRole('taxonAdmin');
+    }
+
+    get isAsyncImporter(): boolean {
+        return this.hasRole('asyncImporter');
+    }
+
+    get isBiblioAdmin(): boolean {
+        return this.hasRole('biblioAdmin');
     }
 
     isSupervisorOfTaxon(taxonId: number): boolean {

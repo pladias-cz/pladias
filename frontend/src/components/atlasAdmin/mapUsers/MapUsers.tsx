@@ -1,46 +1,50 @@
 /**
  * MapUsers - Map User Administration Component
- * 
+ *
  * Uses the enterprise DataTable component with custom data fetching
  * to efficiently load users and their rights (projects, taxa) on demand.
  */
 
-import {useState, useCallback, useMemo} from "react";
-import {useTranslation} from "react-i18next";
-import {DataTable, type DataTableColumnDef, createActionColumn, createTextColumn} from "@/core/dataTable";
+import {useCallback, useMemo, useState} from 'react';
+import {useTranslation} from 'react-i18next';
+import {DataTable, type DataTableColumnDef, createActionColumn, createTextColumn} from '@/core/dataTable';
 import {
     useMapUsersData,
     useMapUsersProjects,
     useMapUsersTaxa,
 } from './hooks';
 import {
-    MapUsersFlash,
     MapUsersProjectsCell,
     MapUsersTaxaCell,
     MapUsersAddProjectModal,
     MapUsersAddTaxonModal,
 } from './components';
-import type {MapUserTableRow, FlashMessage} from './types';
+import type {MapUserTableRow} from './types';
+import {removeUserTaxonFromUser} from '@/services/mapAdminApi';
+import {apiErrorMessage} from '@/services/apiClient';
+import {useNotifications} from '@/stores/notificationStore';
 
 export default function MapUsers() {
     const {t} = useTranslation();
-    
-    // Flash message state
-    const [flash, setFlash] = useState<FlashMessage | null>(null);
-    
-    // Flash message handler
+    const {push} = useNotifications();
+
+    // Flash message handler – globální notifikace (sekce F), danger drží, success mizí
     const showFlash = useCallback((type: 'success' | 'danger', message: string) => {
-        setFlash({type, message});
-        setTimeout(() => setFlash(null), 5000);
-    }, []);
-    
+        push({type, message});
+    }, [push]);
+
+    // Po každé úspěšné změně práv (přidání/odebrání projektu či taxonu) se zvýší
+    // klíč a DataTable znovu načte aktuální stránku – nový stav je ihned viditelný.
+    const [rightsRefreshKey, setRightsRefreshKey] = useState(0);
+    const bumpRightsRefresh = useCallback(() => setRightsRefreshKey(key => key + 1), []);
+
     // Data fetching hook
     const {fetchUsersWithRights} = useMapUsersData({
         onSuccess: () => {
             // Optional: handle successful data fetch
         }
     });
-    
+
     // Projects hook
     const {
         projects,
@@ -52,8 +56,8 @@ export default function MapUsers() {
         handleAddProject,
         handleRemoveProject,
         setSelectedProjectId,
-    } = useMapUsersProjects(showFlash, t);
-    
+    } = useMapUsersProjects(showFlash, t, bumpRightsRefresh);
+
     // Taxa hook
     const {
         taxa,
@@ -67,44 +71,35 @@ export default function MapUsers() {
         handleOpenAddTaxonModal,
         handleCloseTaxonModal,
         handleSelectTaxon,
-    } = useMapUsersTaxa(showFlash, t);
-    
+    } = useMapUsersTaxa(showFlash, t, bumpRightsRefresh);
+
     // Handler to convert taxon selection to remove operation
     const handleRemoveTaxonFromCell = useCallback((userId: number, taxonId: number) => {
-        // For removal, we call the API directly
-        // This is a simplified approach - in production you might want to use a hook
-        fetch(`/api/react/atlasadmin/removeUserTaxon/user/${userId}/taxon/${taxonId}`, {
-            method: "DELETE"
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                showFlash('success', data.message || t("user.usersAdministration.taxonRemoved"));
-            } else {
-                showFlash('danger', data.message || t("user.usersAdministration.error"));
-            }
-        })
-        .catch(err => {
-            console.error("Error removing taxon:", err);
-            showFlash('danger', t("user.usersAdministration.error"));
-        });
-    }, [showFlash, t]);
-    
+        removeUserTaxonFromUser(userId, taxonId)
+            .then(() => {
+                showFlash('success', t('user.usersAdministration.taxonRemoved'));
+                bumpRightsRefresh();
+            })
+            .catch(err => {
+                showFlash('danger', apiErrorMessage(err, t('user.usersAdministration.error')));
+            });
+    }, [showFlash, t, bumpRightsRefresh]);
+
     // Column definitions
     const columns = useMemo<DataTableColumnDef<MapUserTableRow>[]>(() => [
-        createTextColumn<MapUserTableRow>('name', t("user.usersAdministration.firstName"), {
+        createTextColumn<MapUserTableRow>('name', t('user.usersAdministration.firstName'), {
             enableSorting: true,
             enableFiltering: true,
         }),
-        createTextColumn<MapUserTableRow>('surname', t("user.usersAdministration.lastName"), {
+        createTextColumn<MapUserTableRow>('surname', t('user.usersAdministration.lastName'), {
             enableSorting: true,
             enableFiltering: true,
         }),
-        createTextColumn<MapUserTableRow>('email', t("user.usersAdministration.email"), {
+        createTextColumn<MapUserTableRow>('email', t('user.usersAdministration.email'), {
             enableSorting: true,
             enableFiltering: true,
         }),
-        createActionColumn<MapUserTableRow>('contributionProjects', t("user.usersAdministration.projects"), (row) => (
+        createActionColumn<MapUserTableRow>('contributionProjects', t('user.usersAdministration.projects'), (row) => (
             <MapUsersProjectsCell
                 row={row}
                 onAddProject={handleOpenAddModal}
@@ -113,7 +108,7 @@ export default function MapUsers() {
         ), {
             minWidth: '250px',
         }),
-        createActionColumn<MapUserTableRow>('supervisedTaxa', t("user.usersAdministration.supervisedTaxa"), (row) => (
+        createActionColumn<MapUserTableRow>('supervisedTaxa', t('user.usersAdministration.supervisedTaxa'), (row) => (
             <MapUsersTaxaCell
                 row={row}
                 onAddTaxon={handleOpenAddTaxonModal}
@@ -123,22 +118,18 @@ export default function MapUsers() {
             minWidth: '250px',
         }),
     ], [t, handleOpenAddModal, handleRemoveProject, handleOpenAddTaxonModal, handleRemoveTaxonFromCell]);
-    
+
     return (
         <div className="container-fluid">
-            <MapUsersFlash 
-                flash={flash} 
-                onDismiss={() => setFlash(null)} 
-            />
-            
             <DataTable<MapUserTableRow>
-                endpoint="/api/react/users"
+                endpoint="/api/react/atlasadmin/users"
                 columns={columns}
                 fetchData={fetchUsersWithRights}
                 initialPageSize={20}
                 pageSizeOptions={[10, 20, 50, 100]}
+                refreshKey={rightsRefreshKey}
             />
-            
+
             <MapUsersAddProjectModal
                 show={showAddModal}
                 projects={projects}
@@ -148,7 +139,7 @@ export default function MapUsers() {
                 onAdd={handleAddProject}
                 onClose={handleCloseModal}
             />
-            
+
             <MapUsersAddTaxonModal
                 show={showAddTaxonModal}
                 taxa={taxa}

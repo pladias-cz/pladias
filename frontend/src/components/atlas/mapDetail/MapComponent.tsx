@@ -1,11 +1,11 @@
-import { useMemo, useEffect, useState, useRef } from 'react';
-import { MapContainer, useMap } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import {useMemo, useEffect, useRef} from 'react';
+import {useMap} from 'react-leaflet';
+import {useQuery} from '@tanstack/react-query';
+import {getSquareInfo, type SquareValidationStatus, type CurrentSquareInfo} from '@/services/atlasApi';
+import {useNavigate} from 'react-router-dom';
 
-import { useLayerManager, useLayerState, Layer } from '@/core/mapLayers';
-import { LayerSwitcher } from '@/core/mapLayers/components/LayerSwitcher';
+import {useLayerManager, MapCanvas, MapLayer} from '@/core/mapLayers';
+import {LayerSwitcher} from '@/core/mapLayers/components/LayerSwitcher';
 import './MapComponent.scss';
 
 // Map extent limit: 7 km from center (max bounds for user panning)
@@ -20,7 +20,7 @@ function calculateMaxBounds(center: [number, number], radiusKm: number): [[numbe
     const [lat, lng] = center;
     const latDelta = radiusKm * KM_TO_DEGREES_LAT;
     const lngDelta = radiusKm * KM_TO_DEGREES_LAT / Math.cos((lat * Math.PI) / 180);
-    
+
     return [
         [lat - latDelta, lng - lngDelta], // Southwest
         [lat + latDelta, lng + lngDelta], // Northeast
@@ -30,50 +30,29 @@ function calculateMaxBounds(center: [number, number], radiusKm: number): [[numbe
 /**
  * Internal component to update map center and bounds when they change
  */
-function MapUpdater({ center, maxBounds }: { center: [number, number]; maxBounds: [[number, number], [number, number]] }) {
+function MapUpdater({center, maxBounds}: {
+    center: [number, number];
+    maxBounds: [[number, number], [number, number]]
+}) {
     const map = useMap();
-    
+
     useEffect(() => {
         // Update max bounds first
         map.setMaxBounds(maxBounds);
-        
+
         // Then set the view to the new center
-        map.setView(center, map.getZoom(), { animate: true });
+        map.setView(center, map.getZoom(), {animate: true});
     }, [map, center, maxBounds]);
-    
+
     return null;
 }
 
 /**
- * Square validation status DTO from backend
+ * Square info types are owned by `@/services/atlasApi`; re-exported for local use.
  */
-export interface SquareValidationStatus {
-    direction: string;      // e.g., "north", "northeast", "east", etc.
-    squareCode: number;       // The ID of the square in that direction
-    text: string;           // Validation status text
-    color: string;          // Validation status color (RGB hex)
-}
+export type {SquareValidationStatus, CurrentSquareInfo, SquareInfoResponse} from '@/services/atlasApi';
 
-/**
- * Current square information from backend
- */
-export interface CurrentSquareInfo {
-    squareCode: number;     // The square code
-    latitude: number;       // Centroid latitude (WGS84)
-    longitude: number;      // Centroid longitude (WGS84)
-    statusText: string;     // Validation status text for current square
-    statusColor: string;    // Validation status color for current square
-}
-
-/**
- * Response from the square info API endpoint
- */
-export interface SquareInfoResponse {
-    neighbors: SquareValidationStatus[];
-    currentSquare: CurrentSquareInfo;
-}
-
-import type { RecordsByProject, RecordsByProjectMinimal } from '@/pages/atlas/MapDetail';
+import type {RecordsByProject, RecordsByProjectMinimal} from '@/models/AtlasRecords';
 import RecordMarkers from './RecordMarkers';
 import PladiasRecordMarkers from './PladiasRecordMarkers';
 
@@ -97,14 +76,19 @@ const MAP_MAIN_LAYERS = [
     'technical_quadrants',
     'technical_phytochorion',
     'technical_square',
-    
+
     'validation_semafor',
     'validation_common_3',
     'validation_common_2',
     'validation_common_1',
 
 ];
-const MAP_MAIN_DEFAULTS: Record<string, boolean> = { osm: true, opentopo: false, technical_quadrants: true, interactive_squares: true };
+const MAP_MAIN_DEFAULTS: Record<string, boolean> = {
+    osm: true,
+    opentopo: false,
+    technical_quadrants: true,
+    interactive_squares: true
+};
 
 // Map zoom constraints
 const MIN_ZOOM = 12;
@@ -119,9 +103,9 @@ const ARROW_HALF = ARROW_SIZE / 2;
  * Navigation arrow component for directional square navigation
  */
 function NavigationArrow({
-    status,
-    taxonId,
-}: {
+                             status,
+                             taxonId,
+                         }: {
     status: SquareValidationStatus;
     taxonId?: number;
 }) {
@@ -170,21 +154,27 @@ function NavigationArrow({
 
         switch (status.direction) {
             case 'north':
-                return { ...baseStyle, top: `${ARROW_OFFSET}px`, left: '50%', marginLeft: `-${ARROW_HALF}px` };
+                return {...baseStyle, top: `${ARROW_OFFSET}px`, left: '50%', marginLeft: `-${ARROW_HALF}px`};
             case 'northeast':
-                return { ...baseStyle, top: `${ARROW_OFFSET}px`, right: `${ARROW_OFFSET}px` };
+                return {...baseStyle, top: `${ARROW_OFFSET}px`, right: `${ARROW_OFFSET}px`};
             case 'east':
-                return { ...baseStyle, top: '50%', right: `${ARROW_OFFSET}px`, marginTop: `-${ARROW_HALF}px` };
+                return {...baseStyle, top: '50%', right: `${ARROW_OFFSET}px`, marginTop: `-${ARROW_HALF}px`};
             case 'southeast':
-                return { ...baseStyle, bottom: `${ARROW_OFFSET}px`, right: `${ARROW_OFFSET}px` };
+                return {...baseStyle, bottom: `${ARROW_OFFSET}px`, right: `${ARROW_OFFSET}px`};
             case 'south':
-                return { ...baseStyle, bottom: `${ARROW_OFFSET}px`, left: '50%', marginLeft: `-${ARROW_HALF}px`, zIndex: 1001 };
+                return {
+                    ...baseStyle,
+                    bottom: `${ARROW_OFFSET}px`,
+                    left: '50%',
+                    marginLeft: `-${ARROW_HALF}px`,
+                    zIndex: 1001
+                };
             case 'southwest':
-                return { ...baseStyle, bottom: `${ARROW_OFFSET}px`, left: `${ARROW_OFFSET}px` };
+                return {...baseStyle, bottom: `${ARROW_OFFSET}px`, left: `${ARROW_OFFSET}px`};
             case 'west':
-                return { ...baseStyle, top: '50%', left: `${ARROW_OFFSET}px`, marginTop: `-${ARROW_HALF}px` };
+                return {...baseStyle, top: '50%', left: `${ARROW_OFFSET}px`, marginTop: `-${ARROW_HALF}px`};
             case 'northwest':
-                return { ...baseStyle, top: `${ARROW_OFFSET}px`, left: `${ARROW_OFFSET}px` };
+                return {...baseStyle, top: `${ARROW_OFFSET}px`, left: `${ARROW_OFFSET}px`};
             default:
                 return baseStyle;
         }
@@ -226,8 +216,8 @@ function NavigationArrow({
  * Current square status indicator component
  */
 function CurrentSquareIndicator({
-    currentSquare,
-}: {
+                                    currentSquare,
+                                }: {
     currentSquare: CurrentSquareInfo;
 }) {
     return (
@@ -260,45 +250,17 @@ function CurrentSquareIndicator({
     );
 }
 
-/**
- * Individual layer component that subscribes to visibility state
- */
-function MapLayer({
-    layerId,
-    mapName,
-    params,
-}: {
-    layerId: string;
-    mapName: string;
-    params?: Record<string, any>;
-}) {
-    const layerState = useLayerState(mapName, layerId);
-    const visible = layerState?.visible ?? false;
-
-    return (
-        <Layer
-            layerId={layerId}
-            params={params}
-            visible={visible}
-        />
-    );
-}
-
 export function MapComponent({
-    mapName = 'mapDetail',
-    initialZoom = 12,
-    taxonId,
-    squareId,
-    records = { pladias: [], gbif: [], inaturalist: [] },
-    highlightedRecordId,
-    onRecordHover,
-    centerOnRecord,
-}: MapComponentProps) {
-    const [mapCenter, setMapCenter] = useState<[number, number] | null>(null);
-    const [maxBounds, setMaxBounds] = useState<[[number, number], [number, number]] | null>(null);
-    const [neighbors, setNeighbors] = useState<SquareValidationStatus[]>([]);
-    const [currentSquare, setCurrentSquare] = useState<CurrentSquareInfo | null>(null);
-    const mapRef = useRef<any>(null);
+                                 mapName = 'mapDetail',
+                                 initialZoom = 12,
+                                 taxonId,
+                                 squareId,
+                                 records = {pladias: [], gbif: [], inaturalist: [], cbs: []},
+                                 highlightedRecordId,
+                                 onRecordHover,
+                                 centerOnRecord,
+                             }: MapComponentProps) {
+    const mapRef = useRef<L.Map | null>(null);
 
     const allLayerIds = useMemo(() => {
         return MAP_MAIN_LAYERS;
@@ -306,38 +268,23 @@ export function MapComponent({
 
     useLayerManager(mapName, MAP_MAIN_LAYERS, MAP_MAIN_DEFAULTS);
 
-    useEffect(() => {
-        if (!taxonId || !squareId) {
-            return;
-        }
+    // informace o kvadrantu (centroid, stav ověření, sousedé) – bez cache (sekce J)
+    const squareCode = parseInt(squareId, 10);
+    const {data: squareInfo} = useQuery({
+        queryKey: ['squareInfo', squareCode, taxonId],
+        queryFn: () => getSquareInfo(squareCode, taxonId!),
+        enabled: taxonId !== undefined && !isNaN(squareCode),
+    });
 
-        const squareCode = parseInt(squareId, 10);
-        if (isNaN(squareCode)) {
-            return;
-        }
+    const currentSquare = squareInfo?.currentSquare ?? null;
+    const neighbors = squareInfo?.neighbors ?? [];
+    const mapCenter = useMemo<[number, number] | null>(() => (
+        currentSquare ? [currentSquare.latitude, currentSquare.longitude] : null
+    ), [currentSquare]);
+    const maxBounds = useMemo(() => (
+        mapCenter ? calculateMaxBounds(mapCenter, MAX_EXTENT_KM) : null
+    ), [mapCenter]);
 
-        axios.get<SquareInfoResponse>(`/api/react/atlas/squareInfo/${squareCode}/${taxonId}`)
-            .then(response => {
-                const apiResponse = response.data as any;
-                if (apiResponse.success && apiResponse.data) {
-                    const data: SquareInfoResponse = apiResponse.data;
-                    
-                    if (data.currentSquare) {
-                        const center: [number, number] = [data.currentSquare.latitude, data.currentSquare.longitude];
-                        setMapCenter(center);
-                        setMaxBounds(calculateMaxBounds(center, MAX_EXTENT_KM));
-                        setCurrentSquare(data.currentSquare);
-                    }
-                    
-                    if (data.neighbors) {
-                        setNeighbors(data.neighbors);
-                    }
-                }
-            })
-            .catch(error => {
-                console.error('Failed to fetch square validation info:', error);
-            });
-    }, [taxonId, squareId]);
 
     // Center map on specific record when requested (respecting bounds)
     useEffect(() => {
@@ -345,10 +292,10 @@ export function MapComponent({
             const map = mapRef.current;
             const target = [centerOnRecord.latitude, centerOnRecord.longitude] as [number, number];
             const currentBounds = map.getBounds();
-            
+
             // Check if target is already visible (within current bounds)
             const alreadyVisible = currentBounds.contains(target);
-            
+
             if (!alreadyVisible) {
                 // Target is outside current view, pan to it
                 map.flyTo(target, map.getZoom(), {
@@ -377,10 +324,10 @@ export function MapComponent({
     }
 
     return (
-        <div className="h-100 w-100" style={{ position: 'relative' }}>
+        <div className="map-detail h-100 w-100" style={{position: 'relative'}}>
             {/* Current square status indicator */}
-            {currentSquare && <CurrentSquareIndicator currentSquare={currentSquare} />}
-            
+            {currentSquare && <CurrentSquareIndicator currentSquare={currentSquare}/>}
+
             {/* Navigation arrows */}
             {neighbors.map((neighbor) => (
                 <NavigationArrow
@@ -389,21 +336,19 @@ export function MapComponent({
                     taxonId={taxonId}
                 />
             ))}
-            
-            <MapContainer
-                key={squareId}
-                ref={mapRef}
+
+            <MapCanvas
                 center={mapCenter}
                 zoom={initialZoom}
                 minZoom={MIN_ZOOM}
                 maxZoom={MAX_ZOOM}
-                scrollWheelZoom={true}
-                style={{ height: '100%', width: '100%' }}
+                mapKey={squareId}
+                mapRef={mapRef}
             >
                 {mapCenter && maxBounds && (
-                    <MapUpdater center={mapCenter} maxBounds={maxBounds} />
+                    <MapUpdater center={mapCenter} maxBounds={maxBounds}/>
                 )}
-                
+
                 {MAP_MAIN_LAYERS.map(layerId => (
                     <MapLayer
                         key={layerId}
@@ -412,24 +357,26 @@ export function MapComponent({
                         params={mapContext}
                     />
                 ))}
-                
+
                 {records && (records.pladias?.length > 0) && (
                     <PladiasRecordMarkers
                         records={records.pladias}
                         highlightedRecordId={highlightedRecordId}
                         onRecordHover={onRecordHover}
+                        currentSquareCode={squareId}
                     />
                 )}
-                
-                {records && ((records.gbif?.length > 0 || records.inaturalist?.length > 0)) && (
+
+                {records && ((records.gbif?.length > 0 || records.inaturalist?.length > 0 || records.cbs?.length > 0)) && (
                     <RecordMarkers
-                        records={[...(records.gbif || []), ...(records.inaturalist || [])]}
+                        records={[...(records.gbif || []), ...(records.inaturalist || []), ...(records.cbs || [])]}
                         highlightedRecordId={highlightedRecordId}
                         onRecordHover={onRecordHover}
+                        currentSquareCode={squareId}
                     />
                 )}
-            </MapContainer>
-            
+            </MapCanvas>
+
             <LayerSwitcher
                 mapName={mapName}
                 layerIds={allLayerIds}

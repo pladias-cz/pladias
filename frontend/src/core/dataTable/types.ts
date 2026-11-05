@@ -2,6 +2,7 @@
  * Core types for the enterprise DataTable component
  */
 
+import type {SetStateAction} from 'react';
 import type {ColumnSort} from '@tanstack/react-table';
 
 /**
@@ -13,6 +14,14 @@ export interface ServerSideDataResponse<T> {
     totalCount: number;
     filteredCount?: number;
 }
+
+/**
+ * Optimistický updater řádků tabulky: funkce, kterou DataTable přes konfiguraci
+ * `onDataUpdater` předá rodiči. Aplikuje updater na vykreslované řádky
+ * (useTableData.setData) bez refetche; vrstva změn žije do nejbližší odpovědi
+ * serveru. Pro vlastní cellRenderery (status selecty atlasAdmin TaxaList).
+ */
+export type TableDataUpdater<T> = (updater: (prev: T[]) => T[]) => void;
 
 /**
  * Sort configuration for server-side sorting
@@ -50,9 +59,9 @@ export interface TextColumnDef<T> extends BaseColumnDef<T> {
     /** Placeholder for filter input */
     filterPlaceholder?: string;
     /** Options for select filter - when set, a select is rendered instead of text input */
-    filterOptions?: Array<{value: string; label: string}>;
+    filterOptions?: Array<{ value: string; label: string }>;
     /** Custom cell renderer */
-    cellRenderer?: (value: any, row: T) => React.ReactNode;
+    cellRenderer?: (value: string, row: T) => React.ReactNode;
 }
 
 /**
@@ -140,7 +149,7 @@ export interface ActionColumnDef<T> extends Omit<BaseColumnDef<T>, 'enableSortin
 /**
  * Union type for all column types
  */
-export type DataTableColumnDef<T> = 
+export type DataTableColumnDef<T> =
     | TextColumnDef<T>
     | BooleanColumnDef<T>
     | CheckboxColumnDef<T>
@@ -170,7 +179,7 @@ export interface TableState<T> {
     /** Current sort state */
     sorting: ColumnSort[];
     /** Current filter state */
-    columnFilters: Array<{id: string; value: string}>;
+    columnFilters: Array<{ id: string; value: string }>;
     /** Loading state */
     loading: boolean;
 }
@@ -186,11 +195,11 @@ export type HttpMethod = 'GET' | 'POST';
 export type CustomDataFetcher<T> = (params: {
     page: number;
     pageSize: number;
-    sorting: Array<{id: string; desc: boolean}>;
-    columnFilters: Array<{id: string; value: string}>;
+    sorting: Array<{ id: string; desc: boolean }>;
+    columnFilters: Array<{ id: string; value: string }>;
     additionalParams: Record<string, string>;
     signal?: AbortSignal;
-}) => Promise<{data: T[]; totalCount: number; filteredCount?: number}>;
+}) => Promise<{ data: T[]; totalCount: number; filteredCount?: number }>;
 
 /**
  * External state control for controlled DataTable usage
@@ -198,12 +207,12 @@ export type CustomDataFetcher<T> = (params: {
 export interface ExternalTableState {
     page?: number;
     pageSize?: number;
-    sorting?: Array<{id: string; desc: boolean}>;
-    columnFilters?: Array<{id: string; value: string}>;
+    sorting?: Array<{ id: string; desc: boolean }>;
+    columnFilters?: Array<{ id: string; value: string }>;
     onPageChange?: (page: number) => void;
     onPageSizeChange?: (pageSize: number) => void;
-    onSortingChange?: (sorting: Array<{id: string; desc: boolean}>) => void;
-    onColumnFiltersChange?: (filters: Array<{id: string; value: string}>) => void;
+    onSortingChange?: (sorting: Array<{ id: string; desc: boolean }>) => void;
+    onColumnFiltersChange?: (filters: Array<{ id: string; value: string }>) => void;
 }
 
 /**
@@ -219,7 +228,18 @@ export interface DataTableConfig<T> {
     /** Available page size options */
     pageSizeOptions?: number[];
     /** Callback when row data changes */
-    onRowUpdate?: (row: T, field: keyof T, value: any) => Promise<void>;
+    onRowUpdate?: (row: T, field: keyof T, value: unknown) => Promise<void>;
+    /**
+     * Po mountu dostane rodič optimistický updater řádků (useTableData.setData,
+     * stabilní identita), při unmountu null. Vlastní cellRenderery (status
+     * selecty atlasAdmin) s ním mění řádky okamžitě bez refetche.
+     *
+     * Pozor na ukládání do React state: setState považuje funkční argument za
+     * funkční updater – `setState(updater)` by zavolal updater místo jeho
+     * uložení. Držte updater v refu (viz TaxaList) nebo použijte lazy tvar
+     * `setState(() => updater)`.
+     */
+    onDataUpdater?: (updater: TableDataUpdater<T> | null) => void;
     /** Additional query params to send with requests */
     additionalParams?: Record<string, string>;
     /** Custom class names */
@@ -232,7 +252,7 @@ export interface DataTableConfig<T> {
      * Builds the filter query params of the XLSX export from the filter row state, for endpoints
      * that do not use the "<Column>Filter" convention of the table params
      */
-    buildExportFilterParams?: (columnFilters: Array<{id: string; value: string}>) => Record<string, string>;
+    buildExportFilterParams?: (columnFilters: Array<{ id: string; value: string }>) => Record<string, string>;
     /** HTTP method for data fetching (default: 'GET') */
     method?: HttpMethod;
     /** Custom data fetcher function (overrides endpoint/method if provided) */
@@ -241,16 +261,24 @@ export interface DataTableConfig<T> {
     transformRequest?: (data: {
         page: number;
         pageSize: number;
-        sorting: Array<{id: string; desc: boolean}>;
-        columnFilters: Array<{id: string; value: string}>;
+        sorting: Array<{ id: string; desc: boolean }>;
+        columnFilters: Array<{ id: string; value: string }>;
         additionalParams: Record<string, string>;
-    }) => Record<string, any>;
+    }) => Record<string, unknown>;
+    /**
+     * Změna hodnoty vynutí znovunačtení aktuální stránky – pro mutace provedené
+     * mimo tabulku (např. add/remove v modale), aby se nový stav projevil ihned.
+     */
+    refreshKey?: number;
     /** External state control for controlled component usage */
     externalState?: ExternalTableState;
     /** Custom filter row renderer - receives columnFilters and setColumnFilters */
     renderCustomFilters?: (props: {
-        columnFilters: Array<{id: string; value: string}>;
-        setColumnFilters: (filters: Array<{id: string; value: string}> | ((old: Array<{id: string; value: string}>) => Array<{id: string; value: string}>)) => void;
+        columnFilters: Array<{ id: string; value: string }>;
+        setColumnFilters: (filters: Array<{ id: string; value: string }> | ((old: Array<{
+            id: string;
+            value: string
+        }>) => Array<{ id: string; value: string }>)) => void;
     }) => React.ReactNode;
 }
 
@@ -262,8 +290,9 @@ export interface UseTableDataReturn<T> {
     totalCount: number;
     filteredCount: number;
     loading: boolean;
-    fetchData: () => Promise<void>;
-    refresh: () => Promise<void>;
+    refresh: () => void;
+    /** Optimistic update of the rendered rows (discarded by the next server response) */
+    setData: (updater: SetStateAction<T[]>) => void;
 }
 
 /**
@@ -294,8 +323,11 @@ export interface UseSortingReturn {
  * Hook return type for filters
  */
 export interface UseFiltersReturn {
-    columnFilters: Array<{id: string; value: string}>;
-    setColumnFilters: (filters: Array<{id: string; value: string}> | ((old: Array<{id: string; value: string}>) => Array<{id: string; value: string}>)) => void;
+    columnFilters: Array<{ id: string; value: string }>;
+    setColumnFilters: (filters: Array<{ id: string; value: string }> | ((old: Array<{
+        id: string;
+        value: string
+    }>) => Array<{ id: string; value: string }>)) => void;
     getFilterValue: (columnId: string) => string;
     setFilterValue: (columnId: string, value: string) => void;
     clearFilters: () => void;

@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers.ControllerBase;
 import controllers.security.Authorized;
 import dto.ExcelBatchDto;
+import helpers.http.ContentDisposition;
 import global.ServerConstants;
 import io.ebean.DB;
 import io.ebean.SqlUpdate;
@@ -87,9 +88,8 @@ public class MapAdminImportController extends ControllerBase {
             if (TableExportWriter.acceptsXlsx(request)) {
                 byte[] workbook = TableExportWriter.write(
                     "imports", ExcelBatchDto.exportColumns(), imports, getMessages(request));
-                String filename = String.format("attachment; filename=%s",
-                    "imports_" + LocalDate.now() + ".xlsx");
-                return ok(workbook).withHeader("Content-disposition", filename).as("application/x-download");
+                return ok(workbook).withHeader("Content-disposition",
+                    ContentDisposition.attachment("imports_" + LocalDate.now() + ".xlsx")).as("application/x-download");
             }
 
             // Get number of rows matching the filters and total number of imported files
@@ -171,6 +171,7 @@ public class MapAdminImportController extends ControllerBase {
     private void applyImportsFilters(io.ebean.Query<models.Excel> query, Http.Request request) {
         // Get filter parameters
         String committerNameFilter = request.getQueryString("CommitterNameFilter");
+        String batchIdFilter = request.getQueryString("BatchIdFilter");
 
         String importTimestampFromFilter = request.getQueryString("ImportTimestamp:fromFilter");
         String importTimestampToFilter = request.getQueryString("ImportTimestamp:toFilter");
@@ -181,6 +182,13 @@ public class MapAdminImportController extends ControllerBase {
             query.where().or()
                 .ilike("batch.committer.name", "%" + committerNameFilter + "%")
                 .ilike("batch.committer.surname", "%" + committerNameFilter + "%");
+        }
+        if (batchIdFilter != null && !batchIdFilter.isEmpty()) {
+            try {
+                query.where().eq("batch.id", Long.parseLong(batchIdFilter.trim()));
+            } catch (NumberFormatException e) {
+                // Ignore invalid batch id
+            }
         }
 
         if (importTimestampFromFilter != null && !importTimestampFromFilter.isEmpty()) {
@@ -227,25 +235,24 @@ public class MapAdminImportController extends ControllerBase {
     }
 
     public Result downloadBatchModified(Http.Request request, Long batchId) {
+        Messages messages = getMessages(request);
         User currentUser = SessionUtils.getCurrentUser(request.session());
         if (!currentUser.isMapAdmin()) {
-            return ok("error");
+            return forbidden(JsonResult.error(messages.at("Authorized.notAuthorized")));
         }
 
         try {
-            Messages messages = getMessages(request);
             return doDownloadBatchModifiedEntries(messages, batchId);
         } catch (Exception e) {
             _logger.error("Exception while preparing batch modified entries", e);
+            return internalServerError(JsonResult.error(messages.at("MapAdminImportController.exportFailed")));
         }
-        return ok("error");
     }
 
     private Result doDownloadBatchModifiedEntries(Messages messages, Long batchId) throws IOException {
         Workbook wb = modifiedRecordsExportService.serializeModifiedBatchEntries(batchId, messages);
-        String filename = String.format("attachment; filename=%s", String.format("Batch%d_modifikace.xls", batchId));
         return ok(ExcelUtils.toInputStream(wb))
-            .withHeader("Content-disposition", filename)
+            .withHeader("Content-disposition", ContentDisposition.attachment(String.format("Batch%d_modifikace.xls", batchId)))
             .as("application/xls");
     }
 
@@ -318,11 +325,27 @@ public class MapAdminImportController extends ControllerBase {
     }
 
     public Result prepareDeletion(Http.Request request, Long batchId) {
+        Messages messages = getMessages(request);
+        User currentUser = SessionUtils.getCurrentUser(request.session());
+        if (currentUser == null) {
+            return unauthorized(JsonResult.error(messages.at("ImportsManager.notAuthorizedToDeleteBatch")));
+        }
+
+        Batch batch = Batch.find().byId(batchId);
+        if (batch == null) {
+            return notFound(JsonResult.error(messages.at("ImportsManager.batchNotExists")));
+        }
+
+        boolean isCommitter = batch.getCommitter() != null
+            && batch.getCommitter().getId().equals(currentUser.getId());
+        if (!isCommitter && !currentUser.isMapAdmin()) {
+            return forbidden(JsonResult.error(messages.at("ImportsManager.notAuthorizedToDeleteBatch")));
+        }
+
         try {
-            Messages messages = getMessages(request);
             Workbook digestWorkBook = modifiedRecordsExportService.serializeModifiedBatchEntries(batchId, messages);
 
-            Batch batch = populateBatchWithDeletionCode(batchId);
+            batch = populateBatchWithDeletionCode(batchId);
             Excel importedExcel = Excel.find().query().where().eq("batch.id", batchId).findOne();
 
             MailMessageBuilder builder = new MailMessageBuilder();

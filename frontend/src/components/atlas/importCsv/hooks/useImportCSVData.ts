@@ -1,5 +1,6 @@
 import {useCallback, useState} from 'react';
 import type {ImportError, ImportOperation} from '../types';
+import {importCsv} from '@/services/importApi';
 
 export interface UseImportCSVDataOptions {
     onSuccess?: () => void;
@@ -17,34 +18,12 @@ export function useImportCSVData(options: UseImportCSVDataOptions = {}) {
     ): Promise<void | ImportError> => {
         setIsUploading(true);
 
-        const formData = new FormData();
-        formData.append('fileUpload', file);
-        formData.append('operation', operation);
-        formData.append('project', String(projectId));
-
         try {
-            const endpoint = '/api/react/import/csv';
-
-            const response = await fetch(endpoint, {
-                method: 'POST',
-                body: formData,
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}));
-                throw new Error(errorData.errorMessage || 'Upload failed');
-            }
-
-            const result = await response.json();
-            
-            if (result.success) {
-                onSuccess?.();
-            } else {
-                throw new Error(result.errorMessage || 'Upload failed');
-            }
-        } catch (error: any) {
+            await importCsv(file, operation, projectId);
+            onSuccess?.();
+        } catch (error) {
             const errorResult: ImportError = {
-                errorMessage: error.message || 'Unknown error occurred',
+                errorMessage: error instanceof Error ? error.message : 'Unknown error occurred',
             };
             onError?.(errorResult);
             return errorResult;

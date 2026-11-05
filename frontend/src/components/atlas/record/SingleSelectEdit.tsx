@@ -1,29 +1,32 @@
-import {useState, useEffect} from "react";
-import {Form, Spinner} from "react-bootstrap";
-import {useTranslation} from "react-i18next";
-import type {MultiValueOption} from "@/models/MultiValueOption";
+import {useState, useEffect} from 'react';
+import {Form, Spinner} from 'react-bootstrap';
+import {useTranslation} from 'react-i18next';
+import type {MultiValueOption} from '@/models/MultiValueOption';
+import {patchRecordField} from '@/services/recordApi';
+import {ApiError, apiErrorMessage} from '@/services/apiClient';
 
 interface Props {
     label: string;
     recordId: number;
     currentValue: MultiValueOption | null;
-    endpoint: string;
+    /** načte dostupné volby pro výběr */
+    loadOptions: () => Promise<MultiValueOption[]>;
     field: string;
-    onUpdated?: (data: {updatedValue: MultiValueOption | null, newTimestamp: number}) => void;
+    onUpdated?: (data: { updatedValue: MultiValueOption | null, newTimestamp: number }) => void;
     lastEditTimestampNum?: number;
     renderDisplay?: (option: MultiValueOption) => React.ReactNode;
 }
 
 export default function SingleSelectEdit({
-    label,
-    recordId,
-    currentValue,
-    endpoint,
-    field,
-    onUpdated,
-    lastEditTimestampNum,
-    renderDisplay
-}: Props) {
+                                             label,
+                                             recordId,
+                                             currentValue,
+                                             loadOptions,
+                                             field,
+                                             onUpdated,
+                                             lastEditTimestampNum,
+                                             renderDisplay
+                                         }: Props) {
     const {t} = useTranslation();
     const [options, setOptions] = useState<MultiValueOption[]>([]);
     const [saving, setSaving] = useState(false);
@@ -31,61 +34,38 @@ export default function SingleSelectEdit({
     const [editing, setEditing] = useState(false);
     const [lastTimestamp, setLastTimestamp] = useState(lastEditTimestampNum ?? 0);
 
-    // Sync internal timestamp with prop
-    useEffect(() => {
-        if (lastEditTimestampNum !== undefined && lastEditTimestampNum !== lastTimestamp) {
-            setLastTimestamp(lastEditTimestampNum);
-        }
-    }, [lastEditTimestampNum, lastTimestamp]);
+    // Sync internal timestamp with prop when prop changes (e.g., after another
+    // field was edited) – render-phase update guarded by comparison
+    // (React docs: adjusting state when a prop changes, without an effect).
+    if (lastEditTimestampNum !== undefined && lastEditTimestampNum !== lastTimestamp) {
+        setLastTimestamp(lastEditTimestampNum);
+    }
 
     // Fetch available options when editing starts
     useEffect(() => {
         if (editing) {
-            fetch(endpoint)
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success && data.data) {
-                        const fetchedOptions: MultiValueOption[] = data.data.map((item: { id: number; name?: string; nameLat?: string; label?: string; nameHtml?: string }) => ({
-                            id: item.id,
-                            name: item.name ?? item.nameLat ?? "",
-                            label: item.label ?? item.nameHtml
-                        }));
-                        setOptions(fetchedOptions);
-                    }
-                })
-                .catch((err: Error) => {
-                    setError(err.message || t("common.singleSelectEdit.loadFailed"));
+            loadOptions()
+                .then(setOptions)
+                .catch((err: unknown) => {
+                    setError(apiErrorMessage(err, t('common.singleSelectEdit.loadFailed')));
                 });
         }
-    }, [editing, endpoint, t]);
+    }, [editing, loadOptions, t]);
 
     async function sendApiRequest(key: string, value: number | null) {
         try {
-            const response = await fetch(`/api/react/atlas/record/${recordId}`, {
-                method: "PATCH",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({
-                    key: key,
-                    value: value?.toString() ?? '',
-                    lastEditTimestampNum: lastTimestamp
-                }),
-            });
-
-            if (!response.ok) {
-                const msg = await response.text();
-                throw new Error(msg || t("common.singleSelectEdit.saveFailed"));
-            }
-
-            const responseData = await response.json();
-            const newTimestamp = responseData.data?.lastEditTimestampNum;
+            const result = await patchRecordField(recordId, key, value?.toString() ?? '', lastTimestamp);
+            const newTimestamp = result.lastEditTimestampNum;
             if (newTimestamp) {
                 setLastTimestamp(newTimestamp);
             }
-            return responseData;
-        } catch (error: unknown) {
-            const errorMessage = error instanceof Error ? error.message : t("common.singleSelectEdit.saveFailed");
-            setError(errorMessage);
-            throw error;
+            return result;
+        } catch (e) {
+            // 403 apod. notifikuje centrálně apiClient – zde jen propagujeme
+            if (!(e instanceof ApiError && e.notified)) {
+                setError(apiErrorMessage(e, t('common.singleSelectEdit.saveFailed')));
+            }
+            throw e;
         }
     }
 
@@ -101,8 +81,8 @@ export default function SingleSelectEdit({
         setSaving(true);
         setError(null);
         try {
-            const responseData = await sendApiRequest(field, selectedOption.id);
-            const newTimestamp = responseData.data?.lastEditTimestampNum || lastTimestamp;
+            const result = await sendApiRequest(field, selectedOption.id);
+            const newTimestamp = result.lastEditTimestampNum || lastTimestamp;
             onUpdated?.({updatedValue: selectedOption, newTimestamp});
             setEditing(false);
         } catch {
@@ -122,7 +102,7 @@ export default function SingleSelectEdit({
     let displayContent: React.ReactNode;
 
     if (!currentValue) {
-        displayContent = <span className="text-muted">{t("common.singleSelectEdit.none")}</span>;
+        displayContent = <span className="text-muted">{t('common.singleSelectEdit.none')}</span>;
     } else if (renderDisplay) {
         displayContent = renderDisplay(currentValue);
     } else {
@@ -141,15 +121,15 @@ export default function SingleSelectEdit({
                             <i
                                 className="bi bi-pencil ms-2"
                                 aria-hidden="true"
-                                style={{cursor: "pointer"}}
+                                style={{cursor: 'pointer'}}
                                 onClick={() => setEditing(true)}
-                                title={t("common.singleSelectEdit.edit")}
+                                title={t('common.edit')}
                             />
                             <span
                                 className="editable-value ms-1"
-                                style={{cursor: "pointer"}}
+                                style={{cursor: 'pointer'}}
                                 onClick={() => setEditing(true)}
-                                title={t("common.singleSelectEdit.edit")}
+                                title={t('common.edit')}
                             >
                                 {displayContent}
                             </span>
@@ -159,7 +139,7 @@ export default function SingleSelectEdit({
                         <div>
                             <Form.Select
                                 size="sm"
-                                value={selectedOption?.id.toString() || currentValue?.id.toString() || ""}
+                                value={selectedOption?.id.toString() || currentValue?.id.toString() || ''}
                                 onChange={e => {
                                     const optionId = Number(e.target.value);
                                     if (optionId) {
@@ -168,16 +148,16 @@ export default function SingleSelectEdit({
                                 }}
                                 disabled={saving || options.length === 0}
                                 className="flex-grow-1 d-inline-block"
-                                style={{maxWidth: "300px"}}
+                                style={{maxWidth: '300px'}}
                             >
-                                <option value="">-- {t("common.select")} --</option>
+                                <option value="">-- {t('common.select')} --</option>
                                 {options.map(option => (
                                     <option key={option.id} value={option.id} title={option.label}>
                                         {option.name}
                                     </option>
                                 ))}
                             </Form.Select>
-                            
+
                             <button
                                 type="button"
                                 className="btn btn-primary btn-sm ms-2"
@@ -186,7 +166,7 @@ export default function SingleSelectEdit({
                             >
                                 {t('common.ok')}
                             </button>
-                            
+
                             <button
                                 type="button"
                                 className="btn btn-secondary btn-sm ms-2"

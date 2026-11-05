@@ -1,10 +1,11 @@
-import {useEffect, useState} from 'react';
 import {Breadcrumb, Card, Spinner} from 'react-bootstrap';
 import {type Taxon} from '@/models/Taxon';
-import {type TaxonId} from '@/models/TaxonId';
 import TaxonName from '@/components/taxon/TaxonName';
 import {Link} from 'react-router-dom'; // pokud používáš react-router
 import {useTranslation} from 'react-i18next';
+import {useQuery} from '@tanstack/react-query';
+import {getTaxonParents} from '@/services/taxonApi';
+import {useQueryErrorNotify} from '@/query/useQueryErrorNotify';
 
 interface Props {
     taxon: Taxon;
@@ -15,37 +16,13 @@ interface Props {
 export default function TaxonDetail({taxon, cacheKey}: Props) {
     const {t} = useTranslation();
 
-    const [parents, setParents] = useState<TaxonId[]>([]);
-    const [loadingParents, setLoadingParents] = useState(false);
-
-    useEffect(() => {
-        setParents([]);
-    }, [cacheKey]);
-
-
-    // --- načtení rodičů ---
-    useEffect(() => {
-        async function loadParents() {
-            setLoadingParents(true);
-            try {
-                const res = await fetch(`/api/react/taxon/${taxon.id}/parents`);
-                if (!res.ok) throw new Error(t("taxon.detail.loadParentsFailed"));
-                const json = await res.json();
-                if (!json.success) throw new Error(t("taxon.detail.apiError"));
-
-                setParents(json.data); // očekáváme pole Taxonů od kořene po přímého rodiče
-            } catch (e) {
-                console.error(e);
-                setParents([]);
-            } finally {
-                setLoadingParents(false);
-            }
-        }
-
-        if (taxon?.id) {
-            loadParents();
-        }
-    }, [taxon]);
+    // --- načtení rodičů (od kořene po přímého rodiče) – bez cache (sekce J);
+    // cacheKey (verze taxonu) v klíči zajistí čerstvá data po mutacích ---
+    const {data: parents = [], isPending: loadingParents, error} = useQuery({
+        queryKey: ['taxonParents', taxon.id, cacheKey],
+        queryFn: () => getTaxonParents(taxon.id),
+    });
+    useQueryErrorNotify(error, t('taxon.detail.loadParentsFailed'));
 
     return (
         <Card className="mt-3">

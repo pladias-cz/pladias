@@ -6,11 +6,12 @@
  * scoped Zustand store so layers update automatically.
  */
 
-import { useEffect, useMemo, useRef } from 'react';
-import { useLayerStore } from '../store/layerStore';
-import { createLayer } from '../factory';
-import type { MapContext, LayerState } from '../types';
-import type { Layer as LeafletLayer } from 'leaflet';
+import {useEffect, useMemo, useRef} from 'react';
+import {useLayerStore} from '../store/layerStore';
+import {createLayer} from '../factory';
+import {logError} from '@/services/logger';
+import type {MapContext, LayerState} from '../types';
+import type {Layer as LeafletLayer} from 'leaflet';
 
 export interface UseMapLayersReturn {
     layers: LeafletLayer[];
@@ -28,10 +29,11 @@ export function useMapLayers(
     } = useLayerStore();
 
     // Stabilise the array reference
+    const layerIdsKey = layerIds?.join(',');
     const managedLayers = useMemo(
         () => layerIds ?? ['osm', 'opentopo'],
         // eslint-disable-next-line react-hooks/exhaustive-deps
-        [layerIds?.join(',')],
+        [layerIdsKey],
     );
 
     // Set mapContext for other consumers
@@ -65,12 +67,12 @@ export function useMapLayers(
                 try {
                     return createLayer(layerId, layerState.params);
                 } catch (error) {
-                    console.error(`Failed to create layer ${layerId}:`, error);
+                    logError(error, {source: 'useMapLayers', layerId});
                     return null;
                 }
             })
             .filter((layer): layer is LeafletLayer => layer !== null);
-        
+
         return result;
     }, [visibleLayerIds, mapName, getLayerState]);
 

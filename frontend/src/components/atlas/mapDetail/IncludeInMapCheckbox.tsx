@@ -1,26 +1,26 @@
-import { useState } from 'react';
-import type { RecordPladias } from '@/models';
-import { useRecordQuickUpdates } from './hooks/useRecordQuickUpdates.ts';
+import {useState} from 'react';
+import type {RecordPladias} from '@/models';
+import {useRecordQuickUpdates} from './hooks/useRecordQuickUpdates';
 
 interface IncludeInMapCheckboxProps {
     record: RecordPladias;
     onRecordUpdated?: (record: RecordPladias) => void;
 }
 
-export function IncludeInMapCheckbox({ record, onRecordUpdated }: IncludeInMapCheckboxProps) {
-    const { updateIncludedInMap } = useRecordQuickUpdates();
+export function IncludeInMapCheckbox({record, onRecordUpdated}: IncludeInMapCheckboxProps) {
+    const {updateIncludedInMap} = useRecordQuickUpdates();
     const [optimisticValue, setOptimisticValue] = useState<boolean | null>(null);
 
     const currentValue = optimisticValue !== null ? optimisticValue : (record.includedInMap ?? false);
 
     const handleChange = async (newVal: boolean) => {
-        if (currentValue !== newVal && record.canEdit) {
+        if (currentValue !== newVal && record.canEditValidationFields) {
             // Optimistic update - show change immediately
             setOptimisticValue(newVal);
 
             try {
                 const result = await updateIncludedInMap(
-                    record, 
+                    record,
                     newVal,
                     (updatedRecord) => {
                         // Propagate updated record with new timestamp to parent
@@ -44,8 +44,8 @@ export function IncludeInMapCheckbox({ record, onRecordUpdated }: IncludeInMapCh
                 display: 'flex',
                 alignItems: 'center',
                 gap: '6px',
-                cursor: record.canEdit ? 'pointer' : 'default',
-                opacity: record.canEdit ? 1 : 0.6,
+                cursor: record.canEditValidationFields ? 'pointer' : 'default',
+                opacity: record.canEditValidationFields ? 1 : 0.6,
                 fontSize: '85%',
             }}
             onClick={() => handleChange(!currentValue)}

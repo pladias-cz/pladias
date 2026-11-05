@@ -1,6 +1,6 @@
 /**
  * Map Context Types
- * 
+ *
  * Defines the context in which layers are rendered.
  * This allows the layer factory to derive parameters automatically.
  */
@@ -17,32 +17,32 @@ export type MapType = 'mainMap' | 'previewMap' | 'detailMap' | 'recordMap';
 export interface MapContext {
     /** Type of map view */
     mapType: MapType;
-    
+
     /** Currently selected taxon ID (if applicable) */
     taxonId?: number;
-    
+
     /** Year filter (single year) */
     year?: number;
-    
+
     /** Year range filters */
     yearFrom?: number;
     yearTo?: number;
-    
+
     /** Quadrant/grid ID for detail maps */
     quadrantId?: string;
-    
+
     /** List of quadrant IDs for multi-quadrant views */
     quadrantIds?: string[];
-    
+
     /** Project filter ID */
     projectId?: string;
-    
+
     /** Center coordinates for the map */
     center?: [number, number];
-    
+
     /** Current zoom level */
     zoom?: number;
-    
+
     /** Bounding box (for future use) */
     bounds?: {
         north: number;

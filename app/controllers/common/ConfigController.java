@@ -4,14 +4,15 @@ import controllers.ControllerBase;
 import controllers.security.Authorized;
 import models.Maintenance;
 import models.User;
+import models.UserRole;
 import models.UserSettings;
+import platform.ProjectConstants;
 import play.libs.Json;
 import play.mvc.Http;
 import play.mvc.Http.Session;
 import play.mvc.Result;
 import play.mvc.Security;
 import utils.SessionUtils;
-import utils.UserUtils;
 import views.utils.MaintenanceMessageUtils;
 
 import java.util.ArrayList;
@@ -32,15 +33,15 @@ public class ConfigController extends ControllerBase {
         config.put("hasAtlasModule", configService.hasAtlasModule());
         config.put("hasMeasurementsModule", configService.hasTraitModule());
         config.put("hasBiblioModule", configService.hasBiblioModule());
+        // Projects with exceptional behavior in the atlas module (per-instance IDs, see common.conf)
+        config.put("excerptionProjectIds", configService.getIntList(ProjectConstants.ExcerptionProjectIdsKey));
+        config.put("ndopProjectIds", configService.getIntList(ProjectConstants.NdopProjectIdsKey));
+        // External record sources available in this instance (map detail tabs, see common.conf)
+        config.put("externalRecordSources", configService.getStringList(ProjectConstants.ExternalRecordSourcesKey));
 
         // User-specific data (can change during session)
         config.put("id", currentUser.getId());
-        config.put("isMapAdmin", currentUser.isMapAdmin());
-        config.put("isSysAdmin", currentUser.isSysAdmin());
-        config.put("isTraitAdmin", currentUser.isTraitAdmin());
-        config.put("isTaxonAdmin", currentUser.isTaxonAdmin());
-        config.put("isBulkEditor", (currentUser.isMapAdmin() || UserUtils.getBulkImporter().getId() == currentUser.getId()));
-        config.put("isAsyncImporter", UserUtils.isAsyncImporter(currentUser));
+        config.put("roles", UserRole.keysOf(currentUser));
         config.put("userEmail", currentUser.getEmail());
 
         // Add supervised taxon IDs for permission checks

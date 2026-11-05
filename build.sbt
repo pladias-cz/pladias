@@ -42,7 +42,7 @@ dependencyOverrides ++= Seq(
   
   "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.15.4"
 )
-scalaVersion := "3.3.7"
+scalaVersion := "3.3.9"
 
 // Automatically resolve version conflicts by preferring the newest revision
 ThisBuild / conflictManager := ConflictManager.latestRevision

@@ -1,9 +1,9 @@
 resolvers += "Typesafe repository" at "https://repo.typesafe.com/typesafe/releases/"
 
 // The Play plugin
-addSbtPlugin("org.playframework" % "sbt-plugin" % "3.0.10")
+addSbtPlugin("org.playframework" % "sbt-plugin" % "3.0.12")
 
-addSbtPlugin("org.playframework" % "sbt-play-ebean" % "8.5.0")
+addSbtPlugin("org.playframework" % "sbt-play-ebean" % "8.6.0")
 // Bloop build server integration
 // addSbtPlugin("ch.epfl.scala" % "sbt-bloop" % "2.0.18")
 // Dependency analysis and updates

@@ -57,6 +57,7 @@ export const layerGroups: LayerGroup[] = [
         title: 'Projects',
         description: 'Project-based occurrence data',
         defaultExpanded: false,
+        bulkToggle: true,
         children: PROJECT_LAYERS,
     },
     {

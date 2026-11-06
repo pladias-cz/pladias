@@ -122,6 +122,8 @@ export interface LayerGroup {
     defaultExpanded?: boolean;
     /** If true, only one layer in this group can be active at a time (radio behavior) */
     mutuallyExclusive?: boolean;
+    /** If true, the group header shows a (de)select-all checkbox toggling all its layers */
+    bulkToggle?: boolean;
 }
 
 /**

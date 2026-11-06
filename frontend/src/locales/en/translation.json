@@ -226,6 +226,7 @@
     },
     "layerSwitcher": {
       "project": "Project",
+      "selectAll": "Select all",
       "toggle": "Map layers"
     },
     "mapDetail": {

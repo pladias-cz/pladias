@@ -1,5 +1,6 @@
 import {Button, Table} from 'react-bootstrap';
 import {useTranslation} from 'react-i18next';
+import {Link} from 'react-router-dom';
 import React, {useEffect, useRef, useState} from 'react';
 import type {RecordPladias} from '@/models';
 import type InstanceConfig from '@/models/InstanceConfig';
@@ -34,7 +35,8 @@ interface PladiasRecordsTableProps {
     /** Notifikace o změně množiny rozbalených řádků v řízeném režimu. */
     onExpandedRecordIdsChange?: (ids: Set<number>) => void;
     /** Kvadrant v buňce: mapDetail (záznamy jednoho čtverce) jen písmeno, výsledky z celé
-     * republiky (vyhledávání, nové komentáře) plný kód, např. 6261b. Default: písmeno. */
+     * republiky (vyhledávání, nové komentáře) plný kód, např. 6261b – ten je zároveň odkazem
+     * na mapDetail daného taxonu a čtverce. Default: písmeno. */
     showFullQuadrantCode?: boolean;
     /** Aktivní řazení vyhledávání (sort klíč backendu); hlavičky řadí jen s onHeaderSort. */
     sort?: { sortBy: string | null; descending: boolean };
@@ -265,6 +267,11 @@ export function PladiasRecordsTable({
                 {records.map((record) => {
                     const isHighlighted = highlightedRecordId === record.id;
                     const isExpanded = effectiveExpandedIds.has(record.id);
+                    // plný kód kvadrantu (vyhledávání, nové komentáře) nese odkaz na mapDetail daného
+                    // taxonu a čtverce – bez taxonu nebo kvadrantu zůstane prostý text
+                    const mapDetailUrl = showFullQuadrantCode && record.taxonId != null && record.computedQuadrantCode
+                        ? `/atlas/mapDetail/${record.taxonId}/${record.computedSquareCode ?? record.computedQuadrantCode.slice(0, -1)}`
+                        : null;
                     return (
                         <>
                             <tr
@@ -278,7 +285,8 @@ export function PladiasRecordsTable({
                             >
                                 {/* Kvadrant (a-d) dopočítaný z GPS prostorovým dotazem. Tooltip vždy nese celý kód
                                     (např. 6152a); v buňce jen písmeno (mapDetail – záznamy jednoho čtverce) nebo
-                                    plný kód (vyhledávání, nové komentáře – záznamy z celé republiky). */}
+                                    plný kód (vyhledávání, nové komentáře – záznamy z celé republiky) – plný kód
+                                    je odkazem na mapDetail daného taxonu a čtverce (mapDetailUrl). */}
                                 {/* Taxon má vlastní sloupec (vyhledávání, nové komentáře); mapDetail ho nezobrazuje. */}
                                 {showTaxonName && (
                                     <td className="align-text-top">
@@ -289,7 +297,9 @@ export function PladiasRecordsTable({
                                 )}
                                 <td className="align-text-top" title={record.computedQuadrantCode || ''}>
                                     {record.computedQuadrantCode
-                                        ? (showFullQuadrantCode ? record.computedQuadrantCode : record.computedQuadrantCode.slice(-1))
+                                        ? (mapDetailUrl
+                                            ? <Link to={mapDetailUrl}>{record.computedQuadrantCode}</Link>
+                                            : (showFullQuadrantCode ? record.computedQuadrantCode : record.computedQuadrantCode.slice(-1)))
                                         : '-'}
                                 </td>
                                 {isVascular && (

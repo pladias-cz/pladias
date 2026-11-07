@@ -14,7 +14,8 @@
  * - dynamické vrstvy (project_*) mimo statický registr
  *
  * Skupina s alespoň jednou zapnutou vrstvou je zvýrazněná barvou (obdoba
- * ExportTraitList); jako celek se zaškrtnout nedá.
+ * ExportTraitList). Skupiny s příznakem bulkToggle (Projects) mají v hlavičce
+ * navíc checkbox (de)select all.
  */
 
 import {useState, useCallback, useMemo, type FocusEvent} from 'react';
@@ -34,6 +35,7 @@ interface LayerGroupItem {
     children: LayerDefinition[];
     mutuallyExclusive?: boolean;
     defaultExpanded?: boolean;
+    bulkToggle?: boolean;
 }
 
 export function LayerSwitcher({mapName, layerIds, defaultVisibility}: LayerSwitcherProps) {
@@ -142,6 +144,7 @@ export function LayerSwitcher({mapName, layerIds, defaultVisibility}: LayerSwitc
                     children,
                     mutuallyExclusive: group?.mutuallyExclusive ?? false,
                     defaultExpanded: group?.defaultExpanded ?? false,
+                    bulkToggle: group?.bulkToggle ?? false,
                 };
             })
             .filter(group => group.children.length > 0); // Only show groups with layers
@@ -154,6 +157,14 @@ export function LayerSwitcher({mapName, layerIds, defaultVisibility}: LayerSwitc
     const handleLayerToggle = useCallback((layerId: string) => {
         layerManager.toggleLayer(layerId);
         // Auto-save immediately after toggle
+        layerManager.saveState();
+    }, [layerManager]);
+
+    // Hromadné (de)select all pro skupinu s bulkToggle: nic/část zapnuto → vybrat
+    // vše, vše zapnuto → zrušit vše (checkbox v hlavičce skupiny).
+    const handleGroupToggleAll = useCallback((group: LayerGroupItem) => {
+        const allVisible = group.children.every(layer => layerManager.isLayerVisible(layer.id));
+        group.children.forEach(layer => layerManager.setLayerVisible(layer.id, !allVisible));
         layerManager.saveState();
     }, [layerManager]);
 
@@ -190,21 +201,39 @@ export function LayerSwitcher({mapName, layerIds, defaultVisibility}: LayerSwitc
         if (group.children.length === 0) return null;
 
         // Skupina s alespoň jednou zapnutou vrstvou je zvýrazněná barvou
-        // (obdoba ExportTraitList); jako celek se zaškrtnout nedá.
+        // (obdoba ExportTraitList).
         const hasActiveLayer = group.children.some(layer => layerManager.isLayerVisible(layer.id));
+        // Checkbox (de)select all v hlavičce – jen pro skupiny s bulkToggle
+        // (Projects); zaškrtnut = vše viditelné, indeterminate = část viditelná.
+        const allVisible = group.children.every(layer => layerManager.isLayerVisible(layer.id));
 
         return (
             <div key={group.id} className="layer-switcher__group">
-                <button
-                    type="button"
-                    className={`layer-switcher__group-header${hasActiveLayer ? ' layer-switcher__group-header--selected' : ''}`}
-                    onClick={() => toggleGroup(group.id)}
-                    aria-expanded={isOpen}
-                    title={group.description ?? group.title}
-                >
-                    <i className="bi bi-chevron-right layer-switcher__chevron" aria-hidden="true"></i>
-                    <span className="layer-switcher__group-title">{group.title}</span>
-                </button>
+                <div className="layer-switcher__group-header-row">
+                    <button
+                        type="button"
+                        className={`layer-switcher__group-header${hasActiveLayer ? ' layer-switcher__group-header--selected' : ''}`}
+                        onClick={() => toggleGroup(group.id)}
+                        aria-expanded={isOpen}
+                        title={group.description ?? group.title}
+                    >
+                        <i className="bi bi-chevron-right layer-switcher__chevron" aria-hidden="true"></i>
+                        <span className="layer-switcher__group-title">{group.title}</span>
+                    </button>
+                    {group.bulkToggle && (
+                        <input
+                            type="checkbox"
+                            className="form-check-input layer-switcher__bulk-toggle"
+                            checked={allVisible}
+                            ref={(el) => {
+                                if (el) el.indeterminate = hasActiveLayer && !allVisible;
+                            }}
+                            onChange={() => handleGroupToggleAll(group)}
+                            aria-label={t('atlas.layerSwitcher.selectAll')}
+                            title={t('atlas.layerSwitcher.selectAll')}
+                        />
+                    )}
+                </div>
                 {isOpen && (
                     <div className="layer-switcher__layers">
                         {group.children.map(layer =>

@@ -144,4 +144,64 @@ describe('LayerSwitcher', () => {
         );
         expect(screen.queryByRole('checkbox', {name: 'Projekt 22'})).toBeNull();
     });
+
+    it('checkbox (de)select all v hlavičce Projects hromadně zapne a vypne projektové vrstvy', async () => {
+        const user = userEvent.setup();
+        mapSeq += 1;
+        render(
+            <LayerSwitcher
+                mapName={`test-map-${mapSeq}`}
+                layerIds={['osm', 'project_22', 'project_33']}
+            />,
+        );
+
+        await user.click(screen.getByRole('button', {name: 'Vrstvy mapy'}));
+        const projectsHeader = screen.getByRole('button', {name: 'Projects'});
+        fireEvent.click(projectsHeader);
+
+        const p22 = screen.getByRole('checkbox', {name: 'Projekt 22'});
+        const p33 = screen.getByRole('checkbox', {name: 'Projekt 33'});
+        const selectAll = screen.getByRole('checkbox', {name: 'Vybrat vše'});
+        expect(selectAll).not.toBeChecked();
+        expect(selectAll).not.toBePartiallyChecked();
+
+        // klik = vybrat vše: obě vrstvy zapnuté, hlavička zvýrazněná, stav uložený
+        fireEvent.click(selectAll);
+        expect(p22).toBeChecked();
+        expect(p33).toBeChecked();
+        expect(selectAll).toBeChecked();
+        expect(projectsHeader).toHaveClass('layer-switcher__group-header--selected');
+        await waitFor(() => expect(saveUserSetting).toHaveBeenCalled());
+
+        // druhý klik = zrušit vše
+        fireEvent.click(selectAll);
+        expect(p22).not.toBeChecked();
+        expect(p33).not.toBeChecked();
+        expect(selectAll).not.toBeChecked();
+    });
+
+    it('částečně zapnuté projekty zobrazí select-all checkbox jako indeterminate', async () => {
+        const user = userEvent.setup();
+        mapSeq += 1;
+        render(
+            <LayerSwitcher
+                mapName={`test-map-${mapSeq}`}
+                layerIds={['osm', 'project_22', 'project_33']}
+            />,
+        );
+
+        await user.click(screen.getByRole('button', {name: 'Vrstvy mapy'}));
+        fireEvent.click(screen.getByRole('button', {name: 'Projects'}));
+
+        const selectAll = screen.getByRole('checkbox', {name: 'Vybrat vše'});
+        fireEvent.click(screen.getByRole('checkbox', {name: 'Projekt 22'}));
+
+        expect(selectAll).toBePartiallyChecked();
+        expect(selectAll).not.toBeChecked();
+
+        // klik na indeterminate checkbox vybere vše
+        fireEvent.click(selectAll);
+        expect(screen.getByRole('checkbox', {name: 'Projekt 22'})).toBeChecked();
+        expect(screen.getByRole('checkbox', {name: 'Projekt 33'})).toBeChecked();
+    });
 });

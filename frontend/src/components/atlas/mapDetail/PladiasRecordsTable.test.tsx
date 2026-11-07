@@ -1,4 +1,5 @@
 import {cleanup, fireEvent, render, screen, within} from '@testing-library/react';
+import {MemoryRouter} from 'react-router-dom';
 import {afterEach, describe, expect, it, vi} from 'vitest';
 import type {RecordPladias} from '@/models';
 import type {InstanceConfigData} from '@/models/InstanceConfig';
@@ -56,7 +57,10 @@ function renderTable(
                 ndopProjectIds: [9],
                 ...configOverrides,
             }}>
-                <PladiasRecordsTable records={records} {...props}/>
+                {/* Link v buňce kvadrantu vyžaduje Router kontext */}
+                <MemoryRouter>
+                    <PladiasRecordsTable records={records} {...props}/>
+                </MemoryRouter>
             </InstanceConfigProvider>
         </UserProvider>,
     );
@@ -203,9 +207,9 @@ describe('PladiasRecordsTable – sloupec Kvadrant', () => {
         return row.cells[header.cellIndex];
     }
 
-    it('defaultně (mapDetail) jen písmeno kvadrantu, celý kód nese tooltip', () => {
+    it('defaultně (mapDetail) jen písmeno kvadrantu, celý kód nese tooltip, bez odkazu', () => {
         renderTable(
-            [{...makeRecord(11, 1, 'Autor kvadrantu'), computedQuadrantCode: '6261b'} as unknown as RecordPladias],
+            [{...makeRecord(11, 1, 'Autor kvadrantu'), taxonId: 99, computedQuadrantCode: '6261b'} as unknown as RecordPladias],
         );
 
         const row = rowOf('Obec 11') as HTMLTableRowElement;
@@ -213,11 +217,12 @@ describe('PladiasRecordsTable – sloupec Kvadrant', () => {
         expect(cell).toHaveTextContent('b');
         expect(cell).not.toHaveTextContent('6261b');
         expect(cell).toHaveAttribute('title', '6261b');
+        expect(within(cell).queryByRole('link')).toBeNull();
     });
 
-    it('se showFullQuadrantCode (vyhledávání) se v buňce vypíše plný kód', () => {
+    it('se showFullQuadrantCode (vyhledávání) se plný kód vykreslí jako odkaz na mapDetail', () => {
         renderTable(
-            [{...makeRecord(12, 1, 'Autor plného kódu'), computedQuadrantCode: '6261b'} as unknown as RecordPladias],
+            [{...makeRecord(12, 1, 'Autor plného kódu'), taxonId: 99, computedQuadrantCode: '6261b'} as unknown as RecordPladias],
             {},
             {showFullQuadrantCode: true},
         );
@@ -226,6 +231,21 @@ describe('PladiasRecordsTable – sloupec Kvadrant', () => {
         const cell = quadrantCell(row);
         expect(cell).toHaveTextContent('6261b');
         expect(cell).toHaveAttribute('title', '6261b');
+        const link = within(cell).getByRole('link', {name: '6261b'});
+        expect(link).toHaveAttribute('href', '/atlas/mapDetail/99/6261');
+    });
+
+    it('se showFullQuadrantCode a záznamem bez taxonu zůstane plný kód prostým textem', () => {
+        renderTable(
+            [{...makeRecord(14, 1, 'Autor bez taxonu'), taxonId: null, computedQuadrantCode: '6261b'} as unknown as RecordPladias],
+            {},
+            {showFullQuadrantCode: true},
+        );
+
+        const row = rowOf('Obec 14') as HTMLTableRowElement;
+        const cell = quadrantCell(row);
+        expect(cell).toHaveTextContent('6261b');
+        expect(within(cell).queryByRole('link')).toBeNull();
     });
 
     it('bez kvadrantu se v buňce vypíše pomlčka', () => {

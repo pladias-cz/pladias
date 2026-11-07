@@ -226,6 +226,7 @@
     },
     "layerSwitcher": {
       "project": "Projekt",
+      "selectAll": "Zaznacz wszystkie",
       "toggle": "Warstwy mapy"
     },
     "mapDetail": {

@@ -92,6 +92,6 @@ public class TraitDetailsExportExcelBuilder implements IDetailedExportBuilder {
     }
 
     private XSSFColor createColor(int r, int g, int b) {
-        return new XSSFColor(new java.awt.Color(r, g, b));
+        return new XSSFColor(new byte[]{(byte) r, (byte) g, (byte) b}, null);
     }
 }

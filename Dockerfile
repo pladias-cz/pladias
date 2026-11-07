@@ -10,7 +10,7 @@ COPY frontend/ ./
 RUN npm run build
 
 # sbt dist
-FROM ghcr.io/pladias-cz/sbt:v3 AS app_builder
+FROM ghcr.io/pladias-cz/sbt:v2 AS app_builder
 USER ubuntu
 WORKDIR /home/ubuntu
 
@@ -25,7 +25,7 @@ RUN unzip target/universal/pladiasweb-1.0-SNAPSHOT.zip -d /home/ubuntu/product &
     mv /home/ubuntu/product/pladiasweb-1.0-SNAPSHOT /home/ubuntu/final
 
 # Copy items to final image
-FROM eclipse-temurin:25-jre-noble
+FROM eclipse-temurin:25-jre-noble@sha256:a98128a57de944a72bd31fbc79b898edd5a5864d3652071d5bbd2160ab7d7dce
 USER ubuntu
 WORKDIR /home/ubuntu
 

@@ -6,7 +6,8 @@ import helpers.http.ContentDisposition;
 import helpers.http.UploadedFilename;
 import models.*;
 import org.apache.commons.io.IOUtils;
-import org.apache.pdfbox.util.PDFMergerUtility;
+import org.apache.pdfbox.io.RandomAccessReadBuffer;
+import org.apache.pdfbox.multipdf.PDFMergerUtility;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import play.data.FormFactory;
@@ -24,7 +25,6 @@ import utils.JsonResult;
 import utils.SessionUtils;
 
 import javax.inject.Inject;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -62,11 +62,11 @@ public class PdfMapController extends ControllerBase {
         try {
             PDFMergerUtility merger = new PDFMergerUtility();
             for (PdfMap pdf : docs) {
-                merger.addSource(new ByteArrayInputStream(pdf.getData()));
+                merger.addSource(new RandomAccessReadBuffer(pdf.getData()));
             }
             ByteArrayOutputStream destStream = new ByteArrayOutputStream();
             merger.setDestinationStream(destStream);
-            merger.mergeDocuments();
+            merger.mergeDocuments(org.apache.pdfbox.io.IOUtils.createMemoryOnlyStreamCache());
             return destStream.toByteArray();
         } catch (Exception e) {
             logger.error("Unable to merge pdf docs", e);

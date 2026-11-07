@@ -10,12 +10,12 @@ import org.apache.poi.xssf.usermodel.*;
 public class XSSFWorkbookWrapper extends WorkbookWrapper {
     private final XSSFWorkbook _workbook;
 
-    private final XSSFColor ErrorColor = new XSSFColor(new java.awt.Color(255, 102, 0));
-    private final XSSFColor InfoColor = new XSSFColor(new java.awt.Color(50, 120, 235));
-    private final XSSFColor WarningColor = new XSSFColor(new java.awt.Color(153, 204, 0));
-    private final XSSFColor BlueColor = new XSSFColor(new java.awt.Color(0, 0, 255));
+    private final XSSFColor ErrorColor = new XSSFColor(new byte[]{(byte) 255, (byte) 102, (byte) 0}, null);
+    private final XSSFColor InfoColor = new XSSFColor(new byte[]{(byte) 50, (byte) 120, (byte) 235}, null);
+    private final XSSFColor WarningColor = new XSSFColor(new byte[]{(byte) 153, (byte) 204, (byte) 0}, null);
+    private final XSSFColor BlueColor = new XSSFColor(new byte[]{(byte) 0, (byte) 0, (byte) 255}, null);
 
-    private final XSSFColor DefaultColor = new XSSFColor(new java.awt.Color(255, 255, 255));
+    private final XSSFColor DefaultColor = new XSSFColor(new byte[]{(byte) 255, (byte) 255, (byte) 255}, null);
 
     public XSSFWorkbookWrapper(XSSFWorkbook workbook, String filename) {
         super(filename);

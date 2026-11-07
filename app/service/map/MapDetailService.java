@@ -373,7 +373,6 @@ public class MapDetailService {
 
         List<Record> recordList = Record.find()
             .query()
-            .fetch("quadrant")
             .fetch("validationStatus")
             .fetch("originalityStatus")
             .fetch("license")
@@ -382,7 +381,6 @@ public class MapDetailService {
             .fetch("project.institution")
             .fetch("batch.author")
             .fetch("batch.committer")
-            .fetch("license")
             .fetch("taxon")
             .fetch("recordAuthors.author")
             .fetch("comments.author")

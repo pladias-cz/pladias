@@ -95,6 +95,7 @@ public class Record extends Model {
     @Column(name = "locked")
     private boolean locked;
 
+    @Transient
     private Optional<QuadrantNew> quadrant;
 
     @ManyToMany(cascade = CascadeType.PERSIST)

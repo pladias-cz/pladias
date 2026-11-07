@@ -8,7 +8,7 @@ import io.ebean.Finder;
 import io.ebean.Model;
 import io.ebean.SqlRow;
 import jakarta.persistence.*;
-import org.postgis.Polygon;
+import net.postgis.jdbc.geometry.Polygon;
 import platform.Srid;
 
 import java.sql.SQLException;
@@ -95,7 +95,7 @@ public class MapSquareNew extends Model {
             String polygonDefinition = row.getString("polygon");
 
             Polygon poly = new Polygon(polygonDefinition);
-            org.postgis.LinearRing ring = poly.getRing(0);
+            net.postgis.jdbc.geometry.LinearRing ring = poly.getRing(0);
             return new LinearRing(ring);
         }
     }

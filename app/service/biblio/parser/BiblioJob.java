@@ -12,7 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import service.config.IConfigService;
 
-import javax.mail.MessagingException;
+import jakarta.mail.MessagingException;
 import java.util.List;
 
 public class BiblioJob extends Thread {

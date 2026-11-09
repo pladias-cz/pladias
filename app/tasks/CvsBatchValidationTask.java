@@ -16,7 +16,7 @@ import service.csv.CsvValidationService;
 import service.excel.IDocumentLoadServiceFactory;
 import service.excel.IExcelTableValidationServiceFactory;
 
-import javax.mail.MessagingException;
+import jakarta.mail.MessagingException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;

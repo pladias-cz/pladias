@@ -15,7 +15,7 @@ import service.csv.CsvDocument;
 import service.csv.CsvImportService;
 import service.excel.IDocumentLoadServiceFactory;
 
-import javax.mail.MessagingException;
+import jakarta.mail.MessagingException;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;

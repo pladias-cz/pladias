@@ -12,7 +12,7 @@ import repositories.ITraitRepository;
 import service.trait.ITraitService;
 import utils.TimeUtils;
 
-import javax.mail.MessagingException;
+import jakarta.mail.MessagingException;
 import java.util.concurrent.TimeUnit;
 
 public class TraitRebuildTask implements ITask {

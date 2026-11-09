@@ -10,7 +10,7 @@ import play.i18n.Messages;
 import service.config.IConfigService;
 import service.taxon.ITaxonService;
 
-import javax.mail.MessagingException;
+import jakarta.mail.MessagingException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;

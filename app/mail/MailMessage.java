@@ -1,6 +1,6 @@
 package mail;
 
-import javax.mail.internet.MimeMultipart;
+import jakarta.mail.internet.MimeMultipart;
 import java.util.ArrayList;
 import java.util.List;
 

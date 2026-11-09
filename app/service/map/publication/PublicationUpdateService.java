@@ -21,7 +21,7 @@ import utils.TaxonUtils;
 import utils.UserUtils;
 import utils.records.RecordQuadrantDistribution;
 
-import javax.mail.MessagingException;
+import jakarta.mail.MessagingException;
 import java.util.List;
 import java.util.Set;
 

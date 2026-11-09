@@ -13,7 +13,7 @@ import service.config.IConfigService;
 import service.password.IHashService;
 
 import javax.inject.Inject;
-import javax.mail.MessagingException;
+import jakarta.mail.MessagingException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;

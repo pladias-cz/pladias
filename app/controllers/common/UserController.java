@@ -29,7 +29,7 @@ import utils.SessionUtils;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.inject.Inject;
-import javax.mail.MessagingException;
+import jakarta.mail.MessagingException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;

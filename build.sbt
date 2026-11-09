@@ -8,8 +8,7 @@ import scala.sys.process.Process
 libraryDependencies ++= Seq(
   jdbc,
   javaWs,
-  "javax.activation" % "activation" % "1.1.1",
-  "com.sun.mail" % "javax.mail" % "1.6.2",
+  "org.eclipse.angus" % "angus-mail" % "2.0.5",
   "commons-codec" % "commons-codec" % "1.23.0",
   "commons-io" % "commons-io" % "2.22.0",
   "org.apache.commons" % "commons-text" % "1.15.0",

@@ -5,9 +5,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import service.config.IConfigService;
 
-import javax.mail.*;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
+import jakarta.mail.*;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeMessage;
 import java.util.Properties;
 
 public class MailService {
@@ -46,15 +46,13 @@ public class MailService {
     private Session createSession() {
         Properties props = new Properties();
 
-        String value = _configService.getString(MailSmtpHostKey);
-        props.setProperty(MailSmtpHostKey, value);
+        props.setProperty(MailSmtpHostKey, _configService.getString(MailSmtpHostKey));
         props.setProperty(MailSmtpSslTrustKey, "*");
 
-        value = _configService.getString(MailSmtpPortKey);
-        props.setProperty(MailSmtpPortKey, value);
-        props.setProperty(MailSmtpSocketFactoryPort, value);
+        String port = _configService.getString(MailSmtpPortKey);
+        props.setProperty(MailSmtpPortKey, port);
 
-        value = _configService.getString(MailSmtpAuth);
+        String value = _configService.getString(MailSmtpAuth);
         props.setProperty(MailSmtpAuth, value);
 
         value = _configService.getString(MailSmtpStartTlsEnableKey);
@@ -66,12 +64,17 @@ public class MailService {
         value = _configService.getString(MailSmtpSslEnableKey);
         props.setProperty(MailSmtpSslEnableKey, value);
 
-        props.put(MailSmtpSocketFactoryClassKey, "javax.net.ssl.SSLSocketFactory");
+        // Force an SSL socket only for implicit-SSL SMTP (e.g. port 465); plain SMTP
+        // such as the local Mailpit used in development must use a regular socket.
+        if (Boolean.parseBoolean(value)) {
+            props.setProperty(MailSmtpSocketFactoryPort, port);
+            props.put(MailSmtpSocketFactoryClassKey, "javax.net.ssl.SSLSocketFactory");
+        }
 
         //props.put("mail.smtp.reportsuccess","true");
         //props.put("mail.debug", "true");
 
-        return Session.getInstance(props, new javax.mail.Authenticator() {
+        return Session.getInstance(props, new jakarta.mail.Authenticator() {
             @Override
             protected PasswordAuthentication getPasswordAuthentication() {
                 return new PasswordAuthentication(username, password);

@@ -34,7 +34,7 @@ import utils.JsonResult;
 import utils.SessionUtils;
 
 import javax.inject.Inject;
-import javax.mail.MessagingException;
+import jakarta.mail.MessagingException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Timestamp;
@@ -351,11 +351,11 @@ public class MapAdminImportController extends ControllerBase {
             MailMessageBuilder builder = new MailMessageBuilder();
             builder.setSubject("Mazani davky PLADIAS");
             builder.setContents(generateMessageContents(messages, batch, importedExcel));
-            MailAttachment origXlsAttachment = new MailAttachment(ExcelUtils.serializeWorkbook(digestWorkBook), "application/xls", String.format("Batch%d_modifications.xls", batchId));
+            MailAttachment origXlsAttachment = new MailAttachment(ExcelUtils.serializeWorkbook(digestWorkBook), String.format("Batch%d_modifications.xls", batchId));
             builder.addAttachment(origXlsAttachment);
 
             InputStream is = importedExcel.getProcessedFileInputStream();
-            MailAttachment processedXlsAttachment = new MailAttachment(IOUtils.toByteArray(is), "application/xls", importedExcel.getVersionDecoratedFilename());
+            MailAttachment processedXlsAttachment = new MailAttachment(IOUtils.toByteArray(is), importedExcel.getVersionDecoratedFilename());
 
             builder.addAttachment(processedXlsAttachment);
 

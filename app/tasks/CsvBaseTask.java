@@ -9,7 +9,7 @@ import models.User;
 import models.dto.UploadedFile;
 import service.csv.CsvDocument;
 
-import javax.mail.MessagingException;
+import jakarta.mail.MessagingException;
 import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.charset.MalformedInputException;

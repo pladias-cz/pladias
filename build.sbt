@@ -5,8 +5,6 @@ version := "1.0-SNAPSHOT"
 import sbt.io.Path
 import scala.sys.process.Process
 
-resolvers += Resolver.url("Typesafe Ivy releases", url("https://repo.typesafe.com/typesafe/ivy-releases"))(Resolver.ivyStylePatterns)
-
 libraryDependencies ++= Seq(
   jdbc,
   javaWs,
@@ -23,38 +21,37 @@ libraryDependencies ++= Seq(
   "org.apache.poi" % "poi-ooxml" % "5.5.1",
   "net.postgis" % "postgis-jdbc" % "2025.1.1",
   "org.postgresql" % "postgresql" % "42.7.14",
-  "com.approvaltests" % "approvaltests" % "22.2.1",
+  "com.approvaltests" % "approvaltests" % "22.2.1" % Test,
   guice,
   javaForms,
   "com.github.karelcemus" %% "play-i18n" % "3.0.0",
-  "jakarta.persistence" % "jakarta.persistence-api" % "3.1.0",
-  "io.ebean" % "ebean" % "17.1.0",
-  "io.ebean" % "ebean-migration" % "14.3.0",
-  "io.ebean" % "ebean-ddl-generator" % "17.1.0",
   "de.mkammerer" % "argon2-jvm" % "2.12"
-).map(_.withSources())
+)
+
+// Align Jackson versions: Play/Pekko are built against 2.14.x, Ebean 19.6 against 2.22.x.
+// jackson-module-scala must have the same minor version as jackson-databind, otherwise the app fails at startup.
+// Since 2.20, jackson-annotations uses a two-part version only (e.g. "2.22").
+val jacksonVersion = "2.22.4"
+val jacksonAnnotationsVersion = "2.22"
 
 dependencyOverrides ++= Seq(
-  "com.fasterxml.jackson.core" % "jackson-core" % "2.15.4",
-  "com.fasterxml.jackson.core" % "jackson-annotations" % "2.15.4",
-  "com.fasterxml.jackson.core" % "jackson-databind" % "2.15.4",
-  
-  "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.15.4"
+  "com.fasterxml.jackson.core" % "jackson-core" % jacksonVersion,
+  "com.fasterxml.jackson.core" % "jackson-annotations" % jacksonAnnotationsVersion,
+  "com.fasterxml.jackson.core" % "jackson-databind" % jacksonVersion,
+  "com.fasterxml.jackson.module" %% "jackson-module-scala" % jacksonVersion,
+  "com.fasterxml.jackson.module" % "jackson-module-parameter-names" % jacksonVersion,
+  "com.fasterxml.jackson.datatype" % "jackson-datatype-jdk8" % jacksonVersion,
+  "com.fasterxml.jackson.datatype" % "jackson-datatype-jsr310" % jacksonVersion,
+  "com.fasterxml.jackson.dataformat" % "jackson-dataformat-cbor" % jacksonVersion
 )
 scalaVersion := "3.3.9"
-
-// Automatically resolve version conflicts by preferring the newest revision
-ThisBuild / conflictManager := ConflictManager.latestRevision
-
-// Treat evictions as warnings instead of hard errors (you'll still see them)
-ThisBuild / evictionErrorLevel := Level.Warn
 
 lazy val root = (project in file("."))
   .enablePlugins(PlayJava, PlayEbean)
 
 routesGenerator := InjectedRoutesGenerator
 
-//mělo by, ale bohužel nevynutí refresh buildu
+// Should work, but unfortunately does not force a build refresh
 watchSources ++= {
   val manifest = baseDirectory.value / "public" / "react" / ".vite" / "manifest.json"
   if (manifest.exists) Seq(manifest) else Seq.empty[File]

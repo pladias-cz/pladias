@@ -8,15 +8,19 @@ import {useTranslation} from 'react-i18next';
 import type {DataTableColumnDef} from '../types';
 import {canFilter, getFilterPlaceholder} from '../utils';
 import {DateRangeFilter} from './DateRangeFilter';
+import {DataTableFilterCell} from './DataTableFilterCell';
 
 interface DataTableFilterRowProps<T> {
     columns: DataTableColumnDef<T>[];
     filters: Array<{ id: string; value: string }>;
     onFilterChange: (columnId: string, value: string) => void;
+    /** Fixní rozvržení tabulky – při auto se pevná width/maxWidth nepoužijí
+     * (stejná dohoda jako DataTableHeaderCell.fixedLayout). */
+    fixedLayout?: boolean;
 }
 
 export function DataTableFilterRow<T>(props: DataTableFilterRowProps<T>) {
-    const {columns, filters, onFilterChange} = props;
+    const {columns, filters, onFilterChange, fixedLayout = true} = props;
     const {t} = useTranslation();
 
     const getFilterValue = (columnId: string): string => {
@@ -50,9 +54,9 @@ export function DataTableFilterRow<T>(props: DataTableFilterRowProps<T>) {
                 <th
                     key={`filter-${String(column.id)}`}
                     style={{
-                        width: column.width,
+                        width: fixedLayout ? column.width : undefined,
                         minWidth: column.minWidth,
-                        maxWidth: column.width,
+                        maxWidth: fixedLayout ? column.width : undefined,
                     }}
                 >
                     {canFilter(column) ? (
@@ -79,6 +83,19 @@ export function DataTableFilterRow<T>(props: DataTableFilterRowProps<T>) {
                                     <option key={option.value} value={option.value}>{option.label}</option>
                                 ))}
                             </Form.Select>
+                        ) : column.type === 'action' && column.filterControl === 'options' ? (
+                            // relační sloupce (typ 'action' s enableFiltering):
+                            // wildcard input s nápovědou přednačtených hodnot –
+                            // projekty/taxony; filtr posílá volný text, placeholder
+                            // má vlastní text filtru, ne výchozí „Vše“
+                            <DataTableFilterCell
+                                control="typeahead"
+                                value={getFilterValue(String(column.id))}
+                                onChange={(value) => onFilterChange(String(column.id), value)}
+                                placeholder={column.filterPlaceholder}
+                                title={column.filterPlaceholder}
+                                options={column.filterOptions ?? []}
+                            />
                         ) : column.type === 'number' ? (
                             <Form.Control
                                 size="sm"

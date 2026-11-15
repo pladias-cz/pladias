@@ -246,6 +246,51 @@ describe('DataTable', () => {
         });
     });
 
+    it('relační akční sloupec s filterControl options filtruje wildcardem a nepůjde o buňku', async () => {
+        const fetcher = vi.fn(async () => ({data: rows, totalCount: 2}));
+        const columns: DataTableColumnDef<TestRow>[] = [
+            ...makeColumns(vi.fn(async () => undefined)),
+            {
+                type: 'action',
+                id: 'projects',
+                header: 'Projekty',
+                enableFiltering: true,
+                filterControl: 'options',
+                filterOptions: [{value: 'FLDOKR', label: 'FLDOKR'}],
+                filterPlaceholder: 'Filtrovat projekt…',
+                cellRenderer: (row: TestRow) => <button type="button">Přidat {row.id}</button>,
+            },
+        ];
+        render(withQueryClient(<DataTable endpoint="/test" columns={columns} fetchData={fetcher}/>));
+
+        expect(await screen.findByText('Vřesovec pleterný')).toBeInTheDocument();
+        // buňka akčního sloupce zůstává interaktivní
+        expect(screen.getByRole('button', {name: 'Přidat 1'})).toBeInTheDocument();
+
+        // typeahead filtr relačního sloupce – Enter vyšle wildcard hodnotu
+        const projectFilter = screen.getByRole('combobox', {name: 'Filtrovat projekt…'}) as HTMLInputElement;
+        fireEvent.change(projectFilter, {target: {value: 'FLDO'}});
+        fireEvent.keyDown(projectFilter, {key: 'Enter'});
+        await waitFor(() => {
+            expect(fetcher).toHaveBeenLastCalledWith(expect.objectContaining({
+                columnFilters: expect.arrayContaining([{id: 'projects', value: 'FLDO'}]),
+            }));
+        });
+    });
+
+    it('akční sloupec bez enableFiltering zůstává nefiltrovatelný', async () => {
+        const fetcher = vi.fn(async () => ({data: rows, totalCount: 2}));
+        render(withQueryClient(<DataTable endpoint="/test" columns={makeColumns(vi.fn(async () => undefined))}
+                                          fetchData={fetcher}/>));
+
+        expect(await screen.findByText('Vřesovec pleterný')).toBeInTheDocument();
+        // sloupec Akce (bez enableFiltering) nemá ve filter row žádný ovládací prvek
+        const actionHeader = screen.getByText('Akce').closest('th') as HTMLTableCellElement;
+        expect(actionHeader).toBeInTheDocument();
+        const filterRow = actionHeader.closest('tr')?.parentElement?.querySelectorAll('tr')[1];
+        expect(filterRow?.children[actionHeader.cellIndex].querySelector('input,select')).toBeNull();
+    });
+
     it('řazení přepíná vzestupně → sestupně → zrušeno a vždy refetchne', async () => {
         const fetcher = vi.fn(async () => ({data: rows, totalCount: 2}));
         render(withQueryClient(<DataTable endpoint="/test" columns={makeColumns(vi.fn(async () => undefined))}

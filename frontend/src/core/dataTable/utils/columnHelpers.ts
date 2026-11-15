@@ -176,6 +176,15 @@ export function createActionColumn<T extends object>(
     options?: {
         width?: string | number;
         minWidth?: string | number;
+        /**
+         * Filter of the relation column (assigned projects/taxa): the cell stays an
+         * interactive renderer, the filter row adds a wildcard input – optionally
+         * with `filterOptions` suggestions (filterControl: 'options').
+         */
+        enableFiltering?: boolean;
+        filterControl?: 'text' | 'options';
+        filterOptions?: Array<{ value: string; label: string }>;
+        filterPlaceholder?: string;
     }
 ): ActionColumnDef<T> {
     return {
@@ -185,6 +194,10 @@ export function createActionColumn<T extends object>(
         cellRenderer,
         width: options?.width,
         minWidth: options?.minWidth,
+        enableFiltering: options?.enableFiltering,
+        filterControl: options?.filterControl,
+        filterOptions: options?.filterOptions,
+        filterPlaceholder: options?.filterPlaceholder,
     };
 }
 
@@ -246,7 +259,9 @@ export function getFilterPlaceholder<T>(column: DataTableColumnDef<T>, t: TFunct
  * Check if a column can be filtered
  */
 export function canFilter<T>(column: DataTableColumnDef<T>): boolean {
-    if (column.type === 'action') return false;
+    // akci sloupce se filtrem výslovně (relační projekty/taxony v MapUsers);
+    // bez `enableFiltering` zůstávají nefiltrovatelné
+    if (column.type === 'action') return column.enableFiltering ?? false;
     return column.enableFiltering ?? true;
 }
 

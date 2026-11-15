@@ -50,6 +50,31 @@ export async function getPublicationStatuses(): Promise<TaxonStatusOption[]> {
     );
 }
 
+/** Nápovědy relačních filtrů MapUsers – labely reálně přidělených vztahů. */
+export interface UserRightOptions {
+    /** Názy projektů (zkratka, pokud existuje) přidělených někomu z uživatelů. */
+    projects: string[];
+    /** Latinské názvy taxonů pod dohledem nějakého uživatele. */
+    taxa: string[];
+}
+
+interface UserRightOptionsResponse extends ApiResult {
+    data?: Partial<UserRightOptions>;
+}
+
+/**
+ * GET /api/react/atlasadmin/userrights/options – distinct labely vztahůactually
+ * přiřazených nezsmazaným uživatelům (projekty, dozorované taxony). Zdroj nápověd
+ * relačních filtrů v MapUsers; filtr sám hledá wildcardem do týchž názvů.
+ */
+export async function getUserRightOptions(signal?: AbortSignal): Promise<UserRightOptions> {
+    const payload = requireEnvelope(
+        await apiGet<UserRightOptionsResponse>('/api/react/atlasadmin/userrights/options', {signal}),
+        'Načtení návrhů filtrů selhalo.',
+    ) as UserRightOptionsResponse;
+    return {projects: payload.data?.projects ?? [], taxa: payload.data?.taxa ?? []};
+}
+
 /** POST /api/react/atlasadmin/users/{userId}/projects – přiřazení projektu uživateli. */
 export async function assignProjectToUser(userId: number, projectId: number): Promise<void> {
     requireEnvelope(

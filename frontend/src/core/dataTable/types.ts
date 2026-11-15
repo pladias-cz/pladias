@@ -144,6 +144,19 @@ export interface ActionColumnDef<T> extends Omit<BaseColumnDef<T>, 'enableSortin
     type: 'action';
     /** Cell renderer for action content */
     cellRenderer: (row: T) => React.ReactNode;
+    /**
+     * Opt-in filtering of an otherwise non-filterable action column (relation
+     * columns – assigned projects/taxa in MapUsers). The cell renderer stays
+     * interactive; the filter row adds a wildcard input, with `filterOptions`
+     * suggestions when `filterControl` is 'options' (free text stays valid).
+     */
+    enableFiltering?: boolean;
+    /** Filter-row control (default 'text'); 'options' = typeahead over `filterOptions`. */
+    filterControl?: 'text' | 'options';
+    /** Suggestions for `filterControl: 'options'` (rendered by the filter row). */
+    filterOptions?: Array<{ value: string; label: string }>;
+    /** Placeholder of the filter control (instead of the generic „all“ text). */
+    filterPlaceholder?: string;
 }
 
 /**
@@ -280,6 +293,14 @@ export interface DataTableConfig<T> {
             value: string
         }>) => Array<{ id: string; value: string }>)) => void;
     }) => React.ReactNode;
+    /**
+     * Rozvržení sloupců tabulky (CSS `table-layout`):
+     *  - 'stable' (výchozí) – fixní rozvržení, sloupce drží zadanou šířku
+     *    (`width`/`minWidth`) a obsah je nevětší,
+     *  - 'auto' – průběžné rozvržení: sloupce se přizpůsobí obsahu viditelných
+     *    buněk (hodí se pro tabulky s širokými akčními sloupci, např. MapUsers).
+     */
+    tableLayout?: 'stable' | 'auto';
 }
 
 /**

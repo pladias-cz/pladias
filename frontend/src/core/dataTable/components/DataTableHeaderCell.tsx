@@ -12,12 +12,19 @@ interface DataTableHeaderCellProps {
     onSort: (columnId: string) => void;
     width?: string | number;
     minWidth?: string | number;
+    /**
+     * Fixní rozvržení tabulky (`tableLayout: 'stable'`). Při `false` (auto) se
+     * `width`/upřesnění `maxWidth` nepoužijí – pevná šířka by popřela přizpůsobení
+     * obsahu viditelných buněk. `minWidth` zůstává i při auto jako ochrana proti
+     * kolapsu sloupce.
+     */
+    fixedLayout?: boolean;
     /** Tooltip pro neřaditelnou hlavičku (řaditelná si ho odvodí ze stavu řazení). */
     title?: string;
 }
 
 export function DataTableHeaderCell(props: DataTableHeaderCellProps) {
-    const {label, columnId, sortIndicator, canSort, onSort, width, minWidth, title} = props;
+    const {label, columnId, sortIndicator, canSort, onSort, width, minWidth, fixedLayout = true, title} = props;
     const {t} = useTranslation();
 
     const handleSortClick = () => {
@@ -53,9 +60,9 @@ export function DataTableHeaderCell(props: DataTableHeaderCellProps) {
         <th
             onClick={handleSortClick}
             style={{
-                width,
+                width: fixedLayout ? width : undefined,
                 minWidth,
-                maxWidth: width,
+                maxWidth: fixedLayout ? width : undefined,
                 cursor: canSort ? 'pointer' : 'default',
             }}
             className={canSort ? 'cursor-pointer select-none' : ''}

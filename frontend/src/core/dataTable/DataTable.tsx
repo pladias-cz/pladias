@@ -44,6 +44,9 @@ export function DataTable<T extends object>(config: DataTableConfig<T>) {
         onDataUpdater,
         renderCustomFilters,
         externalState: _externalState,
+        /** 'stable' = fixní rozvržení (výchozí, sloupce drží šířku); 'auto' =
+         * průběžné rozvržení CSS – sloupce se přizpůsobí obsahu viditelných buněk */
+        tableLayout = 'stable',
     } = config;
 
     // Memoize default empty object to prevent infinite re-renders
@@ -319,7 +322,14 @@ export function DataTable<T extends object>(config: DataTableConfig<T>) {
                     </div>
                 </div>
 
-                <Table striped bordered hover responsive size="sm" className="data-table--stable">
+                <Table
+                    striped
+                    bordered
+                    hover
+                    responsive
+                    size="sm"
+                    className={tableLayout === 'stable' ? 'data-table--stable' : undefined}
+                >
                     <thead>
                     <tr>
                         {columns.map((column) => (
@@ -332,6 +342,7 @@ export function DataTable<T extends object>(config: DataTableConfig<T>) {
                                 onSort={handleSort}
                                 width={column.width}
                                 minWidth={column.minWidth}
+                                fixedLayout={tableLayout === 'stable'}
                             />
                         ))}
                     </tr>
@@ -343,6 +354,7 @@ export function DataTable<T extends object>(config: DataTableConfig<T>) {
                             columns={columns}
                             filters={columnFilters}
                             onFilterChange={handleFilterChange}
+                            fixedLayout={tableLayout === 'stable'}
                         />
                     )}
                     </thead>

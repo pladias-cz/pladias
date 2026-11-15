@@ -12,6 +12,7 @@ import {
     useMapUsersData,
     useMapUsersProjects,
     useMapUsersTaxa,
+    useMapUserRightsSuggestions,
 } from './hooks';
 import {
     MapUsersProjectsCell,
@@ -85,6 +86,10 @@ export default function MapUsers() {
             });
     }, [showFlash, t, bumpRightsRefresh]);
 
+    // Nápovědy relačních filtrů: názvy projektů a latin names reálně přidělené
+    // uživatelům (backend filtruje wildcardem do týchž názvů)
+    const {projectOptions, taxonOptions} = useMapUserRightsSuggestions();
+
     // Column definitions
     const columns = useMemo<DataTableColumnDef<MapUserTableRow>[]>(() => [
         createTextColumn<MapUserTableRow>('name', t('user.usersAdministration.firstName'), {
@@ -106,7 +111,13 @@ export default function MapUsers() {
                 onRemoveProject={handleRemoveProject}
             />
         ), {
-            minWidth: '250px',
+            minWidth: '160px',
+            // buňka zůstává interaktivní; filtr řádku přidá wildcard do názvu
+            // (příp. zkratky) přiděleného projektu – server-side EXISTS dotaz
+            enableFiltering: true,
+            filterControl: 'options',
+            filterOptions: projectOptions,
+            filterPlaceholder: t('user.usersAdministration.projectFilterPlaceholder'),
         }),
         createActionColumn<MapUserTableRow>('supervisedTaxa', t('user.usersAdministration.supervisedTaxa'), (row) => (
             <MapUsersTaxaCell
@@ -115,9 +126,14 @@ export default function MapUsers() {
                 onRemoveTaxon={handleRemoveTaxonFromCell}
             />
         ), {
-            minWidth: '250px',
+            minWidth: '160px',
+            enableFiltering: true,
+            filterControl: 'options',
+            filterOptions: taxonOptions,
+            filterPlaceholder: t('user.usersAdministration.taxonFilterPlaceholder'),
         }),
-    ], [t, handleOpenAddModal, handleRemoveProject, handleOpenAddTaxonModal, handleRemoveTaxonFromCell]);
+    ], [t, handleOpenAddModal, handleRemoveProject, handleOpenAddTaxonModal, handleRemoveTaxonFromCell,
+        projectOptions, taxonOptions]);
 
     return (
         <div className="container-fluid">
@@ -128,6 +144,9 @@ export default function MapUsers() {
                 initialPageSize={20}
                 pageSizeOptions={[10, 20, 50, 100]}
                 refreshKey={rightsRefreshKey}
+                // sloupce se přizpůsobí obsahu (projety/taxony mají jen málo
+                // štítků) – fixní rozvržení je zbytečně roztahuje na stejnou šířku
+                tableLayout="auto"
             />
 
             <MapUsersAddProjectModal

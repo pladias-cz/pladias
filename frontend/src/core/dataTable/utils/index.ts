@@ -20,6 +20,5 @@ export {
     canFilter,
     canSort,
 } from './columnHelpers';
-
 export {buildTableParams} from './tableParams';
 export type {TableParamsOptions} from './tableParams';

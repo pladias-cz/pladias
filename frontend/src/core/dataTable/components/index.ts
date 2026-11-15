@@ -3,6 +3,7 @@
  */
 
 export {DataTableFilterRow} from './DataTableFilterRow';
+export {DataTableFilterCell} from './DataTableFilterCell';
 export {DataTableHeaderCell} from './DataTableHeaderCell';
 export {DataTablePagination} from './DataTablePagination';
 export {DataRowCount} from './DataRowCount';

@@ -232,6 +232,18 @@
     "mapDetail": {
       "addComment": "add a comment",
       "altitude": "altitude",
+      "filter": {
+        "matching": "Showing {{count}} of {{total}} records",
+        "sorted": "Sorted by {{column}} ({{order}})",
+        "clearSort": "Clear sorting",
+        "quadrantLetter": "Filter letter…",
+        "phytochorion": "Filter number or name…",
+        "locality": "Filter town, locality, source…",
+        "finders": "Filter collector…",
+        "date": "Filter year…",
+        "project": "Filter project…",
+        "institution": "Filter institution…"
+      },
       "collapseAll": "Collapse all",
       "collectors": "Collectors",
       "comment": "Import note",

@@ -114,6 +114,8 @@ public record RecordPladiasDto(
     // Project information
     Long projectId,
     String projectName,
+    /** Project credibility (atlas.projects.credibility) – sorts the origin column of map detail tables. */
+    Integer projectCredibility,
     String institutionName,
 
     // Record flags
@@ -231,10 +233,12 @@ public record RecordPladiasDto(
         // Get project info
         Long projectId = null;
         String projectName = null;
+        Integer projectCredibility = null;
         var project = record.getProject();
         if (project != null) {
             projectId = project.getId();
             projectName = project.getName();
+            projectCredibility = project.getCredibility();
         }
 
         // Get batch author and committer
@@ -459,6 +463,7 @@ public record RecordPladiasDto(
             // Project information
             projectId,
             projectName,
+            projectCredibility,
             institutionName,
 
             // Record flags

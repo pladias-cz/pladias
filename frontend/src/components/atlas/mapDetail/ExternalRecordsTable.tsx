@@ -1,7 +1,14 @@
-import {Table} from 'react-bootstrap';
+import {Button, Table} from 'react-bootstrap';
 import {useTranslation} from 'react-i18next';
-import {useRef, useEffect} from 'react';
+import {useEffect, useMemo, useRef, useState} from 'react';
 import type {RecordGbifMinimal} from '@/models/AtlasRecords';
+import {DataTableFilterCell} from '@/core/dataTable';
+import {
+    applyExternalTableControls,
+    countMatchingRecords,
+    externalSearchFields,
+} from './recordTableFiltering';
+import type {ExternalSortKey, RecordTableFilter} from './recordTableFiltering';
 import './RecordsTable.scss';
 
 /**
@@ -23,6 +30,9 @@ interface ExternalRecordsTableProps {
     registerScrollFn?: (scrollFn: (recordId: number) => void) => void;
 }
 
+/** Filtrované sloupce externí tabulky (ID a souřadnice se nefiltrují). */
+type ExternalFilterId = 'quadrantLetter' | 'institution' | 'date' | 'finders';
+
 export function ExternalRecordsTable({
                                          records,
                                          highlightedRecordId,
@@ -31,6 +41,8 @@ export function ExternalRecordsTable({
                                      }: ExternalRecordsTableProps) {
     const {t} = useTranslation();
     const rowRefs = useRef<{ [key: number]: HTMLTableRowElement | null }>({});
+    const [columnFilters, setColumnFilters] = useState<RecordTableFilter[]>([]);
+    const [sort, setSort] = useState<{ key: ExternalSortKey; descending: boolean } | null>(null);
 
     // Register scroll function for map hover to use. Hooks must run before the
     // early return below (rules-of-hooks); with empty records the registered
@@ -49,26 +61,91 @@ export function ExternalRecordsTable({
         }
     }, [registerScrollFn]);
 
+    const filterValueOf = (filterId: RecordTableFilter['id']) =>
+        columnFilters.find(filter => filter.id === filterId)?.value ?? '';
+
+    const setFilterValue = (filterId: RecordTableFilter['id'], value: string) => {
+        setColumnFilters(prev => prev.some(filter => filter.id === filterId)
+            ? prev.map(filter => (filter.id === filterId ? {...filter, value} : filter))
+            : [...prev, {id: filterId, value}]);
+    };
+
+    const hasActiveFilters = columnFilters.some(filter => filter.value.trim() !== '');
+
+    const handleSort = (key: ExternalSortKey) => {
+        setSort(prev => (prev && prev.key === key
+            ? {key, descending: !prev.descending}
+            : {key, descending: false}));
+    };
+
+    const visibleRecords = useMemo(
+        () => applyExternalTableControls(records, columnFilters, sort?.key ?? null, sort?.descending ?? false),
+        [records, columnFilters, sort],
+    );
+    const matchingCount = useMemo(
+        () => countMatchingRecords(records.map(externalSearchFields), columnFilters),
+        [records, columnFilters],
+    );
+
+    // Hooks must stay above the early return (rules-of-hooks); the empty tab
+    // renders nothing – same contract as PladiasRecordsTable
     if (records.length === 0) {
         return null;
     }
 
+    /** Hlavička sloupce: název + ovládací prvek filtru, řaditelná kliknutím. */
+    const renderHeader = (
+        filterId: ExternalFilterId,
+        label: string,
+        title: string,
+        placeholder: string,
+        sortKey: ExternalSortKey,
+    ) => {
+        const indicator = sort && sort.key === sortKey ? (sort.descending ? ' 🔽' : ' 🔼') : '';
+        return (
+            <th
+                title={placeholder}
+                style={{cursor: 'pointer'}}
+                className="cursor-pointer select-none"
+                onClick={event => {
+                    // klik do filtru nesmí přepnout řazení
+                    if (!(event.target instanceof HTMLElement && event.target.closest('input,select'))) {
+                        handleSort(sortKey);
+                    }
+                }}
+            >
+                <div title={title}>{label}{indicator}</div>
+                <DataTableFilterCell
+                    control="text"
+                    value={filterValueOf(filterId)}
+                    onChange={value => setFilterValue(filterId, value)}
+                    placeholder={placeholder}
+                />
+            </th>
+        );
+    };
+
     return (
-        <Table striped bordered hover size="sm">
+        <>
+            <Table striped bordered hover size="sm">
             <thead>
             <tr>
                 <th>{t('atlas.mapDetail.recordId')}</th>
-                {/* písmeno kvadrantu – dle něj jsou řádky seřazeny (stejný sloupec jako v tabulce PLADIAS) */}
-                <th title={t('atlas.mapDetail.quadrant')}>{t('atlas.mapDetail.squareAbbrev')}</th>
-                <th>{t('atlas.mapDetail.source')}</th>
-                <th>{t('atlas.mapDetail.year')}</th>
+                {/* písmeno kvadrantu – výchozí řazení ze serveru, dále filter + sort */}
+                {renderHeader('quadrantLetter', t('atlas.mapDetail.squareAbbrev'), t('atlas.mapDetail.quadrant'),
+                    t('atlas.mapDetail.filter.quadrantLetter'), 'quadrantLetter')}
+                {renderHeader('institution', t('atlas.mapDetail.source'), t('atlas.mapDetail.source'),
+                    t('atlas.mapDetail.filter.institution'), 'institution')}
+                {renderHeader('date', t('atlas.mapDetail.year'), t('atlas.mapDetail.year'),
+                    t('atlas.mapDetail.filter.date'), 'date')}
                 <th>{t('atlas.mapDetail.latitude')}</th>
                 <th>{t('atlas.mapDetail.longitude')}</th>
-                <th>{t('atlas.mapDetail.collectors')}</th>
+                {renderHeader('finders', t('atlas.mapDetail.collectors'), t('atlas.mapDetail.collectors'),
+                    t('atlas.mapDetail.filter.finders'), 'finders')}
             </tr>
             </thead>
             <tbody>
-            {records.map((record) => {
+            {visibleRecords.map((record) => {
                 const isHighlighted = highlightedRecordId === record.id;
                 return (
                     <tr
@@ -109,6 +186,26 @@ export function ExternalRecordsTable({
             })}
             </tbody>
         </Table>
+        {(hasActiveFilters || sort !== null) && (
+            <div className="d-flex align-items-center gap-2 mt-1">
+                {hasActiveFilters && (
+                    <small className="text-muted">
+                        {t('atlas.mapDetail.filter.matching', {count: matchingCount, total: records.length})}
+                    </small>
+                )}
+                <Button
+                    variant="outline-secondary"
+                    size="sm"
+                    onClick={() => {
+                        setColumnFilters([]);
+                        setSort(null);
+                    }}
+                >
+                    {t('common.table.clearFilters')}
+                </Button>
+            </div>
+        )}
+        </>
     );
 }
 

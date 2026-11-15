@@ -7,6 +7,7 @@ import {InstanceConfigProvider} from '@/context/InstanceConfigContext';
 import {UserProvider} from '@/context/UserContext';
 import {PladiasRecordsTable} from './PladiasRecordsTable';
 import '@/i18n/i18n';
+import {withQueryClient} from '@/test/withQueryClient';
 
 /**
  * Testy projektově podmíněných prvků tabulky záznamů (conf `atlas.excerptionProjectIds`
@@ -51,18 +52,20 @@ function renderTable(
     props: Partial<Parameters<typeof PladiasRecordsTable>[0]> = {},
 ) {
     return render(
-        <UserProvider user={{id: 1}}>
-            <InstanceConfigProvider config={{
-                excerptionProjectIds: [14],
-                ndopProjectIds: [9],
-                ...configOverrides,
-            }}>
-                {/* Link v buňce kvadrantu vyžaduje Router kontext */}
-                <MemoryRouter>
-                    <PladiasRecordsTable records={records} {...props}/>
-                </MemoryRouter>
-            </InstanceConfigProvider>
-        </UserProvider>,
+        withQueryClient(
+            <UserProvider user={{id: 1}}>
+                <InstanceConfigProvider config={{
+                    excerptionProjectIds: [14],
+                    ndopProjectIds: [9],
+                    ...configOverrides,
+                }}>
+                    {/* Link v buňce kvadrantu vyžaduje Router kontext */}
+                    <MemoryRouter>
+                        <PladiasRecordsTable records={records} {...props}/>
+                    </MemoryRouter>
+                </InstanceConfigProvider>
+            </UserProvider>,
+        ),
     );
 }
 

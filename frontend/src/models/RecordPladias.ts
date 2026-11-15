@@ -80,6 +80,8 @@ export interface RecordPladias {
     licenseName: string | null;
     projectId: number | null;
     projectName: string | null;
+    /** Věrohodnost projektu (atlas.projects.credibility) – řadí sloupec Původ. */
+    projectCredibility?: number | null;
     institutionName: string | null;
     locked: boolean | null;
     includedInMap: boolean | null;

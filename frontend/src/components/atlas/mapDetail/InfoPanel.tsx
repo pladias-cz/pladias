@@ -92,6 +92,7 @@ export function InfoPanel({
                                             onRecordCenter={onRecordCenter}
                                             registerScrollFn={registerScrollFns?.pladias}
                                             onRecordUpdated={onRecordUpdated}
+                                            enableColumnControls
                                         />
                                         {records.pladias.length === 0 && (
                                             <p className="text-muted small">{t('atlas.mapDetail.noRecords')}</p>

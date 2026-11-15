@@ -232,6 +232,18 @@
     "mapDetail": {
       "addComment": "dodaj komentarz",
       "altitude": "wysokość n.p.m.",
+      "filter": {
+        "matching": "Wyświetlono {{count}} z {{total}} rekordów",
+        "sorted": "Sortowanie według {{column}} ({{order}})",
+        "clearSort": "Usuń sortowanie",
+        "quadrantLetter": "Filtruj literę…",
+        "phytochorion": "Filtruj numer lub nazwę…",
+        "locality": "Filtruj gminę, lokalizację, źródło…",
+        "finders": "Filtruj zbieracza…",
+        "date": "Filtruj rok…",
+        "project": "Filtruj projekt…",
+        "institution": "Filtruj instytucję…"
+      },
       "collapseAll": "Zwiń wszystko",
       "collectors": "Kolekcjonerzy",
       "commented": "skomentowany",

@@ -232,6 +232,18 @@
     "mapDetail": {
       "addComment": "Kommentar hinzufügen",
       "altitude": "Höhe über dem Meer",
+      "filter": {
+        "matching": "{{count}} von {{total}} Datensätzen angezeigt",
+        "sorted": "Sortiert nach {{column}} ({{order}})",
+        "clearSort": "Sortierung aufheben",
+        "quadrantLetter": "Buchstabe filtern…",
+        "phytochorion": "Nummer oder Name filtern…",
+        "locality": "Gemeinde, Lokalität, Quelle filtern…",
+        "finders": "Sammler filtern…",
+        "date": "Jahr filtern…",
+        "project": "Projekt filtern…",
+        "institution": "Institution filtern…"
+      },
       "collapseAll": "Alle einklappen",
       "collectors": "Sammler",
       "comment": "Importanmerkung",

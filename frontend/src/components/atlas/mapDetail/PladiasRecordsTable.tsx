@@ -1,18 +1,28 @@
 import {Button, Table} from 'react-bootstrap';
 import {useTranslation} from 'react-i18next';
 import {Link} from 'react-router-dom';
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useEffect, useMemo, useRef, useState} from 'react';
 import type {RecordPladias} from '@/models';
 import type InstanceConfig from '@/models/InstanceConfig';
 import './RecordsTable.scss';
 import {HerbariumQualityCheckbox} from './HerbariumQualityCheckbox';
 import {AddCommentModal} from './AddCommentModal';
-import {ValidationStatusId} from '@/core/validationStatus';
+import {ValidationStatusId, ValidationStatusMeta} from '@/core/validationStatus';
 import RichTextMessage from '@/components/RichTextMessage';
 import {ValidationStatusCheckboxes} from './ValidationStatusCheckboxes';
 import {OriginalityStatusIcons} from './OriginalityStatusIcons';
 import {IncludeInMapCheckbox} from './IncludeInMapCheckbox';
-import {DataTableHeaderCell} from '@/core/dataTable';
+import {DataTableFilterCell, DataTableHeaderCell} from '@/core/dataTable';
+import {getPhytochorions} from '@/services/searchApi';
+import {useCatalogQuery} from '@/query/useCatalogQuery';
+import type {PhytochorionOption} from '@/services/searchApi';
+import {
+    applyRecordTableControls,
+    countMatchingRecords,
+    pladiasSearchFields,
+    sortableKeyOf,
+} from './recordTableFiltering';
+import type {RecordTableFilter} from './recordTableFiltering';
 import {useInstanceConfig} from '@/context/InstanceConfigContext';
 import {useUser} from '@/context/UserContext';
 import {markCommentAsRead} from '@/services/recordApi';
@@ -42,6 +52,10 @@ interface PladiasRecordsTableProps {
     sort?: { sortBy: string | null; descending: boolean };
     /** Klik na řaditelnou hlavičku – předává sort klíč backendu. */
     onHeaderSort?: (sortBy: string) => void;
+    /** Řádky ovládatelné uživatelem (mapDetail): řaditelné hlavičky a filtrovací řádka
+     *  počítané na klientu. Vypnuto (default) = chování vyhledávání/nových komentářů:
+     *  řadí backend přes `onHeaderSort`, filtry žádnou řádku nepřidávají. */
+    enableColumnControls?: boolean;
 }
 
 // Helper function to determine visibility of UI elements based on validation status
@@ -78,6 +92,42 @@ const SORTABLE_HEADERS: Record<string, string> = {
     validationStatus: 'validationStatus',
 };
 
+/** Id hlavičky sloupce → id filtru/řadicího klíče (recordTableFiltering). */
+const COLUMN_FILTER_IDS: Record<string, RecordTableFilter['id']> = {
+    square: 'quadrantLetter',
+    phytochorion: 'phytochorion',
+    locality: 'locality',
+    finders: 'finders',
+    date: 'date',
+    project: 'project',
+    validationStatus: 'validationStatus',
+};
+
+/** Pořadí statusů ve filtru (shodné s ValidationStatusCheckboxes). */
+const VALIDATION_STATUS_FILTER_IDS = [
+    ValidationStatusId.ACCEPTED,
+    ValidationStatusId.UNCERTAIN,
+    ValidationStatusId.DECLINED,
+    ValidationStatusId.UNPROCESSED,
+] as const;
+
+/** Filtr fytochorionu – typeahead nad názvy číselníku („17. Čechy“); filtruje se
+ * wildcardem do čísla i názvu, proto se vybírá label, ne id. */
+function phytochorionNameOptions(phytochorions: readonly PhytochorionOption[]): Array<{ value: string; label: string }> {
+    return phytochorions
+        .filter(phytochorion => (phytochorion.name ?? '') !== '')
+        .map(phytochorion => ({value: phytochorion.name, label: phytochorion.name}));
+}
+
+/** Placeholdry textových filtrů sloupců. */
+const FILTER_PLACEHOLDERS: Partial<Record<RecordTableFilter['id'], string>> = {
+    quadrantLetter: 'atlas.mapDetail.filter.quadrantLetter',
+    locality: 'atlas.mapDetail.filter.locality',
+    finders: 'atlas.mapDetail.filter.finders',
+    date: 'atlas.mapDetail.filter.date',
+    project: 'atlas.mapDetail.filter.project',
+};
+
 export function PladiasRecordsTable({
                                         records,
                                         highlightedRecordId,
@@ -91,7 +141,8 @@ export function PladiasRecordsTable({
                                         onExpandedRecordIdsChange,
                                         showFullQuadrantCode = false,
                                         sort,
-                                        onHeaderSort
+                                        onHeaderSort,
+                                        enableColumnControls = false
                                     }: PladiasRecordsTableProps) {
     const {t} = useTranslation();
     const user = useUser();
@@ -102,6 +153,111 @@ export function PladiasRecordsTable({
     const [markingCommentIds, setMarkingCommentIds] = useState<Set<number>>(new Set());
     const [commentModalRecordId, setCommentModalRecordId] = useState<number | null>(null);
     const rowRefs = useRef<{ [key: number]: HTMLTableRowElement | null }>({});
+
+    // Ovládání řádků (mapDetail): filtry sloupců a lokální řazení. Číselníky
+    // (fytochoriony, projekty) se načítají centrálně a cachují (CACHED_CATALOGS)
+    // a filtrují se klientsky v záznamech čtverce.
+    const [columnFilters, setColumnFilters] = useState<RecordTableFilter[]>([]);
+    const [localSort, setLocalSort] = useState<{ columnId: string; descending: boolean } | null>(null);
+    // Dropdown projektového filtru (sloupec Původ): jen názvy projektů skutečně
+    // zastoupených v tomto čtverci (bez duplicit, seřazené česky) – číselník
+    // všech projektů by nabízel i projekty, které tady žádné záznamy nemají.
+    // Filtr porovnává část názvu v projectName, takže uživatel může zadat i
+    // libovolný substring bez výběru z nápovědy.
+    const projectNameOptions = useMemo(() => {
+        const seen = new Set<string>();
+        return records
+            .map(record => record.projectName)
+            .filter((name): name is string => {
+                if (name === null || name === undefined || name === '' || seen.has(name)) {
+                    return false;
+                }
+                seen.add(name);
+                return true;
+            })
+            .map(name => ({value: name, label: name}))
+            .sort((a, b) => a.label.localeCompare(b.label, 'cs'));
+    }, [records]);
+    const phytochorions = useCatalogQuery<PhytochorionOption>(
+        ['phytochorions'], getPhytochorions, {enabled: enableColumnControls && isVascular});
+    const phytochorionOptions = useMemo(
+        () => (enableColumnControls && isVascular ? phytochorionNameOptions(phytochorions) : []),
+        [phytochorions, enableColumnControls, isVascular],
+    );
+
+    /** Id filtru sloupce; sloupce bez filtru (Taxon) → null. */
+    const filterIdOf = (columnId: string): RecordTableFilter['id'] | null =>
+        COLUMN_FILTER_IDS[columnId] ?? null;
+
+    const filterValueOf = (columnId: string): string => {
+        const filterId = filterIdOf(columnId);
+        return columnFilters.find(filter => filter.id === filterId)?.value ?? '';
+    };
+
+    const hasActiveFilters = columnFilters.some(filter => filter.value.trim() !== '');
+
+    const setFilterValue = (columnId: string, value: string) => {
+        const filterId = filterIdOf(columnId);
+        if (filterId === null) {
+            return;
+        }
+        setColumnFilters(prev => {
+            const exists = prev.some(filter => filter.id === filterId);
+            return exists
+                ? prev.map(filter => (filter.id === filterId ? {...filter, value} : filter))
+                : [...prev, {id: filterId, value}];
+        });
+    };
+
+    const clearColumnFilters = () => {
+        setColumnFilters([]);
+        setLocalSort(null);
+    };
+
+    /** Klik na hlavičku: asc → desc → vzestupně od znovu (cyklus jako DataTable). */
+    const handleLocalSort = (columnId: string) => {
+        setLocalSort(prev => {
+            if (!prev || prev.columnId !== columnId) {
+                return {columnId, descending: false};
+            }
+            return {columnId, descending: !prev.descending};
+        });
+    };
+
+    /** Zobrazené řádky: filtry + řazení na klientu (data celého čtverce už jsou v paměti). */
+    const visibleRecords = useMemo(() => {
+        if (!enableColumnControls) {
+            return records;
+        }
+        const sortKey = localSort !== null ? sortableKeyOf(filterIdOf(localSort.columnId) ?? '') : null;
+        return applyRecordTableControls(records, columnFilters, sortKey, localSort?.descending ?? false);
+    }, [records, columnFilters, localSort, enableColumnControls]);
+
+    const matchingCount = useMemo(
+        () => countMatchingRecords(records.map(pladiasSearchFields), columnFilters),
+        [records, columnFilters],
+    );
+
+    /** Směr aktivního řazení sloupce (jen v režimu lokálního řazení). */
+    const directionFor = (columnId: string): 'asc' | 'desc' | null => {
+        if (!enableColumnControls) {
+            return null;
+        }
+        const sortKey = sortableKeyOf(filterIdOf(columnId) ?? '');
+        if (localSort === null || sortKey === null || sortableKeyOf(filterIdOf(localSort.columnId) ?? '') !== sortKey) {
+            return null;
+        }
+        return localSort.descending ? 'desc' : 'asc';
+    };
+
+    /** Stav řazení hlavičky: lokální (mapDetail), nebo serverové (vyhledávání). */
+    const sortIndicatorFor = (columnId: string): 'asc' | 'desc' | null => {
+        if (enableColumnControls) {
+            return directionFor(columnId);
+        }
+        const sortBy = SORTABLE_HEADERS[columnId];
+        return sortBy != null && sortBy === sort?.sortBy ? (sort?.descending ? 'desc' : 'asc') : null;
+    };
 
     // Řízený režim rozbalení (vyhledávání): o rozbalených řádcích rozhoduje rodič,
     // který tlačítko „Rozbalit vše“ vykresluje ve svém toolbatu paginace; jinak
@@ -125,6 +281,11 @@ export function PladiasRecordsTable({
     const [prevRecords, setPrevRecords] = useState(records);
     if (records !== prevRecords) {
         setPrevRecords(records);
+        // nová data (přepnutí kvadrantu, refetch) = nový základ pro řazení i filtry:
+        // InfoPanel tabulku přelistovává přes key, proto se stav filtrů vrací do výchozího
+        // stavu; bez toho by filtr zůstal aktivní nad záznamy jiného taxonu/čtverce
+        setColumnFilters([]);
+        setLocalSort(null);
         // v řízeném režimu prune řeší rodič – dítě nesmí měnit stav rodiče během renderu
         if (expandedRecordIds === undefined) {
             const validRecordIds = new Set(records.map((record) => record.id));
@@ -216,24 +377,90 @@ export function PladiasRecordsTable({
         }
     };
 
-    /** Hlavička sloupce: se zapnutým řazením standardní klikatelná buňka
-     * (DataTableHeaderCell – indikátor, tooltip, kurzor), jinak původní plain <th>
-     * (mapDetail řaditelné hlavičky nemá). */
-    const renderHeader = (columnId: string, label: string, title?: string) => {
-        if (!onHeaderSort) {
+    /** Hlavička sloupce: s ovládáním řádků (mapDetail) nebo s `onHeaderSort`
+     * (vyhledávání) klikatelná buňka `DataTableHeaderCell` – indikátor, tooltip,
+     * kurzor; jinak původní plain <th>. V režimu `enableColumnControls` se do
+     * hlavičky vkládá i ovládací prvek filtru (`renderFilterControl`); tooltip se
+     * v tom režimu přebírá z placeholdru filtru, aby nekolidoval s řazením. */
+    const renderHeader = (columnId: string, label: string, title?: string, filterPlaceholder?: string) => {
+        if (!onHeaderSort && !enableColumnControls) {
             return <th title={title}>{label}</th>;
         }
-        const sortBy = SORTABLE_HEADERS[columnId];
-        const isActive = sortBy != null && sortBy === sort?.sortBy;
+        const sortKey = enableColumnControls ? sortableKeyOf(filterIdOf(columnId) ?? '') : SORTABLE_HEADERS[columnId];
+        const canSort = sortKey != null;
+        const onSort = enableColumnControls ? handleLocalSort : handleHeaderSort;
+        const indicator = sortIndicatorFor(columnId);
+        // sloupec bez filtru (Taxon) → hlavička jen s labellem
+        if (filterIdOf(columnId) === null) {
+            return (
+                <DataTableHeaderCell
+                    label={label}
+                    columnId={columnId}
+                    sortIndicator={indicator}
+                    canSort={canSort}
+                    onSort={onSort}
+                    title={title}
+                />
+            );
+        }
+        // řadit klikem jen mimo ovládací prvky filtru (input/select uvnitř <th>)
+        const handleHeaderClick = (event: React.MouseEvent<HTMLTableCellElement>) => {
+            if (!canSort || event.target instanceof HTMLElement && event.target.closest('input,select')) {
+                return;
+            }
+            onSort(columnId);
+        };
         return (
-            <DataTableHeaderCell
-                label={label}
-                columnId={columnId}
-                sortIndicator={isActive ? (sort?.descending ? 'desc' : 'asc') : null}
-                canSort={sortBy != null}
-                onSort={handleHeaderSort}
-                title={title}
-            />
+            <th
+                title={filterPlaceholder ?? title}
+                style={{cursor: canSort ? 'pointer' : 'default'}}
+                onClick={handleHeaderClick}
+                className={canSort ? 'cursor-pointer select-none' : ''}
+            >
+                <div title={title}>{label}{indicator === 'asc' ? ' 🔼' : indicator === 'desc' ? ' 🔽' : ''}</div>
+                {enableColumnControls && renderFilterControl(columnId)}
+            </th>
+        );
+    };
+
+    /** Ovládací prvek filtru sloupce: select statusu a projektů, typeahead fytochorionu,
+     * textové filtry písmeno / obec / sběratel / rok. */
+    const renderFilterControl = (columnId: string) => {
+        const filterId = filterIdOf(columnId);
+        if (filterId === null) {
+            return null;
+        }
+        const value = filterValueOf(columnId);
+        const onChange = (next: string) => setFilterValue(columnId, next);
+        if (filterId === 'validationStatus') {
+            const options = VALIDATION_STATUS_FILTER_IDS
+                // Nevyřízený status vidí jen mapAdmin (stejně jako ValidationStatusCheckboxes)
+                .filter(statusId => statusId !== ValidationStatusId.UNPROCESSED || user.isMapAdmin)
+                .map(statusId => ({
+                    value: String(statusId),
+                    label: `${statusId} – ${t(ValidationStatusMeta[statusId].i18nKey as never)}`,
+                }));
+            return (
+                <DataTableFilterCell
+                    control="select"
+                    value={value}
+                    onChange={onChange}
+                    placeholder={t('common.table.filter.all')}
+                    options={options}
+                />
+            );
+        }
+        const placeholderKey = FILTER_PLACEHOLDERS[filterId];
+        return (
+                <DataTableFilterCell
+                    control={filterId === 'phytochorion' || filterId === 'project' ? 'typeahead' : 'text'}
+                    value={value}
+                    onChange={onChange}
+                    placeholder={placeholderKey !== undefined ? t(placeholderKey as never) : undefined}
+                    options={filterId === 'phytochorion' ? phytochorionOptions
+                        : filterId === 'project' ? projectNameOptions
+                        : []}
+                />
         );
     };
 
@@ -254,17 +481,17 @@ export function PladiasRecordsTable({
                 <thead>
                 <tr>
                     {showTaxonName && renderHeader('taxon', t('atlas.mapDetail.taxon'))}
-                    {renderHeader('square', t('atlas.mapDetail.squareAbbrev'), t('atlas.mapDetail.quadrant'))}
-                    {isVascular && renderHeader('phytochorion', t('atlas.mapDetail.phytochorionAbbrev'), t('atlas.mapDetail.phytochorion'))}
-                    {renderHeader('locality', t('atlas.mapDetail.locality'))}
-                    {renderHeader('finders', t('atlas.mapDetail.collectors'))}
-                    {renderHeader('date', t('atlas.mapDetail.date'))}
-                    {renderHeader('project', t('atlas.mapDetail.originality'))}
-                    {renderHeader('validationStatus', t('atlas.mapDetail.validationStatus'))}
+                    {renderHeader('square', t('atlas.mapDetail.squareAbbrev'), t('atlas.mapDetail.quadrant'), t('atlas.mapDetail.filter.quadrantLetter'))}
+                    {isVascular && renderHeader('phytochorion', t('atlas.mapDetail.phytochorionAbbrev'), t('atlas.mapDetail.phytochorion'), t('atlas.mapDetail.filter.phytochorion'))}
+                    {renderHeader('locality', t('atlas.mapDetail.locality'), undefined, t('atlas.mapDetail.filter.locality'))}
+                    {renderHeader('finders', t('atlas.mapDetail.collectors'), undefined, t('atlas.mapDetail.filter.finders'))}
+                    {renderHeader('date', t('atlas.mapDetail.date'), undefined, t('atlas.mapDetail.filter.date'))}
+                    {renderHeader('project', t('atlas.mapDetail.originality'), undefined, t('atlas.mapDetail.filter.project'))}
+                    {renderHeader('validationStatus', t('atlas.mapDetail.validationStatus'), undefined, t('common.table.filter.all'))}
                 </tr>
                 </thead>
                 <tbody>
-                {records.map((record) => {
+                {visibleRecords.map((record) => {
                     const isHighlighted = highlightedRecordId === record.id;
                     const isExpanded = effectiveExpandedIds.has(record.id);
                     // plný kód kvadrantu (vyhledávání, nové komentáře) nese odkaz na mapDetail daného
@@ -624,6 +851,29 @@ export function PladiasRecordsTable({
                 })}
                 </tbody>
             </Table>
+            {enableColumnControls && hasActiveFilters && (
+                <div className="d-flex align-items-center gap-2 mt-1">
+                    <small className="text-muted">
+                        {t('atlas.mapDetail.filter.matching', {count: matchingCount, total: records.length})}
+                    </small>
+                    <Button variant="outline-secondary" size="sm" onClick={clearColumnFilters}>
+                        {t('common.table.clearFilters')}
+                    </Button>
+                </div>
+            )}
+            {enableColumnControls && localSort !== null && (
+                <div className="d-flex align-items-center gap-2 mt-1">
+                    <small className="text-muted">
+                        {t('atlas.mapDetail.filter.sorted', {
+                            column: t((SORT_COLUMN_LABEL_KEYS[localSort.columnId] ?? 'atlas.mapDetail.records') as never),
+                            order: t(localSort.descending ? 'common.table.sort.descending' : 'common.table.sort.ascending'),
+                        })}
+                    </small>
+                    <Button variant="outline-secondary" size="sm" onClick={() => setLocalSort(null)}>
+                        {t('atlas.mapDetail.filter.clearSort')}
+                    </Button>
+                </div>
+            )}
             <AddCommentModal
                 show={commentModalRecordId !== null}
                 recordId={commentModalRecordId ?? 0}
@@ -634,3 +884,15 @@ export function PladiasRecordsTable({
 }
 
 export default PladiasRecordsTable;
+/** Názvy sloupců ve stavu řazení pod tabulkou. */
+const SORT_COLUMN_LABEL_KEYS: Record<string, string> = {
+    square: 'atlas.mapDetail.quadrant',
+    phytochorion: 'atlas.mapDetail.phytochorion',
+    locality: 'atlas.mapDetail.locality',
+    finders: 'atlas.mapDetail.collectors',
+    date: 'atlas.mapDetail.date',
+    project: 'atlas.mapDetail.originality',
+    validationStatus: 'atlas.mapDetail.validationStatus',
+};
+
+/** Placeholdry textových filtrů sloupců. */

@@ -232,6 +232,18 @@
     "mapDetail": {
       "addComment": "přidat komentář",
       "altitude": "nadmořská výška",
+      "filter": {
+        "matching": "Zobrazeno {{count}} z {{total}} záznamů",
+        "sorted": "Řazeno podle sloupce {{column}} ({{order}})",
+        "clearSort": "Zrušit řazení",
+        "quadrantLetter": "Filtr písmene…",
+        "phytochorion": "Filtr čísla či názvu…",
+        "locality": "Filtr obce, lokality, pramene…",
+        "finders": "Filtr nálezce…",
+        "date": "Filtr roku…",
+        "project": "Filtr projektu…",
+        "institution": "Filtr instituce…"
+      },
       "collapseAll": "Sbalit vše",
       "collectors": "Sběratelé",
       "comment": "Importní poznámka",

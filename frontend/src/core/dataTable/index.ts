@@ -35,6 +35,7 @@ export {
 // Component exports
 export {
     DataTableFilterRow,
+    DataTableFilterCell,
     DataTableHeaderCell,
     DataTablePagination,
     DataRowCount,

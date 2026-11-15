@@ -409,14 +409,6 @@ export function PladiasRecordsTable({
                                             {t('atlas.mapDetail.importedBy')} <b>{record.batchAuthorName}</b>
                                         </>
                                     )}
-                                    {/* Importní poznámka (Record.comment) – pro kontrolu často klíčová
-                                        pro třídění záznamů; v Excel exportech je, tady chyběla. */}
-                                    {record.comment && (
-                                        <>
-                                            <br/>
-                                            <b>{t('atlas.mapDetail.comment')}:</b> {record.comment}
-                                        </>
-                                    )}
 
                                 </td>
                                 <td className="align-text-top">
@@ -501,6 +493,15 @@ export function PladiasRecordsTable({
                                                 )}
                                             </div>
                                             <div className="col-md-6">
+                                                {/* Importní poznámka (Record.comment) – pro kontrolu často klíčová
+                                        pro třídění záznamů; v Excel exportech je, tady chyběla. */}
+                                                {record.comment && (
+                                                    <>
+                                                        <br/>
+                                                        <b>{t('atlas.mapDetail.comment')}:</b> {record.comment}
+                                                    </>
+                                                )}
+
                                                 {(record.environment || record.remarkExcerption || record.remarkDoubt || record.remarkOther) && (
                                                     <div>
                                                         <b>{t('atlas.mapDetail.otherNotes')}:</b>

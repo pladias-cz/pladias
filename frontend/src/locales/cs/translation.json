@@ -260,7 +260,7 @@
       "nearestTownLower": "nejbližší obec",
       "noRecords": "Žádné záznamy",
       "originalName": "původní jméno",
-      "originalOccurrenceLabel": "Původní výskyt",
+      "originalOccurrenceLabel": "Původnost",
       "originality": "Původ",
       "otherNotes": "ostatní poznámky",
       "phytochorion": "Fytochorion",
@@ -970,7 +970,7 @@
       "cultivated": "Pěstovaný",
       "native": "Původní",
       "nonnative": "Nepůvodní",
-      "unprocessed": "Nezpracováno"
+      "unprocessed": "Nerozhodnuto"
     },
     "phytochorion": "Fytochorion",
     "phytochorionComputed": "Dopočtený fytochorion",
@@ -1002,7 +1002,7 @@
       "accepted": "Schváleno",
       "declined": "Zamítnuto",
       "uncertain": "Nejisté",
-      "unprocessed": "Nezpracováno"
+      "unprocessed": "Nerozhodnuto"
     },
     "validationStatus": "Validace",
     "year": "Rok"

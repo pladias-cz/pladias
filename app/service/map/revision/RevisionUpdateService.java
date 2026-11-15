@@ -15,8 +15,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class RevisionUpdateService extends MapStatusUpdateService {
-    private static final int TaxonEditTreshold = 10;
-    private static final int RecordsSupervisorUploadCount = 10;
+    private static final int TaxonEditTreshold = 1;
+    private static final int RecordsSupervisorUploadCount = 1;
 
     private final Logger _logger = LoggerFactory.getLogger(RevisionUpdateService.class);
 

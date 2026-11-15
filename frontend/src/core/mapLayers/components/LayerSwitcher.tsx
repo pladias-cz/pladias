@@ -81,11 +81,11 @@ export function LayerSwitcher({mapName, layerIds, defaultVisibility}: LayerSwitc
             let title: string;
 
             if (id.startsWith('project_')) {
-                // Titulek projektové vrstvy: i18n termín „Projekt“ + název projektu
+                // Titulek projektové vrstvy: název projektu
                 // (a počet záznamů) ze stavu vrstvy. Dokud useProjectLayers vrstvu
                 // ve store nezaregistrovalo, fallback na ID projektu.
                 const name = stateTitle ?? id.replace('project_', '');
-                title = `${t('atlas.layerSwitcher.project')} ${name}`;
+                title = `${name}`;
             } else {
                 title = stateTitle ?? id;
             }

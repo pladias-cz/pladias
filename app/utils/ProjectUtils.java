@@ -10,6 +10,8 @@ import models.Taxon;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.text.Collator;
+import java.util.Locale;
 
 public class ProjectUtils {
 
@@ -33,6 +35,10 @@ public class ProjectUtils {
     }
 
     private static void SortByName(List<Project> projects) {
-        projects.sort((o1, o2) -> o2.getName().compareTo(o1.getName()));
+        Collator collator = Collator.getInstance(Locale.forLanguageTag("cs-CZ"));
+
+        projects.sort((o1, o2) ->
+            collator.compare(o1.getName(), o2.getName())
+        );
     }
 }

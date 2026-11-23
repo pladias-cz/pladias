@@ -300,6 +300,21 @@ CSP `img-src` (conf/common.conf) povoluje jen `'self' data:` + GeoServery CZ/SK 
 ### Komentáře u atlas.record
 Uživatel nemůže svůj komentář editovat aby nedocházelo k nejasnostem s ohledem na to že není verzován. Pouze osobám s vyšším oprváněním je tato možnost o pravena aby mohli např. smazat nevhodné výrazy.
 
+Legacy aplikace nabízela u komentáře tři akce: „přesunout mezi vyřízené“, „přidat text komentáře do poznámky“
+a „zcela vymazat bez zohlednění“. První odpovídá `resolve`, třetí dnešnímu `DELETE` (který je ale **soft** – text
+zůstává v `records_history`, takže „bez zohlednění“ v plném smyslu obnoven nebyl). Druhá akce chyběla úplně a je
+obnovená jako `POST /atlas/record/comment/:id/move-to-record-comment`: text se přilepí za `Record.comment`
+(importní poznámka, `Record.java:126`) a komentář se smaže, v jedné transakci. Právo je právo na komentář
+(`isUserElligibleToEditEverything`), ne právo na pole záznamu – proto endpoint navíc kontroluje zámek záznamu,
+aby uzamčený záznam šlo poznámkovat jen běžnou cestou `PATCH {key: IMPORTCOMMENT}`.
+
+FE strana: `RecordFloristic`/`RecordRemarks` si drží přes `useOptimisticRecord` vlastní lokální kopii
+záznamu. Hook musel přestat přebírat po vnější změně jen `lastEditTimestampNum` a přebírat celý
+refetchovaný záznam – jinak se přenesení komentáře do poznámky na stránce nikdy neobjeví (stará
+lokální hodnota `comment` zůstane viset i po successful refetchu). Rozepsaný text v inline editoru
+neohrožený je: editor kreslí svůj `draft`, ne hodnotu záznamu, a save posílá vždy aktuální timestamp.
+Hlídá to `frontend/src/components/atlas/record/hooks/useOptimisticRecord.test.tsx`.
+
 ### mutující GET při mazání dávky
 
 Zbytkové (akceptované) omezení: `GET /atlasadmin/deleteBatch/:batchId/password/:password` zůstává mutující GET s kódem v URL – odkaz z e-mailu totiž nelze spustit jinou metodou než GET; riziko je mírněno vazbou kódu na committera a konkrétní dávku.

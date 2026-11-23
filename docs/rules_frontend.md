@@ -130,6 +130,7 @@ Komponenty `RecordComments` (detail záznamu) a `AddCommentModal` (mapDetail, se
 | Smazání | `DELETE /atlas/record/comment/:id` | autor komentáře (`comment.authorId == user.id`) **nebo** mapAdmin | autor NEBO mapAdmin – **shodné** |
 | Označit jako přečtené | `DELETE /atlas/record/comment-assoc/:commentId/linked-user/:boundUserId` | uživatel sám (odhlásí se z notifikací) | master admin nebo daný uživatel |
 | Editace textu | `PUT /atlas/record/comment/:id` | server flag `record.canResolveComments` (mapAdmin, revizor vč. nadřazených taxonů, správce projektu; **autor NIKOLIV**) | `isUserElligibleToEditEverything` – **shodné s resolve** |
+| Přidat text do poznámky | `POST /atlas/record/comment/:id/move-to-record-comment` | server flag `record.canResolveComments` (táž skupina jako resolve/upravit; **autor NIKOLIV**) | `isUserElligibleToEditEverything` + zámek záznamu – legacy akce: text se přilepí za `Record.comment` a komentář se smaže |
 
 **Poznámky:**
 - Tlačítko „vyřešit“ se řídí serverovým příznakem `record.canResolveComments` z `GET /atlas/record/:id/full` (backend ho počítá službou `RecordEditPermissions`, která zrcadlí `Record.isUserElligibleToEditEverything`, tedy stejnou kontrolu jako endpoint resolve) – frontend logiku nekopíruje, jen flag zobrazuje. Stejný příznak používá i tlačítko „upravit“ (editace textu komentáře), protože backend u `PUT /atlas/record/comment/:id` kontroluje tutéž podmínku.

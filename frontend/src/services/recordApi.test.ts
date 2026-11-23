@@ -9,6 +9,7 @@ import {
     getUnassignedHerbaria,
     markCommentAsRead,
     moveRecordCoordinates,
+    moveCommentTextToRecordComment,
     patchRecordField,
     resolveComment,
     reverseGeocode,
@@ -109,6 +110,16 @@ describe('comment mutations', () => {
         expect(fetchMock).toHaveBeenCalledWith(
             '/api/react/atlas/record/comment/99',
             expect.objectContaining({method: 'DELETE'}),
+        );
+    });
+
+    it('moveCommentTextToRecordComment posts to the move-to-record-comment endpoint', async () => {
+        fetchMock.mockResolvedValue(jsonResponse({success: true, data: {id: 99, comment: 'poznamka'}}));
+
+        await expect(moveCommentTextToRecordComment(99)).resolves.toBeUndefined();
+        expect(fetchMock).toHaveBeenCalledWith(
+            '/api/react/atlas/record/comment/99/move-to-record-comment',
+            expect.objectContaining({method: 'POST'}),
         );
     });
 

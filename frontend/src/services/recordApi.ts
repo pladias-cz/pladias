@@ -70,6 +70,17 @@ export async function resolveComment(commentId: number): Promise<void> {
     requireEnvelope(await apiPost(`/api/react/atlas/record/comment/${commentId}/resolve`), 'Vyřešení komentáře selhalo.');
 }
 
+/**
+ * POST /api/react/atlas/record/comment/{id}/move-to-record-comment – legacy akce
+ * „přidat text komentáře do poznámky“: text se přilepí za `Record.comment` a komentář se smaže.
+ */
+export async function moveCommentTextToRecordComment(commentId: number): Promise<void> {
+    requireEnvelope(
+        await apiPost(`/api/react/atlas/record/comment/${commentId}/move-to-record-comment`),
+        'Přenesení komentáře do poznámky selhalo.',
+    );
+}
+
 /** DELETE /api/react/atlas/record/comment/{id} – soft delete komentáře. */
 export async function deleteComment(commentId: number): Promise<void> {
     requireEnvelope(await apiDelete(`/api/react/atlas/record/comment/${commentId}`), 'Smazání komentáře selhalo.');

@@ -161,6 +161,49 @@ public class RecordCommentController extends ControllerBase {
     }
 
     /**
+     * POST /atlas/record/comment/:commentId/move-to-record-comment
+     * Append the comment text to the record's note (Record.comment) and delete the comment –
+     * legacy action „Přidat text komentáře do poznámky“.
+     */
+    public Result moveCommentTextToRecordComment(Http.Request request, Long commentId) {
+        Messages messages = getMessages(request);
+        try {
+            User currentUser = SessionUtils.getCurrentUser(request.session());
+            if (currentUser == null) {
+                return unauthorized(JsonResult.error("Authentication required"));
+            }
+
+            RecordComment comment = RecordComment.find().byId(commentId);
+            if (comment == null) {
+                return notFound(JsonResult.error("Comment not found"));
+            }
+
+            // Same permission as resolving/updating a comment; the author alone is not enough.
+            Record record = comment.getRecord();
+            if (!record.isUserElligibleToEditEverything(currentUser)) {
+                return forbidden(JsonResult.error("No permission to move this comment to the record note"));
+            }
+
+            // The note is a record field – keep the same locks the PATCH path enforces, otherwise
+            // a locked record could be annotated through a comment.
+            if (record.isLocked()) {
+                return forbidden(JsonResult.error(messages.at("RecordEditController.recordIsLocked")));
+            }
+            if (!record.isEditationAllowed()) {
+                return forbidden(JsonResult.error(
+                    messages.at("RecordEditController.taxonIsLockedDueToMapPreviewGeneration")));
+            }
+
+            Map<String, Object> result = commentsService.moveCommentTextInTransaction(comment, currentUser);
+
+            return ok(JsonResult.buildSuccess(result));
+
+        } catch (Exception e) {
+            return ok(JsonResult.error(e.getMessage()));
+        }
+    }
+
+    /**
      * POST /atlas/record/comment/:commentId/resolve
      * Resolve a comment.
      */

@@ -147,6 +147,23 @@ Všechny endpointy `RecordCommentController` – přihlášený uživatel (`@Sec
 
 ---
 
+### POST `/atlas/record/comment/:commentId/move-to-record-comment` – Přenesení textu komentáře do poznámky (`moveCommentTextToRecordComment`)
+
+Legacy akce „Přidat text komentáře do poznámky“ – sjednocuje editaci poznámky a smazání komentáře do jednoho kroku.
+
+**Kdo smí provést:**
+- `record.isUserElligibleToEditEverything(currentUser)` (mapAdmin / revizor vč. nadřazených taxonů / správce projektu), autor komentáře nikoliv
+- navíc `record.isLocked() == false` a `record.isEditationAllowed() == true` – poznámka je pole záznamu, takže uzamčený záznam nesmí být poznamenán obezímkou přes komentář
+
+**Související akce (jedna transakce):**
+- text komentáře se přilepí za `Record.comment` (odděleně newline; prázdná/NULL poznámka se pouze nastaví)
+- `RecordHistory` pole `import_comment_edit` se `oldValue`/`newValue` (shodné s `PATCH {key: IMPORTCOMMENT}`)
+- následně plné smazání komentáře jako `DELETE /atlas/record/comment/:id` (soft delete, vyčištění `users_comments`, historie „comment deleted“)
+
+⚠️ Na rozdíl od `PATCH /atlas/record/:recordId` endpoint **nepochází** `isUserElligibleToEditCommonFields` ani kontrolu `lastEditTimestampNum` od klienta – právo je odvozeno od práva k komentáři, konkurenci u poznámky kryje jen `@Version` na `Record`.
+
+---
+
 ### DELETE `/atlas/record/comment-assoc/:commentId/linked-user/:boundUserId` – Zrušení asociace uživatele s komentářem (`deleteUserCommentAssociation`)
 
 **Kdo smí provést:**

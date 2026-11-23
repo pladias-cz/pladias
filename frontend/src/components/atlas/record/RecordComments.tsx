@@ -1,6 +1,13 @@
 import {Card, Table, Row, Col, Spinner, Button, Modal, Form} from 'react-bootstrap';
 import {useTranslation} from 'react-i18next';
-import {getRecordComments, createComment, updateComment, resolveComment, deleteComment} from '@/services/recordApi';
+import {
+    getRecordComments,
+    createComment,
+    updateComment,
+    resolveComment,
+    moveCommentTextToRecordComment,
+    deleteComment,
+} from '@/services/recordApi';
 import {apiErrorMessage} from '@/services/apiClient';
 import type {RecordComment} from '@/models/RecordComment';
 import {useState} from 'react';
@@ -102,6 +109,24 @@ export default function RecordComments({recordId, canResolveComments}: RecordCom
             await resolveComment(commentId);
             // Refresh comments – invalidace spustí refetch query
             await queryClient.invalidateQueries({queryKey: ['recordComments', recordId]});
+        } catch (err) {
+            setActionError(apiErrorMessage(err, t('record.commentActionFailed')));
+        }
+    };
+
+    /** Legacy akce: text komentáře se přilepí za poznámku záznamu a komentář se smaže. */
+    const handleMoveCommentToNote = async (commentId: number) => {
+        if (!(await confirm({
+            message: t('record.confirmMoveCommentToNote'),
+        }))) {
+            return;
+        }
+
+        try {
+            await moveCommentTextToRecordComment(commentId);
+            // komentář zmizel ze seznamu a přibyl text do Record.comment – obnovit obojí
+            await queryClient.invalidateQueries({queryKey: ['recordComments', recordId]});
+            await queryClient.invalidateQueries({queryKey: ['recordFull', recordId]});
         } catch (err) {
             setActionError(apiErrorMessage(err, t('record.commentActionFailed')));
         }
@@ -242,6 +267,18 @@ export default function RecordComments({recordId, canResolveComments}: RecordCom
                                                         onClick={() => handleResolveComment(comment.id)}
                                                     >
                                                         {t('record.resolve')}
+                                                    </Button>
+                                                )}
+                                                {/* Legacy action: text goes to the record note, comment is deleted
+                                                    (same permission as resolve/update – NOT the comment author) */}
+                                                {canResolveComments && (
+                                                    <Button
+                                                        variant="outline-dark"
+                                                        size="sm"
+                                                        className="me-1"
+                                                        onClick={() => handleMoveCommentToNote(comment.id)}
+                                                    >
+                                                        {t('record.moveCommentToNote')}
                                                     </Button>
                                                 )}
                                                 {/* Delete button: for comment author OR MapAdmin */}

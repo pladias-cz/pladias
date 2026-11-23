@@ -163,6 +163,49 @@ public class RecordsCommentsService {
     }
 
     /**
+     * Append the comment text to the record's note ({@code Record.comment} – legacy
+     * „Přidat text komentáře do poznámky“) and delete the comment, in one step. Legacy moved the text
+     * out of the comment so that the resolver kept it while getting rid of the comment itself.
+     *
+     * @param comment     the comment to move out (already loaded by the caller)
+     * @param currentUser the current user
+     * @return map with the deleted comment id and the new record note
+     */
+    public Map<String, Object> moveCommentTextToRecordComment(RecordComment comment, User currentUser) {
+        Record record = comment.getRecord();
+
+        String oldNote = record.getComment() == null ? "" : record.getComment();
+        String note = oldNote.isEmpty() ? comment.getMessage() : oldNote + "\n" + comment.getMessage();
+        record.setComment(note);
+        record.update();
+        RecordHistory.build(
+            record.getId().longValue(), currentUser, RecordChangeType.DESCRIPTION,
+            "import_comment_edit", oldNote, note).save();
+
+        deleteComment(comment.getId(), currentUser, record);
+
+        return Map.of(
+            "id", comment.getId(),
+            "comment", note
+        );
+    }
+
+    /**
+     * Execute a transaction for moving a comment's text into the record note and deleting the comment.
+     *
+     * @param comment     the comment to move out
+     * @param currentUser the current user
+     * @return map with the deleted comment id and the new record note
+     */
+    public Map<String, Object> moveCommentTextInTransaction(RecordComment comment, User currentUser) {
+        try (Transaction transaction = DB.beginTransaction()) {
+            Map<String, Object> result = moveCommentTextToRecordComment(comment, currentUser);
+            transaction.commit();
+            return result;
+        }
+    }
+
+    /**
      * Execute a transaction for creating a comment.
      *
      * @param request  the HTTP request

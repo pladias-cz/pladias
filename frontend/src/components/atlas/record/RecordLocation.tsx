@@ -1,11 +1,10 @@
-import {Card, Table} from 'react-bootstrap';
+import {Button, Card, Form, Table} from 'react-bootstrap';
 import {useTranslation} from 'react-i18next';
 import type {RecordPladiasFull} from '@/models/RecordPladiasFull';
 import type {ReverseGeocodingResponse} from '@/models/ReverseGeocoding';
 import type {TownHierarchyEntry} from '@/models/GeoTypes';
-// import RecordInlineField from "./RecordInlineField";
-// import {useRecordPermissions} from "./editors";
-// import {useRecordUpdates} from "./hooks/useRecordUpdates";
+import {parseCoordinatePair} from '@/core/coordinates/coordinateParsing';
+import {useState} from 'react';
 
 interface RecordLocationProps {
     record: RecordPladiasFull;
@@ -13,6 +12,10 @@ interface RecordLocationProps {
         coordinates: [number, number];
         geocodeData: ReverseGeocodingResponse;
     };
+    /** Běžná pole záznamu (server flag) – stejné právo jako pro klik do mapy. */
+    canEdit?: boolean;
+    /** Vložený a naparsovaný DMS – stránka z něj udělá návrh nové polohy. */
+    onCoordinatesSubmitted?: (lat: number, lng: number) => void;
 }
 
 function toDMS(value: number, isLatitude: boolean): string {
@@ -28,6 +31,45 @@ function toDMS(value: number, isLatitude: boolean): string {
 
     return `${degrees}° ${minutes}' ${seconds.toFixed(2)}" ${direction}`;
 }
+
+/**
+ * Vložení souřadnic do sloupce „Nová pozice“ – jeden vzhled pro GPS (desetinné)
+ * i DMS řádek; parser i odeslání jsou společné, liší se jen placeholder.
+ */
+const CoordinatePairInput = ({value, error, placeholder, onChange, onSubmit}: {
+    value: string;
+    error: string | null;
+    placeholder: string;
+    onChange: (value: string) => void;
+    onSubmit: () => void;
+}) => {
+    const {t} = useTranslation();
+    return (
+        <>
+            <div className="d-flex gap-1">
+                <Form.Control
+                    as="input"
+                    size="sm"
+                    isInvalid={!!error}
+                    value={value}
+                    onChange={(e) => onChange(e.target.value)}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            onSubmit();
+                        }
+                    }}
+                    placeholder={placeholder}
+                    aria-label={placeholder}
+                />
+                <Button size="sm" variant="outline-primary" onClick={onSubmit} disabled={!value.trim()}>
+                    {t('record.coordsInsert')}
+                </Button>
+            </div>
+            {error && <Form.Text className="text-danger">{error}</Form.Text>}
+        </>
+    );
+};
 
 function formatTownHierarchy(townHierarchy?: TownHierarchyEntry[]): string {
     if (!townHierarchy || townHierarchy.length === 0) {
@@ -62,13 +104,37 @@ function formatPhytochorions(
     return `Záznam bude přesunut do fytochorionu ${names}. V případě výskytu při hranicích fytochorionů lze fytogeograficky lépe vyhovující fytochorion zvolit v okně Editovatelná pole`;
 }
 
-export default function RecordLocation({record, proposedLocation}: RecordLocationProps) {
+export default function RecordLocation({record, proposedLocation, canEdit, onCoordinatesSubmitted}: RecordLocationProps) {
     const {t} = useTranslation();
-    // const {canEditCommonFields: canEdit} = useRecordPermissions(record);
-    // const {updateField} = useRecordUpdates();
+    const [dmsInput, setDmsInput] = useState('');
+    const [dmsError, setDmsError] = useState<string | null>(null);
+    const [gpsInput, setGpsInput] = useState('');
+    const [gpsError, setGpsError] = useState<string | null>(null);
 
     const proposedCoords = proposedLocation?.coordinates;
     const geocodeData = proposedLocation?.geocodeData;
+
+    const submitDms = () => {
+        const parsed = parseCoordinatePair(dmsInput);
+        if (!parsed) {
+            setDmsError(t('record.coordsParseFailed'));
+            return;
+        }
+        setDmsError(null);
+        setDmsInput('');
+        onCoordinatesSubmitted?.(parsed.lat, parsed.lon);
+    };
+
+    const submitGps = () => {
+        const parsed = parseCoordinatePair(gpsInput);
+        if (!parsed) {
+            setGpsError(t('record.coordsParseFailed'));
+            return;
+        }
+        setGpsError(null);
+        setGpsInput('');
+        onCoordinatesSubmitted?.(parsed.lat, parsed.lon);
+    };
 
     return (
         <Card>
@@ -93,7 +159,15 @@ export default function RecordLocation({record, proposedLocation}: RecordLocatio
                                 <>
                                     {proposedCoords[0].toFixed(6)} {proposedCoords[1].toFixed(6)}
                                 </>
-                            ) : '-'}
+                            ) : (canEdit && onCoordinatesSubmitted ? (
+                                <CoordinatePairInput
+                                    value={gpsInput}
+                                    error={gpsError}
+                                    placeholder={t('record.gpsPlaceholder')}
+                                    onChange={setGpsInput}
+                                    onSubmit={submitGps}
+                                />
+                            ) : '-')}
                         </td>
                     </tr>
                     <tr>
@@ -104,7 +178,15 @@ export default function RecordLocation({record, proposedLocation}: RecordLocatio
                         <td className="text-primary">
                             {proposedCoords ? (
                                 toDMS(proposedCoords[0], true) + ', ' + toDMS(proposedCoords[1], false)
-                            ) : '-'}
+                            ) : (canEdit && onCoordinatesSubmitted ? (
+                                <CoordinatePairInput
+                                    value={dmsInput}
+                                    error={dmsError}
+                                    placeholder={t('record.dmsPlaceholder')}
+                                    onChange={setDmsInput}
+                                    onSubmit={submitDms}
+                                />
+                            ) : '-')}
                         </td>
                     </tr>
                     <tr>

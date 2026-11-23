@@ -1,7 +1,7 @@
 import {Card} from 'react-bootstrap';
 import {useTranslation} from 'react-i18next';
-import {useState, useCallback} from 'react';
-import {MapContainer, TileLayer, Marker, Popup, useMapEvents} from 'react-leaflet';
+import {useCallback, useState} from 'react';
+import {MapContainer, TileLayer, Marker, useMap, useMapEvents} from 'react-leaflet';
 import {Icon} from 'leaflet';
 import type {LatLngExpression} from 'leaflet';
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
@@ -26,20 +26,44 @@ const proposedLocationIcon = new Icon({
     iconAnchor: [12, 41],
 });
 
+/**
+ * Posun mapy na návrh nové polohy. `MapContainer` bere `center` jen při mountu
+ * (react-leaflet `mapRef` callback má prázdné závislosti), takže k posunu musíme
+ * zavolat `setView` sami z vnitřku kontextu. Reagujeme na `version`, ne na souřadnice:
+ * opakovaný návrh do stejného bodu má být také vidět (marker i přesun).
+ */
+function ProposalRecenter({coordinates, version, zoom}: {
+    coordinates: [number, number];
+    version: number;
+    zoom: number;
+}) {
+    const map = useMap();
+    const [lastVersion, setLastVersion] = useState(0);
+
+    if (version !== lastVersion) {
+        setLastVersion(version);
+        map.setView(coordinates, zoom);
+    }
+
+    return null;
+}
+
 interface RecordMapProps {
     record: RecordPladiasFull;
     onLocationSelectWithGeocode?: (lat: number, lng: number, data: ReverseGeocodingResponse) => void;
-    hasProposedLocation?: boolean;
+    /** Návrh nové polohy ze stránky – zdroj pravdy pro marker i posun mapy. */
+    proposedLocation?: {
+        coordinates: [number, number];
+        version: number;
+    };
 }
 
 interface MapClickHandlerProps {
     onLocationSelect: (lat: number, lng: number) => void;
-    showIndicator?: boolean;
-    indicatorPosition?: [number, number];
     canEdit: boolean;
 }
 
-function MapClickHandler({onLocationSelect, showIndicator, indicatorPosition, canEdit}: MapClickHandlerProps) {
+function MapClickHandler({onLocationSelect, canEdit}: MapClickHandlerProps) {
     useMapEvents({
         click(e) {
             if (canEdit) {
@@ -48,11 +72,7 @@ function MapClickHandler({onLocationSelect, showIndicator, indicatorPosition, ca
         },
     });
 
-    return showIndicator && indicatorPosition ? (
-        <Marker position={indicatorPosition as LatLngExpression}>
-            <Popup>New location (click map again to change)</Popup>
-        </Marker>
-    ) : null;
+    return null;
 }
 
 const defaultIcon = new Icon({
@@ -63,26 +83,11 @@ const defaultIcon = new Icon({
     iconAnchor: [12, 41],
 });
 
-export default function RecordMap({record, onLocationSelectWithGeocode, hasProposedLocation}: RecordMapProps) {
+export default function RecordMap({record, onLocationSelectWithGeocode, proposedLocation}: RecordMapProps) {
     const {t} = useTranslation();
     const {canEditCommonFields: canEdit} = useRecordPermissions(record);
 
-    const [selectedLocation, setSelectedLocation] = useState<[number, number] | null>(null);
-    const [clickDetected, setClickDetected] = useState(false);
-
-    // Sync with external proposed location state – render-phase update guarded
-    // by comparison (React docs: adjusting state when a prop changes, without an effect):
-    // cancelling the proposal clears the selection, (re)proposing keeps it.
-    const [prevHasProposedLocation, setPrevHasProposedLocation] = useState(hasProposedLocation);
-    if (hasProposedLocation !== prevHasProposedLocation) {
-        setPrevHasProposedLocation(hasProposedLocation);
-        if (!hasProposedLocation) {
-            setSelectedLocation(null);
-            setClickDetected(false);
-        }
-    }
-
-    const center: [number, number] = selectedLocation ||
+    const center: [number, number] = proposedLocation?.coordinates ??
         (record.latitude && record.longitude ? [record.latitude, record.longitude] : [49.8, 15.5]);
 
     const fetchReverseGeocoding = useCallback(async (lat: number, lng: number) => {
@@ -101,8 +106,6 @@ export default function RecordMap({record, onLocationSelectWithGeocode, hasPropo
 
     const handleLocationSelect = useCallback((lat: number, lng: number) => {
         logInfo('Location selected', {source: 'RecordMap', lat, lng});
-        setClickDetected(true);
-        setSelectedLocation([lat, lng]);
         fetchReverseGeocoding(lat, lng);
     }, [fetchReverseGeocoding]);
 
@@ -127,16 +130,18 @@ export default function RecordMap({record, onLocationSelectWithGeocode, hasPropo
                             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                         />
-                        <MapClickHandler
-                            onLocationSelect={handleLocationSelect}
-                            showIndicator={clickDetected && canEdit}
-                            indicatorPosition={selectedLocation || undefined}
-                            canEdit={canEdit}
-                        />
-                        {selectedLocation && canEdit &&
-                            <Marker position={selectedLocation} icon={proposedLocationIcon}/>}
-                        {!selectedLocation && record.latitude && record.longitude && (
+                        <MapClickHandler onLocationSelect={handleLocationSelect} canEdit={canEdit}/>
+                        {/* Návrh (klik nebo DMS) je jediná vrstva navíc – kreslí se z návrhu, ne z lokálního stavu */}
+                        {canEdit && proposedLocation &&
+                            <Marker position={proposedLocation.coordinates as LatLngExpression}
+                                    icon={proposedLocationIcon}/>}
+                        {!proposedLocation && record.latitude && record.longitude && (
                             <Marker position={[record.latitude, record.longitude]} icon={defaultIcon}/>
+                        )}
+                        {proposedLocation && (
+                            <ProposalRecenter coordinates={proposedLocation.coordinates}
+                                              version={proposedLocation.version}
+                                              zoom={13}/>
                         )}
                     </MapContainer>
                 </div>

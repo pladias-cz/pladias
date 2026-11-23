@@ -86,6 +86,18 @@ Stránka `Record.tsx` načte záznam přes `GET /atlas/record/:recordId/full` (v
 - Kliknutí do mapy (`RecordMap`) je aktivní jen při `canEditCommonFields`; navržená pozice se potvrdí tlačítkem, které pošle `POST /api/react/atlas/record/moveCoordinates` s novými souřadnicemi, GPS přesností a timestampem.
 - Backend kontroly viz [rules_backend.md](./rules_backend.md) (Záznamy).
 
+#### Vložení DMS místo kliknutí
+
+- Panel `RecordLocation` nabízí ve sloupci „Nová pozice“ dva vstupy – na řádku GPS desetinné `49.5, 14.5` a na řádku DMS `50°38'27.9"N, 14°27'27.2"E`. Obojí se práva `canEditCommonFields` (jako klik do mapy) a oba zmizí ve chvíli, kdy existuje návrh (návrh pole přepíše).
+- Oba vstupy sdílejí tentýž parser i odeslání (`core/coordinates/coordinateParsing` – `parseCoordinatePair`, ten samý parser jako hromadné úpravy), liší se jen placeholderem. Parser akceptuje oba formáty v obou polích, pole jsou záměnná.
+- Vložený pár se chová identicky jako klik: `reverseGeocode` → `proposedLocation` → tabulka i mapa se chovají stejně a potvrzení je týž endpoint.
+- Parser zná jen značky `N/S/E/W` a oddělovač čárka/středník; české `V/Z` ani „lat lon“ bez oddělovače se odmítnou s nápovědou formátu.
+
+#### Stav návrhu a mapa
+
+- `Record.tsx` drží jedinou instanci návrhu (`ProposedLocation`) s rostoucím `version`; `RecordMap` z ní kreslí marker i posun mapy (`ProposalRecenter` volá `map.setView`, protože `MapContainer` bere `center` jen při mountu). Drive se `version`, ne souřadnice – opakovaný návrh do stejného bodu se musí taky projevit.
+- `RecordMap` si držel vlastní `selectedLocation`/`clickDetected` a s stránkou se synchronizoval jen booleanem `hasProposedLocation` – DMS návrh se na mapě vůbec neobjevil a klik po návrhu rozcházel marker s tím, co se odesílá. Stav byl proto sloučen do jednoho zdroje.
+
 ---
 
 ## Rychlé editace v přehledech mapy (mapDetail)

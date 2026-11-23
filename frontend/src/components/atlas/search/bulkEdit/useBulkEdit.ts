@@ -32,7 +32,8 @@ import {getPhytochorions} from '@/services/searchApi';
 import {getUnassignedAuthors} from '@/services/recordApi';
 import {useCatalogQuery} from '@/query/useCatalogQuery';
 import {runBulkOperationSequential, type BulkRecordVersion} from '../bulkEditOperations';
-import {formatCoord, isValidDateValue, parseCoordinatePair} from './valueParsing';
+import {isValidDateValue} from './valueParsing';
+import {formatCoord, parseCoordinatePair} from '@/core/coordinates/coordinateParsing';
 import type {BulkOperationSummary, SemaforOption} from './types';
 import type {TypeaheadOption} from '../types';
 

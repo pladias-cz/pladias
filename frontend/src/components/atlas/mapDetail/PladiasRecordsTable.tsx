@@ -543,9 +543,7 @@ export function PladiasRecordsTable({
                                         style={{textDecoration: 'none', color: 'inherit'}}
                                     >
                                         <b>
-                                            {isVascular
-                                                ? (record.nearestTownText || record.nearestTownName || '')
-                                                : (record.nearestTownName || '')}
+                                            {record.nearestTownText || record.nearestTownName || ''}
                                             {record.districtName && t('atlas.mapDetail.districtInline', {district: record.districtName})}
                                         </b>
                                         {record.locality && (<br/>)}

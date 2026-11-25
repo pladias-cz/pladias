@@ -527,9 +527,11 @@
         "warning": "Hromadné úpravy běží nad výsledkem aktuálního filtru. Změny se provádí postupně po jednotlivých záznamech. Maximálně je možné měnit naráz 1000 záznamů."
       },
       "form": {
+        "excelExportEmptyFile": "Export se nezdařil - server vrátil prázdný soubor. Zkuste to prosím znovu.",
         "excelExportTitleAdmin": "Export dat do XLSX bez uživatelského omezení.",
         "excelExportTitleRestricted": "Export dat do XLSX je omezen podle Vašich práv.",
         "excelExportedAll": "Bylo exportováno všech {{recordsCount}} záznamů.",
+        "excelExportedNone": "Export neobsáhl žádný záznam - filtr neodpovídá žádnému nálezu, nebo se nepodařilo načíst data.",
         "excelExportedPartial": "Exportováno {{exported}} z {{total}} záznamů.",
         "exportBrowser": "Vypsat do prohlížeče",
         "exportExcel": "Exportovat do excelu",

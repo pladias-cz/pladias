@@ -527,9 +527,11 @@
         "warning": "Sammelbearbeitungen laufen über dem Ergebnis des aktuellen Filters. Änderungen werden einzeln, Datensatz für Datensatz, vorgenommen. Gleichzeitig können maximal 1000 Datensätze geändert werden."
       },
       "form": {
+        "excelExportEmptyFile": "Der Export ist fehlgeschlagen - der Server hat eine leere Datei zurückgegeben. Bitte erneut versuchen.",
         "excelExportTitleAdmin": "Datenexport nach XLSX ohne Benutzerbeschränkung.",
         "excelExportTitleRestricted": "Der Export nach XLSX ist gemäß Ihren Rechten eingeschränkt.",
         "excelExportedAll": "Es wurden alle {{recordsCount}} Datensätze exportiert.",
+        "excelExportedNone": "Der Export enthält keine Datensätze - entweder entspricht dem Filter kein Fund oder die Daten konnten nicht geladen werden.",
         "excelExportedPartial": "Exportiert {{exported}} von {{total}} Datensätzen.",
         "exportBrowser": "Im Browser ausgeben",
         "exportExcel": "Nach Excel exportieren",

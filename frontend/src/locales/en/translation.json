@@ -527,9 +527,11 @@
         "warning": "Bulk edits run over the result of the current filter. Changes are made one record at a time. At most 1000 records can be changed at once."
       },
       "form": {
+        "excelExportEmptyFile": "Export failed - the server returned an empty file. Please try again.",
         "excelExportTitleAdmin": "Export data to XLSX without user restriction.",
         "excelExportTitleRestricted": "Export to XLSX is restricted according to your rights.",
         "excelExportedAll": "All {{recordsCount}} records were exported.",
+        "excelExportedNone": "The export contains no records - either the filter matches nothing or the data could not be loaded.",
         "excelExportedPartial": "Exported {{exported}} of {{total}} records.",
         "exportBrowser": "Print to browser",
         "exportExcel": "Export to Excel",

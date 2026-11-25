@@ -8,6 +8,7 @@
 import {useCallback, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {downloadBlob} from '@/core/dataTable/export';
+import {ApiError} from '@/services/apiClient';
 import {notifyApiError} from '@/stores/notificationStore';
 import {exportSearchExcel} from '@/services/searchApi';
 import {EXCEL_EXPORT_PAGE_SIZE} from '../searchRequest';
@@ -23,8 +24,20 @@ export function useAdvancedSearchExport() {
         setMessage('');
         try {
             const file = await exportSearchExcel(EXCEL_EXPORT_PAGE_SIZE, formData);
+            // Backend streamuje workbook až PO odeslání hlaviček (SearchController
+            // .exportResultsAsExcelSheet), takže selhání zápisu neprojde do HTTP statusu
+            // ani do Content-Type – 0B tělo je jediná detekce. Stáhnout ho znamenalo
+            // tvářit se, že export proběhl.
+            if (file.blob.size === 0) {
+                throw new ApiError(t('atlas.search.form.excelExportEmptyFile'));
+            }
+
             downloadBlob(file.blob, file.filename);
-            if (file.totalRecords != null) {
+            // Nula exportovaných řádků není úspěch ani při platném souboru – stejně
+            // vypadá prázdný výsledek vyhledávání i polykaná chyba při načítání dat.
+            if (file.recordsExported === 0) {
+                setMessage(t('atlas.search.form.excelExportedNone'));
+            } else if (file.totalRecords != null) {
                 setMessage(file.recordsExported >= file.totalRecords
                     ? t('atlas.search.form.excelExportedAll', {recordsCount: file.recordsExported})
                     : t('atlas.search.form.excelExportedPartial', {

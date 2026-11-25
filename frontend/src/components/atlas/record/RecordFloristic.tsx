@@ -9,7 +9,7 @@ import RecordReadonlyField from '@/components/atlas/record/RecordReadonlyField';
 import MultiSelectEdit from '@/components/atlas/record/MultiSelectEdit';
 import SingleSelectEdit from '@/components/atlas/record/SingleSelectEdit';
 import type {MultiValueOption} from '@/models/MultiValueOption';
-import {getImportableTaxaForRecord, getPhytochorionOptions, getUnassignedAuthors} from '@/services/recordApi';
+import {getImportableTaxaForRecord, getPhytochorionOptions, getUnassignedAuthors, getSubstrateOptions} from '@/services/recordApi';
 import {useInstanceConfig} from '@/context/InstanceConfigContext';
 
 // Date format validation: YYYY, YYYY-MM, YYYY-MM-DD, or "s. d." (sine data - without date)
@@ -71,6 +71,7 @@ export default function RecordFloristic({record, onFieldUpdated}: RecordFloristi
     const loadTaxonOptions = useCallback(() => getImportableTaxaForRecord(localRecord.id), [localRecord.id]);
     const loadPhytochorionOptions = useCallback(() => getPhytochorionOptions(), []);
     const loadAuthorOptions = useCallback(() => getUnassignedAuthors(localRecord.id), [localRecord.id]);
+    const loadSubstrateOptions = useCallback(() => getSubstrateOptions(), []);
 
     // Memoize currentValue to prevent unnecessary re-renders in MultiValueEdit
     const authorsOptions = useMemo(() => localRecord.recordAuthors.map((a): MultiValueOption => ({
@@ -110,6 +111,9 @@ export default function RecordFloristic({record, onFieldUpdated}: RecordFloristi
             'ALTITUDEMIN': 'altitudeMin',
             'ALTITUDEMAX': 'altitudeMax',
             'DATE': 'dateIso',
+            'SUBSTRATE': 'substrate',
+            'CHEMICAL': 'chemical',
+            'LOCALITYEXTRA': 'localityExtra',
         };
 
         const mappedField = fieldMapping[field];
@@ -204,14 +208,48 @@ export default function RecordFloristic({record, onFieldUpdated}: RecordFloristi
 
                             {(!isVascular && (
                                     <>
-                                        <RecordReadonlyField label={t('record.substrateText')}
-                                                             content={localRecord.substrate}/>
-                                        <RecordReadonlyField label={t('record.chemical')}
-                                                             content={localRecord.chemical}/>
+                                        <RecordInlineField
+                                            label={t('record.substrateText')}
+                                            recordId={localRecord.id}
+                                            field="SUBSTRATE"
+                                            value={localRecord.substrate}
+                                            onUpdated={data => handleSave('SUBSTRATE', data)}
+                                            lastEditTimestampNum={localRecord.lastEditTimestampNum || 0}
+                                        />
+                                        <RecordInlineField
+                                            label={t('record.chemical')}
+                                            recordId={localRecord.id}
+                                            field="CHEMICAL"
+                                            value={localRecord.chemical}
+                                            onUpdated={data => handleSave('CHEMICAL', data)}
+                                            lastEditTimestampNum={localRecord.lastEditTimestampNum || 0}
+                                        />
+                                        {/* Substrát 1 je odvozen z kategorie substrátu (edituje se přes Substrát 2) */}
                                         <RecordReadonlyField label={t('record.substrate1')}
-                                                             content={localRecord.substrate}/>
-                                        <RecordReadonlyField label={t('record.substrate2')}
-                                                             content={localRecord.substrate}/>
+                                                             content={localRecord.substrate1Text}/>
+                                        <SingleSelectEdit
+                                            label={t('record.substrate2')}
+                                            recordId={localRecord.id}
+                                            currentValue={localRecord.substrate2Id
+                                                ? {id: localRecord.substrate2Id, name: localRecord.substrateCategoryText ?? ''}
+                                                : null}
+                                            loadOptions={loadSubstrateOptions}
+                                            field="SUBSTRATE2"
+                                            onUpdated={(data) => {
+                                                // backend z kategorie 2 odvodí hlavní kategorii 1 – promítneme obojí
+                                                const option = data.updatedValue as (MultiValueOption & {substrate1Id?: number, substrate1Text?: string}) | null;
+                                                setLocalRecord((prev: RecordPladiasFull) => ({
+                                                    ...prev,
+                                                    substrate2Id: option?.id ?? null,
+                                                    substrate1Id: option?.substrate1Id ?? null,
+                                                    substrate1Text: option?.substrate1Text ?? null,
+                                                    substrateCategoryText: option?.name ?? null,
+                                                    lastEditTimestampNum: data.newTimestamp
+                                                }));
+                                                onFieldUpdated?.(data.newTimestamp);
+                                            }}
+                                            lastEditTimestampNum={localRecord.lastEditTimestampNum || 0}
+                                        />
                                     </>)
                             )}
                             <RecordInlineField
@@ -323,9 +361,9 @@ export default function RecordFloristic({record, onFieldUpdated}: RecordFloristi
                                     <RecordReadonlyField label={t('record.chemical')}
                                                          content={localRecord.chemical}/>
                                     <RecordReadonlyField label={t('record.substrate1')}
-                                                         content={localRecord.substrate}/>
+                                                         content={localRecord.substrate1Text}/>
                                     <RecordReadonlyField label={t('record.substrate2')}
-                                                         content={localRecord.substrate}/>
+                                                         content={localRecord.substrateCategoryText}/>
                                 </>
                             )}
                             <RecordReadonlyField label={t('record.nameOriginal')} content={localRecord.taxonOriginal}/>

@@ -33,7 +33,7 @@ export default function RecordRemarks({record, onFieldUpdated}: RecordRemarksPro
         window.scrollTo(0, scrollRef.current);
     }, [localRecord]);
 
-    const {canEditCommonFields: canEdit} = useRecordPermissions(localRecord);
+    const {canEditCommonFields: canEdit, canEditOriginalId} = useRecordPermissions(localRecord);
 
     // Načítání voleb pro MultiValueEdit (memoizované kvůli deps efektu v komponentě)
     const loadHerbariumOptions = useCallback(() => getUnassignedHerbaria(localRecord.id), [localRecord.id]);
@@ -168,7 +168,8 @@ export default function RecordRemarks({record, onFieldUpdated}: RecordRemarksPro
                                 )}
                             </div>
                         )}
-                        {canEdit ? (
+                        {/* Externí ID: povolené projekty (atlas.externalIdEditableProjectIds) nebo mapAdmin */}
+                        {canEdit && canEditOriginalId ? (
                             <RecordInlineField
                                 label={t('record.originalId')}
                                 recordId={localRecord.id}

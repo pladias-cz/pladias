@@ -54,7 +54,8 @@ export default function SingleSelectEdit({
 
     async function sendApiRequest(key: string, value: number | null) {
         try {
-            const result = await patchRecordField(recordId, key, value?.toString() ?? '', lastTimestamp);
+            // null → JSON null (vymazat pole), nikoli prázdný string
+            const result = await patchRecordField(recordId, key, value?.toString() ?? null, lastTimestamp);
             const newTimestamp = result.lastEditTimestampNum;
             if (newTimestamp) {
                 setLastTimestamp(newTimestamp);

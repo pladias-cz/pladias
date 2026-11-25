@@ -44,6 +44,11 @@ public class ProjectConstants {
     // Projekty s výjimečným chováním v atlasovém modulu (ID dle DB dané instance)
     public static final String ExcerptionProjectIdsKey = "atlas.excerptionProjectIds";
     public static final String NdopProjectIdsKey = "atlas.ndopProjectIds";
+    /**
+     * Projekty, kde mohou externí (originální) ID záznamu editovat i běžní editoři
+     * (právo na běžná pole). MapAdmin edituje externí ID v libovolném projektu.
+     */
+    public static final String ExternalIdEditableProjectIdsKey = "atlas.externalIdEditableProjectIds";
 
     // Externí zdroje záznamů mapového detailu dostupné v instanci
     // (schéma gbif v DB dané instance nemusí existovat)

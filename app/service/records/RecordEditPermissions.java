@@ -11,6 +11,7 @@ import models.User;
 import utils.UserUtils;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -184,6 +185,35 @@ public final class RecordEditPermissions {
         return isUserElligibleToEditEverything(record);
     }
 
+    /**
+     * Smí editovat externí (originální) ID záznamu. Pravidlo (žádné ID není v kódu):
+     * projekt je na seznamu instance {@code atlas.externalIdEditableProjectIds}
+     * ({@link platform.ProjectConstants#ExternalIdEditableProjectIdsKey}), nebo je uživatel mapAdmin –
+     * ten edituje externí ID v libovolném projektu.
+     * Oprávnění k běžným polím a zámky záznamu vyhodnocuje {@link #canEditCommonFields(RecordView)}
+     * – flag se v UI kombinuje s ním.
+     */
+    public boolean canEditOriginalId(RecordView record, Collection<? extends Number> externalIdProjectIds) {
+        if (!record.editationAllowed()) {
+            return false;
+        }
+        if (mapAdmin) {
+            return true;
+        }
+
+        Long projectId = record.projectId();
+        if (projectId == null || externalIdProjectIds == null) {
+            return false;
+        }
+
+        for (Number configuredId : externalIdProjectIds) {
+            if (configuredId != null && configuredId.longValue() == projectId) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     // ==================== Raw eligibility rules (mirror of historical semantics) ====================
 
     /**
@@ -254,4 +284,3 @@ public final class RecordEditPermissions {
         return false;
     }
 }
-

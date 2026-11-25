@@ -41,7 +41,9 @@ public class RecordUpdateController extends ControllerBase {
         }
 
         String key = json.has("key") ? json.get("key").asText() : null;
-        String value = json.has("value") && !json.get("value").isNull() ? json.get("value").asText() : "";
+        JsonNode valueNode = json.get("value");
+        // null JSON hodnota = vymazat pole (např. kategorie substrátu); prázdný string zůstává řetězec
+        String value = (valueNode == null || valueNode.isNull()) ? null : valueNode.asText();
         long lastEditTimestamp = json.has("lastEditTimestampNum") ? json.get("lastEditTimestampNum").asLong() : 0;
 
         if (key == null || key.isEmpty()) {

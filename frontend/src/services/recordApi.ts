@@ -194,12 +194,25 @@ export async function getPhytochorionOptions(): Promise<MultiValueOption[]> {
     return fetchOptions('/api/react/selectOptions/phytochorions');
 }
 
+/** GET /api/react/selectOptions/substrates – kategorie substrátu („hlavní – upřesňující") pro ne-cevnaté. */
+export async function getSubstrateOptions(): Promise<MultiValueOption[]> {
+    return fetchOptions('/api/react/selectOptions/substrates');
+}
+
 /**
  * Společné načtení voleb editací: endpointy vrací obálku s `data` položkami
  * `{id, name|nameLat, label|nameHtml}` – sjednocují se do `MultiValueOption`.
  */
 async function fetchOptions(url: string): Promise<MultiValueOption[]> {
-    const data = requireData<{ id: number; name?: string; nameLat?: string; label?: string; nameHtml?: string }[]>(
+    const data = requireData<{
+        id: number;
+        name?: string;
+        nameLat?: string;
+        label?: string;
+        nameHtml?: string;
+        substrate1Id?: number;
+        substrate1Text?: string;
+    }[]>(
         await apiGet(url),
         'Načtení možností selhalo.',
     );
@@ -207,5 +220,8 @@ async function fetchOptions(url: string): Promise<MultiValueOption[]> {
         id: item.id,
         name: item.name ?? item.nameLat ?? '',
         label: item.label ?? item.nameHtml,
+        // nepovinné upřesňující údaje (např. odvozený substrát 1 u kategorií substrátu)
+        ...(item.substrate1Id !== undefined ? {substrate1Id: item.substrate1Id} : {}),
+        ...(item.substrate1Text !== undefined ? {substrate1Text: item.substrate1Text} : {}),
     }));
 }

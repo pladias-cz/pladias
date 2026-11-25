@@ -98,6 +98,9 @@ public record RecordPladiasFullDto(
     String chemical,
     String localityExtra,
     String substrateCategoryText,
+    Integer substrate1Id,
+    String substrate1Text,
+    Integer substrate2Id,
 
     // Remarks and comments
     String comment,
@@ -134,6 +137,8 @@ public record RecordPladiasFullDto(
     // Edit permissions (computed by RecordEditPermissions, single source of truth)
     Boolean canEditCommonFields,
     Boolean canEditValidationFields,
+    /** Externí (originální) ID: výjimka excerpčního projektu, nebo mapAdmin pro všechny projekty. */
+    Boolean canEditOriginalId,
 
     // Comment resolve permission (mirrors Record.isUserElligibleToEditEverything, used by RecordCommentController.resolveComment)
     Boolean canResolveComments,
@@ -171,8 +176,12 @@ public record RecordPladiasFullDto(
      * @param currentUser the current user (null if not authenticated)
      * @param permissions edit permissions context of the current user
      *                    ({@link RecordEditPermissions#forUser(User)}; null disables editing)
+     * @param externalIdEditableProjectIds projekty instance
+     *                    ({@code atlas.externalIdEditableProjectIds}), v nichž i běžný editor edituje externí
+     *                    (originální) ID – shodné s kontrolou {@code RecordsService.editField} na klíči ORIGINALID
      */
-    public static RecordPladiasFullDto fromRecord(Record record, User currentUser, RecordEditPermissions permissions) {
+    public static RecordPladiasFullDto fromRecord(Record record, User currentUser, RecordEditPermissions permissions,
+                                                  List<Integer> externalIdEditableProjectIds) {
         Integer year = record.getDateSpecifier() != null ? record.getDateSpecifier().getYear() : null;
         String datePrecision = record.getDateSpecifier() != null ? record.getDateSpecifier().getDatePrecision() : null;
         String dateIso = record.getDateSpecifier() != null ? record.getDateSpecifier().toString() : null;
@@ -384,6 +393,9 @@ public record RecordPladiasFullDto(
 
         // Compute canResolveComments using the same check the resolve endpoint performs
         Boolean canResolveComments = permissions != null && permissions.canResolveComments(recordView);
+        // Externí ID – stejný predicate, jaký vynucuje RecordsService.editField na klíči ORIGINALID
+        Boolean canEditOriginalId = permissions != null
+                && permissions.canEditOriginalId(recordView, externalIdEditableProjectIds);
 
         return new RecordPladiasFullDto(
             record.getId(), record.getLatitude(), record.getLongitude(), gpsPrecision, gpsCoordsSource,
@@ -401,12 +413,18 @@ public record RecordPladiasFullDto(
             record.getNonVascularExtension() != null ? record.getNonVascularExtension().getChemical() : null,
             record.getNonVascularExtension() != null ? record.getNonVascularExtension().getLocalityExtra() : null,
             record.getNonVascularExtension() != null ? record.getNonVascularExtension().getSubstrateCategoryText() : null,
+            record.getNonVascularExtension() != null && record.getNonVascularExtension().getSubstrate1() != null
+                ? record.getNonVascularExtension().getSubstrate1().getId() : null,
+            record.getNonVascularExtension() != null && record.getNonVascularExtension().getSubstrate1() != null
+                ? record.getNonVascularExtension().getSubstrate1().getKeyCz() : null,
+            record.getNonVascularExtension() != null && record.getNonVascularExtension().getSubstrate2() != null
+                ? record.getNonVascularExtension().getSubstrate2().getId() : null,
             record.getComment(), record.getRemarkExcerption(), record.getRemarkOther(), record.getRemarkDoubt(),
             unresolvedCommentsCount, comments, record.hasHistory(), herbariums, record.isHerbariumQuality(),
             record.getSource(), record.getOriginalId(), licenseId, licenseName,
             projectId, projectName, institutionName, record.isLocked(), record.isIncludedInMap(),
             record.getLastEditTimestamp(), batch != null ? batch.getCreateTimestamp() : null,
-            canEditCommonFields, canEditValidationFields, canResolveComments,
+            canEditCommonFields, canEditValidationFields, canEditOriginalId, canResolveComments,
             taxonDto, recordAuthorsDto, batchDto, biblioDto, nearestTownLegacyDto,
             mapSquaresDto, quadrantsDto, licenseDto);
     }
@@ -537,7 +555,5 @@ public record RecordPladiasFullDto(
     ) {
     }
 }
-
-
 
 

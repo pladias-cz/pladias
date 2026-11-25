@@ -48,6 +48,9 @@ export interface RecordPladias {
     chemical: string | null;
     localityExtra: string | null;
     substrateCategoryText: string | null;
+    substrate1Id: number | null;
+    substrate1Text: string | null;
+    substrate2Id: number | null;
 
     comment: string | null;
     remarkExcerption: string | null;
@@ -94,6 +97,8 @@ export interface RecordPladias {
     // Edit permissions (backend: RecordEditPermissions – single source of truth)
     canEditCommonFields: boolean;
     canEditValidationFields: boolean;
+    /** Externí ID: projekty atlas.externalIdEditableProjectIds, nebo mapAdmin (vždy). */
+    canEditOriginalId: boolean;
     // Comment resolve permission (computed by backend: isUserElligibleToEditEverything)
     canResolveComments: boolean | null;
 }

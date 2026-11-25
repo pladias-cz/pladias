@@ -95,7 +95,11 @@ public class RecordsService {
                 updateSource(currentUser, record, newValue);
                 break;
             case "ORIGINALID":
-                updateOriginalId(currentUser, record, newValue, messages);
+                // Externí ID: projekty z atlas.externalIdEditableProjectIds, nebo mapAdmin (RecordEditPermissions)
+                if (!permissions.canEditOriginalId(recordView, editableExternalIdProjectIds())) {
+                    throw new IllegalArgumentException(messages.at("RecordEditController.originalIdNotEditable"));
+                }
+                updateOriginalId(currentUser, record, newValue);
                 break;
             case "SUBSTRATE":
                 updateDaliborSustrateText(currentUser, record, newValue);
@@ -377,13 +381,15 @@ public class RecordsService {
         saveRecordHistory(currentUser, record.getId(), "source", oldValue, newValue, RecordChangeType.DESCRIPTION);
     }
 
-    private void updateOriginalId(User currentUser, Record record, String newValue, Messages messages) {
-        if (record.getProject().getId() != Project.AtlasExcerptionProjectId) {
-            throw new IllegalArgumentException(messages.at("RecordEditController.originalIdNotEditable"));
-        }
+    private void updateOriginalId(User currentUser, Record record, String newValue) {
         String oldValue = StringUtils.isBlank(record.getOriginalId()) ? "" : record.getOriginalId();
         record.setOriginalId(newValue);
         saveRecordHistory(currentUser, record.getId(), "original_id", oldValue, newValue, RecordChangeType.DESCRIPTION);
+    }
+
+    /** Projekty instance, kde i běžní editoři smí upravovat externí (originální) ID záznamu. */
+    private List<Integer> editableExternalIdProjectIds() {
+        return configService.getIntList(ProjectConstants.ExternalIdEditableProjectIdsKey);
     }
 
     private void updateDaliborSustrateText(User currentUser, Record record, String newValue) {
@@ -396,12 +402,19 @@ public class RecordsService {
         NonVascularRecordExtension recordExt = record.getNonVascularExtension();
         String oldValue = recordExt.getSubstrateCategoryText();
 
-        long substKey = Long.parseLong(newValue);
-        Substrate2 substrate2 = Substrate2.find().byId(substKey);
-        recordExt.setSubstrate2(substrate2);
-
-        Substrate1 substrate1 = Substrate1.find().byId(substrate2.getSubstrate1Id());
-        recordExt.setSubstrate1(substrate1);
+        if (StringUtils.isBlank(newValue)) {
+            // vymazani kategorie substratu – zrusi i odvozenou kategorii 1
+            recordExt.setSubstrate2(null);
+            recordExt.setSubstrate1(null);
+        } else {
+            int substrate2Key = Integer.parseInt(newValue.trim());
+            Substrate2 substrate2 = Substrate2.find().byId(substrate2Key);
+            if (substrate2 == null) {
+                throw new IllegalArgumentException("Neplatna hodnota kategorie substratu.");
+            }
+            recordExt.setSubstrate2(substrate2);
+            recordExt.setSubstrate1(Substrate1.find().byId(substrate2.getSubstrate1Id()));
+        }
 
         String newValueText = recordExt.getSubstrateCategoryText();
         saveRecordHistory(currentUser, record.getId(), "substrate_category", oldValue, newValueText, RecordChangeType.DESCRIPTION);

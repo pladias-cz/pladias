@@ -137,7 +137,11 @@ public class MapDetailService {
             return MapDetailResult.error("Record not found");
         }
 
-        RecordPladiasFullDto dto = RecordPladiasFullDto.fromRecord(record, currentUser, RecordEditPermissions.forUser(currentUser));
+        RecordPladiasFullDto dto = RecordPladiasFullDto.fromRecord(
+                record,
+                currentUser,
+                RecordEditPermissions.forUser(currentUser),
+                _configService.getIntList(ProjectConstants.ExternalIdEditableProjectIdsKey));
         return MapDetailResult.success(dto);
     }
 

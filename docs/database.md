@@ -2,22 +2,62 @@
 
 ## Migrace
 
-Change the classes in `../app/models`. Then run the next command. The development container 'play' from [GitHub](https://github.com/pladias-cz/sbt/tree/v2) is required.
+Upravte třídy v `../app/models`. Poté spusťte následující příkaz. Je potřeba vývojový kontejner 'play' z [GitHubu](https://github.com/pladias-cz/sbt/tree/v2).
 
 ```
 docker compose run --rm play generateDDL
 ```
 
-This will generate the model change files:
-* `conf/dbmigration/1.X.sql` with the SQL code to update the database.
-  You can edit the SQL code (for example, add an index or adjust some values).
-* `conf/dbmigration/1.X.model.xml` with changes from the previous model.
+Příkaz vygeneruje soubory se změnami modelu:
+* `conf/dbmigration/1.X.sql` s SQL kódem pro aktualizaci databáze.
+  SQL kód můžete upravit (například přidat index nebo upravit některé hodnoty).
+* `conf/dbmigration/1.X.model.xml` se změnami oproti předchozímu modelu.
 
-Check the SQL file and then you can try applying the changes to the development database.
+Zkontrolujte SQL soubor a poté můžete zkusit aplikovat změny na vývojovou databázi.
 
 ```
 docker compose run --rm play "runMigrations jdbc:postgresql://pladias_master:5432/pladias pladias pladias"
 ```
+
+### Ruční migrace (bez změny modelu)
+
+Migrace zajišťuje Ebean Migration. Čte pouze soubory `*.sql` z adresáře `conf/dbmigration/`.
+Soubory `*.model.xml` ke spuštění migrací potřeba nejsou. Používá je jen `generateDDL`, aby spočítal rozdíl
+oproti předchozímu modelu a automaticky vygeneroval SQL.
+
+Vlastní migrace proto nepotřebuje změnu modelu ani XML soubor. Stačí vytvořit soubor s další verzí, například:
+
+* `conf/dbmigration/1.6.sql` nebo
+* `conf/dbmigration/1.6__popis.sql`
+
+a spustit `runMigrations` jako obvykle. Verze musí být vyšší než nejvyšší již aplikovaná.
+Už aplikovanou migraci neupravujte (její checksum je uložen v tabulce `db_migration`), napište raději novou verzi.
+
+Pokud migrace mění schéma (nejen data), upravte také entitu v `app/models`,
+jinak další `generateDDL` rozdíl znovu zachytí.
+
+### Opakovatelné migrace
+
+Soubor pojmenovaný `R__popis.sql` (bez čísla verze) je opakovatelná migrace.
+Spouští se po všech verzovaných migracích a provede se znovu vždy, když se změní jeho obsah (checksum se liší od uloženého).
+Nezměněné soubory se přeskočí. Hodí se pro pohledy, funkce a triggery, které se udržují v jednom souboru:
+
+```sql
+drop view if exists v_user_summary;
+create view v_user_summary as select ... ;
+```
+
+Skript musí jít bezpečně spouštět opakovaně (`create or replace`, `drop ... if exists`).
+Nedávejte do něj změny dat (`insert`, `update`) ani `alter table`, provedly by se znovu po každé úpravě souboru.
+Opakovatelné migrace se spouštějí v abecedním pořadí, pokud na sobě závisí, předřaďte názvům prefix (`R__01_...`, `R__02_...`).
+
+### Příprava migrace předem (draft)
+
+Zpracovávají se jen soubory s příponou `.sql`, takže připravenou migraci lze uložit jako např. `1.6.sql.draft`
+a bude ignorována. Až přijde správná chvíle, přejmenujte ji (`git mv 1.6.sql.draft 1.6.sql`), konečné číslo verze zvolte
+až v tu chvíli, a spusťte `runMigrations`.
+
+Nenechávejte v adresáři soubor `.sql` bez čísla verze a bez prefixu `R__`, může způsobit selhání migrace.
 
 
 ## Master-Replica

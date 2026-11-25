@@ -407,7 +407,12 @@ public class RecordsService {
             recordExt.setSubstrate2(null);
             recordExt.setSubstrate1(null);
         } else {
-            int substrate2Key = Integer.parseInt(newValue.trim());
+            int substrate2Key;
+            try {
+                substrate2Key = Integer.parseInt(newValue.trim());
+            } catch (NumberFormatException e) {
+                throw new IllegalArgumentException("Neplatna hodnota kategorie substratu.");
+            }
             Substrate2 substrate2 = Substrate2.find().byId(substrate2Key);
             if (substrate2 == null) {
                 throw new IllegalArgumentException("Neplatna hodnota kategorie substratu.");

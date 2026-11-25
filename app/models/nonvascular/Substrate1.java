@@ -20,6 +20,8 @@ public class Substrate1 extends Model {
     private Integer id;
     @Column(name = "key_cz")
     private String keyCz;
+    @Column(name = "succession")
+    private Integer succession;
 
     public static Finder<Integer, Substrate1> find() {
         return new Finder<>(Substrate1.class);
@@ -48,6 +50,14 @@ public class Substrate1 extends Model {
 
     public void setKeyCz(String keyCz) {
         this.keyCz = keyCz;
+    }
+
+    public Integer getSuccession() {
+        return succession;
+    }
+
+    public void setSuccession(Integer succession) {
+        this.succession = succession;
     }
 
 }

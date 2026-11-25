@@ -430,11 +430,13 @@
         <createTable name="atlas_nonvascular.substrate_1" pkName="pk_substrate_1">
             <column name="id" type="integer" primaryKey="true"/>
             <column name="key_cz" type="varchar(255)"/>
+            <column name="succession" type="integer(255)"/>
         </createTable>
         <createTable name="atlas_nonvascular.substrate_2" pkName="pk_substrate_2">
             <column name="id" type="integer" primaryKey="true"/>
             <column name="substrate_1_id" type="integer(255)"/>
             <column name="key_cz" type="varchar(255)"/>
+            <column name="succession" type="integer(255)"/>
         </createTable>
         <createTable name="public.syntaxons" pkName="pk_syntaxons">
             <column name="id" type="integer" primaryKey="true"/>

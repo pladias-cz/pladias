@@ -38,7 +38,13 @@ export default function MapMain() {
         <Container fluid className="px-0">
             <Row className="g-0" style={{height: 'calc(100vh - 56px)'}}>
                 <Col md={12} lg={8} className="h-100">
-                    <MapComponent taxonId={taxon?.id}/>
+                    {/*
+                        taxonId jde rovnou z routy, ne z `taxon?.id`: mapa (a přes ni
+                        WFS vrstvy s viewParams TAXON_ID a odkazy na detail čtverce) by
+                        jinak první rendery viděly `undefined` a po dojití dotazu na
+                        taxon se sestavovala podruhé souběžně s prvním stahováním.
+                    */}
+                    <MapComponent taxonId={id ?? undefined}/>
                 </Col>
                 <Col lg={4} className="h-100 overflow-hidden">
                     <div className="h-100 p-3">

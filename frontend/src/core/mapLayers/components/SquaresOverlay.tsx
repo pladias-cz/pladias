@@ -6,19 +6,27 @@
  * and shows popup with square name and coordinates.
  *
  * Features:
- * - Load GeoJSON from GeoServer WFS (common:squares)
+ * - Load GeoJSON from GeoServer WFS (common:squares) – stáhne se jednou za mount
  * - Zoom-dependent interactivity (active from zoom level 10+)
  * - Hover: highlight border red + show popup
  * - Click: show popup with square info (name, WGS coords, DMS coords)
  * - Double-click: trigger callback with square ID for navigation
  * - Right-click: show popup with link to the square detail page (same target as double-click)
  * - Visibility control via opacity (layer stays mounted)
+ *
+ * Interakční listnery se vážou jedenkrát při založení vrstvy a hodnoty, které se
+ * v průběhu života komponenty mění (`params.taxonId`, `onSquareDoubleClick`,
+ * `navigate`), čtou z `latestRef`. Kdyby byly v deps effectu, GeoJSON se stahuje
+ * podruhé souběžně s prvním požadavkem a odpověď, která dorazí jako poslední,
+ * nainstaluje své (už zastaralé) handlery – dvojklik ani pravý klik pak na nic
+ * nesáhnou. O pozdní odpovědi se stará `responseGuard.ts` + AbortController.
  */
 
 import {useMap} from 'react-leaflet';
 import * as L from 'leaflet';
 import {useEffect, useRef, useCallback} from 'react';
 import {fetchWfsGeoJson} from '@/services/mapApi';
+import {createResponseGuard} from './responseGuard';
 import {logError} from '@/services/logger';
 import type {LayerParams} from '../types';
 import {useNavigate} from 'react-router-dom';
@@ -94,6 +102,15 @@ function getPolygonCentroid(coordinates: number[][][]): LatLngExpression {
     return [latSum / count, lngSum / count];
 }
 
+/**
+ * Prodleva, po níž se po kliknutí na čtverec otevře popup se souřadnicemi.
+ * Musí být delší než systémový interval dvojitého kliknutí (Windows/macOS
+ * 400–500 ms): jinak se popup stihne otevřít mezi oběma kliky a jeho kontejner
+ * (Leaflet na něm vypíná propagaci kliků) sebere ten druhý – dvojklik se
+ * vůbec nerezignuje a navigace se nekoná.
+ */
+const SQUARE_CLICK_POPUP_DELAY_MS = 350;
+
 export function SquaresOverlay({visible, minZoom = 8, params, onSquareDoubleClick}: SquaresOverlayProps) {
     const map = useMap();
     const navigate = useNavigate();
@@ -102,6 +119,16 @@ export function SquaresOverlay({visible, minZoom = 8, params, onSquareDoubleClic
     const currentLabelRef = useRef<L.Marker | null>(null);
     const visibleRef = useRef(visible);
     const clickTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    /**
+     * Čerstvé hodnoty pro listnery, které jsou navázané po celou dobu života
+     * vrstvy (proto je nesmí zachytit closure renderu, ve kterém vznikla).
+     */
+    const latestRef = useRef({taxonId: params?.taxonId, onSquareDoubleClick, navigate});
+
+    useEffect(() => {
+        latestRef.current = {taxonId: params?.taxonId, onSquareDoubleClick, navigate};
+    }, [params?.taxonId, onSquareDoubleClick, navigate]);
 
     useEffect(() => {
         visibleRef.current = visible;
@@ -143,6 +170,27 @@ export function SquaresOverlay({visible, minZoom = 8, params, onSquareDoubleClic
     }, []);
 
     /**
+     * Zavře otevíravé popupy. `map.closePopup()` bez argumentu zavře i ty, které
+     * z `currentPopupRef` vypadly – dřív jich mohlo zůstat otevřených víc (každá
+     * odpověď WFS si zaregistrovala vlastní `map.on('click')`) a jejich kontejner
+     * pak polykal kliky na mapu pod sebou.
+     */
+    const closeAllPopups = useCallback(() => {
+        map.closePopup();
+        currentPopupRef.current = null;
+    }, [map]);
+
+    /**
+     * Zruší popup plánovaný po kliknutí – volá se při dvojkliku a pravém kliku.
+     */
+    const cancelPendingPopup = useCallback(() => {
+        if (clickTimeoutRef.current) {
+            clearTimeout(clickTimeoutRef.current);
+            clickTimeoutRef.current = null;
+        }
+    }, []);
+
+    /**
      * Handle double-click on a square feature - cancel pending click popup and navigate
      */
     const handleDoubleClick = useCallback((e: L.LeafletEvent) => {
@@ -150,19 +198,20 @@ export function SquaresOverlay({visible, minZoom = 8, params, onSquareDoubleClic
         const feature = layer.feature;
 
         // Cancel any pending click popup
-        if (clickTimeoutRef.current) {
-            clearTimeout(clickTimeoutRef.current);
-            clickTimeoutRef.current = null;
-        }
+        cancelPendingPopup();
+        closeAllPopups();
 
-        if (!feature || !onSquareDoubleClick) return;
+        // Callback se bere z latestRef: listner je navázaný při založení vrstvy a
+        // s closure z tehdejšího renderu by měl navěky `taxonId === undefined`.
+        const navigateToSquare = latestRef.current.onSquareDoubleClick;
+        if (!feature || !navigateToSquare) return;
 
         // Get square ID from feature properties
         const squareId = feature.properties.name;
         if (squareId) {
-            onSquareDoubleClick(squareId);
+            navigateToSquare(squareId);
         }
-    }, [onSquareDoubleClick]);
+    }, [cancelPendingPopup, closeAllPopups]);
 
     /**
      * Handle right-click (contextmenu) on a square feature - show popup with link to detail page.
@@ -180,18 +229,13 @@ export function SquaresOverlay({visible, minZoom = 8, params, onSquareDoubleClic
         if (!squareId) return;
 
         // Cancel any pending single-click popup (defensive - browsers don't fire 'click' for right button)
-        if (clickTimeoutRef.current) {
-            clearTimeout(clickTimeoutRef.current);
-            clickTimeoutRef.current = null;
-        }
+        cancelPendingPopup();
 
         // Close existing popup if any
-        if (currentPopupRef.current) {
-            map.closePopup(currentPopupRef.current);
-            currentPopupRef.current = null;
-        }
+        closeAllPopups();
 
-        const taxonId = params?.taxonId;
+        // taxonId i navigate se čtou z latestRef – listner žije celou dobu vrstvy
+        const {taxonId, navigate: navigateTo} = latestRef.current;
         const latlng = (e as L.LeafletMouseEvent).latlng;
 
         // Without a taxon there is no detail page to link to - show square name only
@@ -222,9 +266,10 @@ export function SquaresOverlay({visible, minZoom = 8, params, onSquareDoubleClic
         link?.addEventListener('click', (ev) => {
             ev.preventDefault();
             map.closePopup(popup);
-            navigate(detailUrl);
+            currentPopupRef.current = null;
+            navigateTo(detailUrl);
         });
-    }, [map, params?.taxonId, navigate]);
+    }, [map, cancelPendingPopup, closeAllPopups]);
 
     /**
      * Handle mouseover on a square feature - highlight + show label (from zoom 10+)
@@ -307,7 +352,7 @@ export function SquaresOverlay({visible, minZoom = 8, params, onSquareDoubleClic
     }, [map]);
 
     /**
-     * Handle click on a square feature - show popup with square info after a short delay
+     * Handle click on a square feature - show popup with square info after a delay
      * If dblclick occurs within the delay, the popup is cancelled
      * Uses the click coordinates for popup position, not the centroid
      */
@@ -319,21 +364,22 @@ export function SquaresOverlay({visible, minZoom = 8, params, onSquareDoubleClic
             return;
         }
 
-        // Clear any existing timeout
-        if (clickTimeoutRef.current) {
-            clearTimeout(clickTimeoutRef.current);
+        // Druhý (a další) klik dvojitého kliknutí popup neovlivní – navigaci už
+        // vyřídil listner na dblclick.
+        if ((e as L.LeafletMouseEvent).originalEvent.detail > 1) {
+            return;
         }
+
+        // Use the click coordinates
+        const clickLatLng = (e as L.LeafletMouseEvent).latlng;
+
+        // Clear any existing timeout
+        cancelPendingPopup();
 
         // Set a timeout to show the popup - if dblclick occurs first, it will be cancelled
         clickTimeoutRef.current = setTimeout(() => {
             // Close existing popup if any
-            if (currentPopupRef.current) {
-                map.closePopup(currentPopupRef.current);
-                currentPopupRef.current = null;
-            }
-
-            // Use the click coordinates
-            const clickLatLng = (e as L.LeafletMouseEvent).latlng;
+            closeAllPopups();
 
             // Create and open popup at click location
             const popup = L.popup({closeOnClick: false})
@@ -343,18 +389,22 @@ export function SquaresOverlay({visible, minZoom = 8, params, onSquareDoubleClic
 
             currentPopupRef.current = popup;
             clickTimeoutRef.current = null;
-        }, 250);
-    }, [map, createPopupContent]);
+        }, SQUARE_CLICK_POPUP_DELAY_MS);
+    }, [map, cancelPendingPopup, closeAllPopups, createPopupContent]);
 
     /**
-     * Handle click on empty map area (not on any feature) - show popup with coordinates
+     * Handle click on empty map area (not on any feature) - show popup with coordinates.
+     * Na čtverec sem děj nedorazí, ty mají `bubblingMouseEvents: false`.
      */
     const handleMapBackgroundClick = useCallback((e: L.LeafletMouseEvent) => {
-        // Close existing popup if any
-        if (currentPopupRef.current) {
-            map.closePopup(currentPopupRef.current);
-            currentPopupRef.current = null;
+        // Druhý klik dvojitého kliknutí nic nového nepřináší – popup by se jen
+        // otevřel v okamžiku, kdy uživatel dvojklikuje (a zavřel tak výsledek).
+        if (e.originalEvent.detail > 1) {
+            return;
         }
+
+        // Close existing popup if any
+        closeAllPopups();
 
         // Use the click coordinates
         const clickLatLng = e.latlng;
@@ -366,18 +416,37 @@ export function SquaresOverlay({visible, minZoom = 8, params, onSquareDoubleClic
             .openOn(map);
 
         currentPopupRef.current = popup;
-    }, [map, createPopupContent]);
+    }, [map, closeAllPopups, createPopupContent]);
 
     /**
      * Fetch and load WFS data
+     *
+     * Běží jednou za mount – interakční listnery čtou proměnlivé hodnoty z
+     * `latestRef`, takže se vrstva kvůli `params` ani callbackům nemusí zakládat
+     * podruhé. I kdyby přece jen běželo víc požadavků, `guard` s `AbortController`
+     * zamezí, aby se na mapě objevila odpověď toho staršího.
      */
     useEffect(() => {
+        const guard = createResponseGuard();
+        const controller = new AbortController();
+
+        // Klik na prázdné místo mapy se registruje hned (ne až po dotazu), aby
+        // cleanup vždy odpovídal registraci – i když se fetch zruší před odpovědí.
+        map.on('click', handleMapBackgroundClick);
+
         const fetchWfsData = async () => {
             if (!map || !visibleRef.current) return;
 
+            const wfsUrl = buildWfsUrl();
+            const token = guard.begin(wfsUrl);
+
             try {
-                const wfsUrl = buildWfsUrl();
-                const data = await fetchWfsGeoJson<WFSResponse>(wfsUrl);
+                const data = await fetchWfsGeoJson<WFSResponse>(wfsUrl, controller.signal);
+
+                // Pozdní odpověď (po zrušení efektu nebo po spuštění novějšího
+                // požadavku) se zahodí – jinak by na mapu vrátila vrstvu, jejíž
+                // cleanup už proběhl.
+                if (!guard.isCurrent(token, wfsUrl)) return;
 
                 // Remove existing layer if any
                 if (geoJsonLayerRef.current) {
@@ -386,6 +455,11 @@ export function SquaresOverlay({visible, minZoom = 8, params, onSquareDoubleClic
 
                 // Create GeoJSON layer with styling and events
                 const geoJsonLayer = L.geoJSON(undefined, {
+                    // Vypnutí bubrování patří sem: Leaflet se dívá na options vrstvy
+                    // (`_findEventTargets`). Jako třetí argument `on()` by hodnota
+                    // šla jako kontext handleru a klik na čtverec by navíc spustil
+                    // i popup na pozadí.
+                    bubblingMouseEvents: false,
                     style: () => ({
                         color: '#66b3ff',      // Light blue border
                         weight: 1,              // Thin line
@@ -410,12 +484,14 @@ export function SquaresOverlay({visible, minZoom = 8, params, onSquareDoubleClic
                             // Store feature reference on the layer for use in handlers
                             (pathLayer as FeaturePath).feature = feature;
 
-                            // Attach event listeners
+                            // Attach event listeners (třetí argument `on()` je kontext
+                            // handleru, ne options – `bubblingMouseEvents` se nastavuje
+                            // u vrstvy)
                             pathLayer.on('mouseover', handleMouseOver);
                             pathLayer.on('mouseout', handleMouseOut);
-                            pathLayer.on('click', handleFeatureClick, {bubblingMouseEvents: false});
-                            pathLayer.on('dblclick', handleDoubleClick, {bubblingMouseEvents: false});
-                            pathLayer.on('contextmenu', handleContextMenu, {bubblingMouseEvents: false});
+                            pathLayer.on('click', handleFeatureClick);
+                            pathLayer.on('dblclick', handleDoubleClick);
+                            pathLayer.on('contextmenu', handleContextMenu);
 
                             // Store cleanup function on the layer
                             (pathLayer as FeaturePath)._squaresCleanup = () => {
@@ -443,10 +519,9 @@ export function SquaresOverlay({visible, minZoom = 8, params, onSquareDoubleClic
                 geoJsonLayer.addTo(map);
                 geoJsonLayerRef.current = geoJsonLayer;
 
-                // Add map click listener for showing popup on background (empty area)
-                map.on('click', handleMapBackgroundClick);
-
             } catch (error) {
+                // Zrušení při unmountu/re-run efektu není chyba uživatele
+                if (controller.signal.aborted) return;
                 logError(error, {source: 'SquaresOverlay'});
             }
         };
@@ -455,14 +530,15 @@ export function SquaresOverlay({visible, minZoom = 8, params, onSquareDoubleClic
 
         // Cleanup on unmount
         return () => {
+            // Zahodit i odpověď, která je už na lince
+            guard.cancel();
+            controller.abort();
+
             // Remove map click listener
             map.off('click', handleMapBackgroundClick);
 
             // Clear any pending click timeout
-            if (clickTimeoutRef.current) {
-                clearTimeout(clickTimeoutRef.current);
-                clickTimeoutRef.current = null;
-            }
+            cancelPendingPopup();
 
             if (geoJsonLayerRef.current) {
                 // Clean up event listeners on all layers (including nested)
@@ -480,9 +556,7 @@ export function SquaresOverlay({visible, minZoom = 8, params, onSquareDoubleClic
                     cleanupLayer(layer);
                 });
 
-                if (currentPopupRef.current) {
-                    map.closePopup();
-                }
+                closeAllPopups();
 
                 if (currentLabelRef.current) {
                     map.removeLayer(currentLabelRef.current);
@@ -492,7 +566,12 @@ export function SquaresOverlay({visible, minZoom = 8, params, onSquareDoubleClic
                 geoJsonLayerRef.current = null;
             }
         };
-    }, [map, buildWfsUrl, minZoom, handleMouseOver, handleMouseOut, handleFeatureClick, handleDoubleClick, handleContextMenu, handleMapBackgroundClick, createPopupContent]);
+        // Deps jsou záměrně jen stabilní hodnoty (mapa, factory a handlery, které
+        // čtou z latestRef) – effect se tedy nepřehrává při každém renderu ani po
+        // dojití dotazu na taxon.
+    }, [map, buildWfsUrl, minZoom, handleMouseOver, handleMouseOut, handleFeatureClick,
+        handleDoubleClick, handleContextMenu, handleMapBackgroundClick, createPopupContent,
+        cancelPendingPopup, closeAllPopups]);
 
     /**
      * Update visibility when prop changes

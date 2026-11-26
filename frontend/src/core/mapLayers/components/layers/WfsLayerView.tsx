@@ -13,6 +13,7 @@ import {useMap} from 'react-leaflet';
 import * as L from 'leaflet';
 import {useEffect, useRef, useState, useMemo} from 'react';
 import {fetchWfsGeoJson} from '@/services/mapApi';
+import {createResponseGuard, type ResponseGuard} from '../responseGuard';
 import {logError, logInfo} from '@/services/logger';
 import type {LayerParams, WfsStyleOptions} from '../../types';
 import type {GeoServerConfig} from '../../types/serviceConfig';
@@ -75,6 +76,10 @@ export function WfsLayerView({id, service, zIndex, wfsStyle, params, visible}: W
     const visibleRef = useRef(visible);
     const paramsRef = useRef<LayerParams>(params);
     const lastBboxRef = useRef<string | null>(null);
+    // Stráž nad pozdními odpověďmi: na rozdíl od SquaresOverlay se datový effect
+    // přehrává při změně URL (bbox, viewParams TAXON_ID), takže guard musí přežít
+    // re-runy efektu – zakládá se tedy lenivě uvnitř efektu.
+    const guardRef = useRef<ResponseGuard | null>(null);
 
     const config = service.config;
 
@@ -137,6 +142,9 @@ export function WfsLayerView({id, service, zIndex, wfsStyle, params, visible}: W
                 logInfo('Bounds changed significantly, reloading data', {source: 'WfsLayerView'});
                 lastBboxRef.current = newBbox;
 
+                // ZNÁMÝ DLUH: `loaded` není v deps datového efektu, takže se po
+                // posunu mapy sám nepřehraje a data pro nový bbox se nedotáhnou.
+                // (Oprava by přinesla další WFS dotazy – zatím záměrně neřešeno.)
                 // Remove existing layer and trigger reload by updating a state or ref
                 if (layerRef.current && loaded) {
                     map.removeLayer(layerRef.current);
@@ -213,9 +221,20 @@ export function WfsLayerView({id, service, zIndex, wfsStyle, params, visible}: W
     useEffect(() => {
         if (!wfsUrl || !map || layerRef.current) return;
 
+        if (!guardRef.current) {
+            guardRef.current = createResponseGuard();
+        }
+        const guard = guardRef.current;
+        const token = guard.begin(wfsUrl);
+        const controller = new AbortController();
+
         const fetchWfsData = async () => {
             try {
-                const data = await fetchWfsGeoJson(wfsUrl);
+                const data = await fetchWfsGeoJson(wfsUrl, controller.signal);
+
+                // Mezitím doběhl novější požadavek (jiná URL) nebo komponenta
+                // odmontovala – odpověď se nesmí na mapě objevit.
+                if (!guard.isCurrent(token, wfsUrl)) return;
 
                 // Get style options from layer definition metadata or use defaults
                 const styleOptions = wfsStyle;
@@ -278,6 +297,8 @@ export function WfsLayerView({id, service, zIndex, wfsStyle, params, visible}: W
                 setLoaded(true);
 
             } catch (error) {
+                // Zrušení kvůli změně parametrů/unmountu není chyba
+                if (controller.signal.aborted) return;
                 logError(error, {source: 'WfsLayerView', url: wfsUrl});
             }
         };
@@ -286,6 +307,9 @@ export function WfsLayerView({id, service, zIndex, wfsStyle, params, visible}: W
 
         // Cleanup on unmount
         return () => {
+            guard.cancel();
+            controller.abort();
+
             if (layerRef.current) {
                 // Remove zoom listener
                 const handler = (layerRef.current as L.GeoJSON & { _zoomHandler?: () => void })._zoomHandler;

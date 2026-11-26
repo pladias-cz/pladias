@@ -303,6 +303,35 @@ Reset hesla (self-service `/forgotPassword` i sysAdmin tlačítko v UsersTable) 
 ### CSP: externí obrázky a mapové podklady
 CSP `img-src` (conf/common.conf) povoluje jen `'self' data:` + GeoServery CZ/SK a tile servery podkladů (OSM/OpenTopoMap/ČUZK). Obrázky (markery apod.) proto **nikdy nenačítat z externího CDN** (raw.githubusercontent.com apod. – produkce je zablokuje), ale bundlovat lokálně přes Vite import (vzor: `RecordMap.tsx` – `leaflet/dist/images/*`, `src/assets/markers/*`). Přidání nového tile/WMS zdroje vyžaduje rozšíření `img-src` v conf/common.conf (tiles jsou `<img>`, WFS GeoJSON jde přes `connect-src`).
 
+### asynchronní mapové vrstvy: pozdní odpověď, bubrování kliknutí, `taxonId` až po dojití dotazu
+
+`core/mapLayers` zakládá vektorové vrstvy imperativně v `useEffect`u (`SquaresOverlay`,
+`layers/WfsLayerView`). Tři mouchy na jednu ránu, které se podílely na „občas nefunguje
+dvojklik / pravý klik na čtverci“ v `mapMain`:
+
+- **Pozdní odpověď vyhrává.** Effect bez `AbortControlleru` a bez stráže nainstaluje
+  vrstvu z odpovědi, která se dokončí **jako poslední** – i když mezitím proběhl re-run
+  z jiných parametrů. K tomu stačí, aby se `taxonId` změnil během prvního (pomaliného)
+  stažení `common:squares`. Drží to `createResponseGuard()` (`components/responseGuard.ts`,
+  test `responseGuard.test.ts`) + `AbortController`; `fetchWfsGeoJson` `signal` umí.
+- **Listnery nesmí držet closure z renderu.** Hodnoty, které se mění (`params.taxonId`,
+  `onSquareDoubleClick`, `navigate`), se čtou z `latestRef`; díky tomu jsou handlery
+  stabilní a datový effect běží jednou za mount. Kdyby byly v deps, GeoJSON se stahuje
+  znovu pokaždé a s ním i závod výše. Navíc `MapMain` podává `taxonId` z `useParams`,
+  ne z `taxon?.id` – bez cache (`queryClient`: `gcTime: 0`) by první rendery viděly
+  `undefined` a vrstvy s `viewParams TAXON_ID` se stavěly dvakrát.
+- **Třetí argument `L.Evented.on(type, fn, context)` je kontext handleru, ne options.**
+  `on('click', fn, {bubblingMouseEvents: false})` tudíž mlčky nic nevypne (Leaflet
+  se dívá do `options` vrstvy v `_findEventTargets`) a klik na čtverec navíc spustí i
+  `map.on('click')` – tedy popup na pozadí. Vypíná se to jako volba `L.geoJSON(..., {bubblingMouseEvents: false})`.
+  Prodleva popupu po kliknutí musí být delší než systémový interval dvojitého kliknutí
+  (400–500 ms), jinak se popup otevře mezi oběma kliky a jeho kontejner (Leaflet na něm
+  vypíná propagaci kliků) sebere ten druhý; druhý klik se navíc pozná podle
+  `originalEvent.detail > 1`.
+
+Známý dluh dál platí: `WfsLayerView` nema `loaded` v deps datového efektu, takže obnova
+dat po posunu mapy (bbox) se nespustí.
+
 ### nový zdroj záznamů map detailu (tab/markery)
 
 `ProjectType` je union v `frontend/src/models/AtlasRecords.ts` a většina FE struktur je `Record<ProjectType, …>` – compiler vynutí nový klíč ve všech tvarech, ale **ne** v runtime asercích testů (vitest `toEqual`), ani v `RECORD_SOURCES` (viz níže – bez něj se tab nevykreslí, jen ticho). Checklist FE: `ProjectType`/`EXTERNAL_PROJECTS`/`RecordsByProject(Minimal)` (AtlasRecords.ts), `RECORD_SOURCES` + helpery (recordSources.ts), `MARKER_CONFIG` (RecordMarkers.tsx), typy scroll-fn (MapDetail.tsx + InfoPanel.tsx), fixtures testů (InfoPanel.test `makeRecords` bez nového klíče spadne na `records[source.id].length`, protože default config renderuje všechny taby). BE: enum `ProjectType` (abbrev = URL segment i hodnota v conf `atlas.externalRecordSources` – překlep jako `CBS("csb")` znamená „Invalid project type“), case v **obou** switcích (`getNearbyRecords` i `getSquareRecords`) + SQL aliasy dle `RecordGbifMinimalDto.fromSqlRow` (čte `gbif_id`, ne `id`). Zapnutí v conf dřív, než jede BE část, rozbije **celé** načtení záznamů – FE stahuje mapu i tabulky v jednom `Promise.all`.

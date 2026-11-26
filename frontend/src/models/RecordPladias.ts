@@ -51,6 +51,7 @@ export interface RecordPladias {
     substrate1Id: number | null;
     substrate1Text: string | null;
     substrate2Id: number | null;
+    substrate2Text: string | null;
 
     comment: string | null;
     remarkExcerption: string | null;

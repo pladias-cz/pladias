@@ -772,6 +772,7 @@
     "saving": "Zapisywanie...",
     "select": "- - Wybierz - -",
     "singleSelectEdit": {
+      "clear": "— wyczyść —",
       "loadFailed": "Wczytanie opcji nie powiodło się",
       "none": "Nieokreślone",
       "saveFailed": "Zapisanie nie powiodło się"
@@ -1008,7 +1009,10 @@
     "squares": "Kwadranty",
     "status": "Status",
     "substrate1": "Główna kategoria substratu",
+    "substrate1CascadeHint": "Zmiana głównej kategorii usunie obecne doprecyzowanie",
     "substrate2": "Doprecyzowująca kategoria substratu",
+    "substrate2Clear": "— bez doprecyzowania —",
+    "substrate2NeedsSubstrate1": "Najpierw wybierz główną kategorię substratu",
     "substrateText": "Substrat",
     "taxon": "Takson",
     "titles": {

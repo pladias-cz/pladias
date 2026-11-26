@@ -9,7 +9,9 @@ import RecordReadonlyField from '@/components/atlas/record/RecordReadonlyField';
 import MultiSelectEdit from '@/components/atlas/record/MultiSelectEdit';
 import SingleSelectEdit from '@/components/atlas/record/SingleSelectEdit';
 import type {MultiValueOption} from '@/models/MultiValueOption';
-import {getImportableTaxaForRecord, getPhytochorionOptions, getUnassignedAuthors, getSubstrateOptions} from '@/services/recordApi';
+import {isSubstrateOption, substrateOptionsFor, type SubstrateOption} from '@/models/SubstrateOption';
+import {getImportableTaxaForRecord, getPhytochorionOptions, getUnassignedAuthors, getSubstrateCategoryOptions, getSubstrateOptions} from '@/services/recordApi';
+import {substrateStateFrom, withSubstrate1, withSubstrate2} from '@/components/atlas/record/substrateCascade';
 import {useInstanceConfig} from '@/context/InstanceConfigContext';
 
 // Date format validation: YYYY, YYYY-MM, YYYY-MM-DD, or "s. d." (sine data - without date)
@@ -71,7 +73,13 @@ export default function RecordFloristic({record, onFieldUpdated}: RecordFloristi
     const loadTaxonOptions = useCallback(() => getImportableTaxaForRecord(localRecord.id), [localRecord.id]);
     const loadPhytochorionOptions = useCallback(() => getPhytochorionOptions(), []);
     const loadAuthorOptions = useCallback(() => getUnassignedAuthors(localRecord.id), [localRecord.id]);
-    const loadSubstrateOptions = useCallback(() => getSubstrateOptions(), []);
+    const loadSubstrate1Options = useCallback(() => getSubstrateCategoryOptions(), []);
+    // Nabídka upřesňující kategorie se filtruje podle platné hlavní kategorie – jako to dělá
+    // i backend. Mění se s `substrate1Id`, takže se otevřený výběr po změně jedničky přenačte.
+    const loadSubstrate2Options = useCallback(
+        () => getSubstrateOptions().then(options => substrateOptionsFor(options, localRecord.substrate1Id)),
+        [localRecord.substrate1Id]
+    );
 
     // Memoize currentValue to prevent unnecessary re-renders in MultiValueEdit
     const authorsOptions = useMemo(() => localRecord.recordAuthors.map((a): MultiValueOption => ({
@@ -99,6 +107,20 @@ export default function RecordFloristic({record, onFieldUpdated}: RecordFloristi
             label: localRecord.phytochorionRelationName ?? ''
         };
     }, [localRecord.phytochorionRelationId, localRecord.phytochorionRelationName]);
+
+    // Kategorie substrátu (ne-cevnaté) – každá řádka zobrazuje svou vlastní hodnotu,
+    // sloučený text `substrateCategoryText` necháváme na výpisech.
+    const substrate1Option: MultiValueOption | null = useMemo(() => (
+        localRecord.substrate1Id
+            ? {id: localRecord.substrate1Id, name: localRecord.substrate1Text ?? ''}
+            : null
+    ), [localRecord.substrate1Id, localRecord.substrate1Text]);
+
+    const substrate2Option: MultiValueOption | null = useMemo(() => (
+        localRecord.substrate2Id
+            ? {id: localRecord.substrate2Id, name: localRecord.substrate2Text ?? ''}
+            : null
+    ), [localRecord.substrate2Id, localRecord.substrate2Text]);
 
     // Handler for field updates - only updates local state, no API call
     // RecordInlineField already handles the API call
@@ -224,26 +246,50 @@ export default function RecordFloristic({record, onFieldUpdated}: RecordFloristi
                                             onUpdated={data => handleSave('CHEMICAL', data)}
                                             lastEditTimestampNum={localRecord.lastEditTimestampNum || 0}
                                         />
-                                        {/* Substrát 1 je odvozen z kategorie substrátu (edituje se přes Substrát 2) */}
-                                        <RecordReadonlyField label={t('record.substrate1')}
-                                                             content={localRecord.substrate1Text}/>
+                                        {/*
+                                          Dvě na sebe navázané kategorie: upřesnění je dílčí kategorií
+                                          hlavní, jde tedy zvolit jen tehdy, když hlavní kategorie známe.
+                                          Známe-li jen hlavní, upřesnění zůstává prázdné.
+                                        */}
+                                        <SingleSelectEdit
+                                            label={t('record.substrate1')}
+                                            recordId={localRecord.id}
+                                            currentValue={substrate1Option}
+                                            loadOptions={loadSubstrate1Options}
+                                            field="SUBSTRATE1"
+                                            clearable
+                                            hint={localRecord.substrate2Id ? t('record.substrate1CascadeHint') : undefined}
+                                            onUpdated={(data) => {
+                                                // backend tichou kaskádou smaže upřesnění z jiné hlavní kategorie
+                                                const next = withSubstrate1(substrateStateFrom(localRecord), data.updatedValue);
+                                                setLocalRecord((prev: RecordPladiasFull) => ({
+                                                    ...prev,
+                                                    ...next,
+                                                    lastEditTimestampNum: data.newTimestamp
+                                                }));
+                                                onFieldUpdated?.(data.newTimestamp);
+                                            }}
+                                            lastEditTimestampNum={localRecord.lastEditTimestampNum || 0}
+                                        />
                                         <SingleSelectEdit
                                             label={t('record.substrate2')}
                                             recordId={localRecord.id}
-                                            currentValue={localRecord.substrate2Id
-                                                ? {id: localRecord.substrate2Id, name: localRecord.substrateCategoryText ?? ''}
-                                                : null}
-                                            loadOptions={loadSubstrateOptions}
+                                            currentValue={substrate2Option}
+                                            loadOptions={loadSubstrate2Options}
                                             field="SUBSTRATE2"
+                                            clearable
+                                            clearLabel={t('record.substrate2Clear')}
+                                            disabled={!localRecord.substrate1Id}
+                                            disabledHint={t('record.substrate2NeedsSubstrate1')}
                                             onUpdated={(data) => {
-                                                // backend z kategorie 2 odvodí hlavní kategorii 1 – promítneme obojí
-                                                const option = data.updatedValue as (MultiValueOption & {substrate1Id?: number, substrate1Text?: string}) | null;
+                                                // backend odvodí hlavní kategorii od rodiče upřesnění; vymazání upřesnění ji nechá být
+                                                const updated = data.updatedValue;
+                                                const option: SubstrateOption | null =
+                                                    updated !== null && isSubstrateOption(updated) ? updated : null;
+                                                const next = withSubstrate2(substrateStateFrom(localRecord), option);
                                                 setLocalRecord((prev: RecordPladiasFull) => ({
                                                     ...prev,
-                                                    substrate2Id: option?.id ?? null,
-                                                    substrate1Id: option?.substrate1Id ?? null,
-                                                    substrate1Text: option?.substrate1Text ?? null,
-                                                    substrateCategoryText: option?.name ?? null,
+                                                    ...next,
                                                     lastEditTimestampNum: data.newTimestamp
                                                 }));
                                                 onFieldUpdated?.(data.newTimestamp);
@@ -363,7 +409,7 @@ export default function RecordFloristic({record, onFieldUpdated}: RecordFloristi
                                     <RecordReadonlyField label={t('record.substrate1')}
                                                          content={localRecord.substrate1Text}/>
                                     <RecordReadonlyField label={t('record.substrate2')}
-                                                         content={localRecord.substrateCategoryText}/>
+                                                         content={localRecord.substrate2Text}/>
                                 </>
                             )}
                             <RecordReadonlyField label={t('record.nameOriginal')} content={localRecord.taxonOriginal}/>

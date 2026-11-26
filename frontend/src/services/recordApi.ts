@@ -198,6 +198,12 @@ export async function getPhytochorionOptions(): Promise<MultiValueOption[]> {
 export async function getSubstrateOptions(): Promise<MultiValueOption[]> {
     return fetchOptions('/api/react/selectOptions/substrates');
 }
+/** GET /api/react/selectOptions/substrateCategories – hlavní kategorie substrátu pro ne-cevnaté. */
+export async function getSubstrateCategoryOptions(): Promise<MultiValueOption[]> {
+    return fetchOptions('/api/react/selectOptions/substrateCategories');
+}
+
+
 
 /**
  * Společné načtení voleb editací: endpointy vrací obálku s `data` položkami

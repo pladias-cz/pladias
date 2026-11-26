@@ -65,7 +65,7 @@ Tento dokument popisuje chování aplikace při editaci dat v databázi. Jsou zd
 - `IMPORTCOMMENT`, `COORDSPRECISION`, `DATE`
 - `ADDFINDER`, `DELETEFINDER`, `ADDHERBARIUM`, `DELETEHERBARIUM`
 - `SOURCE`, `ORIGINALID`
-- `SUBSTRATE`, `CHEMICAL`, `SUBSTRATE2`, `LOCALITYEXTRA` (pole nescévakulárních rostlin)
+- `SUBSTRATE`, `SUBSTRATE1`, `CHEMICAL`, `SUBSTRATE2`, `LOCALITYEXTRA` (pole nescévakulárních rostlin)
 - `VALIDATION_STATUS`, `ORIGINALITY_STATUS`, `HERBARIUM_QUALITY`, `INCLUDED_IN_MAP`
 - `ENVIRONMENT`, `DETREV`, `REMARK_EXCERPTION`, `REMARK_OTHER`, `REMARK_DOUBT`
 
@@ -80,6 +80,16 @@ Tento dokument popisuje chování aplikace při editaci dat v databázi. Jsou zd
   - Nastavení na `Cultivated`: vynuluje `included_in_map`
   - Změna z `Cultivated` na `Original`/`Unoriginal`: nastaví `included_in_map` na true
 - Každá změna je zaznamenána do `RecordHistory` (včetně kaskádových změn příznaků)
+
+**Kategorie substrátu (ne-cevnaté záznamy):**
+
+Upřesňující kategorie `atlas_nonvascular.substrate_2` je dílčí kategorií hlavní `substrate_1` (sloupec `substrate_2.substrate_1_id`); záznam má v `atlas_nonvascular.records_extension` oba cizí klíče zvlášť. Vaznost mezi nimi **nehlídá žádný DB constraint** – garantem je `RecordsService`:
+
+- `SUBSTRATE1` (id hlavní kategorie; prázdná hodnota = vymazat): nastaví hlavní kategorii. Upřesnění přežije jen volba téže kategorie, jinak se **tichou kaskádou maže**. Vymazání hlavní kategorie smaže i upřesnění (upřesnění bez hlavní kategorie v datech neexistuje).
+- `SUBSTRATE2` (id upřesňující kategorie; prázdná hodnota = vymazat): hlavní kategorii vždy přepíše na rodiče zvolené volby; nečíselná, neexistující nebo rodiče zbavená hodnota ⇒ `IllegalArgumentException` ⇒ 400. **Vymazání upřesnění hlavní kategorii ponechá** – záznam „známe jen hlavní kategorie“ je legální a častý stav.
+- Obě pole se do `RecordHistory` píšou pod klíčem `substrate_category` jako sloučený text „hlavní - upřesňující“ (`NonVascularRecordExtension.getSubstrateCategoryText()`), takže kaskádové vymazání je v historii záznamu patrné.
+- Tutéž pravidla dodrží Excel import (`NonVascularRecordWrapperBuilder.resolveSubstrate1/2`, chyba `Substrate1NeededForSubstrate2`) a frontend (`components/atlas/record/substrateCascade.ts`).
+- Voleb je minimum: `/api/react/selectOptions/substrateCategories` vrací hlavní kategorie (plošně, včetně těch bez jediného upřesnění), `/api/react/selectOptions/substrates` dvojice „hlavní – upřesňující“ s `substrate1Id`/`substrate1Text`, podle nichž frontend filtruje nabídku upřesnění.
 
 ---
 

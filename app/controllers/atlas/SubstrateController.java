@@ -2,6 +2,7 @@ package controllers.atlas;
 
 import controllers.ControllerBase;
 import controllers.security.Authorized;
+import dto.selectItems.SubstrateCategoryDto;
 import dto.selectItems.SubstrateOptionDto;
 import models.nonvascular.Substrate1;
 import models.nonvascular.Substrate2;
@@ -33,6 +34,21 @@ public class SubstrateController extends ControllerBase {
                 substrate1.getId(),
                 substrate1.getKeyCz()
             ));
+        }
+        return ok(JsonResult.buildSuccess(dtos));
+    }
+
+    /**
+     * Hlavní kategorie substrátu pro samostatný výběr. Záměrně se neodvozují z párů v
+     * {@link #getAll()} – kategorie, která zatím nemá jediné upřesnění, by v nabídce chyběla,
+     * a právě takový záznam („známe jen hlavní kategorie“) je běžný.
+     *
+     * GET /api/react/selectOptions/substrateCategories
+     */
+    public Result getMainCategories() {
+        List<SubstrateCategoryDto> dtos = new ArrayList<>();
+        for (Substrate1 substrate1 : Substrate1.all()) {
+            dtos.add(new SubstrateCategoryDto(substrate1.getId(), substrate1.getKeyCz()));
         }
         return ok(JsonResult.buildSuccess(dtos));
     }

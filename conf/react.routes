@@ -43,6 +43,7 @@ GET     /atlas/map-reports/taxa-in-publication-process-csv  controllers.atlas.Ma
 GET     /atlas/common/phytochorions          controllers.atlas.CommonController.getPhytochorions()
 GET     /selectOptions/phytochorions              controllers.atlas.PhytochorionController.getAll()
 GET     /selectOptions/substrates                 controllers.atlas.SubstrateController.getAll()
+GET     /selectOptions/substrateCategories        controllers.atlas.SubstrateController.getMainCategories()
 GET     /atlas/common/herbariums            controllers.atlas.CommonController.getHerbariums()
 GET     /atlas/common/institutions          controllers.atlas.CommonController.getInstitutions()
 GET     /atlas/common/committers            controllers.atlas.CommonController.getCommitters()

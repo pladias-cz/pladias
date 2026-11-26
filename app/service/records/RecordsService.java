@@ -24,6 +24,7 @@ import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 public class RecordsService {
 
@@ -107,6 +108,10 @@ public class RecordsService {
                 break;
             case "CHEMICAL":
                 updateDaliborChemical(currentUser, record, newValue);
+                record.getNonVascularExtension().update();
+                break;
+            case "SUBSTRATE1":
+                updateDaliborSubstrate1(currentUser, record, newValue);
                 record.getNonVascularExtension().update();
                 break;
             case "SUBSTRATE2":
@@ -392,33 +397,90 @@ public class RecordsService {
         return configService.getIntList(ProjectConstants.ExternalIdEditableProjectIdsKey);
     }
 
+    /**
+     * Rozšíření ne-cevnatého záznamu. Klíče {@code SUBSTRATE}, {@code SUBSTRATE1}, {@code SUBSTRATE2},
+     * {@code CHEMICAL} a {@code LOCALITYEXTRA} dávají smysl jen u ne-cevnatých instancí – u cévnatého
+     * záznamu {@code Record.getNonVascularExtension()} vrací null (řádek v
+     * {@code atlas_nonvascular.records_extension} neexistuje) a přímé volání by končilo NPE na 500.
+     */
+    private NonVascularRecordExtension nonVascularExtension(Record record) {
+        NonVascularRecordExtension recordExt = record.getNonVascularExtension();
+        if (recordExt == null) {
+            throw new IllegalArgumentException("Zaznam neobsahuje data ne-cevnatych rostlin.");
+        }
+        return recordExt;
+    }
+
+    /** Id kategorie substrátu z PATCH hodnoty – nečíselná hodnota je špatný požadavek, ne chyba serveru. */
+    private int substrateKey(String newValue) {
+        try {
+            return Integer.parseInt(newValue.trim());
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Neplatna hodnota kategorie substratu.");
+        }
+    }
+
     private void updateDaliborSustrateText(User currentUser, Record record, String newValue) {
-        String oldValue = StringUtils.isBlank(record.getNonVascularExtension().getSubstrate()) ? "" : record.getNonVascularExtension().getSubstrate();
-        record.getNonVascularExtension().setSubstrate(newValue);
+        NonVascularRecordExtension recordExt = nonVascularExtension(record);
+        String oldValue = StringUtils.isBlank(recordExt.getSubstrate()) ? "" : recordExt.getSubstrate();
+        recordExt.setSubstrate(newValue);
         saveRecordHistory(currentUser, record.getId(), "substrate", oldValue, newValue, RecordChangeType.DESCRIPTION);
     }
 
-    private void updateDaliborSubstrate2(User currentUser, Record record, String newValue) {
-        NonVascularRecordExtension recordExt = record.getNonVascularExtension();
+    /**
+     * Změna hlavní kategorie substrátu. Kategorie 2 je na kategorii 1 navázaná přes
+     * {@code atlas_nonvascular.substrate_2.substrate_1_id} a žádný DB constraint tu vaznost
+     * nehlídá – tato metoda je jejím garantem: upřesnění přežije jen volba stejné hlavní kategorie,
+     * jinak se tichou kaskádou maže. Vymazání hlavní kategorie smaže i upřesnění, protože
+     * upřesnění bez hlavní kategorie v datech neexistuje.
+     */
+    private void updateDaliborSubstrate1(User currentUser, Record record, String newValue) {
+        NonVascularRecordExtension recordExt = nonVascularExtension(record);
         String oldValue = recordExt.getSubstrateCategoryText();
 
         if (StringUtils.isBlank(newValue)) {
-            // vymazani kategorie substratu – zrusi i odvozenou kategorii 1
-            recordExt.setSubstrate2(null);
             recordExt.setSubstrate1(null);
+            recordExt.setSubstrate2(null);
         } else {
-            int substrate2Key;
-            try {
-                substrate2Key = Integer.parseInt(newValue.trim());
-            } catch (NumberFormatException e) {
+            Substrate1 substrate1 = Substrate1.find().byId(substrateKey(newValue));
+            if (substrate1 == null) {
                 throw new IllegalArgumentException("Neplatna hodnota kategorie substratu.");
             }
-            Substrate2 substrate2 = Substrate2.find().byId(substrate2Key);
+            recordExt.setSubstrate1(substrate1);
+            Substrate2 currentSubstrate2 = recordExt.getSubstrate2();
+            if (currentSubstrate2 != null && !Objects.equals(currentSubstrate2.getSubstrate1Id(), substrate1.getId())) {
+                recordExt.setSubstrate2(null);
+            }
+        }
+
+        saveRecordHistory(currentUser, record.getId(), "substrate_category", oldValue,
+            recordExt.getSubstrateCategoryText(), RecordChangeType.DESCRIPTION);
+    }
+
+    /**
+     * Změna upřesňující kategorie substrátu – hlavní kategorii backend vždy odvodí z rodiče
+     * ({@code Substrate2.getSubstrate1Id()}). Vymazání upřesnění naopak hlavní kategorii ponechá:
+     * záznam se zná jen hlavní kategorie je běžný a legální stav.
+     */
+    private void updateDaliborSubstrate2(User currentUser, Record record, String newValue) {
+        NonVascularRecordExtension recordExt = nonVascularExtension(record);
+        String oldValue = recordExt.getSubstrateCategoryText();
+
+        if (StringUtils.isBlank(newValue)) {
+            recordExt.setSubstrate2(null);
+        } else {
+            Substrate2 substrate2 = Substrate2.find().byId(substrateKey(newValue));
             if (substrate2 == null) {
                 throw new IllegalArgumentException("Neplatna hodnota kategorie substratu.");
             }
+            Substrate1 parent = substrate2.getSubstrate1Id() == null
+                ? null : Substrate1.find().byId(substrate2.getSubstrate1Id());
+            if (parent == null) {
+                // kategorie 2 bez rodiče by záznam dostala do stavu „upřesnění bez hlavní kategorie“
+                throw new IllegalArgumentException("Neplatna hodnota kategorie substratu.");
+            }
             recordExt.setSubstrate2(substrate2);
-            recordExt.setSubstrate1(Substrate1.find().byId(substrate2.getSubstrate1Id()));
+            recordExt.setSubstrate1(parent);
         }
 
         String newValueText = recordExt.getSubstrateCategoryText();
@@ -426,14 +488,16 @@ public class RecordsService {
     }
 
     private void updateDaliborChemical(User currentUser, Record record, String newValue) {
-        String oldValue = StringUtils.isBlank(record.getNonVascularExtension().getChemical()) ? "" : record.getNonVascularExtension().getChemical();
-        record.getNonVascularExtension().setChemical(newValue);
+        NonVascularRecordExtension recordExt = nonVascularExtension(record);
+        String oldValue = StringUtils.isBlank(recordExt.getChemical()) ? "" : recordExt.getChemical();
+        recordExt.setChemical(newValue);
         saveRecordHistory(currentUser, record.getId(), "chemical", oldValue, newValue, RecordChangeType.DESCRIPTION);
     }
 
     private void updateDaliborLocalityExtra(User currentUser, Record record, String newValue) {
-        String oldValue = StringUtils.isBlank(record.getNonVascularExtension().getLocalityExtra()) ? "" : record.getNonVascularExtension().getLocalityExtra();
-        record.getNonVascularExtension().setLocalityExtra(newValue);
+        NonVascularRecordExtension recordExt = nonVascularExtension(record);
+        String oldValue = StringUtils.isBlank(recordExt.getLocalityExtra()) ? "" : recordExt.getLocalityExtra();
+        recordExt.setLocalityExtra(newValue);
         saveRecordHistory(currentUser, record.getId(), "locality_extra", oldValue, newValue, RecordChangeType.DESCRIPTION);
     }
 

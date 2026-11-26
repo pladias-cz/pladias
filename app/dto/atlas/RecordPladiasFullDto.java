@@ -101,6 +101,7 @@ public record RecordPladiasFullDto(
     Integer substrate1Id,
     String substrate1Text,
     Integer substrate2Id,
+    String substrate2Text,
 
     // Remarks and comments
     String comment,
@@ -419,6 +420,8 @@ public record RecordPladiasFullDto(
                 ? record.getNonVascularExtension().getSubstrate1().getKeyCz() : null,
             record.getNonVascularExtension() != null && record.getNonVascularExtension().getSubstrate2() != null
                 ? record.getNonVascularExtension().getSubstrate2().getId() : null,
+            record.getNonVascularExtension() != null && record.getNonVascularExtension().getSubstrate2() != null
+                ? record.getNonVascularExtension().getSubstrate2().getKeyCz() : null,
             record.getComment(), record.getRemarkExcerption(), record.getRemarkOther(), record.getRemarkDoubt(),
             unresolvedCommentsCount, comments, record.hasHistory(), herbariums, record.isHerbariumQuality(),
             record.getSource(), record.getOriginalId(), licenseId, licenseName,

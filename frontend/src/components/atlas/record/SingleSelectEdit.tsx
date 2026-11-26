@@ -15,6 +15,16 @@ interface Props {
     onUpdated?: (data: { updatedValue: MultiValueOption | null, newTimestamp: number }) => void;
     lastEditTimestampNum?: number;
     renderDisplay?: (option: MultiValueOption) => React.ReactNode;
+    /** výběr nelze ovládat (např. dokud není vyplněn rodičovský výběr) – řádek se zobrazí needitovatelně */
+    disabled?: boolean;
+    /** proč je výběr zamčený; zobrazí se místo hodnoty */
+    disabledHint?: string;
+    /** umožňuje hodnotu vymazat (PATCH s `null` hodnotou) – bez tego volby jde jen měnit, ne zrušit */
+    clearable?: boolean;
+    /** popisek volby pro vymazání (výchozí `common.singleSelectEdit.clear`) */
+    clearLabel?: string;
+    /** vysvětlivka pod řádkem – např. provázání s jiným polem */
+    hint?: string;
 }
 
 export default function SingleSelectEdit({
@@ -25,7 +35,12 @@ export default function SingleSelectEdit({
                                              field,
                                              onUpdated,
                                              lastEditTimestampNum,
-                                             renderDisplay
+                                             renderDisplay,
+                                             disabled = false,
+                                             disabledHint,
+                                             clearable = false,
+                                             clearLabel,
+                                             hint
                                          }: Props) {
     const {t} = useTranslation();
     const [options, setOptions] = useState<MultiValueOption[]>([]);
@@ -33,6 +48,10 @@ export default function SingleSelectEdit({
     const [error, setError] = useState<string | null>(null);
     const [editing, setEditing] = useState(false);
     const [lastTimestamp, setLastTimestamp] = useState(lastEditTimestampNum ?? 0);
+    const [selectedOption, setSelectedOption] = useState<MultiValueOption | null>(null);
+    // záměr vymazat hodnotu – `selectedOption === null` samo neznamená „vymazat“,
+    // dokud uživatel prázdnou volbu skutečně nezvolil
+    const [clearRequested, setClearRequested] = useState(false);
 
     // Sync internal timestamp with prop when prop changes (e.g., after another
     // field was edited) – render-phase update guarded by comparison
@@ -70,22 +89,32 @@ export default function SingleSelectEdit({
         }
     }
 
-    function handleSelectChange(optionId: number) {
-        const option = options.find(o => o.id === optionId);
+    function handleSelectChange(value: string) {
+        // prázdná hodnota = záměr vymazat; bez toho se dal výběr jen měnit, ne zrušit
+        if (value === '') {
+            setClearRequested(true);
+            setSelectedOption(null);
+            return;
+        }
+        const option = options.find(o => o.id === Number(value));
         if (!option) return;
+        setClearRequested(false);
         setSelectedOption(option);
     }
 
     async function handleSubmit() {
-        if (!selectedOption) return;
+        const chosen = clearRequested ? null : selectedOption;
+        if (chosen === null && !clearRequested) return;
 
         setSaving(true);
         setError(null);
         try {
-            const result = await sendApiRequest(field, selectedOption.id);
+            const result = await sendApiRequest(field, chosen?.id ?? null);
             const newTimestamp = result.lastEditTimestampNum || lastTimestamp;
-            onUpdated?.({updatedValue: selectedOption, newTimestamp});
+            onUpdated?.({updatedValue: chosen, newTimestamp});
             setEditing(false);
+            setSelectedOption(null);
+            setClearRequested(false);
         } catch {
             // On error, stay in edit mode
         } finally {
@@ -95,10 +124,9 @@ export default function SingleSelectEdit({
 
     function handleCancel() {
         setSelectedOption(null);
+        setClearRequested(false);
         setEditing(false);
     }
-
-    const [selectedOption, setSelectedOption] = useState<MultiValueOption | null>(null);
 
     let displayContent: React.ReactNode;
 
@@ -117,7 +145,10 @@ export default function SingleSelectEdit({
                     {label}
                 </div>
                 <div className="col-sm-9">
-                    {!editing && (
+                    {!editing && disabled && (
+                        <span className="ms-2 text-muted small">{disabledHint ?? displayContent}</span>
+                    )}
+                    {!editing && !disabled && (
                         <>
                             <i
                                 className="bi bi-pencil ms-2"
@@ -140,18 +171,17 @@ export default function SingleSelectEdit({
                         <div>
                             <Form.Select
                                 size="sm"
-                                value={selectedOption?.id.toString() || currentValue?.id.toString() || ''}
-                                onChange={e => {
-                                    const optionId = Number(e.target.value);
-                                    if (optionId) {
-                                        handleSelectChange(optionId);
-                                    }
-                                }}
+                                value={clearRequested ? '' : (selectedOption?.id.toString() || currentValue?.id.toString() || '')}
+                                onChange={e => handleSelectChange(e.target.value)}
                                 disabled={saving || options.length === 0}
                                 className="flex-grow-1 d-inline-block"
                                 style={{maxWidth: '300px'}}
                             >
-                                <option value="">-- {t('common.select')} --</option>
+                                {clearable ? (
+                                    <option value="">{clearLabel ?? t('common.singleSelectEdit.clear')}</option>
+                                ) : (
+                                    <option value="">-- {t('common.select')} --</option>
+                                )}
                                 {options.map(option => (
                                     <option key={option.id} value={option.id} title={option.label}>
                                         {option.name}
@@ -163,7 +193,7 @@ export default function SingleSelectEdit({
                                 type="button"
                                 className="btn btn-primary btn-sm ms-2"
                                 onClick={handleSubmit}
-                                disabled={saving || !selectedOption}
+                                disabled={saving || (selectedOption === null && !clearRequested)}
                             >
                                 {t('common.ok')}
                             </button>
@@ -180,6 +210,7 @@ export default function SingleSelectEdit({
                     )}
                     {saving && <Spinner size="sm" className="ms-2"/>}
                     {error && <span className="text-danger ms-2">{error}</span>}
+                    {hint && !disabled && <div className="text-muted small">{hint}</div>}
                 </div>
             </div>
         </>

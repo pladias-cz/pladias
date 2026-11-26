@@ -80,6 +80,8 @@ Stránka `Record.tsx` načte záznam přes `GET /atlas/record/:recordId/full` (v
 - **Endpoint:** `PATCH /api/react/atlas/record/:recordId` s `key`, `value` a `lastEditTimestampNum`.
 - **Související akce:** po úspěchu se aktualizuje lokální timestamp (kvůli dalším editacím téhož záznamu) a propaguje se rodičovi; kaskádové změny na serveru (např. reset `included_in_map`) se v UI zobrazí po refetchi.
 - Používáno v `RecordRemarks` (zdroj, poznámky, prostředí, detrev), `RecordFloristic` (taxon, autoři, herbaria, substráty…) i jinde.
+- `SingleSelectEdit` kromě základního výběru umí `clearable` (skutečné vymazání – pošle `null`), `disabled` + `disabledHint` (zamčený řádek s vysvětlivkou) a `hint` (provázání s jiným polem).
+- **Kategorie substrátu (ne-cevnaté)** se editují jako dva na sebe navázané selecty (`RecordFloristic`): nabídka upřesnění se filtruje podle hlavní kategorie (`substrateOptionsFor`), upřesnění je zamčené, dokud hlavní kategorie není, a jde vymazat („bez upřesnění“). Změna hlavní kategorie tichou kaskádou smaže neslučitelné upřesnění – stejnou kaskádu počítá backend, takže se obě pole musí v optimistické kopii měnit spolu (`substrateCascade.ts`).
 
 ### Přesun souřadnic (moveCoordinates)
 

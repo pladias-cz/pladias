@@ -773,6 +773,7 @@
     "saving": "Wird gespeichert...",
     "select": "- - Auswählen - -",
     "singleSelectEdit": {
+      "clear": "— löschen —",
       "loadFailed": "Laden der Optionen fehlgeschlagen",
       "none": "Nicht angegeben",
       "saveFailed": "Speichern fehlgeschlagen"
@@ -1009,7 +1010,10 @@
     "squares": "Quadranten",
     "status": "Status",
     "substrate1": "Hauptkategorie Substrat",
+    "substrate1CascadeHint": "Änderung der Hauptkategorie löscht die bisherige Präzisierung",
     "substrate2": "Präzisierende Kategorie Substrat",
+    "substrate2Clear": "— ohne Präzisierung —",
+    "substrate2NeedsSubstrate1": "Zuerst die Hauptkategorie des Substrats auswählen",
     "substrateText": "Substrat",
     "taxon": "Taxon",
     "titles": {

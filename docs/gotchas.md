@@ -314,6 +314,14 @@ Reset hesla (self-service `/forgotPassword` i sysAdmin tlačítko v UsersTable) 
   useSearchOptions) – klíče v datech (labelKey/titleKey) nevidí i18n audit, proto sanity test v
   `advancedSearchRequest.test.ts`.
 
+### Kategorie substrátu (ne-cevnaté): provázání hlídá jen aplikace
+
+`atlas_nonvascular.substrate_2.substrate_1_id` je sice FK na referenční tabulku, ale **mezi** `records_extension.substrate_1_id` a `records_extension.substrate_2_id` žádný constraint není – DB strpí záznam s upřesněním z jiné hlavní kategorie i upřesnění bez hlavní kategorie. Jediný garant je `RecordsService.updateDaliborSubstrate1/2` (a importní `NonVascularRecordWrapperBuilder`): změna hlavní kategorie tichou kaskádou maže neslučitelné upřesnění, vymazání upřesnění naopak hlavní kategorii ponechá. Jakákoliv nová cesta, která do těchto sloupců sahá (bulk edit, API, migrační SQL), proto musí obě pole měnit spolu. Frontend duplicuje týž invariant v `components/atlas/record/substrateCascade.ts` (test `substrateCascade.test.ts`), aby optimistická kopie po uložení jedné kategorie neukazovala kombinaci, kterou server nikdy nepřijme.
+
+### `SingleSelectEdit` dříve neuměl hodnotu vymazat
+
+`onChange` zahazoval prázdnou hodnotu (`if (optionId)`) a tlačítko OK bylo bez výběru disabled – „-- vyber --“ byl jen placeholder, takže pole se dalo měnit, ale ne zrušit, ač backend `null` v PATCH běžně umí (`RecordUpdateController.editField`). Vymazává se teď přes volbu `clearable`: prázdná hodnota je záměr (`clearRequested`) a PATCH jde s `null`. Pozor při dalším vývoji – `selectedOption === null` samo o sobě „vymazat“ neznamená.
+
 ### CSP: externí obrázky a mapové podklady
 CSP `img-src` (conf/common.conf) povoluje jen `'self' data:` + GeoServery CZ/SK a tile servery podkladů (OSM/OpenTopoMap/ČUZK). Obrázky (markery apod.) proto **nikdy nenačítat z externího CDN** (raw.githubusercontent.com apod. – produkce je zablokuje), ale bundlovat lokálně přes Vite import (vzor: `RecordMap.tsx` – `leaflet/dist/images/*`, `src/assets/markers/*`). Přidání nového tile/WMS zdroje vyžaduje rozšíření `img-src` v conf/common.conf (tiles jsou `<img>`, WFS GeoJSON jde přes `connect-src`).
 

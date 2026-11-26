@@ -773,6 +773,7 @@
     "saving": "Ukládám...",
     "select": "- - Vyberte - -",
     "singleSelectEdit": {
+      "clear": "— vymazat —",
       "loadFailed": "Načtení možností selhalo",
       "none": "Neurčeno",
       "saveFailed": "Uložení selhalo"
@@ -1008,8 +1009,11 @@
     "source": "Pramen",
     "squares": "Kvadranty",
     "status": "Status",
-    "substrate1": "Hlavní kategorie substrát",
-    "substrate2": "Upřesňující kategorie substrát",
+    "substrate1": "Hlavní kategorie substrátu",
+    "substrate1CascadeHint": "Změna hlavní kategorie vymaže dosavadní upřesnění",
+    "substrate2": "Upřesňující kategorie substrátu",
+    "substrate2Clear": "— bez upřesnění —",
+    "substrate2NeedsSubstrate1": "Vyplňte nejprve hlavní kategorii substrátu",
     "substrateText": "Substrát",
     "taxon": "Taxon",
     "titles": {

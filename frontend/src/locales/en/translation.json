@@ -773,6 +773,7 @@
     "saving": "Saving...",
     "select": "- - Select - -",
     "singleSelectEdit": {
+      "clear": "— clear —",
       "loadFailed": "Loading of options failed",
       "none": "Unspecified",
       "saveFailed": "Saving failed"
@@ -1009,7 +1010,10 @@
     "squares": "Quadrants",
     "status": "Status",
     "substrate1": "Main substrate category",
+    "substrate1CascadeHint": "Changing the main category clears the current refinement",
     "substrate2": "Refining substrate category",
+    "substrate2Clear": "— without refinement —",
+    "substrate2NeedsSubstrate1": "Select the main substrate category first",
     "substrateText": "Substrate",
     "taxon": "Taxon",
     "titles": {

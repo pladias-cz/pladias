@@ -1,5 +1,5 @@
 # Build frontend
-FROM node:25 AS frontend_builder
+FROM node:26 AS frontend_builder
 
 WORKDIR /workspace/frontend
 

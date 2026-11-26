@@ -5,6 +5,7 @@ import controllers.security.Authorized;
 import helpers.http.ContentDisposition;
 import models.User;
 import models.UserActivity;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,12 +28,13 @@ import utils.SessionUtils;
 import utils.UserUtils;
 
 import javax.inject.Inject;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FilterInputStream;
 import java.io.IOException;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 @Security.Authenticated(Authorized.class)
@@ -221,24 +223,39 @@ public class SearchController extends ControllerBase {
         return result.toArray(new Integer[result.size()]);
     }
 
-    private Result exportResultsAsExcelSheet(PageSearchResults results) throws IOException {
-        PipedInputStream inputStream = new PipedInputStream(64 * 1024);
-        PipedOutputStream outputStream = new PipedOutputStream(inputStream);
-        CompletableFuture.runAsync(() -> {
-            try (PipedOutputStream stream = outputStream) {
-                PageSearchResultSerialization.serializeToStream(results.getRows(), stream);
-            } catch (IOException e) {
-                logger.error("Error while streaming excel export", e);
-            }
-        });
+    /**
+     * Sešit se generuje do dočasného souboru a teprve pak se posílá odpověď:
+     * dokud neznáme výsledek, nesmíme tvářit úspěch. Původní async stream z
+     * vlákna na pozadí odeslal hlavičku Content-disposition i počty řádků a při
+     * jakékoliv chybě do něj už nic nedal – klient dostal 0B soubor a hlavičky
+     * tvrdily opak (docs/gotchas.md).
+     */
+    private Result exportResultsAsExcelSheet(PageSearchResults results) {
+        PageSearchResultSerialization.ExportedWorkbook workbook;
+        try {
+            workbook = PageSearchResultSerialization.writeWorkbook(results.getRows());
+        } catch (Exception e) {
+            logger.error("Error while generating excel export", e);
+            return internalServerError(JsonResult.error("Export do XLSX se nezdařil."));
+        }
 
-        int exportedRecords = results.getRows().size();
+        int exportedRecords = workbook.exportedRows();
         Integer totalRecords = results.getTotalCount();
 
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
         String filename = String.format("PladiasExport_%s.xlsx",
             df.format(Calendar.getInstance().getTime()));
-        Result response = ok(inputStream)
+
+        InputStream workbookStream;
+        try {
+            workbookStream = deletingStream(workbook.file());
+        } catch (IOException e) {
+            logger.error("Error while reading generated excel export", e);
+            FileUtils.deleteQuietly(workbook.file());
+            return internalServerError(JsonResult.error("Export do XLSX se nezdařil."));
+        }
+
+        Result response = ok(workbookStream)
             .withHeader("Content-disposition", ContentDisposition.attachment(filename))
             .withHeader("X-Excel-Records-Exported", String.valueOf(exportedRecords))
             .as("application/x-download");
@@ -246,6 +263,25 @@ public class SearchController extends ControllerBase {
             response = response.withHeader("X-Excel-Total-Records", String.valueOf(totalRecords));
         }
         return response;
+    }
+
+    /**
+     * Proud dat sešitu, který po zavření (dokončeném i přerušeném přenosu)
+     * smaže dočasný soubor, na němž stojí.
+     */
+    private InputStream deletingStream(File file) throws IOException {
+        return new FilterInputStream(new FileInputStream(file)) {
+            @Override
+            public void close() throws IOException {
+                try {
+                    super.close();
+                } finally {
+                    if (!file.delete()) {
+                        logger.warn("Could not delete temporary excel export " + file);
+                    }
+                }
+            }
+        };
     }
 
 

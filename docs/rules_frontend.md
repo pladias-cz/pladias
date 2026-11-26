@@ -122,6 +122,9 @@ Vše probíhá přes hook `useRecordQuickUpdates` – optimistická změna, PATC
 - **Kdo smí:** každý přihlášený uživatel s atlas modulem; výsledky obsahují `canEditCommonFields`/`canEditValidationFields` per záznam, podle kterých se (i zde) řídí viditelnost rychlých editací.
 - **Excel export:** tlačítko vidí všichni a exportuje stejná data jako tabulka (bez omezení podle rolí); titulek
   je jednotný (`atlas.search.form.excelExportTitle`). Backend se liší jen datovým stropem počtu řádků sešitu.
+  Obě cesty (`useSearchQuery` i `useAdvancedSearchExport`) mají stejnou pojistku: 0B tělo = chyba
+  (`atlas.search.form.excelExportEmptyFile`) a nulový počet exportovaných řádků hlásí
+  `atlas.search.form.excelExportedNone`, nikdy „úspěch".
 - **Reset z hlavního menu:** položka „Vyhledávání“ funguje i na už otevřené stránce vyhledávání – klik resetuje výsledky i filtry (stejně jako tlačítko „Nové hledání“); řeší `useSearchResetOnNavigate` nad `location.key`.
 
 ### BulkEdit

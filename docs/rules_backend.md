@@ -283,6 +283,14 @@ Pozor – mazání importních dávek je implementováno přes **GET** routy, kt
 - Pro export do Excelu: žádná dodatečná právní podmínka – export vrací stejný výsledek jako tabulka; liší se jen
   datovým stropem počtu řádků sešitu (`EXCEL_EXPORT_PAGE_SIZE` 10 000, mapAdmin 100 000)
 
+**Chování exportu (`export_type=excel`):**
+- Funkční v obou typech instance; necevnatá instance má o 5 sloupců navíc z
+  `atlas_nonvascular.records_extension` (`SearchTableDataGeneratorNonVascular`)
+- Sešit se generuje do dočasného souboru před odesláním odpovědi; selhání generování → `500`
+  s `JsonResult.error` (nikoliv 200 s prázdným souborem – viz `docs/gotchas.md`)
+- `X-Excel-Records-Exported` = počet zapsaných řádků, `X-Excel-Total-Records` = celkový počet nalezených
+  nálezů (chybí, pokud `PageSearchService.search` selhal)
+
 **Související akce:**
 - Záznam aktivity (`UserActivity.RecordSearch`, `SubmitSearchRequest`)
 

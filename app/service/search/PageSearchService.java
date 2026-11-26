@@ -973,8 +973,31 @@ public class PageSearchService implements IPageSearchService {
             return new ArrayList<>();
         }
 
-        String sqlQuery =
-            "SELECT " +
+        String sqlQuery = buildSearchResultsQuery();
+
+        return mapSearchResults(sqlQuery, ids);
+    }
+
+    /**
+     * SELECT datových řádků excel exportu. Necevnatá instance do něj přidává
+     * sloupce z příslušenství záznamu ({@code atlas_nonvascular.records_extension});
+     * na cevnaté instanci v dotazu nesmí být, tam schéma být nemusí.
+     */
+    String buildSearchResultsQuery() {
+        String nonVascularColumns = configService.isNonVascular()
+            ? "   NVEXT.locality_extra AS localityExtra, " +
+              "   NVEXT.substrate AS substrate, " +
+              "   SUBSTRATE1.key_cz AS substrate1, " +
+              "   SUBSTRATE2.key_cz AS substrate2, " +
+              "   NVEXT.chemical AS chemical, "
+            : "";
+        String nonVascularJoins = configService.isNonVascular()
+            ? "   LEFT JOIN atlas_nonvascular.records_extension AS NVEXT ON NVEXT.record_id = records.id " +
+              "   LEFT JOIN atlas_nonvascular.substrate_1 AS SUBSTRATE1 ON SUBSTRATE1.id = NVEXT.substrate_1_id " +
+              "   LEFT JOIN atlas_nonvascular.substrate_2 AS SUBSTRATE2 ON SUBSTRATE2.id = NVEXT.substrate_2_id "
+            : "";
+
+        return "SELECT " +
                 "   records.id AS recordId, " +
                 "   taxons_clear.name_lat AS taxonName, " +
                 "   records.original_name AS taxonNameOriginal, " +
@@ -1032,6 +1055,7 @@ public class PageSearchService implements IPageSearchService {
                 "   projects.name AS project, " +
                 "   records.original_id AS externalId, " +
                 "   licenses.key AS license, " +
+                nonVascularColumns +
                 "   users.surname || ', ' || users.name AS committer " +
                 "FROM atlas.records " +
                 "   LEFT JOIN public.taxons_clear on records.taxon_id = taxons_clear.id " +
@@ -1043,9 +1067,13 @@ public class PageSearchService implements IPageSearchService {
                 "   LEFT JOIN public.licenses on records.license_id = licenses.id " +
                 "   LEFT JOIN atlas.batch on records.batch_id = batch.id " +
                 "   LEFT JOIN public.users on batch.committer_id = users.id " +
+                nonVascularJoins +
                 "WHERE records.id IN (:ids) " +
                 "ORDER BY records.id";
+    }
 
+    /** Sváže {@link #buildSearchResultsQuery()} na id záznamů a mapuje řádky exportu. */
+    private List<PageSearchResults.Row> mapSearchResults(String sqlQuery, List<Long> ids) {
         List<PageSearchResults.Row> result = new ArrayList<>();
         for (int start = 0; start < ids.size(); start += SEARCH_RESULTS_BATCH_SIZE) {
             int end = Math.min(start + SEARCH_RESULTS_BATCH_SIZE, ids.size());
@@ -1083,7 +1111,12 @@ public class PageSearchService implements IPageSearchService {
                     row.getString("project"),
                     row.getString("externalId"),
                     row.getString("license"),
-                    row.getString("committer")
+                    row.getString("committer"),
+                    row.getString("localityExtra"),
+                    row.getString("substrate"),
+                    row.getString("substrate1"),
+                    row.getString("substrate2"),
+                    row.getString("chemicalData")
                 ));
             }
         }

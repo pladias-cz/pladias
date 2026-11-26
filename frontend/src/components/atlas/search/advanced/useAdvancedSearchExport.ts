@@ -24,10 +24,10 @@ export function useAdvancedSearchExport() {
         setMessage('');
         try {
             const file = await exportSearchExcel(EXCEL_EXPORT_PAGE_SIZE, formData);
-            // Backend streamuje workbook až PO odeslání hlaviček (SearchController
-            // .exportResultsAsExcelSheet), takže selhání zápisu neprojde do HTTP statusu
-            // ani do Content-Type – 0B tělo je jediná detekce. Stáhnout ho znamenalo
-            // tvářit se, že export proběhl.
+            // Selhání generování se backend snaží oznámit jako HTTP 500 s
+            // JsonResult.error (apiDownload z toho vyhodí ApiError). Prázdné
+            // tělo je pojistka na zbylé způsoby přerušení přenosu – stáhnout ho
+            // znamenalo tvářit se, že export proběhl.
             if (file.blob.size === 0) {
                 throw new ApiError(t('atlas.search.form.excelExportEmptyFile'));
             }

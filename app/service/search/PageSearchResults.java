@@ -65,6 +65,13 @@ public class PageSearchResults {
         private final String externalId;
         private final String license;
         private final String committer;
+        // Necevnatá data (atlas_nonvascular.records_extension); na cevnaté
+        // instanci se nevypisují a zůstávají null.
+        private final String localityExtra;
+        private final String substrate;
+        private final String substrate1;
+        private final String substrate2;
+        private final String chemicalData;
 
         public Row(
             long recordId,
@@ -90,7 +97,12 @@ public class PageSearchResults {
             String project,
             String externalId,
             String license,
-            String committer
+            String committer,
+            String localityExtra,
+            String substrate,
+            String substrate1,
+            String substrate2,
+            String chemicalData
         ) {
             this.recordId = recordId;
             this.taxonName = taxonName;
@@ -116,6 +128,11 @@ public class PageSearchResults {
             this.externalId = externalId;
             this.license = license;
             this.committer = committer;
+            this.localityExtra = localityExtra;
+            this.substrate = substrate;
+            this.substrate1 = substrate1;
+            this.substrate2 = substrate2;
+            this.chemicalData = chemicalData;
         }
 
         public long getRecordId() {
@@ -212,6 +229,26 @@ public class PageSearchResults {
 
         public String getCommitter() {
             return committer;
+        }
+
+        public String getLocalityExtra() {
+            return localityExtra;
+        }
+
+        public String getSubstrate() {
+            return substrate;
+        }
+
+        public String getSubstrate1() {
+            return substrate1;
+        }
+
+        public String getSubstrate2() {
+            return substrate2;
+        }
+
+        public String getChemicalData() {
+            return chemicalData;
         }
     }
 }

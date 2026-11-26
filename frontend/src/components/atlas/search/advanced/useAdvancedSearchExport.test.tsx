@@ -1,7 +1,8 @@
 /**
- * Export z tabu Download hlídá i tichá selhání backendu: workbook se streamuje až po
- * odeslání hlaviček, takže 0B tělo ani nulový počet exportovaných řádků nedorazí jako
- * HTTP chyba – bez detekce by se navenek tvářily jako úspěšný export.
+ * Export z tabu Download hlídá i tichá selhání backendu: 0B tělo ani nulový
+ * počet exportovaných řádků se nesmí navenek tvářit jako úspěšný export.
+ * (Generování sešitu padá před odesláním odpovědi → HTTP 500; pojistka níže
+ * chytá zbylé způsoby přerušení přenosu.)
  */
 
 import {act, cleanup, renderHook} from '@testing-library/react';

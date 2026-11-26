@@ -480,6 +480,47 @@ public class PageSearchServiceShould {
         assertFalse(PageSearchService.needsBatchJoin(noCommitter));
     }
 
+    @Test
+    public void addNonVascularColumnsToExcelDataQuery() {
+        when(configService.isNonVascular()).thenReturn(true);
+
+        String query = normalizeSql(service.buildSearchResultsQuery());
+
+        // Bez těchto sloupců nemá necevnatý generátor z čeho brát substrát,
+        // chemická data ani pomocnou lokalitu.
+        assertTrue(query.contains("AS license, NVEXT.locality_extra AS localityExtra, "
+            + "NVEXT.substrate AS substrate, SUBSTRATE1.key_cz AS substrate1, "
+            + "SUBSTRATE2.key_cz AS substrate2, NVEXT.chemical AS chemical, users.surname"));
+        // JOINy se řadí za ostatní LEFT JOINy, musí končit těsně před WHERE
+        assertTrue(query.contains("AS committer FROM atlas.records"));
+        assertTrue(query.contains("users.id LEFT JOIN atlas_nonvascular.records_extension AS NVEXT "
+            + "ON NVEXT.record_id = records.id "
+            + "LEFT JOIN atlas_nonvascular.substrate_1 AS SUBSTRATE1 ON SUBSTRATE1.id = NVEXT.substrate_1_id "
+            + "LEFT JOIN atlas_nonvascular.substrate_2 AS SUBSTRATE2 ON SUBSTRATE2.id = NVEXT.substrate_2_id "
+            + "WHERE records.id IN (:ids)"));
+    }
+
+    @Test
+    public void keepNonVascularSchemaOutOfVascularExcelDataQuery() {
+        when(configService.isNonVascular()).thenReturn(false);
+
+        String query = normalizeSql(service.buildSearchResultsQuery());
+
+        // Schéma atlas_nonvascular na cevnaté instanci být nemusí – dotaz na ně
+        // by shodil celý export.
+        assertFalse(query.contains("atlas_nonvascular"));
+        assertFalse(query.contains("NVEXT"));
+        // podmíněné fragmenty nesmí splynout (chybějící nebo dvojitá čárka = chyba syntaxe)
+        assertTrue(query.contains("AS license, users.surname"));
+        assertTrue(query.contains("AS committer FROM atlas.records"));
+        assertTrue(query.contains("on batch.committer_id = users.id WHERE records.id IN (:ids)"));
+    }
+
+    /** SQL se testuje jako text: sloučená bílá místa, aby se dalo čitelně porovnávat. */
+    private String normalizeSql(String sql) {
+        return sql.replaceAll("\\s+", " ").trim();
+    }
+
     private QuadrantNew quadrant(int id) {
         QuadrantNew quadrant = new QuadrantNew();
         quadrant.setId(id);

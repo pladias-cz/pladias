@@ -10,7 +10,7 @@ public class RecordTableDataFactory {
 
     public static ISearchTableDataGenerator createSearchTableDataGenerator(boolean isNonVascular) {
         if (isNonVascular) {
-            throw new UnsupportedOperationException("Non-vascular search table data generator is not implemented yet.");
+            return new SearchTableDataGeneratorNonVascular();
         }
         return new SearchTableDataGenerator();
     }

@@ -291,11 +291,25 @@ Reset hesla (self-service `/forgotPassword` i sysAdmin tlačítko v UsersTable) 
   `INNER JOIN atlas.batch` (tím padaly záznamy bez dávky); `SearchController` navíc vyžadoval přiřazený
   příspěvkový projekt. Výsledkem byl prázdný sešit tam, kde tabulka ukazovala stovky nálezů. Omezení bylo
   záměrně odstraněno, export se liší jen datovým stropem řádků (`EXCEL_EXPORT_PAGE_SIZE` 10 000 / mapAdmin 100 000).
-  POZOR, přetrvává: `exportResultsAsExcelSheet` odpovídá **validním sešitem s hlavičkou** i když se data nepodařila
-  načíst (`PageSearchService.search` polyká výjimky do prázdného výsledku, `PageSearchResultSerialization` házení
-  řádků jen `printStackTrace`) – diagnóza je podle hlaviček: `X-Excel-Records-Exported: 0` + **chybějící**
-  `X-Excel-Total-Records` = výjimka na backendu (log „Failure during record loading.“), `X-Excel-Total-Records: 0`
-  = filtr skutečně nic nenašel.
+  Přetrvává: `PageSearchService.search` polyká výjimky do prázdného výsledku – `X-Excel-Records-Exported: 0` +
+  **chybějící** `X-Excel-Total-Records` = výjimka na backendu (log „Failure during record loading.“),
+  `X-Excel-Total-Records: 0` = filtr skutečně nic nenašel.
+- **Excel export se liší podle typu instance jen ve sloupcích** – necevnatá instance má navíc
+  `SearchTableDataGeneratorNonVascular` (5 sloupců z `atlas_nonvascular.records_extension`: lokalita pomocná,
+  substrát, substrát 1, substrát 2, chemická data – stejné pořadí jako
+  `ExtendedRecordTableDataGeneratorNonVascular` pro detail záznamu) a `PageSearchService.buildSearchResultsQuery`
+  k nim přidává `LEFT JOIN` jen při `isNonVascular()`, protože schéma `atlas_nonvascular` na cevnaté DB být
+  nemusí. Dlouho tady byl jen `throw UnsupportedOperationException` v `RecordTableDataFactory` – v necevnaté
+  instanci se tedy neexportovalo nic a jevilo se to jako „export selhal“, ačkoli tabulka data ukazovala
+  (hlídá `SearchTableDataGeneratorShould`).
+- **Selhání excel exportu musí skončit chybou, ne prázdným souborem** – sešit se generuje do dočasného souboru
+  (`PageSearchResultSerialization.writeWorkbook`) a odpověď se staví až nad hotovým souborem; selhání →
+  `500` + `JsonResult.error`. Původní `PipedInputStream` + `CompletableFuture` odeslaly `Content-disposition`
+  i `X-Excel-Records-Exported` dřív, než se cokoli zapsalo – klient dostal 200 s 0B tělem a hlavičkami
+  tvrdícími opak. Dočasný soubor maže `SearchController.deletingStream` při zavření proudu, FE se pojišťuje
+  kontrolou 0B těla (`useSearchQuery` i `useAdvancedSearchExport`). `X-Excel-Records-Exported` počítá
+  **zapsané** řádky; řádek vynechaný kvůli výjimce jde do logu (`logger.error` k záznamu,
+  `logger.warn` s celkovým počtem vynechaných).
 - **Dynamické i18n klíče z registru filtrů** se typují `t(key as never)` (typované i18n zná jen literály; vzor
   useSearchOptions) – klíče v datech (labelKey/titleKey) nevidí i18n audit, proto sanity test v
   `advancedSearchRequest.test.ts`.

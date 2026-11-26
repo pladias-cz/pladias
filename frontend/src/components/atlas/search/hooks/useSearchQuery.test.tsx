@@ -3,6 +3,8 @@
  *  - submit nastaví záznamy, total i hlášku o počtu nálezech,
  *  - stránkování běží bez přepočtu total a posune currentPage,
  *  - selhání vyhledávání nastaví chybovou hlášku a stránka se neposune,
+ *  - excel export stáhne sešit a nenahlásí úspěch u prázdného souboru
+ *    ani nulového počtu exportovaných řádků,
  *  - reset zahodí výsledky i řazení.
  *
  * `searchApi` (searchRecords/exportSearchExcel) je mocknuté; stav formuláře
@@ -13,9 +15,14 @@
 import {act, cleanup, renderHook} from '@testing-library/react';
 import {afterEach, describe, expect, it, vi} from 'vitest';
 import {useSearchQuery, type SearchPayloadEntries} from './useSearchQuery';
-import {searchRecords} from '@/services/searchApi';
+import {downloadBlob} from '@/core/dataTable/export';
+import {exportSearchExcel, searchRecords, type SearchExcelExport} from '@/services/searchApi';
 import type {RecordPladias} from '@/models';
 import '@/i18n/i18n';
+
+vi.mock('@/core/dataTable/export', () => ({
+    downloadBlob: vi.fn(),
+}));
 
 vi.mock('@/services/searchApi', () => ({
     searchRecords: vi.fn(),
@@ -27,6 +34,19 @@ const records = [
 ] as unknown as RecordPladias[];
 
 const payload: SearchPayloadEntries = [['taxon', 'Taraxacum']];
+
+/** Payload klasického formuláře s přepnutým exportem do XLSX. */
+const excelPayload: SearchPayloadEntries = [['export_type', 'excel'], ['taxon_name', 'Lectum']];
+
+/** Odpověď exportu; `bytes = 0` věrně simuluje tělo bez jediného bajtu. */
+function excelFile(bytes: number, recordsExported: number, totalRecords: number | null): SearchExcelExport {
+    return {
+        blob: new Blob(bytes > 0 ? ['x'.repeat(bytes)] : []),
+        filename: 'PladiasExport.xlsx',
+        recordsExported,
+        totalRecords,
+    };
+}
 
 afterEach(() => {
     cleanup();
@@ -154,5 +174,48 @@ describe('useSearchQuery', () => {
         expect(result.current.currentPage).toBe(1);
         expect(result.current.sortBy).toBe('taxonName');
         expect(result.current.isLoading).toBe(false);
+    });
+
+    it('excel export stáhne sešit a ohlásí počet záznamů', async () => {
+        vi.mocked(exportSearchExcel).mockResolvedValueOnce(excelFile(4096, 150, 150));
+
+        const {result} = renderHook(() => useSearchQuery());
+
+        await act(async () => {
+            await result.current.search(excelPayload);
+        });
+
+        expect(downloadBlob).toHaveBeenCalled();
+        expect(result.current.submitMessage).toBe('Bylo exportováno všech 150 záznamů.');
+    });
+
+    it('excel export s 0B tělem neuloží soubor a ohlásí prázdný soubor', async () => {
+        vi.mocked(exportSearchExcel).mockResolvedValueOnce(excelFile(0, 120, 120));
+
+        const {result} = renderHook(() => useSearchQuery());
+
+        await act(async () => {
+            await result.current.search(excelPayload);
+        });
+
+        // Hlavičky tvrdí 120 řádků, tělo je prázdné – uložit to znamenalo tvářit
+        // se, že export proběhl (stejná pojistka jako useAdvancedSearchExport).
+        expect(downloadBlob).not.toHaveBeenCalled();
+        expect(result.current.submitMessage)
+            .toBe('Export se nezdařil - server vrátil prázdný soubor. Zkuste to prosím znovu.');
+    });
+
+    it('excel export s nulovým počtem řádků neohlásí úspěch', async () => {
+        vi.mocked(exportSearchExcel).mockResolvedValueOnce(excelFile(4096, 0, 2000));
+
+        const {result} = renderHook(() => useSearchQuery());
+
+        await act(async () => {
+            await result.current.search(excelPayload);
+        });
+
+        expect(downloadBlob).toHaveBeenCalled();
+        expect(result.current.submitMessage)
+            .toBe('Export neobsáhl žádný záznam - filtr neodpovídá žádnému nálezu, nebo se nepodařilo načíst data.');
     });
 });

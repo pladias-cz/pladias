@@ -53,9 +53,22 @@ export function useSearchQuery() {
             if (exportType === EXCEL_EXPORT_TYPE) {
                 const file = await exportSearchExcel(EXCEL_EXPORT_PAGE_SIZE, formData);
 
+                // Selhání generování se nyní projeví jako HTTP 500 (apiDownload z
+                // toho vyhodí ApiError); prázdné tělo zůstává pojistka na
+                // přerušený přenos – bez ní by si uživatel uložil 0B .xlsx a
+                // hlavičky přitom tvrdí počet řádků. Hláška se nastavuje přímo:
+                // ApiError bez payloadu by sem propadl jen jako obecné „selhání
+                // formuláře".
+                if (file.blob.size === 0) {
+                    setSubmitMessage(t('atlas.search.form.excelExportEmptyFile'));
+                    return false;
+                }
+
                 downloadBlob(file.blob, file.filename);
 
-                if (file.totalRecords != null) {
+                if (file.recordsExported === 0) {
+                    setSubmitMessage(t('atlas.search.form.excelExportedNone'));
+                } else if (file.totalRecords != null) {
                     if (file.recordsExported >= file.totalRecords) {
                         setSubmitMessage(t('atlas.search.form.excelExportedAll', {
                             recordsCount: file.recordsExported,

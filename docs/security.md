@@ -33,8 +33,7 @@
 
 Aplikace má celkově promyšlený autorizační model: bezpečnostní anotace na controllerech
 (`@Security.Authenticated`, `AuthorizedAsSysAdmin` apod.), kontroly vlastnictví u stahování
-importů (`UploadExcel.downloadDecorated`), licenční filtry u Excel exportů
-(`addExcelPermissionsFilter`) a dobře zdokumentované routy (`docs/rules_backend.md`).
+importů (`UploadExcel.downloadDecorated`) a dobře zdokumentované routy (`docs/rules_backend.md`).
 Hesla se hashují moderním **Argon2id**, API tokeny jsou implementované správně
 (SecureRandom 256 bitů, v databázi pouze SHA-256 hash) a CSRF ochrana je aktivní
 (filtr Play, token v cookie `PLAY_CSRF_TOKEN`, React posílá hlavičku `Csrf-Token`).
@@ -105,7 +104,7 @@ tempFile.delete();                                         // navíc smazání p
 ostatních uživatelů. `TemporaryFile` obsahuje mj.:
 
 - **importní sešity** (`ImportController`, `ImportCSVController`) – kompletní data
-  záznamů včetně licenčně omezených (neaplikuje se zde `addExcelPermissionsFilter`),
+  záznamů včetně licenčně omezených,
 - **uploady vlastností** (`TraitUploadService`),
 - **PNG mapy** (`PdfMapController`),
 - **exporty vyhledávání** (`SearchController`).
@@ -362,8 +361,9 @@ Při auditu se potvrdily následující silné stránky (chybí v mnoha aplikac�
   místo redirectu (správně pro SPA).
 - Kontrola vlastnictví u stahování importů (`UploadExcel.downloadDecorated`:
   author/committer/mapAdmin).
-- Licenční filtr u Excel exportů (`PageSearchService.addExcelPermissionsFilter`) –
-  ne-mapAdmin exportuje jen CC licence + vlastní/ přiřazené taxony.
+- Poznámka (2026-11): omezující filtr Excel exportů (`PageSearchService.addExcelPermissionsFilter`)
+  byl záměrně odstraněn – export odpovídá výsledku vyhledávání v tabulce (viditelnost záznamů
+  pro přihlášeného uživatele nijak omezena není ani v tabulce).
 - Importy validují `canContributeInto(project)`.
 - `getUsersMinimal` vrací jen id + jméno (bez e-mailů); kompletní seznam uživatelů
   je sysAdmin-only.

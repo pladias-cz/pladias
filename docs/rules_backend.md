@@ -280,7 +280,8 @@ Pozor – mazání importních dávek je implementováno přes **GET** routy, kt
 
 **Kdo smí provést:**
 - Libovolný přihlášený uživatel
-- Pro export do Excelu: uživatel musí mít přiřazen alespoň jeden příspěvkový projekt (`getContributionProjects()` nesmí být prázdný); mapAdmin dostává větší page size exportu
+- Pro export do Excelu: žádná dodatečná právní podmínka – export vrací stejný výsledek jako tabulka; liší se jen
+  datovým stropem počtu řádků sešitu (`EXCEL_EXPORT_PAGE_SIZE` 10 000, mapAdmin 100 000)
 
 **Související akce:**
 - Záznam aktivity (`UserActivity.RecordSearch`, `SubmitSearchRequest`)

@@ -286,6 +286,16 @@ Reset hesla (self-service `/forgotPassword` i sysAdmin tlačítko v UsersTable) 
 - **Excel export z tabu Download záměrně nechodí přes `useSearchQuery.search`** – excel payload (`export_type=excel`)
   by zůstal v `lastPayloadEntries` a rozbil stránkování tabulky (`resolvePageSize` vynucuje exportní page size).
   Používá vlastní `useAdvancedSearchExport` nad stejnou službou.
+- **Excel export vrací stejná data jako tabulka** – dříve backend jen pro `export_type=excel` přidal omezující
+  podmínku (`PageSearchService.addExcelPermissionsFilter`: přiřazené taxony / vlastní dávka / CC licence) a
+  `INNER JOIN atlas.batch` (tím padaly záznamy bez dávky); `SearchController` navíc vyžadoval přiřazený
+  příspěvkový projekt. Výsledkem byl prázdný sešit tam, kde tabulka ukazovala stovky nálezů. Omezení bylo
+  záměrně odstraněno, export se liší jen datovým stropem řádků (`EXCEL_EXPORT_PAGE_SIZE` 10 000 / mapAdmin 100 000).
+  POZOR, přetrvává: `exportResultsAsExcelSheet` odpovídá **validním sešitem s hlavičkou** i když se data nepodařila
+  načíst (`PageSearchService.search` polyká výjimky do prázdného výsledku, `PageSearchResultSerialization` házení
+  řádků jen `printStackTrace`) – diagnóza je podle hlaviček: `X-Excel-Records-Exported: 0` + **chybějící**
+  `X-Excel-Total-Records` = výjimka na backendu (log „Failure during record loading.“), `X-Excel-Total-Records: 0`
+  = filtr skutečně nic nenašel.
 - **Dynamické i18n klíče z registru filtrů** se typují `t(key as never)` (typované i18n zná jen literály; vzor
   useSearchOptions) – klíče v datech (labelKey/titleKey) nevidí i18n audit, proto sanity test v
   `advancedSearchRequest.test.ts`.

@@ -34,13 +34,6 @@ export default function SearchForm() {
     const canUseBulkEdit = user.isMapAdmin || user.isBulkEditor;
     const hasRecords = query.records.length > 0;
 
-    const excelExportTitle = useMemo(() => {
-        if (user.isMapAdmin) {
-            return t('atlas.search.form.excelExportTitleAdmin');
-        }
-        return t('atlas.search.form.excelExportTitleRestricted');
-    }, [t, user.isMapAdmin]);
-
     const taxonProvider = useMemo(
         () => createTaxaImportableProvider(t('atlas.search.form.taxonAutocompletePlaceholder')),
         [t]
@@ -118,7 +111,7 @@ export default function SearchForm() {
                                         data-bs-placement="bottom"
                                         data-bs-trigger="focus"
                                         data-bs-html="true"
-                                        title={excelExportTitle}
+                                        title={t('atlas.search.form.excelExportTitle')}
                                     >
                                         <input type="radio" name="export_type" value="excel"/>
                                     </a>

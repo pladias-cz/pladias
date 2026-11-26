@@ -53,8 +53,14 @@ public class PageSearchServiceShould {
         return form;
     }
 
+    private SearchController.SearchForm excelForm() {
+        SearchController.SearchForm form = browserForm();
+        form.export_type = SearchController.SearchForm.ExportTypeExcel;
+        return form;
+    }
+
     private String buildWhere(SearchController.SearchForm form, PageSearchService.QueryParameters parameters) throws Exception {
-        return service.buildWhereClause(null, form, null, null, parameters);
+        return service.buildWhereClause(form, null, null, parameters);
     }
 
     @Test
@@ -424,6 +430,54 @@ public class PageSearchServiceShould {
             return;
         }
         throw new AssertionError("Ocekavana IllegalStateException pro duplicitni parametr");
+    }
+
+    @Test
+    public void exportQueriesTheSameRecordsAsBrowserSearch() throws Exception {
+        SearchController.SearchForm excel = excelForm();
+        excel.town = "Brno";
+
+        PageSearchService.QueryParameters excelParameters = new PageSearchService.QueryParameters();
+        String excelWhere = buildWhere(excel, excelParameters);
+
+        SearchController.SearchForm browser = browserForm();
+        browser.town = "Brno";
+        PageSearchService.QueryParameters browserParameters = new PageSearchService.QueryParameters();
+        String browserWhere = buildWhere(browser, browserParameters);
+
+        // Export nesmí proti prohlížeči přidávat žádnou omezující podmínku
+        // (dříve: přiřazené taxony / vlastní dávka / CC licence pro ne-mapAdmin) –
+        // jinak končí prázdný sešit tam, kde tabulka ukazuje nálezy.
+        assertEquals(browserWhere, excelWhere);
+        assertEquals(browserParameters.asMap(), excelParameters.asMap());
+        assertTrue(excelWhere.contains("lower(R.nearest_town_text) LIKE lower(:town)"));
+        assertFalse(excelWhere.contains("taxons_users"));
+        assertFalse(excelWhere.contains("license_id"));
+        assertFalse(excelWhere.contains("B.committer_id"));
+    }
+
+    @Test
+    public void joinBatchOnlyForFiltersOverBatch() {
+        // export už JOIN na dávku nevynucuje – záznamy bez dávky musí zůstat
+        assertFalse(PageSearchService.needsBatchJoin(excelForm()));
+
+        SearchController.SearchForm committer = excelForm();
+        committer.committerId = 7;
+        assertTrue(PageSearchService.needsBatchJoin(committer));
+
+        SearchController.SearchForm importDate = browserForm();
+        importDate.dateFromImported = new Date(0);
+        assertTrue(PageSearchService.needsBatchJoin(importDate));
+
+        // datum poslední editace čte R.creation_timestamp, ne dávku
+        SearchController.SearchForm lastEdit = browserForm();
+        lastEdit.dateFromLastEdit = new Date(0);
+        assertFalse(PageSearchService.needsBatchJoin(lastEdit));
+
+        // chybějící committerId (hidden input bez hodnoty) nesmí spadnout na unboxing NULL
+        SearchController.SearchForm noCommitter = browserForm();
+        noCommitter.committerId = null;
+        assertFalse(PageSearchService.needsBatchJoin(noCommitter));
     }
 
     private QuadrantNew quadrant(int id) {

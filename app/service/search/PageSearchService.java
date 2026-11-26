@@ -5,7 +5,6 @@ import controllers.atlas.SearchController;
 import dto.atlas.DashboardBucketDto;
 import dto.atlas.QuadrantAggregateDto;
 import dto.atlas.RecordPladiasDto;
-import excel.LicenseDictionary;
 import io.ebean.DB;
 import io.ebean.SqlQuery;
 import io.ebean.SqlRow;
@@ -54,15 +53,15 @@ public class PageSearchService implements IPageSearchService {
             return new PageSearchResults();
         }
         try {
-            SearchFilterContext filterContext = buildSearchFilterContext(currentUser, form);
+            SearchFilterContext filterContext = buildSearchFilterContext(form);
 
             Integer totalCount = null;
             if (getTotalCount) {
-                String totalFromClause = buildFromClause(currentUser, form, false);
+                String totalFromClause = buildFromClause(form, false);
                 totalCount = getTotalCountRecords(totalFromClause, filterContext);
             }
 
-            String fromClause = buildFromClause(currentUser, form, true);
+            String fromClause = buildFromClause(form, true);
             String orderClause = getOrderByClause(form);
             List<Long> recordIds = getRecordIds(fromClause, filterContext, orderClause, page, pageSize);
 
@@ -84,8 +83,8 @@ public class PageSearchService implements IPageSearchService {
     @Override
     public List<RecordIdEditTimestampPair> searchRecordEditTimestamps(User currentUser, SearchController.SearchForm form) {
         try {
-            SearchFilterContext filterContext = buildSearchFilterContext(currentUser, form);
-            String fromClause = buildFromClause(currentUser, form, true);
+            SearchFilterContext filterContext = buildSearchFilterContext(form);
+            String fromClause = buildFromClause(form, true);
             String orderClause = getOrderByClause(form);
 
             String query = buildSelectQuery("R.id, R.edit_timestamp", fromClause, filterContext.whereClause, orderClause, 0, 0);
@@ -118,8 +117,8 @@ public class PageSearchService implements IPageSearchService {
             return List.of();
         }
         try {
-            SearchFilterContext filterContext = buildSearchFilterContext(currentUser, form);
-            String fromClause = buildFromClause(currentUser, form, false);
+            SearchFilterContext filterContext = buildSearchFilterContext(form);
+            String fromClause = buildFromClause(form, false);
 
             // buildFromClause vždy začíná pevnou hlavičkou „FROM atlas.records AS R“ –
             // kvadrantovou mřížku vložíme mezi tabulku záznamů a ostatní joiny filtrů,
@@ -181,8 +180,8 @@ public class PageSearchService implements IPageSearchService {
         }
 
         try {
-            SearchFilterContext filterContext = buildSearchFilterContext(currentUser, form);
-            String fromClause = buildFromClause(currentUser, form, false);
+            SearchFilterContext filterContext = buildSearchFilterContext(form);
+            String fromClause = buildFromClause(form, false);
             String whereClause = filterContext.whereClause;
 
             // rok nálezu – label přímo v SQL (to_char), vzestupně; bez data → bucket bez labelu
@@ -295,12 +294,12 @@ public class PageSearchService implements IPageSearchService {
         return resolver.resolve(definitions);
     }
 
-    private SearchFilterContext buildSearchFilterContext(User currentUser, SearchController.SearchForm form) throws Exception {
+    private SearchFilterContext buildSearchFilterContext(SearchController.SearchForm form) throws Exception {
         MapSquareResolver.SquareData squareData = getSquareData(form);
         Set<QuadrantNew> quadrants = squareData != null ? squareData.quadrants : null;
         Set<MapSquareNew> squares = squareData != null ? squareData.squares : null;
         QueryParameters parameters = new QueryParameters();
-        String whereClause = buildWhereClause(currentUser, form, quadrants, squares, parameters);
+        String whereClause = buildWhereClause(form, quadrants, squares, parameters);
         return new SearchFilterContext(whereClause, parameters);
     }
 
@@ -525,7 +524,7 @@ public class PageSearchService implements IPageSearchService {
         return " ORDER BY " + sortField + " " + collate + " " + direction + " ";
     }
 
-    private String buildFromClause(User currentUser, SearchController.SearchForm form, boolean withSortJoins) {
+    private String buildFromClause(SearchController.SearchForm form, boolean withSortJoins) {
         StringBuilder builder = new StringBuilder();
 
         builder.append(" FROM ");
@@ -533,8 +532,10 @@ public class PageSearchService implements IPageSearchService {
         builder.append(Record.QualifiedTableName).append(" AS R ");
         builder.append(" INNER JOIN ").append(Taxon.QualifiedName).append(" AS T on R.taxon_id=T.id ");
 
-        if (form.dateFromImported != null || form.dateToImported != null || form.committerId != -1 ||
-            (isExcelExport(form) && !currentUser.isMapAdmin())) {
+        // JOIN na dávku jen pro filtry, které nad dávkou skutečně filtrují
+        // (dříve ho vynucoval i excel export ne-mapAdmin uživatelů a tím
+        // vyfiltroval záznamy bez dávky – export teď odpovídá tabulce)
+        if (needsBatchJoin(form)) {
             builder.append(" INNER JOIN ").append(Batch.QualifiedTableName).append(" AS B ON R.batch_id=").append("B.id ");
         }
         if (StringUtils.isNotBlank(form.finderSurname) || StringUtils.isNotBlank(form.finderName)) {
@@ -575,12 +576,11 @@ public class PageSearchService implements IPageSearchService {
         }
     }
 
-    String buildWhereClause(User currentUser, SearchController.SearchForm form, Set<QuadrantNew> quadrants, Set<MapSquareNew> squares, QueryParameters parameters) throws Exception {
+    String buildWhereClause(SearchController.SearchForm form, Set<QuadrantNew> quadrants, Set<MapSquareNew> squares, QueryParameters parameters) throws Exception {
         StringBuilder whereClause = new StringBuilder();
         whereClause.append(" WHERE TRUE AND R.taxon_id IS NOT NULL AND ");
 
         addTaxonFilter(form, whereClause, parameters);
-        addExcelPermissionsFilter(form, currentUser, whereClause, parameters);
         addBasicTextFilters(form, whereClause, parameters);
         addAltitudeAndMapFilters(form, whereClause, parameters);
         addCommentsAndCommitterFilters(form, whereClause, parameters);
@@ -869,6 +869,18 @@ public class PageSearchService implements IPageSearchService {
         return SearchController.SearchForm.ExportTypeExcel.equals(searchForm.export_type);
     }
 
+    /**
+     * Vyžaduje některý filtr JOIN na dávku (alias `B` v FROM klauzuli)? Jen
+     * skutečné filtry nad dávkou: načasování importu (`B.creation_timestamp`)
+     * a zpracovatel (`B.committer_id`). Excel export dříve JOIN vynucoval pro
+     * ne-mapAdmin uživatele – tím padaly záznamy bez dávky a export se lišil od
+     * tabulky; to se záměrně zrušilo, export odpovídá výsledku vyhledávání.
+     */
+    static boolean needsBatchJoin(SearchController.SearchForm form) {
+        return form.dateFromImported != null || form.dateToImported != null
+            || (form.committerId != null && form.committerId != -1);
+    }
+
     private void addTaxonFilter(SearchController.SearchForm form, StringBuilder whereClause, QueryParameters parameters) throws Exception {
         List<Taxon> searchTaxa = null;
 
@@ -930,26 +942,6 @@ public class PageSearchService implements IPageSearchService {
         if (StringUtils.isNotBlank(form.polygonWkt)) {
             String param = parameters.bind("polygonWkt", form.polygonWkt.trim());
             whereClause.append(" ST_Intersects(ST_GeomFromText(").append(param).append(", 4326), R.coords_wgs) AND ");
-        }
-    }
-
-    private void addExcelPermissionsFilter(SearchController.SearchForm form, User currentUser, StringBuilder whereClause, QueryParameters parameters) throws Exception {
-        if (isExcelExport(form) && !currentUser.isMapAdmin()) {
-            List<License> commonLicenses = LicenseDictionary.getInstance().getCreativeCommonLicenses();
-            List<Integer> commonLicenseIds = commonLicenses
-                .stream()
-                .map(License::getId)
-                .collect(Collectors.toList());
-
-            whereClause.append("( EXISTS (SELECT 1 from atlas.taxons_users as TU1 ")
-                .append("          INNER JOIN public.taxons as T1 on TU1.taxons_id = T1.id ")
-                .append("          WHERE TU1.users_id = ").append(parameters.bind("excelUserIdTaxons", currentUser.getId()))
-                .append(" AND T.lft >= T1.lft AND T.rgt <= T1.rgt")
-                .append("         ) ")
-                .append("  OR B.committer_id = ").append(parameters.bind("excelCommitterId", currentUser.getId()))
-                .append("  OR R.license_id  IN (").append(parameters.bind("commonLicenseIds", commonLicenseIds)).append(") ")
-                .append(") ")
-                .append(" AND ");
         }
     }
 

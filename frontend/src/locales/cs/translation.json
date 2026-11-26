@@ -528,8 +528,7 @@
       },
       "form": {
         "excelExportEmptyFile": "Export se nezdařil - server vrátil prázdný soubor. Zkuste to prosím znovu.",
-        "excelExportTitleAdmin": "Export dat do XLSX bez uživatelského omezení.",
-        "excelExportTitleRestricted": "Export dat do XLSX je omezen podle Vašich práv.",
+        "excelExportTitle": "Export dat do XLSX bez uživatelského omezení.",
         "excelExportedAll": "Bylo exportováno všech {{recordsCount}} záznamů.",
         "excelExportedNone": "Export neobsáhl žádný záznam - filtr neodpovídá žádnému nálezu, nebo se nepodařilo načíst data.",
         "excelExportedPartial": "Exportováno {{exported}} z {{total}} záznamů.",

@@ -11,7 +11,6 @@ import org.slf4j.LoggerFactory;
 import play.data.Form;
 import play.data.FormFactory;
 import play.data.validation.Constraints.Required;
-import play.i18n.Messages;
 import play.libs.Json;
 import play.mvc.Http;
 import play.mvc.Result;
@@ -64,14 +63,11 @@ public class SearchController extends ControllerBase {
 
         form.projects = retrieveProjectsFromRequest(request);
         User currentUser = SessionUtils.getCurrentUser(request.session());
-        Messages messages = getMessages(request);
-        if (SearchController.SearchForm.ExportTypeExcel.equals(form.export_type) &&
-            currentUser.getContributionProjects().isEmpty()) {
-            return ok(JsonResult.error(messages.at("Search.UserNotAssignedToAnyProject")));
-        }
 
         try {
             UserActivityService.recordActivity(request.session(), UserActivity.RecordSearch);
+            // Excel exportuje výsledek přes jednu stránku: stejná data jako tabulka,
+            // jediné omezení je datový strop počtu řádků sešitu (ne práva uživatele).
             int effectivePageSize = pageSize;
             if (SearchController.SearchForm.ExportTypeExcel.equals(form.export_type)) {
                 effectivePageSize = currentUser.isMapAdmin() ? EXCEL_EXPORT_PAGE_SIZE_MAPADMIN : EXCEL_EXPORT_PAGE_SIZE;

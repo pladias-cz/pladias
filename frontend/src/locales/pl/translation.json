@@ -527,8 +527,7 @@
       },
       "form": {
         "excelExportEmptyFile": "Eksport nie powiódł się - serwer zwrócił pusty plik. Spróbuj ponownie.",
-        "excelExportTitleAdmin": "Eksport danych do XLSX bez ograniczenia użytkownika.",
-        "excelExportTitleRestricted": "Eksport do XLSX jest ograniczony zgodnie z Państwa uprawnieniami.",
+        "excelExportTitle": "Eksport danych do XLSX bez ograniczenia użytkownika.",
         "excelExportedAll": "Wyeksportowano wszystkich {{recordsCount}} rekordów.",
         "excelExportedNone": "Eksport nie zawiera żadnych rekordów - filtr nie odpowiada żadnemu stanowisku albo nie udało się wczytać danych.",
         "excelExportedPartial": "Wyeksportowano {{exported}} z {{total}} rekordów.",

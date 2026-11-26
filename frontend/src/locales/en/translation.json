@@ -528,8 +528,7 @@
       },
       "form": {
         "excelExportEmptyFile": "Export failed - the server returned an empty file. Please try again.",
-        "excelExportTitleAdmin": "Export data to XLSX without user restriction.",
-        "excelExportTitleRestricted": "Export to XLSX is restricted according to your rights.",
+        "excelExportTitle": "Export data to XLSX without user restriction.",
         "excelExportedAll": "All {{recordsCount}} records were exported.",
         "excelExportedNone": "The export contains no records - either the filter matches nothing or the data could not be loaded.",
         "excelExportedPartial": "Exported {{exported}} of {{total}} records.",

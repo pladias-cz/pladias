@@ -148,9 +148,7 @@ export function AdvancedSearch() {
     }, [values, visibleIds, isVascular, searchExport, query]);
 
     const canUseBulkEdit = user.isMapAdmin || user.isBulkEditor;
-    const excelExportHint = user.isMapAdmin
-        ? t('atlas.search.form.excelExportTitleAdmin')
-        : t('atlas.search.form.excelExportTitleRestricted');
+    const excelExportHint = t('atlas.search.form.excelExportTitle');
 
     return (
         <div className="advanced-search">

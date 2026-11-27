@@ -148,7 +148,7 @@ export function LayerSwitcher({mapName, layerIds, defaultVisibility}: LayerSwitc
                 };
             })
             .filter(group => group.children.length > 0); // Only show groups with layers
-    }, [layerIds, layerStates, t]);
+    }, [layerIds, layerStates]);
 
     const toggleGroup = (groupId: string) => {
         setOpenGroups(prev => ({...prev, [groupId]: !prev[groupId]}));

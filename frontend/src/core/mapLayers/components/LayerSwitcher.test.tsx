@@ -117,7 +117,7 @@ describe('LayerSwitcher', () => {
         expect(osm).not.toBeChecked();
     });
 
-    it('dynamická projektová vrstva ukáže „Projekt“ + název projektu místo ID', async () => {
+    it('dynamická projektová vrstva ukáže název projektu místo ID', async () => {
         const user = userEvent.setup();
         mapSeq += 1;
         const mapName = `test-map-${mapSeq}`;
@@ -131,18 +131,19 @@ describe('LayerSwitcher', () => {
         await user.click(screen.getByRole('button', {name: 'Vrstvy mapy'}));
         fireEvent.click(screen.getByRole('button', {name: 'Projects'}));
 
-        // před registrací vrstvy ve store je vidět jen fallback „Projekt“ + ID
-        expect(screen.getByRole('checkbox', {name: 'Projekt 22'})).toBeInTheDocument();
+        // před registrací vrstvy ve store je vidět jen fallback – ID projektu
+        // („fix: UI“ ubral prefix „Projekt“, název projektu z číselníku ho má v sobě)
+        expect(screen.getByRole('checkbox', {name: '22'})).toBeInTheDocument();
 
         // useProjectLayers zaregistruje vrstvu se skutečným titulkem (název +
         // počet záznamů) až asynchronně v effectu – bez změny layerIds se musí
-        // titulek v panelu aktualizovat (regrese: dříve zůstalo „Project 22“)
+        // titulek v panelu aktualizovat (regrese: dříve zůstal fallback na ID)
         useLayerStore.getState().addLayer(mapName, 'project_22', {title: 'Testovací projekt (7)'});
 
         await waitFor(() =>
-            expect(screen.getByRole('checkbox', {name: 'Projekt Testovací projekt (7)'})).toBeInTheDocument(),
+            expect(screen.getByRole('checkbox', {name: 'Testovací projekt (7)'})).toBeInTheDocument(),
         );
-        expect(screen.queryByRole('checkbox', {name: 'Projekt 22'})).toBeNull();
+        expect(screen.queryByRole('checkbox', {name: '22'})).toBeNull();
     });
 
     it('checkbox (de)select all v hlavičce Projects hromadně zapne a vypne projektové vrstvy', async () => {
@@ -159,8 +160,8 @@ describe('LayerSwitcher', () => {
         const projectsHeader = screen.getByRole('button', {name: 'Projects'});
         fireEvent.click(projectsHeader);
 
-        const p22 = screen.getByRole('checkbox', {name: 'Projekt 22'});
-        const p33 = screen.getByRole('checkbox', {name: 'Projekt 33'});
+        const p22 = screen.getByRole('checkbox', {name: '22'});
+        const p33 = screen.getByRole('checkbox', {name: '33'});
         const selectAll = screen.getByRole('checkbox', {name: 'Vybrat vše'});
         expect(selectAll).not.toBeChecked();
         expect(selectAll).not.toBePartiallyChecked();
@@ -194,14 +195,14 @@ describe('LayerSwitcher', () => {
         fireEvent.click(screen.getByRole('button', {name: 'Projects'}));
 
         const selectAll = screen.getByRole('checkbox', {name: 'Vybrat vše'});
-        fireEvent.click(screen.getByRole('checkbox', {name: 'Projekt 22'}));
+        fireEvent.click(screen.getByRole('checkbox', {name: '22'}));
 
         expect(selectAll).toBePartiallyChecked();
         expect(selectAll).not.toBeChecked();
 
         // klik na indeterminate checkbox vybere vše
         fireEvent.click(selectAll);
-        expect(screen.getByRole('checkbox', {name: 'Projekt 22'})).toBeChecked();
-        expect(screen.getByRole('checkbox', {name: 'Projekt 33'})).toBeChecked();
+        expect(screen.getByRole('checkbox', {name: '22'})).toBeChecked();
+        expect(screen.getByRole('checkbox', {name: '33'})).toBeChecked();
     });
 });

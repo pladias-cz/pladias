@@ -500,9 +500,10 @@ export function PladiasRecordsTable({
                         ? `/atlas/mapDetail/${record.taxonId}/${record.computedSquareCode ?? record.computedQuadrantCode.slice(0, -1)}`
                         : null;
                     return (
-                        <>
+                        // `key` musí nést samotná položka mapy, tedy fragment – klíč
+                        // na vnořeném <tr> React nehledá a hlásí chybějící key.
+                        <React.Fragment key={record.id}>
                             <tr
-                                key={record.id}
                                 ref={(el) => {
                                     rowRefs.current[record.id] = el;
                                 }}
@@ -844,7 +845,7 @@ export function PladiasRecordsTable({
                                     </td>
                                 </tr>
                             )}
-                        </>
+                        </React.Fragment>
                     );
                 })}
                 </tbody>

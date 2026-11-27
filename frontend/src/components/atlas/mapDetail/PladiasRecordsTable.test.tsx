@@ -313,26 +313,33 @@ describe('PladiasRecordsTable – tlačítko Rozbalit vše / Sbalit vše', () =>
     });
 });
 
-describe('PladiasRecordsTable – importní poznámka ve sloupci Původ', () => {
-    /** Buňka sloupce Původ dohledaná přes index hlavičky v daném řádku. */
-    function originCell(row: HTMLTableRowElement): HTMLElement {
-        const header = screen.getByRole('columnheader', {name: 'Původ'}) as HTMLTableCellElement;
-        return row.cells[header.cellIndex];
+describe('PladiasRecordsTable – importní poznámka v rozbaleném detailu', () => {
+    /**
+     * Rozbalí řádek (klik na tlačítko lokality) a vrátí child řádek s detailem.
+     * Importní poznámka se nevykresluuje ve sloupci Původ – „fix: UI“ ji přesunul
+     * do rozbaleného detailu spolu s dalšími údaji o nálezu.
+     */
+    function expandedDetail(nearestTownName: string): HTMLElement {
+        fireEvent.click(screen.getByRole('button', {name: nearestTownName}));
+
+        const detail = rowOf(nearestTownName).nextElementSibling as HTMLElement;
+        expect(detail).toHaveClass('tablesorter-childRow');
+        return detail;
     }
 
-    it('záznam s importní poznámkou ji vypíše ve sloupci Původ', () => {
+    it('záznam s importní poznámkou ji vypíše v rozbaleném detailu', () => {
         renderTable(
             [{...makeRecord(201, 1, 'Autor s poznámkou'), comment: 'Duplicitní nález'} as unknown as RecordPladias],
         );
 
-        const cell = originCell(rowOf('Obec 201') as HTMLTableRowElement);
-        expect(cell).toHaveTextContent('Importní poznámka: Duplicitní nález');
+        // sbalený řádek poznámku neobsahuje, sloupec Původ má jen název projektu
+        expect(rowOf('Obec 201')).not.toHaveTextContent('Importní poznámka');
+        expect(expandedDetail('Obec 201')).toHaveTextContent('Importní poznámka: Duplicitní nález');
     });
 
     it('záznam bez poznámky popisek nevykreslí', () => {
         renderTable([{...makeRecord(202, 1, 'Autor bez poznámky')} as unknown as RecordPladias]);
 
-        const cell = originCell(rowOf('Obec 202') as HTMLTableRowElement);
-        expect(cell).not.toHaveTextContent('Importní poznámka');
+        expect(expandedDetail('Obec 202')).not.toHaveTextContent('Importní poznámka');
     });
 });

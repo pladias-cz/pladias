@@ -1,6 +1,7 @@
-import {Circle, CircleMarker, Popup, Tooltip} from 'react-leaflet';
+import {CircleMarker, Popup, Tooltip} from 'react-leaflet';
 import type {RecordPladias} from '@/models';
 import type {RecordPladiasMinimal} from '@/models/AtlasRecords';
+import AccuracyCircle from './AccuracyCircle';
 import './RecordMarkers.scss';
 
 interface PladiasRecordMarkersProps {
@@ -76,22 +77,12 @@ function PladiasRecordMarkers({records, highlightedRecordId, onRecordHover, curr
 
                 return (
                     <>
-                        {record.gpsPrecision !== null && record.gpsPrecision! > 0 && (
-                            <Circle
-                                key={`precision-${record.id}`}
-                                center={[record.latitude, record.longitude]}
-                                radius={record.gpsPrecision! / 2}
-                                pathOptions={{
-                                    color: MARKER_CONFIG.strokeColor,
-                                    fillColor: color,
-                                    fillOpacity: 0.25,
-                                    weight: 1,
-                                    dashArray: '4, 4'
-                                }}
-                                eventHandlers={{}}
-                                interactive={false}
-                            />
-                        )}
+                        <AccuracyCircle
+                            center={[record.latitude, record.longitude]}
+                            precisionMeters={record.gpsPrecision}
+                            strokeColor={MARKER_CONFIG.strokeColor}
+                            fillColor={color}
+                        />
                         <CircleMarker
                             key={record.id}
                             center={[record.latitude, record.longitude]}

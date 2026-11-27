@@ -11,6 +11,7 @@ import markerIconRed from '@/assets/markers/marker-icon-red.png';
 import markerIcon2xRed from '@/assets/markers/marker-icon-2x-red.png';
 import type {RecordPladiasFull} from '@/models/RecordPladiasFull';
 import type {ReverseGeocodingResponse} from '@/models/ReverseGeocoding';
+import AccuracyCircle from '@/components/atlas/mapDetail/AccuracyCircle';
 import {reverseGeocode} from '@/services/recordApi';
 import {logError, logInfo} from '@/services/logger';
 import {useRecordPermissions} from './';
@@ -75,6 +76,9 @@ function MapClickHandler({onLocationSelect, canEdit}: MapClickHandlerProps) {
     return null;
 }
 
+// Kruh přesnosti ladí s modrou výplní výchozí Leaflet ikony markeru.
+const ACCURACY_COLOR = '#3388ff';
+
 const defaultIcon = new Icon({
     iconUrl: markerIcon,
     iconRetinaUrl: markerIcon2x,
@@ -136,7 +140,15 @@ export default function RecordMap({record, onLocationSelectWithGeocode, proposed
                             <Marker position={proposedLocation.coordinates as LatLngExpression}
                                     icon={proposedLocationIcon}/>}
                         {!proposedLocation && record.latitude && record.longitude && (
-                            <Marker position={[record.latitude, record.longitude]} icon={defaultIcon}/>
+                            <>
+                                <AccuracyCircle
+                                    center={[record.latitude, record.longitude]}
+                                    precisionMeters={record.gpsPrecision}
+                                    strokeColor={ACCURACY_COLOR}
+                                    fillColor={ACCURACY_COLOR}
+                                />
+                                <Marker position={[record.latitude, record.longitude]} icon={defaultIcon}/>
+                            </>
                         )}
                         {proposedLocation && (
                             <ProposalRecenter coordinates={proposedLocation.coordinates}

@@ -1,6 +1,7 @@
-import {Circle, CircleMarker, Popup, Tooltip} from 'react-leaflet';
+import {CircleMarker, Popup, Tooltip} from 'react-leaflet';
 import type {RecordGbifMinimal, ProjectType} from '@/models/AtlasRecords';
 import {EXTERNAL_MARKER_FILL_COLOR} from './recordSources';
+import AccuracyCircle from './AccuracyCircle';
 import './RecordMarkers.scss';
 
 interface RecordMarkersProps {
@@ -70,22 +71,12 @@ function RecordMarkers({records, highlightedRecordId, onRecordHover, currentSqua
 
                 return (
                     <>
-                        {(record.gpsPrecision ?? 0) > 0 && (
-                            <Circle
-                                key={`precision-${record.id}`}
-                                center={[record.latitude, record.longitude]}
-                                radius={record.gpsPrecision! / 2}
-                                pathOptions={{
-                                    color: config.strokeColor,
-                                    fillColor: EXTERNAL_MARKER_FILL_COLOR,
-                                    fillOpacity: 0.25,
-                                    weight: 1,
-                                    dashArray: '4, 4'
-                                }}
-                                eventHandlers={{}}
-                                interactive={false}
-                            />
-                        )}
+                        <AccuracyCircle
+                            center={[record.latitude, record.longitude]}
+                            precisionMeters={record.gpsPrecision}
+                            strokeColor={config.strokeColor}
+                            fillColor={EXTERNAL_MARKER_FILL_COLOR}
+                        />
                         <CircleMarker
                             key={record.id}
                             center={[record.latitude, record.longitude]}

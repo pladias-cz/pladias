@@ -358,6 +358,33 @@ dat po posunu mapy (bbox) se nespustí.
 
 `ProjectType` je union v `frontend/src/models/AtlasRecords.ts` a většina FE struktur je `Record<ProjectType, …>` – compiler vynutí nový klíč ve všech tvarech, ale **ne** v runtime asercích testů (vitest `toEqual`), ani v `RECORD_SOURCES` (viz níže – bez něj se tab nevykreslí, jen ticho). Checklist FE: `ProjectType`/`EXTERNAL_PROJECTS`/`RecordsByProject(Minimal)` (AtlasRecords.ts), `RECORD_SOURCES` + helpery (recordSources.ts), `MARKER_CONFIG` (RecordMarkers.tsx), typy scroll-fn (MapDetail.tsx + InfoPanel.tsx), fixtures testů (InfoPanel.test `makeRecords` bez nového klíče spadne na `records[source.id].length`, protože default config renderuje všechny taby). BE: enum `ProjectType` (abbrev = URL segment i hodnota v conf `atlas.externalRecordSources` – překlep jako `CBS("csb")` znamená „Invalid project type“), case v **obou** switcích (`getNearbyRecords` i `getSquareRecords`) + SQL aliasy dle `RecordGbifMinimalDto.fromSqlRow` (čte `gbif_id`, ne `id`). Zapnutí v conf dřív, než jede BE část, rozbije **celé** načtení záznamů – FE stahuje mapu i tabulky v jednom `Promise.all`.
 
+### kruh přesnosti záznamu = poloměr v metrech
+
+Přesnost souřadnic je napříč zdroji **poloměr v metrech** a FE ji kreslí jako
+`<Circle radius={přesnost}>`. Jediné místo, kde se to definuje, je
+`components/atlas/mapDetail/AccuracyCircle.tsx` – používají ji `PladiasRecordMarkers`,
+`RecordMarkers` (externí zdroje) i `RecordMap` (detail záznamu). Dřív byla vrstva
+3× zkopírovaná a se `radius = přesnost / 2`, tedy dvakrát menší kruh než data říkají.
+Hodnota se bere přímo jako metry, bez přepočtů mezi souřadnicovými systémy a
+projekcemi (jde o orientační údaj). Zdroje: PLADIAS
+`atlas.records.gps_coords_precision`, GBIF/iNat `gbif.records.coords_precision`,
+ČBS `gbif.geoserver_inat_cbs_main.positional_accuracy` – poslední dva mají různé
+názvy i typy, proto `MapDetailService.accuracyMeters()` (fragment
+`::text` → regex → `::numeric` → `::int`, nečíselné na NULL): přes `SqlRow.getInteger`
+by textová hodnota shodila celý detailMap, protože FE tahá všechny zdroje
+v jednom `Promise.all`.
+
+Past stejného druhu, která naopak chybu neudělá ani nenapoví: `SqlRow` na klíč,
+který v SELECTU není, **nehodí výjimku, jen vrátí `null`**. `getNearbyPladiasRecords`
+tak volal `row.getInteger("gps_precision")` nad aliasem `r.gps_coords_precision`
+(a `validation_status_id` nad `r.validation_status`) – přesnost i validační status
+přišly na mapu vždy prázdné a kruhy se prostě nekreslily. Kontrolou je proto
+v každém `DB.sqlQuery` projít, že klíče `row.getX(...)` odpovídají aliasům
+SELECTu. V témže dotazu se čte i `year`, jenže `atlas.records` **žádný sloupec
+`year` nemá** (rok se odvozuje z `DateSpecifier`, srov. `RecordPladiasDto:161`) –
+tooltipy markerů okolí proto rok neumí; dosadit `r.year` do SELECTu by nebyla oprava,
+ale SQL chyba likvidující celou mapu.
+
 ### Komentáře u atlas.record
 Uživatel nemůže svůj komentář editovat aby nedocházelo k nejasnostem s ohledem na to že není verzován. Pouze osobám s vyšším oprváněním je tato možnost o pravena aby mohli např. smazat nevhodné výrazy.
 

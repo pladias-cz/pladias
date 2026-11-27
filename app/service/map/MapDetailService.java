@@ -286,10 +286,10 @@ public class MapDetailService {
             SELECT r.id,
                    r.latitude,
                    r.longitude,
-                   r.gps_coords_precision,
+                   r.gps_coords_precision AS gps_precision,
                    r.datum,
                    CONCAT_WS(', ', COALESCE(a.surname, '')) AS recorded_by,
-                   r.validation_status,
+                   r.validation_status AS validation_status_id,
                    rvs.color AS validation_status_color,
                    q.code AS computed_quadrant_code
             FROM atlas.records r
@@ -423,6 +423,22 @@ public class MapDetailService {
     }
 
     /**
+     * SQL fragment přesnosti souřadnic (poloměr v metrech) nezávislý na typu sloupce:
+     * integer/numeric/double i text ('30', '30.0', '30,0') → int, prázdné a nečíselné
+     * hodnoty → NULL. Bez castu by {@code SqlRow.getInteger} nad textovým sloupcem
+     * hodil NumberFormatException a shodil celý mapový detail – FE stahuje všechny
+     * zdroje v jednom {@code Promise.all}.
+     *
+     * @param column qualified name of the accuracy column (e.g. {@code g.coords_precision})
+     * @return aliased select expression named {@code coords_precision}
+     */
+    private static String accuracyMeters(String column) {
+        return "CASE WHEN " + column + "::text ~ '^[0-9]+([.,][0-9]+)?$'" +
+            " THEN ROUND(REPLACE(" + column + "::text, ',', '.')::numeric)::int" +
+            " ELSE NULL END AS coords_precision";
+    }
+
+    /**
      * Get GBIF/iNaturalist records within 10km distance from the square centroid.
      * Returns MINIMAL data suitable for map display.
      *
@@ -450,7 +466,7 @@ public class MapDetailService {
             "SELECT g.gbif_id," +
                 "       ST_Y(g.coords) AS latitude, " +
                 "       ST_X(g.coords) AS longitude, " +
-                " g.coords_precision," +
+                " " + accuracyMeters("g.coords_precision") + "," +
                 " g.year," +
                 "  g.recorded_by," +
                 "  g.institution_code," +
@@ -504,7 +520,7 @@ public class MapDetailService {
         String sql = "SELECT g.gbif_id, " +
             "       ST_Y(g.coords) AS latitude, " +
             "       ST_X(g.coords) AS longitude, " +
-            "       g.coords_precision, " +
+            " " + accuracyMeters("g.coords_precision") + ", " +
             "       g.year, " +
             "       g.recorded_by, " +
             "       g.institution_code, " +
@@ -546,7 +562,7 @@ public class MapDetailService {
             String sql = "SELECT g.id AS gbif_id, " +
                 "       ST_Y(g.geom) AS latitude, " +
                 "       ST_X(g.geom) AS longitude, " +
-                "       g.positional_accuracy as coords_precision, " +
+                " " + accuracyMeters("g.positional_accuracy") + ", " +
                 "       DATE_PART('year', observed_on) as year, " +
                 "       g.user_login as recorded_by, " +
                 "       q.letter AS quadrant_letter, " +
@@ -594,7 +610,7 @@ public class MapDetailService {
         String sql = "SELECT g.id AS gbif_id, " +
                 "       ST_Y(g.geom) AS latitude, " +
                 "       ST_X(g.geom) AS longitude, " +
-                "       g.positional_accuracy as coords_precision, " +
+                " " + accuracyMeters("g.positional_accuracy") + ", " +
                 "       DATE_PART('year', observed_on) as year, " +
                 "       g.user_login as recorded_by, " +
                 "       q.letter AS quadrant_letter, " +

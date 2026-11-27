@@ -109,6 +109,7 @@ UploadExcel:
     importCsvFileEmailSubject: Výsledek importu souboru {0}
     importCsvFileEmailContentsSuccess: Soubor {0} byl úspěšně importován pod batch ID {1}.
     notAuthorized: Nemáte oprávnění stáhnout tento soubor.
+    processingFailed: Při zpracování souboru došlo k neočekávané chybě. Zkuste to prosím později, nebo kontaktujte administrátory.
     importCsvFileEmailContentsFailure: Soubor {0} se nepodařilo importovat. Detail chyby "{1}".
 
 ImportResultsController:

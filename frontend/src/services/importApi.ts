@@ -27,6 +27,8 @@ export interface ImportResult {
     warnings: number;
     imported: boolean;
     decoratedFileUrl?: string;
+    /** nastaveno při importu, který zamítla kontrolní validace (soubor není validní) */
+    errorCode?: 'fileNotValid';
 }
 
 /** Projekt přihlášeného uživatele (výběr v upload formuláři). */

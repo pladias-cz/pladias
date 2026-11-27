@@ -140,6 +140,11 @@ public class ImportController extends ControllerBase {
             if (!imported || excel.getErrors() > 0) {
                 result.put("decoratedFileUrl", "/api/react/occurrence/imports/" + excel.getId());
             }
+            if (importOp == ImportOp.IMPORT && !imported) {
+                // negative outcome of the pre-import validation check – informational
+                // result, not an operational error (operational errors end in the catch blocks below)
+                result.put("errorCode", "fileNotValid");
+            }
 
             return ok(result);
 
@@ -156,7 +161,7 @@ public class ImportController extends ControllerBase {
             }
             ObjectNode error = Json.newObject();
             error.put("success", false);
-            error.put("errorMessage", ex.toString());
+            error.put("errorMessage", messages.at("UploadExcel.processingFailed"));
             return internalServerError(error);
         }
     }
@@ -171,35 +176,35 @@ public class ImportController extends ControllerBase {
         return new UploadedFile(filePart);
     }
 
-    private void verifyUserIsEligible(User user, Project project, ImportOp action, Messages messages) throws Exception {
+    private void verifyUserIsEligible(User user, Project project, ImportOp action, Messages messages) {
         if (action == ImportOp.VALIDATION) {
             return;
         }
 
         if (!user.canContributeInto(project)) {
-            throw new Exception(messages.at("UploadExcel.userNotAllowedToImportIntoSelectedProject"));
+            throw new BadRequestException(messages.at("UploadExcel.userNotAllowedToImportIntoSelectedProject"));
         }
     }
 
-    private Project resolveProject(Integer projectId, Messages messages) throws Exception {
+    private Project resolveProject(Integer projectId, Messages messages) {
         if (projectId == null) {
             return null;
         }
 
         Project project = Project.find().byId(projectId);
         if (project == null) {
-            throw new Exception(messages.at("UploadExcel.NoProjectProvidedVerifyYouHaveBeenGrantedProjectAccess"));
+            throw new BadRequestException(messages.at("UploadExcel.NoProjectProvidedVerifyYouHaveBeenGrantedProjectAccess"));
         }
         return project;
     }
 
-    private void verifyForm(Messages messages, ExcelUploadInfo excelInfo) throws Exception {
+    private void verifyForm(Messages messages, ExcelUploadInfo excelInfo) {
         ImportOp importOp = ImportOp.valueOf(Strings.nullToEmpty(excelInfo.operation).toUpperCase());
 
         if (importOp == ImportOp.IMPORT) {
             Integer projectId = excelInfo.project;
             if (projectId == null) {
-                throw new Exception(messages.at("UploadExcel.FormNotComplete"));
+                throw new BadRequestException(messages.at("UploadExcel.FormNotComplete"));
             }
         }
     }

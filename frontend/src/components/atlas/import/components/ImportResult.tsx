@@ -14,31 +14,21 @@ export function ImportResult({result, onReset}: ImportResultProps) {
     const hasErrors = result.errors > 0;
     const hasWarnings = result.warnings > 0;
     const wasImported = result.imported;
+    // import zamítnutý kontrolní validací před importem (provozní chyby jdou cestou výjimek)
+    const importBlocked = result.errorCode === 'fileNotValid';
 
     const getTitle = (): string => {
         if (wasImported) {
-            if (!hasErrors) {
-                return t('atlas.import.component.successImported');
-            }
-            return t('atlas.import.component.hasErrorsNotImported');
+            return t('atlas.import.component.successImported');
         }
-        if (!hasErrors) {
-            return t('atlas.import.component.noErrors');
+        if (hasErrors) {
+            return t('atlas.import.component.hasErrors');
         }
-        return t('atlas.import.component.hasErrors');
+        return t('atlas.import.component.noErrors');
     };
 
     const getMessage = (): React.ReactNode => {
         if (wasImported) {
-            if (hasErrors) {
-                return (
-                    <Alert variant="warning">
-                        {t('atlas.import.component.errorExplanation')}
-                        <br/>
-                        {t('atlas.import.component.fixAndRetry')}
-                    </Alert>
-                );
-            }
             return (
                 <Alert variant="success">
                     {t('atlas.import.component.successMessage')}{' '}
@@ -49,14 +39,35 @@ export function ImportResult({result, onReset}: ImportResultProps) {
             );
         }
 
-        if (hasErrors || hasWarnings) {
+        if (importBlocked) {
+            return (
+                <Alert variant="danger">
+                    {t('atlas.import.component.importBlockedInvalid')}
+                    <br/>
+                    {t('atlas.import.component.fixAndRevalidate')}
+                </Alert>
+            );
+        }
+
+        if (hasErrors) {
+            // závažné (nepropustné) chyby – import by byl zamítnut, nepokračovat k importu
+            return (
+                <Alert variant="danger">
+                    {t('atlas.import.component.validationExplanation')}
+                    <br/>
+                    {t('atlas.import.component.fixAndRevalidate')}
+                </Alert>
+            );
+        }
+
+        if (hasWarnings) {
+            // propustná varování – import pokračovat může
             return (
                 <Alert variant="warning">
                     {t('atlas.import.component.validationExplanation')}
                     <br/>
-                    {t('atlas.import.component.proceedToImport')}
+                    {t('atlas.import.component.proceedToImport')}{' '}
                     <a href="/atlas/import">{t('atlas.import.component.proceedToImportLink')}</a>.
-
                 </Alert>
             );
         }

@@ -1,6 +1,7 @@
 import {Card, Col, Row} from 'react-bootstrap';
 import {useCallback, useLayoutEffect, useRef} from 'react';
 import {useTranslation} from 'react-i18next';
+import {useInstanceConfig} from '@/context/InstanceConfigContext';
 import type {RecordPladiasFull} from '@/models/RecordPladiasFull';
 import RecordReadonlyField from '@/components/atlas/record/RecordReadonlyField';
 import RecordInlineField from '@/components/atlas/record/RecordInlineField';
@@ -17,6 +18,10 @@ interface RecordRemarksProps {
 
 export default function RecordRemarks({record, onFieldUpdated}: RecordRemarksProps) {
     const {t} = useTranslation();
+    // Dopočtený fytochorion a aproximace nadmořské výšky se odvozují z mapového
+    // pole/quadrantu, který v ne-cevnaté instanci není řešen – v Technickém info
+    // se proto nezobrazují.
+    const {isVascular} = useInstanceConfig();
     const scrollRef = useRef<number>(0);
 
     // Lokální (optimistická) kopie záznamu pro inline editace (timestamp se propaguje z backendu)
@@ -190,14 +195,21 @@ export default function RecordRemarks({record, onFieldUpdated}: RecordRemarksPro
                         <RecordReadonlyField label="ID" content={localRecord.id.toString()}/>
                         <RecordReadonlyField label={t('record.uploaded')}
                                              content={localRecord.batch.authorName + ' ' + localRecord.batch.createTimestamp}/>
-                        <RecordReadonlyField label={t('record.phytochorionComputed')}
-                                             content={localRecord.isPhytochorionComputed
-                                                 ? <i className="bi bi-check text-success"></i>
-                                                 : <i className="bi bi-x text-danger"></i>}/>
-                        <RecordReadonlyField label={t('record.altitudeAproximate')}
-                                             content={localRecord.altitudeApproximation
-                                                 ? <i className="bi bi-check text-success"></i>
-                                                 : <i className="bi bi-x text-danger"></i>}/>
+                        {/* Dopočtený fytochorion i aproximace nadmořské výšky se
+                            počítají z mapového pole – mají smysl jen v cévnaté
+                            instanci, v ne-cevnaté se pole nezobrazuje. */}
+                        {isVascular && (
+                            <>
+                                <RecordReadonlyField label={t('record.phytochorionComputed')}
+                                                     content={localRecord.isPhytochorionComputed
+                                                         ? <i className="bi bi-check text-success"></i>
+                                                         : <i className="bi bi-x text-danger"></i>}/>
+                                <RecordReadonlyField label={t('record.altitudeAproximate')}
+                                                     content={localRecord.altitudeApproximation
+                                                         ? <i className="bi bi-check text-success"></i>
+                                                         : <i className="bi bi-x text-danger"></i>}/>
+                            </>
+                        )}
 
                         <RecordReadonlyField label={t('record.origin')}
                                              content={localRecord.projectName + ' | ' + localRecord.institutionName}/>

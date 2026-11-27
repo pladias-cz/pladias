@@ -413,6 +413,7 @@
           "batchProgress": "Fortschritt: {{processed}} / {{total}}",
           "batchStartFailed": "Die Sammeloperation konnte nicht gestartet werden.",
           "bufferChangeReady": "Aktion (Änderung des Puffers selbst auf {{value}}) vorbereitet.",
+          "confirmEmptyLocalityExtra": "Der zusätzliche Fundort ist leer. Wollen Sie ihn wirklich auf einen leeren Wert setzen?",
           "confirmEmptyNote": "Die Anmerkung ist leer. Wollen Sie sie wirklich auf einen leeren Wert setzen?",
           "confirmEmptySource": "Die Quelle ist leer. Wollen Sie sie wirklich auf einen leeren Wert setzen?",
           "confirmSemafor": "Wollen Sie wirklich die Ampel für alle ausgewählten Datensätze ändern?",
@@ -426,6 +427,7 @@
           "invalidDateFormat": "Das Datum muss im Format JJJJ, JJJJ-MM oder JJJJ-MM-TT sein.",
           "loadingCandidates": "Datensätze werden gemäß dem aktuellen Filter geladen...",
           "localityChangeReady": "Aktion (neue Fundortbeschreibung) vorbereitet.",
+          "localityExtraChangeReady": "Aktion (neuer Text des zusätzlichen Fundorts) vorbereitet.",
           "locationChangeReady": "Aktion (Änderung der Position + Puffer {{buffer}}) vorbereitet.",
           "nearestTownChangeReady": "Aktion (Änderung der nächsten Ortschaft auf {{value}}) vorbereitet.",
           "noRecords": "Es stehen keine Datensätze für die Sammelbearbeitung zur Verfügung.",
@@ -470,6 +472,13 @@
             "label": "Neuer Fundorttext",
             "submitButton": "Neuen Fundort bestätigen",
             "title": "Fundort"
+          },
+          "localityExtra": {
+            "helper": "Schutzgebiet, Gebirge usw. – ein leerer Text löscht das Feld in allen Datensätzen.",
+            "label": "Neuer Text des zusätzlichen Fundorts",
+            "placeholder": "Schutzgebiet, Gebirge usw.",
+            "submitButton": "Zusätzlichen Fundort bestätigen",
+            "title": "Zusätzlicher Fundort"
           },
           "nearestTown": {
             "label": "Neue Ortschaft",

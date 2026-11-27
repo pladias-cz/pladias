@@ -413,6 +413,7 @@
           "batchProgress": "Progress: {{processed}} / {{total}}",
           "batchStartFailed": "Failed to start the bulk operation.",
           "bufferChangeReady": "Action (change of the buffer itself to {{value}}) prepared.",
+          "confirmEmptyLocalityExtra": "The auxiliary locality is empty. Do you really want to set it to an empty value?",
           "confirmEmptyNote": "The note is empty. Do you really want to set it to an empty value?",
           "confirmEmptySource": "The source is empty. Do you really want to set it to an empty value?",
           "confirmSemafor": "Do you really want to change the semaphore for all selected records?",
@@ -426,6 +427,7 @@
           "invalidDateFormat": "The date must be in the YYYY, YYYY-MM or YYYY-MM-DD format.",
           "loadingCandidates": "Loading records according to the current filter...",
           "localityChangeReady": "Action (new locality description) prepared.",
+          "localityExtraChangeReady": "Action (new auxiliary locality text) prepared.",
           "locationChangeReady": "Action (change of the location + buffer {{buffer}}) prepared.",
           "nearestTownChangeReady": "Action (change of the nearest town to {{value}}) prepared.",
           "noRecords": "There are no records available for bulk editing.",
@@ -470,6 +472,13 @@
             "label": "New locality text",
             "submitButton": "Confirm new locality",
             "title": "Locality"
+          },
+          "localityExtra": {
+            "helper": "Protected area, mountains etc. – an empty text clears the field in all records.",
+            "label": "New auxiliary locality text",
+            "placeholder": "Protected area, mountains etc.",
+            "submitButton": "Confirm auxiliary locality",
+            "title": "Auxiliary locality"
           },
           "nearestTown": {
             "label": "New town",

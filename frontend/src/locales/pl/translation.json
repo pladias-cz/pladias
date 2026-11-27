@@ -412,6 +412,7 @@
           "batchProgress": "Postęp: {{processed}} / {{total}}",
           "batchStartFailed": "Nie udało się uruchomić operacji masowej.",
           "bufferChangeReady": "Akcja (zmiana samego bufora na {{value}}) przygotowana.",
+          "confirmEmptyLocalityExtra": "Lokalizacja pomocnicza jest pusta. Czy na pewno chcesz ustawić ją na pustą wartość?",
           "confirmEmptyNote": "Uwaga jest pusta. Czy na pewno chcesz ustawić ją na pustą wartość?",
           "confirmEmptySource": "Źródło jest puste. Czy na pewno chcesz ustawić je na pustą wartość?",
           "confirmSemafor": "Czy na pewno chcesz zmienić semafor dla wszystkich wybranych rekordów?",
@@ -425,6 +426,7 @@
           "invalidDateFormat": "Data musi być w formacie YYYY, YYYY-MM lub YYYY-MM-DD.",
           "loadingCandidates": "Wczytywanie rekordów według bieżącego filtra...",
           "localityChangeReady": "Akcja (nowy opis lokalizacji) przygotowana.",
+          "localityExtraChangeReady": "Akcja (nowy tekst lokalizacji pomocniczej) przygotowana.",
           "locationChangeReady": "Akcja (zmiana lokalizacji + bufor {{buffer}}) przygotowana.",
           "nearestTownChangeReady": "Akcja (zmiana najbliższej miejscowości na {{value}}) przygotowana.",
           "noRecords": "Brak dostępnych rekordów do edycji masowej.",
@@ -469,6 +471,13 @@
             "label": "Nowy tekst lokalizacji",
             "submitButton": "Potwierdź nową lokalizację",
             "title": "Lokalizacja"
+          },
+          "localityExtra": {
+            "helper": "Obszar chroniony, góry itp. – pusty tekst wyczyści pole we wszystkich rekordach.",
+            "label": "Nowy tekst lokalizacji pomocniczej",
+            "placeholder": "Obszar chroniony, góry itp.",
+            "submitButton": "Potwierdź lokalizację pomocniczą",
+            "title": "Lokalizacja pomocnicza"
           },
           "nearestTown": {
             "label": "Nowa miejscowość",

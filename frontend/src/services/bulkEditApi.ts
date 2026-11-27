@@ -104,6 +104,16 @@ export async function updateLocality(record: BulkRecordVersion, locality: string
     await patchRecordField(record, 'LOCALITY', locality, 'Failed to update locality');
 }
 
+/**
+ * Pomocná lokalita (`atlas_nonvascular.records_extension.locality_extra`).
+ * Klíč `LOCALITYEXTRA` dává smysl jen v ne-cevnaté instanci – u cévnatého
+ * záznamu backend vrátí chybu (rozšíření neexistuje); komponenta proto sekci
+ * vykresluje jen při `!isVascular`. Prázdný string pole vymaže.
+ */
+export async function updateLocalityExtra(record: BulkRecordVersion, localityExtra: string): Promise<void> {
+    await patchRecordField(record, 'LOCALITYEXTRA', localityExtra, 'Failed to update auxiliary locality');
+}
+
 export async function updateNearestTownName(record: BulkRecordVersion, nearestTownName: string): Promise<void> {
     await patchRecordField(record, 'NEARESTTOWNNAME', nearestTownName, 'Failed to update nearest town');
 }

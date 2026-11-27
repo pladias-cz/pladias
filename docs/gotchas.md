@@ -322,6 +322,10 @@ Reset hesla (self-service `/forgotPassword` i sysAdmin tlačítko v UsersTable) 
 
 `onChange` zahazoval prázdnou hodnotu (`if (optionId)`) a tlačítko OK bylo bez výběru disabled – „-- vyber --“ byl jen placeholder, takže pole se dalo měnit, ale ne zrušit, ač backend `null` v PATCH běžně umí (`RecordUpdateController.editField`). Vymazává se teď přes volbu `clearable`: prázdná hodnota je záměr (`clearRequested`) a PATCH jde s `null`. Pozor při dalším vývoji – `selectedOption === null` samo o sobě „vymazat“ neznamená.
 
+### PATCH klíče ne-cevnatého rozšíření musí FE skrývat podle `isVascular`
+
+`PATCH /api/react/atlas/record/:recordId` je společný pro cévnaté i ne-cevnaté instance a sám typ instance nezkoumá – klíče `SUBSTRATE`, `SUBSTRATE1`, `SUBSTRATE2`, `CHEMICAL` a `LOCALITYEXTRA` (pomocná lokalita) vedou v `RecordsService` vždy přes `Record.getNonVascularExtension()`, které je v cévnaté instanci `null` → `nonVascularExtension()` hodí `IllegalArgumentException` („Zaznam neobsahuje data ne-cevnatych rostlin.“). Dostupnost takových polí proto hlídá frontend: inline editace i sekce hromadných úprav (`BulkEdit` – lokalita pomocná) se vykreslují jen při `!useInstanceConfig().isVascular`, obdobně jako `scope: 'nonVascular'` v `advanced/filterRegistry.ts`. Nové ne-cevnaté pole tedy vždy potřebuje obě strany zámku (skrývání v FE, chybovou hlášku v BE), jinak se uživateli cévnaté instance zobrazí tlačítko, které vždy selže.
+
 ### CSP: externí obrázky a mapové podklady
 CSP `img-src` (conf/common.conf) povoluje jen `'self' data:` + GeoServery CZ/SK a tile servery podkladů (OSM/OpenTopoMap/ČUZK). Obrázky (markery apod.) proto **nikdy nenačítat z externího CDN** (raw.githubusercontent.com apod. – produkce je zablokuje), ale bundlovat lokálně přes Vite import (vzor: `RecordMap.tsx` – `leaflet/dist/images/*`, `src/assets/markers/*`). Přidání nového tile/WMS zdroje vyžaduje rozšíření `img-src` v conf/common.conf (tiles jsou `<img>`, WFS GeoJSON jde přes `connect-src`).
 

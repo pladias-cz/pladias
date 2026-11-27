@@ -10,6 +10,7 @@ import {Accordion} from 'react-bootstrap';
 import {Typeahead} from 'react-bootstrap-typeahead';
 import {useTranslation} from 'react-i18next';
 import {Autocomplete} from '@/components/autocomplete/Autocomplete';
+import {useInstanceConfig} from '@/context/InstanceConfigContext';
 import type {TaxonId} from '@/models/TaxonId';
 import type {RecordPladias} from '@/models';
 import {useBulkEdit} from './bulkEdit/useBulkEdit';
@@ -26,6 +27,8 @@ type BulkEditProps = {
 
 export default function BulkEdit({records, totalCount, searchPayloadEntries, onBulkEditComplete}: BulkEditProps) {
     const {t} = useTranslation();
+    // pomocná lokalita existuje jen v ne-cevnaté instanci (records_extension)
+    const {isVascular} = useInstanceConfig();
     const [activeKey, setActiveKey] = useState<string>('0');
     const bulkEdit = useBulkEdit({records, totalCount, searchPayloadEntries, onBulkEditComplete});
 
@@ -142,6 +145,33 @@ export default function BulkEdit({records, totalCount, searchPayloadEntries, onB
                         </BulkEditFieldRow>
                     </Accordion.Body>
                 </Accordion.Item>
+
+                {/* Pomocná lokalita je pole ne-cevnatého rozšíření – u cévnaté
+                    instance by PATCH LOCALITYEXTRA selhal, sekce se tedy
+                    nevykreslí. EventKey je stabilní identifikátor sekce,
+                    nikoli pořadí v accordionu. */}
+                {!isVascular && (
+                    <Accordion.Item eventKey="11" className="bulk-edit-card">
+                        <Accordion.Header>{t('atlas.search.bulkEdit.sections.localityExtra.title')}</Accordion.Header>
+                        <Accordion.Body>
+                            <BulkEditFieldRow
+                                label={t('atlas.search.bulkEdit.sections.localityExtra.label')}
+                                submitLabel={t('atlas.search.bulkEdit.sections.localityExtra.submitButton')}
+                                onSubmit={() => void bulkEdit.submitLocalityExtraChange()}
+                                disabled={bulkEdit.isRunning}
+                                helperText={t('atlas.search.bulkEdit.sections.localityExtra.helper')}
+                            >
+                                <input
+                                    type="text"
+                                    className="form-control"
+                                    value={bulkEdit.newLocalityExtra}
+                                    onChange={(event) => bulkEdit.changeNewLocalityExtra(event.target.value)}
+                                    placeholder={t('atlas.search.bulkEdit.sections.localityExtra.placeholder')}
+                                />
+                            </BulkEditFieldRow>
+                        </Accordion.Body>
+                    </Accordion.Item>
+                )}
 
                 <Accordion.Item eventKey="5" className="bulk-edit-card">
                     <Accordion.Header>{t('atlas.search.bulkEdit.sections.nearestTown.title')}</Accordion.Header>

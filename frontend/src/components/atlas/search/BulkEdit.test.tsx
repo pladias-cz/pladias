@@ -12,6 +12,8 @@ import {MemoryRouter} from 'react-router-dom';
 import {afterEach, beforeEach, describe, expect, it, vi, type Mock} from 'vitest';
 import BulkEdit from './BulkEdit';
 import {withQueryClient} from '@/test/withQueryClient';
+import {InstanceConfigProvider} from '@/context/InstanceConfigContext';
+import type {InstanceConfigData} from '@/models/InstanceConfig';
 import type {RecordPladias} from '@/models';
 import '@/i18n/i18n';
 
@@ -32,17 +34,20 @@ let onBulkEditComplete: Mock<() => void>;
 const callsTo = (urlPart: string) =>
     fetchMock.mock.calls.filter(([url]) => String(url).includes(urlPart));
 
-function renderBulkEdit() {
+/** Defaultní konfigurace = ne-cevnatá instance (shodně s testy map detailu). */
+function renderBulkEdit(config: InstanceConfigData = {}) {
     return render(
-        withQueryClient(
+        <InstanceConfigProvider config={config}>
             <MemoryRouter>
-                <BulkEdit
-                    records={[makeRecord(1), makeRecord(2)]}
-                    searchPayloadEntries={[['taxon', 'Carex']]}
-                    onBulkEditComplete={onBulkEditComplete}
-                />
-            </MemoryRouter>,
-        ),
+                {withQueryClient(
+                    <BulkEdit
+                        records={[makeRecord(1), makeRecord(2)]}
+                        searchPayloadEntries={[['taxon', 'Carex']]}
+                        onBulkEditComplete={onBulkEditComplete}
+                    />,
+                )}
+            </MemoryRouter>
+        </InstanceConfigProvider>,
     );
 }
 
@@ -136,5 +141,38 @@ describe('BulkEdit – potvrzovací flow (F.3)', () => {
         // zpráva dávky i rozbalitelný souhrn úspěšných ID
         expect(await screen.findByText('Akce (změna semaforu) připravena. Hotovo: 2 úspěšně, 0 neúspěšně (celkem 2).')).toBeVisible();
         expect(await screen.findByText('Úspěšně upravené záznamy (2)')).toBeVisible();
+    });
+});
+
+describe('BulkEdit – lokalita pomocná (jen ne-cevnatá instance)', () => {
+    const patchCalls = () =>
+        fetchMock.mock.calls.filter(([url, init]) =>
+            String(url).match(/\/api\/react\/atlas\/record\/\d+$/) !== null
+            && (init?.method ?? 'GET') === 'PATCH');
+
+    it('cévnatá instance sekci nezobrazí (PATCH LOCALITYEXTRA by selhal)', () => {
+        renderBulkEdit({isVascular: true});
+
+        expect(screen.queryByRole('button', {name: 'Lokalita pomocná'})).not.toBeInTheDocument();
+    });
+
+    it('ne-cevnatá instance pošle LOCALITYEXTRA pro každý záznam', async () => {
+        renderBulkEdit({isVascular: false});
+        fireEvent.click(screen.getByRole('button', {name: 'Lokalita pomocná'}));
+
+        fireEvent.change(screen.getByPlaceholderText('CHKO, pohoří apod.'), {
+            target: {value: 'CHKO Bílé Karpaty'},
+        });
+        fireEvent.click(screen.getByRole('button', {name: 'Potvrdit pomocnou lokalitu'}));
+
+        await waitFor(() => {
+            expect(onBulkEditComplete).toHaveBeenCalledTimes(1);
+        });
+
+        expect(patchCalls()).toHaveLength(2);
+        expect(patchCalls().map(([, init]) => String(init?.body))).toEqual([
+            expect.stringContaining('"key":"LOCALITYEXTRA"'),
+            expect.stringContaining('"key":"LOCALITYEXTRA"'),
+        ]);
     });
 });

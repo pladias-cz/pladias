@@ -21,6 +21,7 @@ import {
     updateDate,
     updatePhytochorion,
     updateLocality,
+    updateLocalityExtra,
     updateNearestTownName,
     updateSource,
     updateNote,
@@ -81,6 +82,7 @@ export function useBulkEdit({records, totalCount, searchPayloadEntries, onBulkEd
     const [newDate, setNewDate] = useState<string>('');
     const [selectedPhytochorion, setSelectedPhytochorion] = useState<TypeaheadOption[]>([]);
     const [newLocality, setNewLocality] = useState<string>('');
+    const [newLocalityExtra, setNewLocalityExtra] = useState<string>('');
     const [newNearestTownName, setNewNearestTownName] = useState<string>('');
     const [newSource, setNewSource] = useState<string>('');
     const [newImportComment, setNewImportComment] = useState<string>('');
@@ -197,6 +199,10 @@ export function useBulkEdit({records, totalCount, searchPayloadEntries, onBulkEd
         if (localityError && value.trim() !== '') {
             setLocalityError(false);
         }
+    };
+
+    const changeNewLocalityExtra = (value: string) => {
+        setNewLocalityExtra(value);
     };
 
     const changeNewNearestTownName = (value: string) => {
@@ -450,6 +456,23 @@ export function useBulkEdit({records, totalCount, searchPayloadEntries, onBulkEd
         );
     };
 
+    /**
+     * Pomocná lokalita (jen ne-cevnatá instance) je nepovinné pole – prázdná
+     * hodnota se posílá až po potvrzení, protože u celé dávky pole vymaže.
+     */
+    const submitLocalityExtraChange = async () => {
+        const value = newLocalityExtra.trim();
+
+        if (!value && !(await confirm({message: t('atlas.search.bulkEdit.messages.confirmEmptyLocalityExtra')}))) {
+            return;
+        }
+
+        await executeBulkOperation(
+            t('atlas.search.bulkEdit.messages.localityExtraChangeReady'),
+            (record) => updateLocalityExtra(record, value),
+        );
+    };
+
     const submitNearestTownChange = async () => {
         const value = newNearestTownName.trim();
 
@@ -576,6 +599,10 @@ export function useBulkEdit({records, totalCount, searchPayloadEntries, onBulkEd
         localityError,
         changeNewLocality,
         submitLocalityChange,
+        // lokalita pomocná (jen ne-cevnatá instance – sekci vykresluje BulkEdit)
+        newLocalityExtra,
+        changeNewLocalityExtra,
+        submitLocalityExtraChange,
         // nejbližší obec
         newNearestTownName,
         nearestTownError,

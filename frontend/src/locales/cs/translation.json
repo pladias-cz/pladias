@@ -413,6 +413,7 @@
           "batchProgress": "Průběh: {{processed}} / {{total}}",
           "batchStartFailed": "Nepodařilo se spustit hromadnou operaci.",
           "bufferChangeReady": "Akce (změna samotného bufferu na {{value}}) připravena.",
+          "confirmEmptyLocalityExtra": "Pomocná lokalita je prázdná. Opravdu ji chcete nastavit na prázdnou hodnotu?",
           "confirmEmptyNote": "Poznámka je prázdná. Opravdu ji chcete nastavit na prázdnou hodnotu?",
           "confirmEmptySource": "Pramen je prázdný. Opravdu ho chcete nastavit na prázdnou hodnotu?",
           "confirmSemafor": "Opravdu chcete změnit semafor pro všechny vybrané záznamy?",
@@ -426,6 +427,7 @@
           "invalidDateFormat": "Datum musí být ve formátu YYYY, YYYY-MM nebo YYYY-MM-DD.",
           "loadingCandidates": "Načítám záznamy podle aktuálního filtru...",
           "localityChangeReady": "Akce (nový popis lokality) připravena.",
+          "localityExtraChangeReady": "Akce (nový text pomocné lokality) připravena.",
           "locationChangeReady": "Akce (změna lokace + buffer {{buffer}}) připravena.",
           "nearestTownChangeReady": "Akce (změna nejbližší obce na {{value}}) připravena.",
           "noRecords": "Nejsou k dispozici žádné záznamy pro hromadnou úpravu.",
@@ -470,6 +472,13 @@
             "label": "Nový text lokality",
             "submitButton": "Potvrdit novou lokalitu",
             "title": "Lokalita"
+          },
+          "localityExtra": {
+            "helper": "CHKO, pohoří apod. – prázdný text pole u všech záznamů vymaže.",
+            "label": "Nový text pomocné lokality",
+            "placeholder": "CHKO, pohoří apod.",
+            "submitButton": "Potvrdit pomocnou lokalitu",
+            "title": "Lokalita pomocná"
           },
           "nearestTown": {
             "label": "Nová obec",

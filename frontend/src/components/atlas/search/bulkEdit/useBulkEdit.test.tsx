@@ -18,6 +18,7 @@ import {useBulkEdit} from './useBulkEdit';
 import {
     fetchRecordEditTimestamps,
     updateDate,
+    updateLocalityExtra,
 } from '@/services/bulkEditApi';
 import {createQueryClient} from '@/query/queryClient';
 import type {RecordPladias} from '@/models';
@@ -30,6 +31,7 @@ vi.mock('@/services/bulkEditApi', () => ({
     updateDate: vi.fn(),
     updatePhytochorion: vi.fn(),
     updateLocality: vi.fn(),
+    updateLocalityExtra: vi.fn(),
     updateNearestTownName: vi.fn(),
     updateSource: vi.fn(),
     updateNote: vi.fn(),
@@ -132,6 +134,32 @@ describe('useBulkEdit', () => {
         expect(result.current.formMessage).toContain('Hotovo: 2 úspěšně');
         expect(result.current.isRunning).toBe(false);
         expect(result.current.batchProgress).toEqual({processed: 2, total: 2});
+        expect(onBulkEditComplete).toHaveBeenCalledTimes(1);
+    });
+
+    it('pomocná lokalita (ne-cevnatá instance) pošle hodnotu pro každý záznam', async () => {
+        vi.mocked(fetchRecordEditTimestamps).mockResolvedValueOnce([
+            {id: 1, lastEditTimestampNum: 100},
+            {id: 2, lastEditTimestampNum: 200},
+        ]);
+        vi.mocked(updateLocalityExtra).mockResolvedValue(undefined);
+
+        const {result, onBulkEditComplete} = renderBulkEdit();
+
+        act(() => {
+            result.current.changeNewLocalityExtra('CHKO Bílé Karpaty');
+        });
+        await act(async () => {
+            await result.current.submitLocalityExtraChange();
+        });
+
+        expect(updateLocalityExtra).toHaveBeenCalledTimes(2);
+        expect(updateLocalityExtra).toHaveBeenCalledWith({id: 1, lastEditTimestampNum: 100}, 'CHKO Bílé Karpaty');
+        expect(result.current.batchSummary).toEqual({
+            operationName: 'Akce (nový text pomocné lokality) připravena.',
+            successIds: [1, 2],
+            failed: [],
+        });
         expect(onBulkEditComplete).toHaveBeenCalledTimes(1);
     });
 
